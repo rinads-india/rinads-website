@@ -1,18 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { RinpoProvider } from "@/components/rinpo/RinpoProvider";
 
-const figtree = Figtree({
-  variable: "--font-figtree",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "600", "700", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "RINADS | Business Simplified",
-  description: "RINADS Technologies - AI-powered automation, custom software, digital marketing. RINPO-assisted experience.",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "RINADS" },
+  title: "OUTBOX | Think Outside The Box",
+  description:
+    "OUTBOX — Elevating brands. Defining futures. Brand identity, digital marketing, and web experience.",
 };
 
 export const viewport: Viewport = {
@@ -20,8 +19,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: "cover",
-  themeColor: "#0a0a0a",
+  themeColor: "#963222",
 };
 
 export default function RootLayout({
@@ -30,13 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${figtree.variable} font-sans antialiased min-h-screen min-h-[100dvh] overflow-x-hidden overscroll-behavior-none touch-manipulation`}>
-        <AuthProvider>
-          <RinpoProvider>
-            {children}
-          </RinpoProvider>
-        </AuthProvider>
+    <html lang="en">
+      <body
+        className={`${inter.variable} font-sans antialiased bg-brand-darker text-white overflow-x-hidden`}
+      >
+        {children}
       </body>
     </html>
   );
