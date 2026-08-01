@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Figtree } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "OUTBOX | Think Outside The Box",
+  title: "RINADS | Business Simplified",
   description:
-    "OUTBOX — Elevating brands. Defining futures. Brand identity, digital marketing, and web experience.",
+    "RINADS Technologies — AI-powered automation, custom software, and digital marketing. Business Cloud built to run businesses.",
 };
 
 export const viewport: Viewport = {
@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#963222",
+  themeColor: "#9f4bc7",
 };
 
 export default function RootLayout({
@@ -28,9 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${inter.variable} font-sans antialiased bg-brand-darker text-white overflow-x-hidden`}
+        className={`${figtree.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
       >
         {children}
       </body>

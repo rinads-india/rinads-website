@@ -4,11 +4,6 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-const BG_VIDEO =
-  "https://strvid.nyc3.cdn.digitaloceanspaces.com/cloudinary/bg1_jgni8n.mp4";
-const CIRCLE_VIDEO =
-  "https://strvid.nyc3.cdn.digitaloceanspaces.com/cloudinary/bg4_hzaahu.mp4";
-
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -16,23 +11,19 @@ export function Hero() {
     offset: ["start start", "end end"],
   });
 
-  // Final 25%: shrink / round / fade the sticky wrapper
   const wrapperScale = useTransform(scrollYProgress, [0.75, 1], [1, 0.7]);
   const wrapperY = useTransform(scrollYProgress, [0.75, 1], [0, 80]);
   const wrapperRadius = useTransform(scrollYProgress, [0.75, 1], [0, 60]);
   const wrapperOpacity = useTransform(scrollYProgress, [0.75, 1], [1, 0]);
 
-  // Circles scale consecutively
   const circle1Scale = useTransform(scrollYProgress, [0, 0.35], [0.5, 5]);
   const circle2Scale = useTransform(scrollYProgress, [0.08, 0.42], [0.5, 5]);
   const circle3Scale = useTransform(scrollYProgress, [0.16, 0.5], [0.5, 5]);
   const circle4Scale = useTransform(scrollYProgress, [0.24, 0.58], [0.5, 5]);
   const circlesOpacity = useTransform(scrollYProgress, [0.35, 0.55], [1, 0]);
 
-  // BOX letters fade in first 5%
-  const boxOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
+  const markOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
 
-  // Content 1: 0.15 → 0.45
   const content1Opacity = useTransform(
     scrollYProgress,
     [0.12, 0.2, 0.35, 0.45],
@@ -44,7 +35,6 @@ export function Hero() {
     [50, 0, 0, -50]
   );
 
-  // Content 2: from 0.45
   const content2Opacity = useTransform(scrollYProgress, [0.45, 0.55], [0, 1]);
   const content2Y = useTransform(scrollYProgress, [0.45, 0.55], [50, 0]);
 
@@ -58,62 +48,61 @@ export function Hero() {
             borderRadius: wrapperRadius,
             opacity: wrapperOpacity,
           }}
-          className="relative h-full w-full overflow-hidden bg-brand-darker will-change-transform"
+          className="relative h-full w-full overflow-hidden rinads-aurora will-change-transform"
         >
-          {/* Background video */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          {/* Soft purple energy streaks */}
+          <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
-            src={BG_VIDEO}
+            className="pointer-events-none absolute inset-0 opacity-60"
+            style={{
+              background:
+                "conic-gradient(from 210deg at 50% 50%, transparent 0deg, rgba(159,75,199,0.25) 40deg, transparent 90deg, rgba(192,107,232,0.2) 180deg, transparent 240deg, rgba(159,75,199,0.18) 300deg, transparent 360deg)",
+              mixBlendMode: "screen",
+            }}
           />
 
-          {/* Concentric circles */}
+          {/* Concentric purple circles */}
           <motion.div
             style={{ opacity: circlesOpacity }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
           >
             <motion.div
               style={{ scale: circle4Scale }}
-              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#521307] will-change-transform"
+              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#2a0f40] will-change-transform"
             />
             <motion.div
               style={{ scale: circle3Scale }}
-              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#8c2510] will-change-transform"
+              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#4a1d6a] will-change-transform"
             />
             <motion.div
               style={{ scale: circle2Scale }}
-              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#c93a1c] will-change-transform"
+              className="absolute h-[28vmin] w-[28vmin] rounded-full bg-[#7a35a0] will-change-transform"
             />
             <motion.div
               style={{ scale: circle1Scale }}
-              className="absolute h-[28vmin] w-[28vmin] overflow-hidden rounded-full bg-brand-orange will-change-transform"
+              className="absolute h-[28vmin] w-[28vmin] overflow-hidden rounded-full bg-rinads-primary will-change-transform shadow-[0_0_80px_rgba(159,75,199,0.55)]"
             >
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
+              <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-overlay"
-                src={CIRCLE_VIDEO}
+                className="pointer-events-none absolute inset-0 opacity-50 mix-blend-overlay"
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.45), transparent 45%), linear-gradient(135deg, rgba(233,184,255,0.4), transparent 60%)",
+                }}
               />
             </motion.div>
           </motion.div>
 
-          {/* B [O] X giant typography — O formed by the orange circle */}
+          {/* Giant R [•] S mark — circle forms the brand pulse between letters */}
           <motion.div
-            style={{ opacity: boxOpacity }}
+            style={{ opacity: markOpacity }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
           >
             <span className="absolute right-[50%] mr-[14vmin] text-[30vmin] font-black leading-none tracking-tighter text-white">
-              B
+              R
             </span>
             <span className="absolute left-[50%] ml-[11vmin] text-[30vmin] font-black leading-none tracking-tighter text-white">
-              X
+              S
             </span>
           </motion.div>
 
@@ -122,31 +111,41 @@ export function Hero() {
             style={{ opacity: content1Opacity, y: content1Y }}
             className="absolute inset-0 z-10 flex items-center justify-center px-6"
           >
-            <h1 className="max-w-4xl text-center text-6xl md:text-8xl font-black leading-tight text-white">
-              Think outside the box.
+            <h1 className="max-w-5xl text-center text-6xl md:text-8xl font-black leading-tight text-white">
+              Business simplified.
             </h1>
           </motion.div>
 
           {/* Content 2 */}
           <motion.div
             style={{ opacity: content2Opacity, y: content2Y }}
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-6"
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 px-6"
           >
+            <p className="text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
+              RINADS® Business Cloud
+            </p>
             <h2 className="max-w-5xl text-center text-4xl md:text-6xl font-black leading-tight text-white">
-              Elevating Brands.
-              <br />
-              Defining Futures.
+              Digital Marketing &amp; Custom Software
+              <br className="hidden md:block" /> Solutions That Drive Growth.
             </h2>
-            <a
-              href="#contact"
-              className="group inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-[0.3em] text-brand-darkest transition-colors hover:bg-brand-orange hover:text-white"
-            >
-              Let&apos;s Talk
-              <ArrowRight
-                size={18}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </a>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
+              <a
+                href="#contact"
+                className="group inline-flex items-center gap-3 rounded-full bg-rinads-primary px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-[#b45fd9] hover:shadow-[0_0_30px_rgba(159,75,199,0.45)]"
+              >
+                Get a Free Consultation
+                <ArrowRight
+                  size={18}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </a>
+              <a
+                href="#work"
+                className="inline-flex items-center gap-3 rounded-full border-2 border-rinads-primary px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-rinads-primary/15"
+              >
+                View Our Work
+              </a>
+            </div>
           </motion.div>
         </motion.div>
       </div>
