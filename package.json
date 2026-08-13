@@ -1,33 +1,23 @@
 {
-  "name": "rinads-website",
+  "name": "rinads",
   "version": "0.1.0",
   "private": true,
+  "description": "RINADS platform monorepo — Public Experience + shared CORE package boundaries",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "deploy": "vercel deploy --prod -y --scope rinadss-projects-1ebcffe7",
-    "push:github": "bash scripts/push-to-github.sh"
-  },
-  "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
-    "framer-motion": "^12.34.3",
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "three": "^0.183.2"
+    "dev": "turbo run dev --filter=@rinads/website",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "deploy:emergency": "pnpm --filter @rinads/website deploy:emergency",
+    "push:github": "pnpm --filter @rinads/website push:github"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vercel": "^50.25.6"
+    "turbo": "^2.5.4",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
