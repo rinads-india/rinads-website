@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# rinads-website — RINADS Public Experience
+
+Next.js public marketing site with early RINPO UI. This repository is **not** the full RINADS CORE platform.
+
+**Architecture audit (2026-08-13):** see [`docs/README.md`](./docs/README.md) and [`docs/architecture/AUDIT_GAP_ANALYSIS.md`](./docs/architecture/AUDIT_GAP_ANALYSIS.md).
+
+---
+
+This project was bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
