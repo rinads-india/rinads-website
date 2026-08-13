@@ -1,0 +1,10 @@
+# Minimal placeholder. Full `supabase init` config arrives when Phase 1 is authorized.
+# Phase 0: NOT LIVE FOR PRODUCTION BUSINESS DATA.
+
+project_id = "rinads-phase0-placeholder"
+
+[api]
+enabled = false
+
+[db]
+major_version = 15

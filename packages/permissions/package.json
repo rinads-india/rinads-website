@@ -1,0 +1,20 @@
+{
+  "name": "@rinads/permissions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo 'lint: @rinads/permissions ok'",
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'build: @rinads/permissions (source package)'",
+    "test": "echo 'no tests yet'"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
