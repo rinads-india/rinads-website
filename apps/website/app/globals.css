@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
-/* RINADS Brand Tokens */
+/*
+ * RINADS Brand Tokens
+ * Canonical values live in @rinads/brand (packages/brand).
+ * Keep CSS vars in sync with packages/brand/src/tokens.ts.
+ * primary #9F4BC7 | white #FFFFFF | black #000000 | Figtree
+ */
 :root {
   --rinads-primary: #9f4bc7;
   --rinads-white: #ffffff;

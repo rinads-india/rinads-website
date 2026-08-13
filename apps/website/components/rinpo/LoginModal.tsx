@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DEMO_ALLOWED_ROLES, type DemoAllowedRole } from "@/lib/demo-auth";
 
-export type LoginRole = "client" | "staff" | "admin" | "founder" | "super-admin";
+/** @deprecated Privileged roles removed from public demo UI. Kept for type narrowing elsewhere. */
+export type LoginRole = DemoAllowedRole | "founder" | "super-admin";
 
-const ROLES: { id: LoginRole; label: string }[] = [
+const ROLES: { id: DemoAllowedRole; label: string }[] = [
   { id: "client", label: "Client" },
   { id: "staff", label: "Staff" },
   { id: "admin", label: "Admin" },
-  { id: "founder", label: "Founder" },
-  { id: "super-admin", label: "Super Admin" },
 ];
 
 type LoginModalProps = {
@@ -25,7 +25,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<LoginRole>("client");
+  const [role, setRole] = useState<DemoAllowedRole>("client");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,13 +40,17 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!(DEMO_ALLOWED_ROLES as readonly string[]).includes(role)) {
+      setError("Privileged roles cannot be selected in demo mode.");
+      return;
+    }
     let ok = false;
     if (mode === "login") {
       ok = onLogin?.(username, password, role) ?? false;
-      if (!ok) setError("Invalid username, password, or role. Please try again.");
+      if (!ok) setError("Demo session could not start. Check username and role.");
     } else {
       ok = onSignup?.(username, password, role) ?? false;
-      if (!ok) setError("Username already taken. Please choose another.");
+      if (!ok) setError("Demo session could not start. Check username and role.");
     }
     if (ok) {
       onClose();
@@ -80,10 +84,21 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               transition={{ type: "spring", damping: 22 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="rinads-demo-login-title"
             >
+              <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
+                <p className="font-semibold tracking-wide">DEMO MODE — NOT FOR PRODUCTION</p>
+                <p className="mt-1 text-amber-100/80">
+                  Passwords are not stored. This is not secure authentication. Founder and Super Admin
+                  cannot be self-assigned.
+                </p>
+              </div>
+
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-[var(--rinads-white)]">
-                  {mode === "login" ? "Login to RINADS" : "Create Account"}
+                <h2 id="rinads-demo-login-title" className="text-xl font-bold text-[var(--rinads-white)]">
+                  {mode === "login" ? "Demo Login" : "Demo Sign Up"}
                 </h2>
                 <button
                   type="button"
@@ -108,6 +123,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     className="w-full px-4 py-2.5 rounded-xl border border-[var(--rinads-primary)]/50 bg-black/40 text-[var(--rinads-white)] placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)]"
                     placeholder="Enter username"
                     required
+                    autoComplete="username"
                   />
                 </div>
 
@@ -118,7 +134,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                 )}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Password
+                    Password (not stored)
                   </label>
                   <input
                     id="password"
@@ -126,14 +142,15 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-[var(--rinads-primary)]/50 bg-black/40 text-[var(--rinads-white)] placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)]"
-                    placeholder="Enter password"
+                    placeholder="Any value — never persisted"
                     required
+                    autoComplete="current-password"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                    {mode === "login" ? "Login as" : "Sign up as"}
+                    {mode === "login" ? "Demo role" : "Demo role"}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {ROLES.map((r) => (
@@ -158,7 +175,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     type="submit"
                     className="flex-1 py-3 rounded-xl bg-[var(--rinads-primary)] text-white font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
                   >
-                    {mode === "login" ? "Login" : "Sign Up"}
+                    {mode === "login" ? "Start Demo" : "Start Demo"}
                   </button>
                   <button
                     type="button"

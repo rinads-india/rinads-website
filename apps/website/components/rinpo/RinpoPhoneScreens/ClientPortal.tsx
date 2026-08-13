@@ -18,7 +18,7 @@ export function ClientPortal() {
     e.preventDefault();
     setError(null);
     const ok = login(username, password, "client");
-    if (!ok) setError("Invalid username or password.");
+    if (!ok) setError("Demo session could not start.");
   };
 
   if (isAuthenticated && isClient) {

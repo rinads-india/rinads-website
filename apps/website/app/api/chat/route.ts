@@ -1,24 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  chatRateLimiter,
+  validateChatBody,
+} from "@/lib/chat-security";
 
 type ChatLink = { label: string; href: string };
 type Lang = "en" | "ml";
 
 /**
- * Phase 2: Chat API route.
- * Returns contextual RINPO responses. Supports English and Malayalam (lang: "en" | "ml").
+ * Public RINPO chat — rule-based only (no LLM in Phase 0).
+ * Supports English and Malayalam (lang: "en" | "ml").
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const message = (body.message as string)?.trim?.() ?? "";
-    const requestedLang: Lang = body.lang === "ml" ? "ml" : "en";
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const rate = chatRateLimiter.check(ip);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rate.retryAfterSec) },
+        }
+      );
+    }
+
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const validated = validateChatBody(raw);
+    if ("error" in validated) {
+      return NextResponse.json(
+        { error: validated.error },
+        { status: validated.status }
+      );
+    }
+
+    const message = validated.message;
+    const requestedLang: Lang = validated.lang ?? "en";
     // Auto-detect Malayalam in user input (Unicode \u0D00-\u0D7F) for true 2-way conversation
     const hasMalayalam = /[\u0D00-\u0D7F]/.test(message);
     const lang: Lang = hasMalayalam || requestedLang === "ml" ? "ml" : "en";
-
-    if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
-    }
 
     const lower = message.toLowerCase();
     let reply: string;
