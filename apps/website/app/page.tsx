@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   GridOverlay,
   Navbar,
@@ -39,12 +40,13 @@ export default function HomePage() {
                 businesses.
               </p>
             </div>
-            <div className="relative overflow-hidden rounded-3xl border border-rinads-primary/30 shadow-[0_0_60px_rgba(159,75,199,0.2)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-rinads-primary/30 shadow-[0_0_60px_rgba(159,75,199,0.2)]">
+              <Image
                 src="/assets/rinads-promo.png"
                 alt="RINADS Business Cloud dashboard and services"
-                className="h-full w-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
           </div>

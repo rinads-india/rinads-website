@@ -23,6 +23,7 @@ export function Hero() {
   const circlesOpacity = useTransform(scrollYProgress, [0.35, 0.55], [1, 0]);
 
   const markOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
+  const scrollCueOpacity = useTransform(scrollYProgress, [0, 0.04], [1, 0]);
 
   const content1Opacity = useTransform(
     scrollYProgress,
@@ -39,7 +40,7 @@ export function Hero() {
   const content2Y = useTransform(scrollYProgress, [0.45, 0.55], [50, 0]);
 
   return (
-    <section ref={containerRef} className="relative h-[400vh] z-10">
+    <section ref={containerRef} className="relative h-[320vh] z-10">
       <div className="sticky top-0 h-screen overflow-hidden">
         <motion.div
           style={{
@@ -104,6 +105,27 @@ export function Hero() {
             <span className="absolute left-[50%] ml-[11vmin] text-[30vmin] font-black leading-none tracking-tighter text-white">
               S
             </span>
+            <span className="sr-only">Rinads — Business simplified</span>
+          </motion.div>
+
+          {/* Scroll cue so the first frame doesn't read as a dead end */}
+          <motion.div
+            style={{ opacity: scrollCueOpacity }}
+            className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-2 md:bottom-10"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/60 md:text-xs">
+              Scroll to explore
+            </span>
+            <motion.span
+              aria-hidden
+              className="flex h-9 w-5 items-start justify-center rounded-full border border-white/30 p-1"
+            >
+              <motion.span
+                className="h-1.5 w-1 rounded-full bg-rinads-primary"
+                animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </motion.span>
           </motion.div>
 
           {/* Content 1 */}
@@ -128,10 +150,10 @@ export function Hero() {
               Digital Marketing &amp; Custom Software
               <br className="hidden md:block" /> Solutions That Drive Growth.
             </h2>
-            <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
+            <div className="mt-2 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <a
                 href="#contact"
-                className="group inline-flex items-center gap-3 rounded-full bg-rinads-primary px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-[#b45fd9] hover:shadow-[0_0_30px_rgba(159,75,199,0.45)]"
+                className="group inline-flex items-center justify-center gap-3 rounded-full bg-rinads-primary px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-[#b45fd9] hover:shadow-[0_0_30px_rgba(159,75,199,0.45)] sm:px-8 sm:text-sm"
               >
                 Get a Free Consultation
                 <ArrowRight
@@ -141,7 +163,7 @@ export function Hero() {
               </a>
               <a
                 href="#work"
-                className="inline-flex items-center gap-3 rounded-full border-2 border-rinads-primary px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-rinads-primary/15"
+                className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-rinads-primary px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-rinads-primary/15 sm:px-8 sm:text-sm"
               >
                 View Our Work
               </a>

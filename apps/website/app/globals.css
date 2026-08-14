@@ -38,10 +38,38 @@ body {
   color: var(--foreground);
   font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
+  /* Keep anchor targets clear of the floating navbar. */
+  scroll-padding-top: 6rem;
+}
+
+::selection {
+  background: var(--rinads-primary);
+  color: var(--rinads-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rinads-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Subtle technical grid */

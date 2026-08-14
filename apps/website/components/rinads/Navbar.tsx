@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, UserRound, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { useRinpo } from "@/components/rinpo/RinpoProvider";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LINKS = [
   { label: "Services", href: "#services" },
@@ -14,7 +16,14 @@ const LINKS = [
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const {
+    setLoginModalOpen,
+    setLoginModalMode,
+    dismissGuide,
+    navMenuOpen: open,
+    setNavMenuOpen: setOpen,
+  } = useRinpo();
+  const { user, logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -30,50 +39,105 @@ export function Navbar() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, setOpen]);
+
+  const openAuth = (mode: "login" | "signup") => {
+    setLoginModalMode(mode);
+    setLoginModalOpen(true);
+    setOpen(false);
+    dismissGuide();
+  };
+
+  const toggleMenu = () => {
+    setOpen(!open);
+    dismissGuide();
+  };
+
   return (
     <>
       <nav
-        className={`fixed top-4 md:top-6 left-1/2 z-50 flex w-[calc(100%-2rem)] md:w-[calc(100%-3rem)] max-w-7xl -translate-x-1/2 items-center rounded-full border px-5 py-3 md:px-8 md:py-4 transition-all duration-500 ${
-          scrolled
-            ? "border-rinads-primary/30 bg-black/50 shadow-lg shadow-rinads-primary/10 backdrop-blur-xl"
-            : "border-transparent bg-transparent shadow-lg"
+        className={`fixed top-4 md:top-6 left-1/2 z-50 flex w-[calc(100%-2rem)] md:w-[calc(100%-3rem)] max-w-7xl -translate-x-1/2 items-center gap-3 rounded-full border px-4 py-2.5 md:px-8 md:py-3.5 transition-all duration-500 ${
+          scrolled || open
+            ? "border-rinads-primary/30 bg-black/60 shadow-lg shadow-rinads-primary/10 backdrop-blur-xl"
+            : "border-white/5 bg-black/20 backdrop-blur-sm"
         }`}
       >
-        <a href="#" className="mr-auto" aria-label="Rinads home">
-          <Logo />
+        <a
+          href="#"
+          className="mr-auto flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          aria-label="Rinads home"
+        >
+          <Logo className="h-7 md:h-9" priority />
         </a>
 
-        <div className="mr-8 hidden lg:flex items-center gap-8">
+        <div className="mr-2 hidden lg:flex items-center gap-8">
           {LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80 transition-colors hover:text-rinads-primary"
+              className="rounded-full text-xs font-semibold uppercase tracking-[0.3em] text-white/80 transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
               {link.label}
             </a>
           ))}
         </div>
 
+        {isAuthenticated ? (
+          <div className="flex items-center gap-2" data-rinpo-guide="account">
+            <span className="hidden sm:inline max-w-[10rem] truncate text-sm font-medium text-white/85">
+              {user?.username}
+            </span>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/15 px-3 text-sm font-semibold text-white/85 transition-colors hover:border-rinads-primary/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            >
+              <LogOut size={18} aria-hidden />
+              <span className="hidden md:inline">Log out</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => openAuth("login")}
+            data-rinpo-guide="account"
+            className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black md:px-5"
+          >
+            <UserRound size={18} aria-hidden />
+            <span className="hidden md:inline">Log in</span>
+            <span className="sr-only md:hidden">Log in or sign up</span>
+          </button>
+        )}
+
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
-          className="text-white transition-colors hover:text-rinads-primary"
+          aria-expanded={open}
+          aria-controls="rinads-mobile-menu"
+          onClick={toggleMenu}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
         >
-          {open ? <X size={28} /> : <Menu size={28} />}
+          {open ? <X size={26} /> : <Menu size={26} />}
         </button>
       </nav>
 
       <AnimatePresence>
         {open && (
           <motion.div
+            id="rinads-mobile-menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-rinads-primary-darkest"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-10 overflow-y-auto bg-rinads-primary-darkest px-6 py-28"
           >
-            <ul className="flex flex-col items-center gap-6 md:gap-8">
+            <ul className="flex flex-col items-center gap-5 md:gap-8">
               {LINKS.map((link, i) => (
                 <motion.li
                   key={link.href}
@@ -85,13 +149,38 @@ export function Navbar() {
                   <a
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="block text-4xl md:text-6xl font-black text-white transition-transform duration-300 hover:scale-110 hover:text-rinads-primary"
+                    className="block rounded-2xl px-4 py-1 text-4xl md:text-6xl font-black text-white transition-transform duration-300 hover:scale-110 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
                   >
                     {link.label}
                   </a>
                 </motion.li>
               ))}
             </ul>
+
+            {!isAuthenticated && (
+              <motion.div
+                className="flex w-full max-w-xs flex-col gap-3"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: LINKS.length * 0.08, duration: 0.4 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => openAuth("login")}
+                  className="flex h-12 items-center justify-center rounded-full bg-rinads-primary text-base font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  Log in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuth("signup")}
+                  className="flex h-12 items-center justify-center rounded-full border border-white/25 text-base font-semibold text-white transition-colors hover:border-rinads-primary hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  Sign up
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
