@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
+import { Logo } from "@/components/rinads/Logo";
 import { useRinpo, type RinpoState } from "./RinpoProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRinpoVoice } from "@/hooks/useRinpoVoice";
 import { RinpoGuideHint } from "./RinpoGuideArrow";
 import { useEffect, useRef } from "react";
 
-const RINPO_CHATBOT = "/assets/rinpo-chatbot.png";
+const RINPO_AVATAR = "/assets/rinpo-avatar.png";
 const RINPO_INTRO_BG = "/assets/rinpo-intro-bg.png";
 
 function SpeechPanels({
@@ -83,7 +85,17 @@ const stateLabels: Record<RinpoState, string> = {
 };
 
 export function RinpoCharacter() {
-  const { togglePhone, rinpoState, isIntroMode, setIntroComplete, rinpoGuide, advanceGuide, dismissGuide } = useRinpo();
+  const {
+    togglePhone,
+    rinpoState,
+    isIntroMode,
+    setIntroComplete,
+    rinpoGuide,
+    advanceGuide,
+    dismissGuide,
+    setLoginModalOpen,
+    setLoginModalMode,
+  } = useRinpo();
 
   const isIdle = rinpoState === "idle" || rinpoState === "floating";
   const isListening = rinpoState === "listening";
@@ -105,7 +117,18 @@ export function RinpoCharacter() {
 
   return (
     <>
-      <RinpoGuideHint guideId={rinpoGuide} />
+      <RinpoGuideHint
+        guideId={rinpoGuide}
+        onDismiss={dismissGuide}
+        onActivate={() => {
+          if (rinpoGuide === "account") {
+            setLoginModalMode("login");
+            setLoginModalOpen(true);
+          } else if (rinpoGuide === "tap-rinpo") {
+            togglePhone();
+          }
+        }}
+      />
       <RinpoFloatingWidget
         togglePhone={() => { togglePhone(); dismissGuide(); }}
         rinpoState={rinpoState}
@@ -175,10 +198,8 @@ function RinpoIntroView({
         }}
       />
       {/* RINADS logo in background — blended into bg, no speaker */}
-      <div className="absolute top-6 left-6 z-[1] opacity-40 mix-blend-soft-light">
-        <span className="text-xl font-bold text-[var(--rinads-primary)] tracking-widest drop-shadow-[0_0_24px_var(--rinads-glow)]">
-          RINADS
-        </span>
+      <div className="absolute top-6 left-6 z-[1] opacity-60 drop-shadow-[0_0_24px_var(--rinads-glow)]">
+        <Logo className="h-6 sm:h-7" />
       </div>
 
       {/* Talking animation: pulsing glow around RINPO (center) when speaking */}
@@ -301,17 +322,21 @@ function RinpoFloatingWidget({
       <motion.button
         type="button"
         onClick={togglePhone}
-        className="relative rounded-2xl overflow-hidden border-0 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] bg-transparent"
-        style={{
-          boxShadow: isListening ? "0 0 20px var(--rinads-glow)" : "0 0 12px var(--rinads-glow)",
-        }}
-        aria-label="Open RINADS Intelligence phone"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.98 }}
+        className="group relative flex flex-col items-center rounded-3xl bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rinads-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
+        aria-label="Open RINADS Intelligence — chat with RINPO"
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
       >
+        {/* Grounding glow so the cut-out character doesn't float untethered. */}
+        <motion.span
+          className="pointer-events-none absolute bottom-1 left-1/2 h-6 w-16 -translate-x-1/2 rounded-[50%] blur-md sm:w-20"
+          style={{ background: "var(--rinads-glow)" }}
+          animate={{ opacity: isListening || isSpeaking ? [0.5, 0.8, 0.5] : [0.3, 0.45, 0.3] }}
+          transition={{ duration: isListening || isSpeaking ? 1.2 : 3, repeat: Infinity }}
+          aria-hidden
+        />
         <motion.div
-          className="relative w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 flex items-center justify-center overflow-hidden bg-transparent"
-          style={{ minWidth: 80, minHeight: 112 }}
+          className="relative flex h-28 w-[5.5rem] items-end justify-center sm:h-32 sm:w-24 md:h-36 md:w-28"
           animate={
             isIdle
               ? { y: [0, -4, 0] }
@@ -329,28 +354,32 @@ function RinpoFloatingWidget({
             repeatType: "reverse",
           }}
         >
-          <div className="relative w-full h-full drop-shadow-[0_0_15px_var(--rinads-glow)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={RINPO_CHATBOT} alt="RINPO" className="w-full h-full object-contain p-1" />
-          </div>
+          <Image
+            src={RINPO_AVATAR}
+            alt="RINPO, the RINADS assistant"
+            width={388}
+            height={1100}
+            priority={false}
+            className="h-full w-full object-contain drop-shadow-[0_0_18px_var(--rinads-glow)]"
+          />
           {(isListening || isSpeaking) && (
-            <motion.div
-              className="absolute inset-0 pointer-events-none rounded-2xl"
+            <motion.span
+              className="pointer-events-none absolute inset-0 rounded-3xl"
               style={{
                 background: "radial-gradient(ellipse at center, var(--rinads-glow) 0%, transparent 70%)",
-                opacity: 0.4,
               }}
               animate={{ opacity: [0.2, 0.5, 0.2] }}
               transition={{ duration: 1.5, repeat: Infinity }}
+              aria-hidden
             />
           )}
         </motion.div>
-        <div className="absolute -bottom-1 left-0 right-0 text-center">
-          <span className="text-[10px] sm:text-xs font-medium text-[var(--rinads-primary)]">RINPO</span>
-        </div>
+        <span className="mt-1 rounded-full border border-[var(--rinads-primary)]/40 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-[var(--rinads-primary)] backdrop-blur-sm sm:text-xs">
+          RINPO
+        </span>
       </motion.button>
       <motion.p
-        className="text-xs text-[var(--foreground)]/80 max-w-[140px] text-center"
+        className="max-w-[8.5rem] text-center text-[11px] leading-tight text-[var(--foreground)]/70 sm:text-xs"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
