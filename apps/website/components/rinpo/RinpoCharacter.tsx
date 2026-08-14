@@ -331,32 +331,32 @@ function RinpoFloatingWidget({
         onClick={togglePhone}
         className="group relative flex flex-col items-center rounded-3xl bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rinads-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
         aria-label="Open RINADS Intelligence — chat with RINPO"
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.97 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.96 }}
       >
         {/* Grounding glow so the cut-out character doesn't float untethered. */}
         <motion.span
-          className="pointer-events-none absolute bottom-1 left-1/2 h-6 w-16 -translate-x-1/2 rounded-[50%] blur-md sm:w-20"
+          className="pointer-events-none absolute bottom-1 left-1/2 h-6 w-20 -translate-x-1/2 rounded-[50%] blur-md sm:w-24"
           style={{ background: "var(--rinads-glow)" }}
-          animate={{ opacity: isListening || isSpeaking ? [0.5, 0.8, 0.5] : [0.3, 0.45, 0.3] }}
+          animate={{ opacity: isListening || isSpeaking ? [0.6, 0.9, 0.6] : [0.35, 0.55, 0.35] }}
           transition={{ duration: isListening || isSpeaking ? 1.2 : 3, repeat: Infinity }}
           aria-hidden
         />
         <motion.div
-          className="relative flex h-32 w-24 items-end justify-center md:h-36 md:w-28"
+          className="relative flex h-36 w-28 items-end justify-center sm:h-40 sm:w-32 md:h-44 md:w-36"
           animate={
             isIdle
-              ? { y: [0, -4, 0] }
+              ? { y: [0, -5, 0] }
               : isListening
-                ? { scale: [1, 1.02, 1] }
+                ? { scale: [1, 1.03, 1] }
                 : isSpeaking
-                  ? { scale: [1, 1.03, 1] }
+                  ? { scale: [1, 1.04, 1] }
                   : isPhoneOut
                     ? { rotateZ: [-2, 2, -2] }
                     : {}
           }
           transition={{
-            duration: isIdle ? 3 : 1.2,
+            duration: isIdle ? 3.2 : 1.2,
             repeat: Infinity,
             repeatType: "reverse",
           }}
@@ -367,7 +367,7 @@ function RinpoFloatingWidget({
             width={471}
             height={1334}
             priority={false}
-            className="h-full w-full object-contain drop-shadow-[0_0_28px_var(--rinads-glow)]"
+            className="h-full w-full object-contain drop-shadow-[0_0_32px_rgba(159,75,199,0.55)]"
           />
           {(isListening || isSpeaking) && (
             <motion.span
@@ -381,12 +381,13 @@ function RinpoFloatingWidget({
             />
           )}
         </motion.div>
-        <span className="mt-1 rounded-full border border-[var(--rinads-primary)]/40 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-[var(--rinads-primary)] backdrop-blur-sm sm:text-xs">
-          RINPO
+        <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-purple-400/40 bg-black/80 px-3 py-0.5 text-xs font-bold tracking-wide text-purple-200 shadow-lg shadow-purple-900/40 backdrop-blur-md">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Chat with Rinpo</span>
         </span>
       </motion.button>
       {/* Reveal the descriptive label on intent so the assistant doesn't sit on top of page content. */}
-      <p className="hidden max-w-[8.5rem] text-[11px] leading-tight text-[var(--foreground)]/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 sm:block sm:text-xs">
+      <p className="hidden max-w-[9rem] text-[11px] leading-tight text-[var(--foreground)]/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 sm:block sm:text-xs">
         {stateLabels[rinpoState]}
       </p>
     </motion.div>
