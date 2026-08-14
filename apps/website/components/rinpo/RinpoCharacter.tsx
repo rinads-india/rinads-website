@@ -330,7 +330,7 @@ function useHeroEmergeMotion(enabled: boolean) {
       setMetrics({
         dx: originX - restCenterX,
         dy: originY - restCenterY,
-        startScale: Math.max(0.28, Math.min(startScale, 0.72)),
+        startScale: Math.max(0.08, Math.min(startScale, 0.42)),
         threshold: Math.max(window.innerHeight * 0.7, 1),
         ready: true,
       });
@@ -350,7 +350,11 @@ function useHeroEmergeMotion(enabled: boolean) {
     [0, metrics.threshold * 0.85],
     [enabled ? metrics.startScale : 1, 1]
   );
-  const opacity = useTransform(scrollY, [0, metrics.threshold * 0.12], [enabled ? 0.95 : 1, 1]);
+  const opacity = useTransform(
+    scrollY,
+    [0, metrics.threshold * 0.14, metrics.threshold * 0.38],
+    [enabled ? 0 : 1, enabled ? 0 : 1, 1]
+  );
   const settled = useTransform(scrollY, [metrics.threshold * 0.55, metrics.threshold], [0, 1]);
 
   return { x, y, scale, opacity, settled, ready: metrics.ready };

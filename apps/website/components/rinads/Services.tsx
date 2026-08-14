@@ -112,7 +112,7 @@ export function Services() {
     <section
       id="services"
       ref={containerRef}
-      className="relative z-40 h-[300vh] -mt-[100vh] bg-black"
+      className="relative z-40 h-[300vh] bg-black"
     >
       <div className="sticky top-0 flex h-screen flex-col md:flex-row items-center gap-6 md:gap-16 px-6 md:px-12 lg:px-20 pt-24 pb-10 md:py-0">
         <div className="w-full md:w-2/5 shrink-0">

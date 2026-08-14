@@ -31,6 +31,7 @@
   --color-rinads-white: #ffffff;
   --color-rinads-black: #000000;
   --font-sans: var(--font-figtree);
+  --font-inter: var(--font-inter-family);
 }
 
 body {
