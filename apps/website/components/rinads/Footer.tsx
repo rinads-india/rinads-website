@@ -69,7 +69,7 @@ export function Footer() {
   }, [fitWatermark]);
 
   const handleMeetRinpo = () => {
-    window.location.href = "/story-concept";
+    window.location.href = "/rinpo-story";
   };
 
   const handleSubscribe = (event: React.FormEvent<HTMLFormElement>) => {

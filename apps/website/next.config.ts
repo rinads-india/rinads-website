@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      { source: "/story-concept", destination: "/story-concept/index.html" },
+    ];
+  },
   transpilePackages: [
     "@rinads/brand",
     "@rinads/shared",
