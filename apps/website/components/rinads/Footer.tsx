@@ -74,8 +74,8 @@ export function Footer() {
           </a>
         </div>
 
-        {/* pl on md+ keeps the row clear of the fixed RINPO launcher in the bottom-left */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:pl-32">
+        {/* pr on md+ keeps the row clear of the fixed RINPO launcher in the bottom-right */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:pr-32">
           <a href="#" aria-label="Rinads home" className="inline-flex rounded-lg">
             <Logo className="h-7 md:h-8" />
           </a>

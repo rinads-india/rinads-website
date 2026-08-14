@@ -87,12 +87,32 @@ export function RinpoPhone() {
       {/* Realistic Handset Body Container */}
       <motion.div
         key="rinpo-phone-panel"
-        className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 md:left-12 z-50 flex items-center justify-center pointer-events-none"
-        initial={{ scale: 0.9, opacity: 0, y: 40 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 40 }}
+        className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 md:right-12 z-50 flex items-center justify-center pointer-events-none"
+        initial={{ scale: 0.9, opacity: 0, y: 40, rotate: -1.5 }}
+        animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 40, rotate: -1.5 }}
         transition={{ type: "spring", damping: 24, stiffness: 220 }}
       >
+        {/* Ambient rotating aura behind the handset — pure attraction, no functional weight */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 hidden sm:block sm:rounded-[54px]"
+          style={{
+            background:
+              "conic-gradient(from 0deg, rgba(159,75,199,0.55), transparent 30%, rgba(192,107,232,0.35) 55%, transparent 80%, rgba(159,75,199,0.55))",
+            filter: "blur(28px)",
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-2 hidden sm:block sm:rounded-[48px]"
+          style={{ background: "var(--rinads-glow)", filter: "blur(20px)" }}
+          animate={{ opacity: [0.25, 0.5, 0.25] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         <div
           onClick={(e) => e.stopPropagation()}
           className="pointer-events-auto relative w-full h-full sm:h-[680px] sm:w-[360px] md:w-[380px] bg-[#0c0514] text-white flex flex-col sm:rounded-[44px] overflow-hidden border-0 sm:border-[5px] sm:border-[#2b1942] sm:ring-1 sm:ring-purple-500/30 sm:shadow-[0_0_60px_rgba(159,75,199,0.35),0_25px_50px_-12px_rgba(0,0,0,0.9)]"
@@ -120,8 +140,19 @@ export function RinpoPhone() {
           {/* Personalized RINPO Header (Avatar + Date + Greeting) */}
           <div className="shrink-0 px-4 pt-2.5 pb-2 flex items-center justify-between border-b border-purple-500/20 bg-gradient-to-b from-purple-950/30 to-transparent z-10">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="relative h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr from-purple-600 to-purple-400 p-0.5 shadow-md shadow-purple-900/50">
-                <div className="h-full w-full rounded-full bg-[#12071f] overflow-hidden flex items-center justify-center">
+              <motion.div
+                className="relative h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr from-purple-600 to-purple-400 p-0.5 shadow-md shadow-purple-900/50"
+                animate={{ rotate: [0, -6, 6, -3, 0] }}
+                transition={{ duration: 5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+              >
+                <motion.span
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-1 rounded-full"
+                  style={{ background: "var(--rinads-glow)" }}
+                  animate={{ opacity: [0.2, 0.55, 0.2], scale: [0.95, 1.08, 0.95] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <div className="relative h-full w-full rounded-full bg-[#12071f] overflow-hidden flex items-center justify-center">
                   <Image
                     src={RINPO_HEAD}
                     alt="RINPO avatar"
@@ -131,7 +162,7 @@ export function RinpoPhone() {
                   />
                 </div>
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0c0514]" />
-              </div>
+              </motion.div>
 
               <div className="min-w-0">
                 <div className="text-[10px] font-bold tracking-widest uppercase text-purple-300/80">
