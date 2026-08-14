@@ -46,6 +46,20 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
     }
   }, [isOpen, initialMode]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, onClose]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -98,13 +112,14 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
             aria-hidden
           />
           <motion.div
-            className="fixed inset-0 z-[61] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[61] flex items-center justify-center overflow-y-auto p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={onClose}
           >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md rounded-2xl border-2 border-[var(--rinads-primary)] bg-[var(--background)] p-6 shadow-[0_0_40px_var(--rinads-glow)]"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -221,7 +236,15 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     disabled={pending}
                     className="flex-1 py-3 rounded-xl bg-[var(--rinads-primary)] text-white font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] disabled:opacity-60"
                   >
-                    {pending ? "Please wait…" : mode === "login" ? (isDemoMode ? "Start Demo" : "Sign in") : isDemoMode ? "Start Demo" : "Sign up"}
+                    {pending
+                      ? "Please wait…"
+                      : mode === "login"
+                        ? isDemoMode
+                          ? "Start Demo"
+                          : "Sign in"
+                        : isDemoMode
+                          ? "Start Demo"
+                          : "Sign up"}
                   </button>
                   <button
                     type="button"

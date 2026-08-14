@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "deploy:emergency": "echo 'EMERGENCY MODE only — see docs/deployment/POLICY.md' && vercel deploy --prod -y --scope rinadss-projects-1ebcffe7",
     "push:github": "bash scripts/push-to-github.sh"
   },
@@ -24,6 +24,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "framer-motion": "^12.34.3",
+    "lucide-react": "^1.28.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",

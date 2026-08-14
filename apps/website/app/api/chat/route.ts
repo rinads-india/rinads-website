@@ -394,7 +394,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ reply, links, effectiveLang: lang });
+    return NextResponse.json({ reply, links, intent, effectiveLang: lang });
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
