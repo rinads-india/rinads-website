@@ -1,10 +1,9 @@
 "use server";
 
-import { executeRinpoTool, type RinpoToolInput } from "@rinads/intelligence";
+import { executeRinpoTool, type RinpoToolInput, type RinpoToolResult } from "@rinads/intelligence";
 import { commerce, portalContext } from "@/lib/commerce";
 
-export async function runRinpoTool(input: RinpoToolInput) {
-  const ctx = portalContext();
+export async function runRinpoToolAction(input: RinpoToolInput): Promise<RinpoToolResult> {
   return executeRinpoTool(
     {
       catalog: commerce.catalog,
@@ -12,7 +11,7 @@ export async function runRinpoTool(input: RinpoToolInput) {
       order: commerce.order,
       support: commerce.support,
     },
-    ctx,
+    portalContext(),
     input
   );
 }

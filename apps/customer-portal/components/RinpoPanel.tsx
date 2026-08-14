@@ -1,123 +1,115 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Button, Card, Input } from "@rinads/ui";
+import { useState } from "react";
 import type { RinpoToolName } from "@rinads/intelligence";
-import { runRinpoTool } from "@/app/actions/rinpo";
+import { runRinpoToolAction } from "@/lib/rinpo-actions";
+import { Button, Card } from "@rinads/ui";
 
-const TOOLS: { tool: RinpoToolName; label: string; placeholder: string; argKey: string }[] = [
-  { tool: "order_status", label: "Order status", placeholder: "Order ID", argKey: "orderId" },
-  {
-    tool: "create_ticket",
-    label: "Create ticket",
-    placeholder: "Describe your issue",
-    argKey: "body",
-  },
-  {
-    tool: "similar_products",
-    label: "Similar products",
-    placeholder: "Product ID",
-    argKey: "productId",
-  },
-];
-
-type Props = {
+type RinpoPanelProps = {
   route: string;
   orderId?: string;
 };
 
-export function RinpoPanel({ route, orderId }: Props) {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(0);
-  const [argValue, setArgValue] = useState(orderId ?? "");
-  const [message, setMessage] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+const TOOLS: { tool: RinpoToolName; label: string; needsOrder?: boolean }[] = [
+  { tool: "order_status", label: "Order status", needsOrder: true },
+  { tool: "create_ticket", label: "Get help" },
+  { tool: "similar_products", label: "Similar products" },
+];
 
-  function handleRun() {
-    const cfg = TOOLS[selected];
-    startTransition(async () => {
-      const result = await runRinpoTool({
-        tool: cfg.tool,
-        args: {
-          [cfg.argKey]: argValue,
-          ...(cfg.tool === "create_ticket" ? { subject: "Portal support request" } : {}),
-          ...(cfg.tool === "order_status" && orderId && !argValue ? { orderId } : {}),
-        },
-      });
-      setMessage(result.message);
-    });
+export function RinpoPanel({ route, orderId }: RinpoPanelProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [data, setData] = useState<unknown>(null);
+
+  async function runTool(tool: RinpoToolName) {
+    setLoading(true);
+    setMessage(null);
+    setData(null);
+
+    const args: Record<string, string | number | undefined> = { orderId };
+
+    if (tool === "create_ticket") {
+      args.subject = "Customer portal assistance";
+      args.body = `Help requested on ${route}`;
+    }
+
+    if (tool === "similar_products") {
+      args.productId = "prod_pebbles_001";
+    }
+
+    const result = await runRinpoToolAction({ tool, args });
+
+    setMessage(result.message);
+    setData(result.data ?? null);
+    setLoading(false);
+    setExpanded(true);
   }
 
   return (
-    <aside aria-label="RINPO assistant" className="border-t border-rinads-primary/15 lg:border-t-0 lg:border-l">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-surface-muted lg:hidden"
-        aria-expanded={open}
-      >
-        <span>RINPO Assistant</span>
-        <span className="text-rinads-primary">{open ? "−" : "+"}</span>
-      </button>
-      <div className={`${open ? "block" : "hidden"} p-4 lg:block`}>
-        <Card className="space-y-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">
-              RINPO
-            </p>
-            <h2 className="text-base font-semibold text-foreground">Commerce assistant</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Context: {route}
-              {orderId ? ` · order ${orderId}` : ""}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="rinpo-tool" className="text-xs font-medium text-muted-foreground">
-              Tool
-            </label>
-            <select
-              id="rinpo-tool"
-              value={selected}
-              onChange={(e) => setSelected(Number(e.target.value))}
-              className="w-full rounded-lg border border-rinads-primary/20 bg-surface px-3 py-2 text-sm"
-            >
-              {TOOLS.map((t, i) => (
-                <option key={t.tool} value={i}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="rinpo-arg" className="text-xs font-medium text-muted-foreground">
-              {TOOLS[selected].label}
-            </label>
-            <Input
-              id="rinpo-arg"
-              value={argValue}
-              onChange={(e) => setArgValue(e.target.value)}
-              placeholder={TOOLS[selected].placeholder}
-            />
-          </div>
-
-          <Button type="button" onClick={handleRun} disabled={pending} className="w-full">
-            {pending ? "Running…" : "Run tool"}
-          </Button>
-
-          {message ? (
-            <p className="rounded-lg bg-surface-muted px-3 py-2 text-sm text-foreground" role="status">
-              {message}
-            </p>
-          ) : null}
-
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            RINPO cannot submit payments or override shipping and tax. All actions use live
-            commerce-server data.
-          </p>
-        </Card>
+    <aside
+      aria-label="RINPO assistant panel"
+      className="flex h-full flex-col border-t border-rinads-primary/15 lg:border-t-0 lg:border-l"
+    >
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-rinads-primary/15 bg-surface-muted/60 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-rinads-primary text-xs font-bold text-white">
+            R
+          </span>
+          <span className="text-sm font-semibold text-foreground">RINPO</span>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          className="px-2 py-1 text-xs"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Collapse" : "Expand"}
+        </Button>
       </div>
+
+      {expanded ? (
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <p className="mb-2 text-xs text-muted-foreground">Connected intelligence · {route}</p>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {TOOLS.filter((t) => {
+              if (t.needsOrder && !orderId) return false;
+              return true;
+            }).map((t) => (
+              <Button
+                key={t.tool}
+                type="button"
+                variant="secondary"
+                className="px-2 py-1 text-xs"
+                disabled={loading}
+                onClick={() => runTool(t.tool)}
+              >
+                {t.label}
+              </Button>
+            ))}
+          </div>
+          {loading ? <p className="text-sm text-muted-foreground">Thinking…</p> : null}
+          {message ? (
+            <Card className="mb-2 bg-surface-muted/30 p-3 text-sm">
+              <p className="font-medium text-foreground">{message}</p>
+              {data ? (
+                <pre className="mt-2 max-h-32 overflow-auto text-xs text-muted-foreground">
+                  {JSON.stringify(data, null, 2)}
+                </pre>
+              ) : null}
+            </Card>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Ask RINPO for order or support help. Payment and shipping cannot be overridden.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="px-4 py-3">
+          <p className="text-xs text-muted-foreground">Tap expand for account assistance.</p>
+        </div>
+      )}
     </aside>
   );
 }
