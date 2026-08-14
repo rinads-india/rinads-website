@@ -43,13 +43,13 @@ export function Portfolio() {
   return (
     <section
       id="work"
-      className="relative z-40 min-h-screen bg-[#0a0a0a] px-6 md:px-12 lg:px-20 py-24"
+      className="relative z-40 min-h-screen bg-surface px-6 md:px-12 lg:px-20 py-24"
     >
       <div className="mx-auto max-w-7xl">
         <p className="mb-4 text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
           Solutions
         </p>
-        <h2 className="mb-12 md:mb-16 text-4xl md:text-6xl font-black leading-tight text-white">
+        <h2 className="mb-12 md:mb-16 text-4xl md:text-6xl font-black leading-tight text-foreground">
           How we simplify business.
         </h2>
 

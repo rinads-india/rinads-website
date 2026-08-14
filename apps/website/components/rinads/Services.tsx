@@ -112,17 +112,17 @@ export function Services() {
     <section
       id="services"
       ref={containerRef}
-      className="relative z-40 h-[300vh] bg-black"
+      className="relative z-40 h-[300vh] bg-background"
     >
       <div className="sticky top-0 flex h-screen flex-col md:flex-row items-center gap-6 md:gap-16 px-6 md:px-12 lg:px-20 pt-24 pb-10 md:py-0">
         <div className="w-full md:w-2/5 shrink-0">
           <p className="mb-4 text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
             What we offer
           </p>
-          <h2 className="text-4xl md:text-6xl font-black leading-tight text-white">
+          <h2 className="text-4xl md:text-6xl font-black leading-tight text-foreground">
             Built to run businesses.
           </h2>
-          <p className="mt-6 max-w-md text-lg text-slate-300">
+          <p className="mt-6 max-w-md text-lg text-muted-foreground">
             Marketing, software, and AI automation — unified under the RINADS®
             Business Cloud.
           </p>
