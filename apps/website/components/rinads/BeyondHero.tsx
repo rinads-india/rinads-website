@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Poppins } from "next/font/google";
+
+const RINPO_FULL_BODY = "/assets/rinpo-full-body.png";
+const RINPO_FULL_BODY_WIDTH = 471;
+const RINPO_FULL_BODY_HEIGHT = 1334;
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -69,20 +72,21 @@ export function BeyondHero() {
       className="relative z-10 w-full overflow-hidden font-inter"
       style={{ height: "120vh", backgroundColor: "#9F4BC7" }}
     >
-      <div className="pointer-events-none absolute inset-0 z-10">
-        <Image
-          src="/assets/rinpo-avatar.png"
+      <div className="beyond-rinpo-wrap">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={RINPO_FULL_BODY}
           alt=""
-          width={800}
-          height={1200}
-          priority
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 object-contain object-bottom"
-          style={{ height: "115%", maxHeight: "115%", minHeight: "80%", width: "auto" }}
+          width={RINPO_FULL_BODY_WIDTH}
+          height={RINPO_FULL_BODY_HEIGHT}
+          decoding="async"
+          fetchPriority="high"
+          className="beyond-rinpo-figure"
         />
       </div>
 
-      <div className="sticky top-0 z-[5] h-screen w-full">
-        <div className="absolute inset-0 flex items-start justify-center pt-[2vh] md:pt-[3vh]">
+      <div className="beyond-hero-sticky sticky top-0 z-[5] h-screen w-full">
+        <div className="absolute inset-0 flex items-start justify-center pt-[11vh] md:pt-[3vh]">
           <div className="relative">
             {TITLE_LAYERS.map((layer, index) => {
               const isFront = index === TITLE_LAYERS.length - 1;
@@ -102,8 +106,7 @@ export function BeyondHero() {
         </div>
 
         <div
-          className={`pointer-events-none absolute inset-0 flex items-end justify-between px-[3vw] md:px-[6vw] ${poppins.className}`}
-          style={{ bottom: "-8vh" }}
+          className={`beyond-side-words pointer-events-none absolute inset-0 flex items-end justify-between px-[3vw] md:px-[6vw] ${poppins.className}`}
         >
           <div className="flex flex-col gap-2 md:gap-3">
             {LEFT_WORDS.map((word, index) => (

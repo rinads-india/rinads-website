@@ -34,3 +34,45 @@
 .marquee-track {
   animation: marquee-scroll 18s linear infinite;
 }
+
+.beyond-hero-sticky {
+  padding-top: max(5rem, env(safe-area-inset-top, 0px));
+}
+
+.beyond-rinpo-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.beyond-rinpo-figure {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: auto;
+  width: auto;
+  max-height: 115%;
+  max-width: none;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .beyond-rinpo-figure {
+    max-height: min(78vh, 105%);
+    max-width: min(88vw, 420px);
+  }
+}
+
+.beyond-side-words {
+  bottom: 2vh;
+}
+
+@media (min-width: 768px) {
+  .beyond-side-words {
+    bottom: -8vh;
+  }
+}
