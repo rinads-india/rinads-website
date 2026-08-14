@@ -304,30 +304,60 @@ const REST_BOTTOM_PX = 24;
 
 function useHeroEmergeMotion(enabled: boolean) {
   const { scrollY } = useScroll();
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [metrics, setMetrics] = useState({
+    dx: 0,
+    dy: 0,
+    startScale: 0.38,
+    threshold: 1,
+    ready: !enabled,
+  });
 
   useEffect(() => {
     if (!enabled) return;
-    const measure = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
-    measure();
+    const measure = () => {
+      const restCenterX = window.innerWidth - REST_RIGHT_PX - WIDGET_WIDTH_PX / 2;
+      const restCenterY = window.innerHeight - REST_BOTTOM_PX - WIDGET_HEIGHT_PX / 2;
+      const orb = document.querySelector<HTMLElement>("[data-rinpo-orb]");
+      let originX = window.innerWidth / 2;
+      let originY = window.innerHeight / 2;
+      let startScale = 0.38;
+      if (orb) {
+        const box = orb.getBoundingClientRect();
+        originX = box.left + box.width / 2;
+        originY = box.top + box.height / 2;
+        startScale = Math.min(box.width / WIDGET_WIDTH_PX, box.height / WIDGET_HEIGHT_PX) * 0.92;
+      }
+      setMetrics({
+        dx: originX - restCenterX,
+        dy: originY - restCenterY,
+        startScale: Math.max(0.08, Math.min(startScale, 0.42)),
+        threshold: Math.max(window.innerHeight * 0.7, 1),
+        ready: true,
+      });
+    };
+    const frame = window.requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", measure);
+    };
   }, [enabled]);
 
-  // Distance from the O orb (screen center, where the R•O•S mark sits) to the
-  // widget's resting anchor (bottom-right corner) — travelled as the hero scrolls by.
-  const restCenterX = viewport.width - REST_RIGHT_PX - WIDGET_WIDTH_PX / 2;
-  const restCenterY = viewport.height - REST_BOTTOM_PX - WIDGET_HEIGHT_PX / 2;
-  const deltaX = viewport.width / 2 - restCenterX;
-  const deltaY = viewport.height / 2 - restCenterY;
-  const threshold = Math.max(viewport.height * 0.62, 1);
+  const x = useTransform(scrollY, [0, metrics.threshold], [enabled ? metrics.dx : 0, 0]);
+  const y = useTransform(scrollY, [0, metrics.threshold], [enabled ? metrics.dy : 0, 0]);
+  const scale = useTransform(
+    scrollY,
+    [0, metrics.threshold * 0.85],
+    [enabled ? metrics.startScale : 1, 1]
+  );
+  const opacity = useTransform(
+    scrollY,
+    [0, metrics.threshold * 0.14, metrics.threshold * 0.38],
+    [enabled ? 0 : 1, enabled ? 0 : 1, 1]
+  );
+  const settled = useTransform(scrollY, [metrics.threshold * 0.55, metrics.threshold], [0, 1]);
 
-  const x = useTransform(scrollY, [0, threshold], [enabled ? deltaX : 0, 0]);
-  const y = useTransform(scrollY, [0, threshold], [enabled ? deltaY : 0, 0]);
-  const scale = useTransform(scrollY, [0, threshold * 0.35], [enabled ? 0.32 : 1, 1]);
-  const opacity = useTransform(scrollY, [0, threshold * 0.22], [enabled ? 0 : 1, 1]);
-
-  return { x, y, scale, opacity };
+  return { x, y, scale, opacity, settled, ready: metrics.ready };
 }
 
 function RinpoFloatingWidget({
@@ -350,7 +380,7 @@ function RinpoFloatingWidget({
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const emergeEnabled = (pathname === "/" || pathname == null) && !prefersReducedMotion;
-  const { x, y, scale, opacity } = useHeroEmergeMotion(emergeEnabled);
+  const { x, y, scale, opacity, settled, ready } = useHeroEmergeMotion(emergeEnabled);
 
   return (
     <motion.div
@@ -363,21 +393,23 @@ function RinpoFloatingWidget({
         x,
         y,
         scale,
-        opacity: hidden ? 0 : opacity,
+        opacity: hidden || (emergeEnabled && !ready) ? 0 : opacity,
       }}
       transition={{ type: "spring", damping: 22, stiffness: 180 }}
       aria-hidden={hidden}
     >
-      {/* Attention sparkles — subtle, no boxy background, just ambient particles. */}
+      {/* Attention sparkles — only once RINPO has left the O and settled. */}
       <motion.span
         className="pointer-events-none absolute -top-1 right-2 h-1.5 w-1.5 rounded-full bg-purple-300"
-        animate={{ opacity: [0, 1, 0], y: [0, -14, -22], x: [0, 6, 10] }}
+        style={{ opacity: settled }}
+        animate={{ y: [0, -14, -22], x: [0, 6, 10] }}
         transition={{ duration: 3.4, repeat: Infinity, repeatDelay: 1.6, ease: "easeOut" }}
         aria-hidden
       />
       <motion.span
         className="pointer-events-none absolute top-4 right-10 h-1 w-1 rounded-full bg-fuchsia-300"
-        animate={{ opacity: [0, 1, 0], y: [0, -10, -18], x: [0, -8, -14] }}
+        style={{ opacity: settled }}
+        animate={{ y: [0, -10, -18], x: [0, -8, -14] }}
         transition={{ duration: 3.8, repeat: Infinity, repeatDelay: 2.4, delay: 0.6, ease: "easeOut" }}
         aria-hidden
       />
@@ -437,9 +469,10 @@ function RinpoFloatingWidget({
               aria-hidden
             />
           )}
-          {/* Chat-bubble attractor badge — replaces the old boxy "Chat with Rinpo" pill. */}
+          {/* Chat-bubble attractor badge — hidden while RINPO is still inside the O. */}
           <motion.span
             className="pointer-events-none absolute -right-1 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-rinads-primary text-white shadow-[0_0_16px_rgba(159,75,199,0.75)] sm:h-7 sm:w-7"
+            style={{ opacity: settled }}
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden
