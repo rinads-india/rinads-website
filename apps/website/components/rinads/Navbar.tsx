@@ -21,8 +21,6 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [overHero, setOverHero] = useState(pathname === "/");
   const {
-    setLoginModalOpen,
-    setLoginModalMode,
     dismissGuide,
     navMenuOpen: open,
     setNavMenuOpen: setOpen,
@@ -58,13 +56,6 @@ export function Navbar() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, setOpen]);
-
-  const openAuth = (mode: "login" | "signup") => {
-    setLoginModalMode(mode);
-    setLoginModalOpen(true);
-    setOpen(false);
-    dismissGuide();
-  };
 
   const toggleMenu = () => {
     setOpen(!open);
@@ -119,15 +110,14 @@ export function Navbar() {
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => openAuth("login")}
+          <a
+            href="/signup?mode=login"
             data-rinpo-guide={overHero ? undefined : "account"}
             className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] sm:gap-2 sm:px-5"
           >
             <UserRound size={18} aria-hidden />
             Log in
-          </button>
+          </a>
         )}
 
         <ThemeToggle />
@@ -181,20 +171,20 @@ export function Navbar() {
                 exit={{ opacity: 0 }}
                 transition={{ delay: LINKS.length * 0.08, duration: 0.4 }}
               >
-                <button
-                  type="button"
-                  onClick={() => openAuth("login")}
+                <a
+                  href="/signup?mode=login"
+                  onClick={() => setOpen(false)}
                   className="flex h-12 items-center justify-center rounded-full bg-rinads-primary text-base font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                   Log in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openAuth("signup")}
+                </a>
+                <a
+                  href="/signup"
+                  onClick={() => setOpen(false)}
                   className="flex h-12 items-center justify-center rounded-full border border-white/25 text-base font-semibold text-white transition-colors hover:border-rinads-primary hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                   Sign up
-                </button>
+                </a>
               </motion.div>
             )}
 

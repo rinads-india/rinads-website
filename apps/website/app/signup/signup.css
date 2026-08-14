@@ -1,0 +1,115 @@
+.signup-page {
+  font-family: var(--font-inter-family), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.signup-form-column {
+  background: var(--background);
+  color: var(--foreground);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+.signup-input {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: none;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  background: var(--signup-input-bg, #1a1224);
+  color: var(--signup-input-fg, #ffffff);
+}
+
+.signup-input::placeholder {
+  color: var(--signup-input-placeholder, rgba(255, 255, 255, 0.2));
+}
+
+.signup-input:focus {
+  box-shadow: 0 0 0 2px var(--signup-input-ring, rgba(255, 255, 255, 0.2));
+}
+
+:root .signup-form-column {
+  --signup-input-bg: #eef0f4;
+  --signup-input-fg: #111827;
+  --signup-input-placeholder: rgba(17, 24, 39, 0.35);
+  --signup-input-ring: rgba(159, 75, 199, 0.35);
+}
+
+.dark .signup-form-column {
+  --signup-input-bg: #1a1224;
+  --signup-input-fg: #ffffff;
+  --signup-input-placeholder: rgba(255, 255, 255, 0.2);
+  --signup-input-ring: rgba(255, 255, 255, 0.2);
+}
+
+.signup-submit {
+  margin-top: 1rem;
+  height: 3.5rem;
+  width: 100%;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.signup-submit:active {
+  transform: scale(0.98);
+}
+
+:root .signup-submit {
+  background: #9f4bc7;
+  color: #ffffff;
+}
+
+:root .signup-submit:hover {
+  background: #7a35a0;
+}
+
+.dark .signup-submit {
+  background: #ffffff;
+  color: #000000;
+}
+
+.dark .signup-submit:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.signup-divider-line {
+  flex-grow: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root .signup-form-column .signup-divider-line {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.signup-divider-text {
+  background: #000000;
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+:root .signup-form-column .signup-divider-text {
+  background: var(--background);
+  color: var(--muted-foreground);
+}
+
+.signup-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+:root .signup-form-column .signup-subtitle {
+  color: var(--muted-foreground);
+}
