@@ -13,14 +13,16 @@
     "push:github": "bash scripts/push-to-github.sh"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@rinads/auth": "workspace:*",
     "@rinads/brand": "workspace:*",
     "@rinads/database": "workspace:*",
     "@rinads/permissions": "workspace:*",
     "@rinads/shared": "workspace:*",
     "@rinads/ui": "workspace:*",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.8",
     "framer-motion": "^12.34.3",
     "lucide-react": "^1.28.0",
     "next": "16.1.6",

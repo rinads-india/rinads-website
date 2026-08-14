@@ -58,7 +58,7 @@ export default function RinadsSignUpApp() {
 
   const toggleModeHref = isLogin ? "/signup" : "/signup?mode=login";
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
@@ -79,12 +79,12 @@ export default function RinadsSignUpApp() {
       return;
     }
 
-    const ok = isLogin
+    const ok = await (isLogin
       ? login(username, password, "client")
-      : signup(username, password, "client");
+      : signup(username, password, "client"));
 
     if (!ok) {
-      setError("Demo session could not start. Please try again.");
+      setError("Sign-in failed. Please try again.");
       return;
     }
 

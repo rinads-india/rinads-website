@@ -1,6 +1,6 @@
 /**
- * Future production auth types (Supabase Auth in Phase 1+).
- * Phase 0 does not implement live authentication here.
+ * Auth types — production path is Supabase Auth.
+ * Demo provider remains for Public Experience until auth_supabase_enabled.
  */
 
 export type AuthProvider = "supabase" | "demo";
@@ -23,4 +23,15 @@ export type AuthConfig = {
   provider: AuthProvider;
   supabaseUrl?: string;
   supabaseAnonKey?: string;
+};
+
+export type SignInWithPasswordInput = {
+  email: string;
+  password: string;
+};
+
+export type SignUpInput = {
+  email: string;
+  password: string;
+  displayName?: string;
 };

@@ -10,23 +10,33 @@ import {
 } from "react";
 import type { LoginRole } from "@/components/rinpo/LoginModal";
 import { isDemoAllowedRole } from "@/lib/demo-auth";
+import { isSupabaseMode } from "@/lib/supabase/env";
+import { createWebsiteBrowserClient } from "@/lib/supabase/browser";
+import {
+  signInWithPassword,
+  signUpWithPassword,
+  signOut as supabaseSignOut,
+} from "@rinads/auth";
 
 const AUTH_KEY = "rinads_auth";
 const USERS_KEY = "rinads_users";
 
 export type AuthUser = {
+  id?: string;
   username: string;
+  email?: string | null;
   role: LoginRole;
-  demo: true;
+  demo: boolean;
 };
 
 type AuthContextType = {
   user: AuthUser | null;
-  login: (username: string, password: string, role: LoginRole) => boolean;
-  signup: (username: string, password: string, role: LoginRole) => boolean;
-  logout: () => void;
+  login: (username: string, password: string, role: LoginRole) => boolean | Promise<boolean>;
+  signup: (username: string, password: string, role: LoginRole) => boolean | Promise<boolean>;
+  logout: () => void | Promise<void>;
   isAuthenticated: boolean;
-  isDemoMode: true;
+  isDemoMode: boolean;
+  authMode: "demo" | "supabase";
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -39,7 +49,6 @@ export function useAuth() {
 
 function quarantineLegacyAuthStorage() {
   if (typeof window === "undefined") return;
-  // P0: wipe plaintext password store immediately
   localStorage.removeItem(USERS_KEY);
   try {
     const raw = localStorage.getItem(AUTH_KEY);
@@ -53,14 +62,13 @@ function quarantineLegacyAuthStorage() {
       localStorage.removeItem(AUTH_KEY);
       return;
     }
-    // Re-save without any credential fields, marked demo
     localStorage.setItem(
       AUTH_KEY,
       JSON.stringify({
         username: parsed.username,
         role: parsed.role,
         demo: true,
-      } satisfies AuthUser)
+      })
     );
   } catch {
     localStorage.removeItem(AUTH_KEY);
@@ -89,59 +97,129 @@ function saveDemoSession(user: AuthUser | null) {
         username: user.username,
         role: user.role,
         demo: true,
-      } satisfies AuthUser)
+      })
     );
   } else {
     localStorage.removeItem(AUTH_KEY);
   }
 }
 
-function createDemoSession(username: string, role: LoginRole): AuthUser | null {
-  const trimmed = username.trim();
-  if (!trimmed) return null;
-  if (!isDemoAllowedRole(role)) return null;
-  // Password is intentionally ignored and never stored.
-  return { username: trimmed, role, demo: true };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const authMode: "demo" | "supabase" = isSupabaseMode() ? "supabase" : "demo";
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    quarantineLegacyAuthStorage();
-    queueMicrotask(() => {
-      setUser(loadDemoSession());
+    queueMicrotask(async () => {
+      if (authMode === "demo") {
+        quarantineLegacyAuthStorage();
+        setUser(loadDemoSession());
+        setHydrated(true);
+        return;
+      }
+
+      try {
+        const client = createWebsiteBrowserClient();
+        const { data } = await client.auth.getSession();
+        const session = data.session;
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            username: session.user.email ?? session.user.id,
+            email: session.user.email,
+            role: "client",
+            demo: false,
+          });
+        }
+      } catch {
+        setUser(null);
+      }
       setHydrated(true);
     });
-  }, []);
+  }, [authMode]);
 
-  const login = useCallback((username: string, _password: string, role: LoginRole): boolean => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(USERS_KEY);
-    }
-    if (!isDemoAllowedRole(role)) {
-      return false;
-    }
-    const session = createDemoSession(username, role);
-    if (!session) return false;
-    saveDemoSession(session);
-    setUser(session);
-    return true;
-  }, []);
+  const login = useCallback(
+    async (username: string, password: string, role: LoginRole): Promise<boolean> => {
+      if (authMode === "demo") {
+        if (typeof window !== "undefined") localStorage.removeItem(USERS_KEY);
+        if (!isDemoAllowedRole(role)) return false;
+        const trimmed = username.trim();
+        if (!trimmed) return false;
+        const session: AuthUser = { username: trimmed, role, demo: true };
+        saveDemoSession(session);
+        setUser(session);
+        return true;
+      }
 
-  const signup = useCallback((username: string, _password: string, role: LoginRole): boolean => {
-    // Same as login in demo mode — no credential persistence, no privilege escalation.
-    return login(username, _password, role);
-  }, [login]);
+      try {
+        const client = createWebsiteBrowserClient();
+        const { session, error } = await signInWithPassword(client, {
+          email: username.trim(),
+          password,
+        });
+        if (error || !session) return false;
+        setUser({
+          id: session.user.id,
+          username: session.user.email ?? session.user.id,
+          email: session.user.email,
+          role: "client",
+          demo: false,
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [authMode]
+  );
 
-  const logout = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(USERS_KEY);
+  const signup = useCallback(
+    async (username: string, password: string, role: LoginRole): Promise<boolean> => {
+      if (authMode === "demo") {
+        return login(username, password, role) as Promise<boolean>;
+      }
+
+      // Public signup never assigns privileged roles — membership/roles come from CORE.
+      try {
+        const client = createWebsiteBrowserClient();
+        const { session, error } = await signUpWithPassword(client, {
+          email: username.trim(),
+          password,
+          displayName: username.trim().split("@")[0],
+        });
+        if (error) return false;
+        if (session) {
+          setUser({
+            id: session.user.id,
+            username: session.user.email ?? session.user.id,
+            email: session.user.email,
+            role: "client",
+            demo: false,
+          });
+        }
+        // Email confirmation flows may return null session — still success
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [authMode, login]
+  );
+
+  const logout = useCallback(async () => {
+    if (authMode === "demo") {
+      if (typeof window !== "undefined") localStorage.removeItem(USERS_KEY);
+      saveDemoSession(null);
+      setUser(null);
+      return;
     }
-    saveDemoSession(null);
-    setUser(null);
-  }, []);
+    try {
+      const client = createWebsiteBrowserClient();
+      await supabaseSignOut(client);
+    } finally {
+      setUser(null);
+    }
+  }, [authMode]);
 
   return (
     <AuthContext.Provider
@@ -151,7 +229,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         logout,
         isAuthenticated: !!user,
-        isDemoMode: true,
+        isDemoMode: authMode === "demo",
+        authMode,
       }}
     >
       {children}
