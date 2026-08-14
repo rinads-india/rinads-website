@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
     "@rinads/database",
     "@rinads/ui",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "strvid.nyc3.cdn.digitaloceanspaces.com",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

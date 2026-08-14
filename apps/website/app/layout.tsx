@@ -8,6 +8,7 @@ import { siteBrand } from "@/lib/brand";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "RINADS | Business Simplified",
   description:
-    "RINADS Technologies - AI-powered automation, custom software, digital marketing. RINPO-assisted experience.",
+    "RINADS Technologies — AI-powered automation, custom software, and digital marketing. Business Cloud built to run businesses.",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: siteBrand.name },
   openGraph: {
     title: "RINADS | Business Simplified",
@@ -51,11 +52,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${figtree.variable} font-sans antialiased min-h-screen min-h-[100dvh] overflow-x-hidden overscroll-behavior-none touch-manipulation`}>
+      <body
+        className={`${figtree.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
+      >
         <AuthProvider>
-          <RinpoProvider>
-            {children}
-          </RinpoProvider>
+          <RinpoProvider>{children}</RinpoProvider>
         </AuthProvider>
       </body>
     </html>
