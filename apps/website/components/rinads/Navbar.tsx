@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, UserRound, X } from "lucide-react";
 import { Logo } from "./Logo";
@@ -15,7 +16,9 @@ const LINKS = [
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [overHero, setOverHero] = useState(pathname === "/");
   const {
     setLoginModalOpen,
     setLoginModalMode,
@@ -26,11 +29,18 @@ export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 50);
+      if (pathname === "/") {
+        setOverHero(window.scrollY < window.innerHeight * 0.45);
+      } else {
+        setOverHero(false);
+      }
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -64,6 +74,10 @@ export function Navbar() {
     <>
       <nav
         className={`fixed top-4 md:top-6 left-1/2 z-50 flex w-[calc(100%-2rem)] md:w-[calc(100%-3rem)] max-w-7xl -translate-x-1/2 items-center gap-3 rounded-full border px-4 py-2.5 md:px-8 md:py-3.5 transition-all duration-500 ${
+          overHero && !open
+            ? "pointer-events-none -translate-y-3 opacity-0"
+            : "translate-y-0 opacity-100"
+        } ${
           scrolled || open
             ? "border-rinads-primary/30 bg-black/60 shadow-lg shadow-rinads-primary/10 backdrop-blur-xl"
             : "border-white/5 bg-black/20 backdrop-blur-sm"
@@ -90,7 +104,7 @@ export function Navbar() {
         </div>
 
         {isAuthenticated ? (
-          <div className="flex items-center gap-2" data-rinpo-guide="account">
+          <div className="flex items-center gap-2" data-rinpo-guide={overHero ? undefined : "account"}>
             <span className="hidden sm:inline max-w-[10rem] truncate text-sm font-medium text-white/85">
               {user?.username}
             </span>
@@ -107,7 +121,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => openAuth("login")}
-            data-rinpo-guide="account"
+            data-rinpo-guide={overHero ? undefined : "account"}
             className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:gap-2 sm:px-5"
           >
             <UserRound size={18} aria-hidden />
