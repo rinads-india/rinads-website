@@ -1,12 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import "@/app/beyond-hero/beyond-hero.css";
 import {
   GridOverlay,
   Navbar,
-  BeyondHero,
-  BeyondMarquee,
+  Hero,
   Services,
   Portfolio,
   Footer,
@@ -18,8 +16,7 @@ export default function HomePage() {
       <GridOverlay />
       <Navbar />
       <main id="main">
-        <BeyondHero />
-        <BeyondMarquee />
+        <Hero />
         <Services />
         <section
           id="about"

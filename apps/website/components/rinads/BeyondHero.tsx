@@ -95,13 +95,6 @@ export function BeyondHero() {
                   style={{ color: layer.color }}
                 >
                   RINADS
-                  {isFront && (
-                    <span
-                      data-rinpo-orb
-                      aria-hidden
-                      className="pointer-events-none absolute left-1/2 top-1/2 h-[0.35em] w-[0.35em] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0"
-                    />
-                  )}
                 </h1>
               );
             })}
