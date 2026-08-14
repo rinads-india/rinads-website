@@ -99,10 +99,10 @@ export function Hero() {
             style={{ opacity: markOpacity }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
           >
-            <span className="absolute right-[50%] mr-[14vmin] text-[30vmin] font-black leading-none tracking-tighter text-white">
+            <span className="absolute right-[50%] mr-[9vmin] text-[22vmin] font-black leading-none tracking-tighter text-white sm:mr-[14vmin] sm:text-[30vmin]">
               R
             </span>
-            <span className="absolute left-[50%] ml-[11vmin] text-[30vmin] font-black leading-none tracking-tighter text-white">
+            <span className="absolute left-[50%] ml-[7vmin] text-[22vmin] font-black leading-none tracking-tighter text-white sm:ml-[11vmin] sm:text-[30vmin]">
               S
             </span>
             <span className="sr-only">Rinads — Business simplified</span>

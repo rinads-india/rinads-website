@@ -343,7 +343,7 @@ function RinpoFloatingWidget({
           aria-hidden
         />
         <motion.div
-          className="relative flex h-24 w-[4.5rem] items-end justify-center sm:h-32 sm:w-24 md:h-36 md:w-28"
+          className="relative flex h-32 w-24 items-end justify-center md:h-36 md:w-28"
           animate={
             isIdle
               ? { y: [0, -4, 0] }
@@ -367,7 +367,7 @@ function RinpoFloatingWidget({
             width={471}
             height={1334}
             priority={false}
-            className="h-full w-full object-contain drop-shadow-[0_0_18px_var(--rinads-glow)]"
+            className="h-full w-full object-contain drop-shadow-[0_0_28px_var(--rinads-glow)]"
           />
           {(isListening || isSpeaking) && (
             <motion.span
