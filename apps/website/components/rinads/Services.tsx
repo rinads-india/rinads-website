@@ -73,19 +73,21 @@ function ServiceCard({
           backgroundSize: "32px 32px",
         }}
       />
-      <div className="relative z-10 flex h-full flex-col justify-between p-8 md:p-12">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-sm">
-          <Icon size={28} />
+      <div className="relative z-10 flex h-full flex-col justify-between p-6 md:p-12">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-sm md:h-14 md:w-14">
+          <Icon size={26} />
         </div>
         <div>
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70 md:mb-3 md:text-sm">
             0{index + 1}
           </p>
-          <h3 className="text-3xl md:text-5xl font-black leading-tight text-white">
+          <h3 className="text-2xl font-black leading-tight text-white md:text-5xl">
             {card.title}
           </h3>
-          <p className="mt-4 max-w-md text-lg text-slate-200">{card.description}</p>
-          <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold uppercase tracking-widest text-white/80">
+          <p className="mt-3 max-w-md text-base text-slate-200 md:mt-4 md:text-lg">
+            {card.description}
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-semibold uppercase tracking-widest text-white/80 md:mt-5 md:text-sm">
             {card.details.map((d) => (
               <li key={d} className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -112,7 +114,7 @@ export function Services() {
       ref={containerRef}
       className="relative z-40 h-[300vh] -mt-[100vh] bg-black"
     >
-      <div className="sticky top-0 flex h-screen flex-col md:flex-row items-center gap-10 md:gap-16 px-6 md:px-12 lg:px-20 py-24 md:py-0">
+      <div className="sticky top-0 flex h-screen flex-col md:flex-row items-center gap-6 md:gap-16 px-6 md:px-12 lg:px-20 pt-24 pb-10 md:py-0">
         <div className="w-full md:w-2/5 shrink-0">
           <p className="mb-4 text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
             What we offer
@@ -126,7 +128,7 @@ export function Services() {
           </p>
         </div>
 
-        <div className="relative w-full md:w-3/5 h-[60vh]">
+        <div className="relative w-full flex-1 md:w-3/5 md:flex-none md:h-[60vh]">
           {CARDS.map((card, i) => (
             <ServiceCard
               key={card.title}

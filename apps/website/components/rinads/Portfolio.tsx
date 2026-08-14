@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 const SOLUTIONS = [
@@ -25,7 +26,8 @@ const SOLUTIONS = [
     name: "RINPO Intelligence",
     category: "AI Automation",
     description: "Conversational AI and workflow automation for teams.",
-    image: "/assets/rinpo-floating.png",
+    image: "/assets/rinpo-avatar.png",
+    objectPosition: "object-top",
   },
   {
     name: "Brand Systems",
@@ -61,18 +63,22 @@ export function Portfolio() {
                 onMouseEnter={() => setActive(i)}
                 onFocus={() => setActive(i)}
                 onClick={() => setActive(i)}
-                className={`relative overflow-hidden rounded-2xl border border-rinads-primary/20 text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                className={`relative min-h-[3.5rem] overflow-hidden rounded-2xl border border-rinads-primary/20 text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                   isActive
                     ? "flex-[4] md:flex-[5] opacity-100"
-                    : "flex-[1] opacity-80"
+                    : "flex-[1] opacity-80 hover:opacity-95"
                 }`}
+                aria-expanded={isActive}
                 aria-label={`View ${item.name}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={item.image}
                   alt={item.name}
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                  fill
+                  sizes="(max-width: 768px) 100vw, 60vw"
+                  className={`object-cover ${
+                    "objectPosition" in item ? item.objectPosition : ""
+                  } transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                     isActive
                       ? "opacity-100 blur-none scale-100"
                       : "opacity-50 blur-sm scale-105"
