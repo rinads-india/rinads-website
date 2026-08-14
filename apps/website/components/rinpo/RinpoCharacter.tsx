@@ -95,6 +95,7 @@ export function RinpoCharacter() {
     dismissGuide,
     setLoginModalOpen,
     setLoginModalMode,
+    navMenuOpen,
   } = useRinpo();
 
   const isIdle = rinpoState === "idle" || rinpoState === "floating";
@@ -118,7 +119,7 @@ export function RinpoCharacter() {
   return (
     <>
       <RinpoGuideHint
-        guideId={rinpoGuide}
+        guideId={navMenuOpen ? null : rinpoGuide}
         onDismiss={dismissGuide}
         onActivate={() => {
           if (rinpoGuide === "account") {
@@ -130,6 +131,7 @@ export function RinpoCharacter() {
         }}
       />
       <RinpoFloatingWidget
+        hidden={navMenuOpen}
         togglePhone={() => { togglePhone(); dismissGuide(); }}
         rinpoState={rinpoState}
         isIdle={isIdle}
@@ -293,6 +295,7 @@ function RinpoIntroView({
 }
 
 function RinpoFloatingWidget({
+  hidden,
   togglePhone,
   rinpoState,
   isIdle,
@@ -300,6 +303,7 @@ function RinpoFloatingWidget({
   isSpeaking,
   isPhoneOut,
 }: {
+  hidden: boolean;
   togglePhone: () => void;
   rinpoState: RinpoState;
   isIdle: boolean;
@@ -309,15 +313,18 @@ function RinpoFloatingWidget({
 }) {
   return (
     <motion.div
-      className="fixed z-40 flex flex-col items-center gap-2 safe-area-inset-left safe-area-inset-bottom"
+      className={`group fixed z-40 flex flex-col items-start gap-1 safe-area-inset-left safe-area-inset-bottom ${
+        hidden ? "pointer-events-none" : ""
+      }`}
       style={{
         left: "max(16px, env(safe-area-inset-left, 16px))",
         bottom: "max(24px, env(safe-area-inset-bottom, 24px))",
         transform: "none",
       }}
       initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{ opacity: hidden ? 0 : 1, scale: hidden ? 0.8 : 1 }}
       transition={{ type: "spring", damping: 22, stiffness: 180 }}
+      aria-hidden={hidden}
     >
       <motion.button
         type="button"
@@ -336,7 +343,7 @@ function RinpoFloatingWidget({
           aria-hidden
         />
         <motion.div
-          className="relative flex h-28 w-[5.5rem] items-end justify-center sm:h-32 sm:w-24 md:h-36 md:w-28"
+          className="relative flex h-24 w-[4.5rem] items-end justify-center sm:h-32 sm:w-24 md:h-36 md:w-28"
           animate={
             isIdle
               ? { y: [0, -4, 0] }
@@ -378,14 +385,10 @@ function RinpoFloatingWidget({
           RINPO
         </span>
       </motion.button>
-      <motion.p
-        className="max-w-[8.5rem] text-center text-[11px] leading-tight text-[var(--foreground)]/70 sm:text-xs"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
+      {/* Reveal the descriptive label on intent so the assistant doesn't sit on top of page content. */}
+      <p className="hidden max-w-[8.5rem] text-[11px] leading-tight text-[var(--foreground)]/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 sm:block sm:text-xs">
         {stateLabels[rinpoState]}
-      </motion.p>
+      </p>
     </motion.div>
   );
 }

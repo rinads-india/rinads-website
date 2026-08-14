@@ -24,6 +24,9 @@ type RinpoContextType = {
   setLoginModalOpen: (open: boolean) => void;
   loginModalMode: "login" | "signup";
   setLoginModalMode: (mode: "login" | "signup") => void;
+  /** Set by the navbar so overlays can yield to the full-screen mobile menu. */
+  navMenuOpen: boolean;
+  setNavMenuOpen: (open: boolean) => void;
   rinpoGuide: RinpoGuideId;
   advanceGuide: () => void;
   dismissGuide: () => void;
@@ -47,6 +50,7 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
   const [introComplete, setIntroComplete] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginModalMode, setLoginModalMode] = useState<"login" | "signup">("login");
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
 
   const isIntroMode = (pathname === "/" || pathname == null) && !introComplete;
 
@@ -86,6 +90,8 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
         setLoginModalOpen,
         loginModalMode,
         setLoginModalMode,
+        navMenuOpen,
+        setNavMenuOpen,
         rinpoGuide,
         advanceGuide,
         dismissGuide,

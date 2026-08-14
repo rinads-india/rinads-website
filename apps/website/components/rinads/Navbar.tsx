@@ -16,8 +16,13 @@ const LINKS = [
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-  const { setLoginModalOpen, setLoginModalMode, dismissGuide } = useRinpo();
+  const {
+    setLoginModalOpen,
+    setLoginModalMode,
+    dismissGuide,
+    navMenuOpen: open,
+    setNavMenuOpen: setOpen,
+  } = useRinpo();
   const { user, logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -41,7 +46,7 @@ export function Navbar() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, setOpen]);
 
   const openAuth = (mode: "login" | "signup") => {
     setLoginModalMode(mode);
@@ -51,7 +56,7 @@ export function Navbar() {
   };
 
   const toggleMenu = () => {
-    setOpen((v) => !v);
+    setOpen(!open);
     dismissGuide();
   };
 
