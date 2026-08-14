@@ -148,10 +148,10 @@ export function StoryNarrative() {
         </p>
         <div className="relative mx-auto mt-10 aspect-[3/4] w-full max-w-md overflow-hidden rounded-3xl border border-[rgba(159,75,199,0.24)]">
           <Image
-            src="/assets/story/birth-character.webp"
+            src="/assets/rinpo-full-body.png"
             alt="RINPO avatar birth moment"
             fill
-            className="object-cover"
+            className="object-contain object-bottom"
             sizes="(max-width: 768px) 100vw, 448px"
           />
         </div>
