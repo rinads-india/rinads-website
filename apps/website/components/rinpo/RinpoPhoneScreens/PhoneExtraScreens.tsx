@@ -16,7 +16,7 @@ export function QuickActionsScreen({
 }: {
   onOpenChat: (msg: string) => void;
 }) {
-  const { addNote, addInterest } = useRinpoMemory();
+  const { addNote, addInterest, startWorkflow } = useRinpoMemory();
 
   const actions = [
     {
@@ -25,6 +25,7 @@ export function QuickActionsScreen({
       icon: PhoneCall,
       onClick: () => {
         addInterest("Consultation");
+        startWorkflow("Free consultation request");
         onOpenChat("I would like to book a free consultation for my business.");
       },
     },
@@ -34,6 +35,7 @@ export function QuickActionsScreen({
       icon: Sparkles,
       onClick: () => {
         addInterest("Digital Audit");
+        startWorkflow("Digital growth audit");
         onOpenChat("Can you help me run an AI digital growth audit on my company?");
       },
     },
@@ -43,6 +45,7 @@ export function QuickActionsScreen({
       icon: Zap,
       onClick: () => {
         addInterest("Custom Software");
+        startWorkflow("Custom software discovery");
         onOpenChat("Tell me about custom ERP and software solutions build by RINADS.");
       },
     },
@@ -52,6 +55,7 @@ export function QuickActionsScreen({
       icon: Calendar,
       onClick: () => {
         addNote("Interested in booking project review");
+        startWorkflow("Project review meeting");
         onOpenChat("How do I schedule a project kickoff meeting with RINADS?");
       },
     },

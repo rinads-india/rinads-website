@@ -1,60 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-export type Reminder = {
-  id: string;
-  text: string;
-  dueDate: string;
-  createdAt: number;
-};
-
-const STORAGE_KEY = "rinpo-reminders";
-
-function loadReminders(): Reminder[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Reminder[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveReminders(reminders: Reminder[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders));
-}
+import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 
 export function PlansReminders() {
-  const [reminders, setReminders] = useState<Reminder[]>(() => loadReminders());
+  const { memory, addReminder, removeReminder, startWorkflow } = useRinpoMemory();
   const [text, setText] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const reminders = memory.reminders;
 
-  useEffect(() => {
-    saveReminders(reminders);
-  }, [reminders]);
-
-  const addReminder = (e: React.FormEvent) => {
+  const handleAddReminder = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
-    const reminder: Reminder = {
-      id: crypto.randomUUID(),
-      text: trimmed,
-      dueDate: dueDate || new Date().toISOString().slice(0, 10),
-      createdAt: Date.now(),
-    };
-    setReminders((prev) => [...prev, reminder].sort((a, b) => a.dueDate.localeCompare(b.dueDate)));
+    addReminder(trimmed, dueDate || new Date().toISOString().slice(0, 10));
+    startWorkflow("Reminder follow-up");
     setText("");
     setDueDate("");
-  };
-
-  const removeReminder = (id: string) => {
-    setReminders((prev) => prev.filter((r) => r.id !== id));
   };
 
   const formatDate = (d: string) => {
@@ -76,7 +39,7 @@ export function PlansReminders() {
           Create plans and reminders. RINPO will help you execute and stay on track.
         </p>
 
-        <form onSubmit={addReminder} className="space-y-2">
+        <form onSubmit={handleAddReminder} className="space-y-2">
           <input
             type="text"
             value={text}

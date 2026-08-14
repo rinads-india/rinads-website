@@ -7,10 +7,8 @@ import { GRID_APPS, type GridAppId, AppDetailModal } from "./AppDetailModal";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 
 export function PhoneHomeScreen({
-  onOpenApp,
   onOpenChat,
 }: {
-  onOpenApp: (appId: GridAppId) => void;
   onOpenChat: (initialMsg?: string) => void;
 }) {
   const { getPersonalizedInsight } = useRinpoMemory();
@@ -18,7 +16,6 @@ export function PhoneHomeScreen({
 
   const handleAppClick = (appId: GridAppId) => {
     setSelectedApp(appId);
-    onOpenApp(appId);
   };
 
   return (
