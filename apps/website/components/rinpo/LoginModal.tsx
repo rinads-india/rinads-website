@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DEMO_ALLOWED_ROLES, type DemoAllowedRole } from "@/lib/demo-auth";
+import { useAuth } from "@/contexts/AuthContext";
 
-/** @deprecated Privileged roles removed from public demo UI. Kept for type narrowing elsewhere. */
+/** Privileged roles exist in CORE but are never selectable in public UI. */
 export type LoginRole = DemoAllowedRole | "founder" | "super-admin";
 
 const ROLES: { id: DemoAllowedRole; label: string }[] = [
@@ -13,20 +14,28 @@ const ROLES: { id: DemoAllowedRole; label: string }[] = [
   { id: "admin", label: "Admin" },
 ];
 
+type AuthHandler = (
+  username: string,
+  password: string,
+  role: LoginRole
+) => boolean | Promise<boolean>;
+
 type LoginModalProps = {
   isOpen: boolean;
   initialMode?: "login" | "signup";
   onClose: () => void;
-  onLogin?: (username: string, password: string, role: LoginRole) => boolean;
-  onSignup?: (username: string, password: string, role: LoginRole) => boolean;
+  onLogin?: AuthHandler;
+  onSignup?: AuthHandler;
 };
 
 export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, onSignup }: LoginModalProps) {
+  const { authMode, isDemoMode } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<DemoAllowedRole>("client");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -37,25 +46,42 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
     }
   }, [isOpen, initialMode]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!(DEMO_ALLOWED_ROLES as readonly string[]).includes(role)) {
+    if (isDemoMode && !(DEMO_ALLOWED_ROLES as readonly string[]).includes(role)) {
       setError("Privileged roles cannot be selected in demo mode.");
       return;
     }
-    let ok = false;
-    if (mode === "login") {
-      ok = onLogin?.(username, password, role) ?? false;
-      if (!ok) setError("Demo session could not start. Check username and role.");
-    } else {
-      ok = onSignup?.(username, password, role) ?? false;
-      if (!ok) setError("Demo session could not start. Check username and role.");
-    }
-    if (ok) {
-      onClose();
-      setUsername("");
-      setPassword("");
+    setPending(true);
+    try {
+      let ok = false;
+      if (mode === "login") {
+        ok = (await onLogin?.(username, password, role)) ?? false;
+        if (!ok) {
+          setError(
+            authMode === "supabase"
+              ? "Sign-in failed. Check email and password."
+              : "Demo session could not start. Check username and role."
+          );
+        }
+      } else {
+        ok = (await onSignup?.(username, password, role)) ?? false;
+        if (!ok) {
+          setError(
+            authMode === "supabase"
+              ? "Sign-up failed. Try another email or check password requirements."
+              : "Demo session could not start. Check username and role."
+          );
+        }
+      }
+      if (ok) {
+        onClose();
+        setUsername("");
+        setPassword("");
+      }
+    } finally {
+      setPending(false);
     }
   };
 
@@ -86,19 +112,36 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
               transition={{ type: "spring", damping: 22 }}
               role="dialog"
               aria-modal="true"
-              aria-labelledby="rinads-demo-login-title"
+              aria-labelledby="rinads-login-title"
             >
-              <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
-                <p className="font-semibold tracking-wide">DEMO MODE — NOT FOR PRODUCTION</p>
-                <p className="mt-1 text-amber-100/80">
-                  Passwords are not stored. This is not secure authentication. Founder and Super Admin
-                  cannot be self-assigned.
-                </p>
-              </div>
+              {isDemoMode ? (
+                <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-sm text-amber-100">
+                  <p className="font-semibold tracking-wide">DEMO MODE — NOT FOR PRODUCTION</p>
+                  <p className="mt-1 text-amber-100/80">
+                    Passwords are not stored. Founder and Super Admin cannot be self-assigned.
+                    Set NEXT_PUBLIC_AUTH_PROVIDER=supabase after applying CORE migrations to enable
+                    real auth.
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-4 rounded-lg border border-[var(--rinads-primary)]/40 bg-[var(--rinads-primary)]/10 px-3 py-2 text-sm text-[var(--foreground)]">
+                  <p className="font-semibold">Supabase Auth</p>
+                  <p className="mt-1 opacity-80">
+                    Public signup never grants Founder or Super Admin. Organization roles are assigned
+                    through RINADS CORE.
+                  </p>
+                </div>
+              )}
 
               <div className="flex items-center justify-between mb-6">
-                <h2 id="rinads-demo-login-title" className="text-xl font-bold text-[var(--rinads-white)]">
-                  {mode === "login" ? "Demo Login" : "Demo Sign Up"}
+                <h2 id="rinads-login-title" className="text-xl font-bold text-[var(--rinads-white)]">
+                  {mode === "login"
+                    ? isDemoMode
+                      ? "Demo Login"
+                      : "Sign in"
+                    : isDemoMode
+                      ? "Demo Sign Up"
+                      : "Create account"}
                 </h2>
                 <button
                   type="button"
@@ -113,17 +156,17 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Username
+                    {isDemoMode ? "Username" : "Email"}
                   </label>
                   <input
                     id="username"
-                    type="text"
+                    type={isDemoMode ? "text" : "email"}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-[var(--rinads-primary)]/50 bg-black/40 text-[var(--rinads-white)] placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)]"
-                    placeholder="Enter username"
+                    placeholder={isDemoMode ? "Enter username" : "you@company.com"}
                     required
-                    autoComplete="username"
+                    autoComplete={isDemoMode ? "username" : "email"}
                   />
                 </div>
 
@@ -134,7 +177,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                 )}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Password (not stored)
+                    {isDemoMode ? "Password (not stored)" : "Password"}
                   </label>
                   <input
                     id="password"
@@ -142,44 +185,50 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-[var(--rinads-primary)]/50 bg-black/40 text-[var(--rinads-white)] placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)]"
-                    placeholder="Any value — never persisted"
+                    placeholder={isDemoMode ? "Any value — never persisted" : "Enter password"}
                     required
-                    autoComplete="current-password"
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                    {mode === "login" ? "Demo role" : "Demo role"}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {ROLES.map((r) => (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => setRole(r.id)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                          role === r.id
-                            ? "bg-[var(--rinads-primary)] text-white"
-                            : "bg-white/10 text-[var(--foreground)] hover:bg-white/20"
-                        }`}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
+                {isDemoMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                      Demo role
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ROLES.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => setRole(r.id)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            role === r.id
+                              ? "bg-[var(--rinads-primary)] text-white"
+                              : "bg-white/10 text-[var(--foreground)] hover:bg-white/20"
+                          }`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex gap-3 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 py-3 rounded-xl bg-[var(--rinads-primary)] text-white font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
+                    disabled={pending}
+                    className="flex-1 py-3 rounded-xl bg-[var(--rinads-primary)] text-white font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] disabled:opacity-60"
                   >
-                    {mode === "login" ? "Start Demo" : "Start Demo"}
+                    {pending ? "Please wait…" : mode === "login" ? (isDemoMode ? "Start Demo" : "Sign in") : isDemoMode ? "Start Demo" : "Sign up"}
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}
+                    onClick={() => {
+                      setMode(mode === "login" ? "signup" : "login");
+                      setError(null);
+                    }}
                     className="px-4 py-3 rounded-xl border-2 border-[var(--rinads-primary)] text-[var(--rinads-primary)] font-semibold hover:bg-[var(--rinads-primary)]/10 focus:outline-none focus:ring-2 focus:ring-[var(--rinads-primary)]"
                   >
                     {mode === "login" ? "Sign Up" : "Login"}

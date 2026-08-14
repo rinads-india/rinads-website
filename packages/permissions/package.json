@@ -12,9 +12,10 @@
     "lint": "echo 'lint: @rinads/permissions ok'",
     "typecheck": "tsc --noEmit",
     "build": "echo 'build: @rinads/permissions (source package)'",
-    "test": "echo 'no tests yet'"
+    "test": "node --import tsx --test src/**/*.test.ts"
   },
   "devDependencies": {
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }
