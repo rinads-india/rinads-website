@@ -15,7 +15,7 @@ export default function HomePage() {
     <>
       <GridOverlay />
       <Navbar />
-      <main>
+      <main id="main">
         <Hero />
         <Services />
         <section

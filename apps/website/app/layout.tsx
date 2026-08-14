@@ -55,6 +55,9 @@ export default function RootLayout({
       <body
         className={`${figtree.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
       >
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <AuthProvider>
           <RinpoProvider>{children}</RinpoProvider>
         </AuthProvider>

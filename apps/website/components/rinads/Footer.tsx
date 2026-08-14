@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Phone } from "lucide-react";
+import { Globe, MessageCircle, Phone } from "lucide-react";
 import { Logo } from "./Logo";
 
 const LINKS = [
@@ -53,6 +53,15 @@ export function Footer() {
           >
             <Phone size={18} className="text-rinads-primary" />
             +91 89211 95996
+          </a>
+          <a
+            href="https://wa.me/918921195996"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-3 transition-colors hover:text-rinads-primary"
+          >
+            <MessageCircle size={18} className="text-rinads-primary" />
+            WhatsApp
           </a>
           <a
             href="https://www.rinads.com"
