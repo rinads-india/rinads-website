@@ -22,7 +22,7 @@ const GUIDE_CONFIG: Record<NonNullable<RinpoGuideId>, GuideConfig> = {
   account: { label: "Log in or sign up here", anchor: "[data-rinpo-guide='account']", arrow: "up" },
   "tap-rinpo": {
     label: "Tap RINPO for Intelligence & Client Portal",
-    position: "bottom-28 left-4 sm:left-6",
+    position: "bottom-28 right-4 sm:right-6",
   },
 };
 

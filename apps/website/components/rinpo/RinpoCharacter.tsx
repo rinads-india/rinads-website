@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Logo } from "@/components/rinads/Logo";
 import { useRinpo, type RinpoState } from "./RinpoProvider";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { useRinpoVoice } from "@/hooks/useRinpoVoice";
 import { RinpoGuideHint } from "./RinpoGuideArrow";
-import { useEffect, useRef } from "react";
+import { MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const RINPO_AVATAR = "/assets/rinpo-avatar.png";
 const RINPO_INTRO_BG = "/assets/rinpo-intro-bg.png";
@@ -294,6 +296,40 @@ function RinpoIntroView({
   );
 }
 
+/** Approximate widget footprint used to compute the "emerge from the O" travel path. */
+const WIDGET_WIDTH_PX = 132;
+const WIDGET_HEIGHT_PX = 168;
+const REST_RIGHT_PX = 16;
+const REST_BOTTOM_PX = 24;
+
+function useHeroEmergeMotion(enabled: boolean) {
+  const { scrollY } = useScroll();
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!enabled) return;
+    const measure = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [enabled]);
+
+  // Distance from the O orb (screen center, where the R•O•S mark sits) to the
+  // widget's resting anchor (bottom-right corner) — travelled as the hero scrolls by.
+  const restCenterX = viewport.width - REST_RIGHT_PX - WIDGET_WIDTH_PX / 2;
+  const restCenterY = viewport.height - REST_BOTTOM_PX - WIDGET_HEIGHT_PX / 2;
+  const deltaX = viewport.width / 2 - restCenterX;
+  const deltaY = viewport.height / 2 - restCenterY;
+  const threshold = Math.max(viewport.height * 0.62, 1);
+
+  const x = useTransform(scrollY, [0, threshold], [enabled ? deltaX : 0, 0]);
+  const y = useTransform(scrollY, [0, threshold], [enabled ? deltaY : 0, 0]);
+  const scale = useTransform(scrollY, [0, threshold * 0.35], [enabled ? 0.32 : 1, 1]);
+  const opacity = useTransform(scrollY, [0, threshold * 0.22], [enabled ? 0 : 1, 1]);
+
+  return { x, y, scale, opacity };
+}
+
 function RinpoFloatingWidget({
   hidden,
   togglePhone,
@@ -311,21 +347,41 @@ function RinpoFloatingWidget({
   isSpeaking: boolean;
   isPhoneOut: boolean;
 }) {
+  const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion();
+  const emergeEnabled = (pathname === "/" || pathname == null) && !prefersReducedMotion;
+  const { x, y, scale, opacity } = useHeroEmergeMotion(emergeEnabled);
+
   return (
     <motion.div
-      className={`group fixed z-40 flex flex-col items-start gap-1 safe-area-inset-left safe-area-inset-bottom ${
+      className={`group fixed z-40 flex flex-col items-end gap-1 safe-area-inset-right safe-area-inset-bottom ${
         hidden ? "pointer-events-none" : ""
       }`}
       style={{
-        left: "max(16px, env(safe-area-inset-left, 16px))",
+        right: "max(16px, env(safe-area-inset-right, 16px))",
         bottom: "max(24px, env(safe-area-inset-bottom, 24px))",
-        transform: "none",
+        x,
+        y,
+        scale,
+        opacity: hidden ? 0 : opacity,
       }}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: hidden ? 0 : 1, scale: hidden ? 0.8 : 1 }}
       transition={{ type: "spring", damping: 22, stiffness: 180 }}
       aria-hidden={hidden}
     >
+      {/* Attention sparkles — subtle, no boxy background, just ambient particles. */}
+      <motion.span
+        className="pointer-events-none absolute -top-1 right-2 h-1.5 w-1.5 rounded-full bg-purple-300"
+        animate={{ opacity: [0, 1, 0], y: [0, -14, -22], x: [0, 6, 10] }}
+        transition={{ duration: 3.4, repeat: Infinity, repeatDelay: 1.6, ease: "easeOut" }}
+        aria-hidden
+      />
+      <motion.span
+        className="pointer-events-none absolute top-4 right-10 h-1 w-1 rounded-full bg-fuchsia-300"
+        animate={{ opacity: [0, 1, 0], y: [0, -10, -18], x: [0, -8, -14] }}
+        transition={{ duration: 3.8, repeat: Infinity, repeatDelay: 2.4, delay: 0.6, ease: "easeOut" }}
+        aria-hidden
+      />
+
       <motion.button
         type="button"
         onClick={togglePhone}
@@ -334,7 +390,7 @@ function RinpoFloatingWidget({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.96 }}
       >
-        {/* Grounding glow so the cut-out character doesn't float untethered. */}
+        {/* Grounding glow so the cut-out character doesn't float untethered — no hard-edged box. */}
         <motion.span
           className="pointer-events-none absolute bottom-1 left-1/2 h-6 w-20 -translate-x-1/2 rounded-[50%] blur-md sm:w-24"
           style={{ background: "var(--rinads-glow)" }}
@@ -346,7 +402,7 @@ function RinpoFloatingWidget({
           className="relative flex h-36 w-28 items-end justify-center sm:h-40 sm:w-32 md:h-44 md:w-36"
           animate={
             isIdle
-              ? { y: [0, -5, 0] }
+              ? { y: [0, -5, 0, 0, 0, 0, -3, 3, -2, 0], rotate: [0, 0, 0, 0, 0, 0, -4, 4, -2, 0] }
               : isListening
                 ? { scale: [1, 1.03, 1] }
                 : isSpeaking
@@ -356,9 +412,10 @@ function RinpoFloatingWidget({
                     : {}
           }
           transition={{
-            duration: isIdle ? 3.2 : 1.2,
+            duration: isIdle ? 6.4 : 1.2,
             repeat: Infinity,
-            repeatType: "reverse",
+            repeatType: isIdle ? "loop" : "reverse",
+            times: isIdle ? [0, 0.08, 0.16, 0.5, 0.58, 0.66, 0.74, 0.82, 0.9, 1] : undefined,
           }}
         >
           <Image
@@ -380,14 +437,20 @@ function RinpoFloatingWidget({
               aria-hidden
             />
           )}
+          {/* Chat-bubble attractor badge — replaces the old boxy "Chat with Rinpo" pill. */}
+          <motion.span
+            className="pointer-events-none absolute -right-1 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-rinads-primary text-white shadow-[0_0_16px_rgba(159,75,199,0.75)] sm:h-7 sm:w-7"
+            animate={{ scale: [1, 1.12, 1] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          >
+            <MessageCircle size={13} className="sm:hidden" />
+            <MessageCircle size={14} className="hidden sm:block" />
+          </motion.span>
         </motion.div>
-        <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-purple-400/40 bg-black/80 px-3 py-0.5 text-xs font-bold tracking-wide text-purple-200 shadow-lg shadow-purple-900/40 backdrop-blur-md">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Chat with Rinpo</span>
-        </span>
       </motion.button>
-      {/* Reveal the descriptive label on intent so the assistant doesn't sit on top of page content. */}
-      <p className="hidden max-w-[9rem] text-[11px] leading-tight text-[var(--foreground)]/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 sm:block sm:text-xs">
+      {/* Label blends into the background — no boxy pill, just soft text that appears on intent. */}
+      <p className="hidden max-w-[9.5rem] text-right text-[11px] font-medium leading-tight text-white/0 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] transition-colors duration-200 group-hover:text-white/90 group-focus-within:text-white/90 sm:block sm:text-xs">
         {stateLabels[rinpoState]}
       </p>
     </motion.div>
