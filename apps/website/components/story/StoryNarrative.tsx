@@ -150,8 +150,8 @@ export function StoryNarrative() {
           <Image
             src="/assets/rinpo-full-body.png"
             alt="RINPO avatar birth moment"
-            width={471}
-            height={1334}
+            width={1024}
+            height={1536}
             className="mx-auto h-auto w-full max-w-[min(320px,60vw)] object-contain object-bottom"
             sizes="(max-width: 768px) 60vw, 320px"
           />
