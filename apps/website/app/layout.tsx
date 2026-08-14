@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree, Inter } from "next/font/google";
+import { Caveat, Figtree, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RinpoProvider } from "@/components/rinpo/RinpoProvider";
@@ -15,6 +15,12 @@ const inter = Inter({
   variable: "--font-inter-family",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800", "900"],
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
@@ -59,7 +65,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${figtree.variable} ${inter.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
+        className={`${figtree.variable} ${inter.variable} ${caveat.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
       >
         <a href="#main" className="skip-link">
           Skip to content
