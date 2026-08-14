@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Caveat, Figtree, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { RinpoProvider } from "@/components/rinpo/RinpoProvider";
+import { ThemeScript } from "@/components/rinads/ThemeScript";
 import { siteBrand } from "@/lib/brand";
 
 const figtree = Figtree({
@@ -63,16 +65,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
-        className={`${figtree.variable} ${inter.variable} ${caveat.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
+        className={`${figtree.variable} ${inter.variable} ${caveat.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <AuthProvider>
-          <RinpoProvider>{children}</RinpoProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <RinpoProvider>{children}</RinpoProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

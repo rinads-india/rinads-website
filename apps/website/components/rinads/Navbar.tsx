@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, UserRound, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -79,13 +80,13 @@ export function Navbar() {
             : "translate-y-0 opacity-100"
         } ${
           scrolled || open
-            ? "border-rinads-primary/30 bg-black/60 shadow-lg shadow-rinads-primary/10 backdrop-blur-xl"
-            : "border-white/5 bg-black/20 backdrop-blur-sm"
+            ? "border-[var(--nav-border)] bg-[var(--nav-surface)] shadow-lg shadow-rinads-primary/10 backdrop-blur-xl"
+            : "border-[var(--nav-border)] bg-[var(--nav-surface)] backdrop-blur-sm"
         }`}
       >
         <a
           href="#"
-          className="mr-auto flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="mr-auto flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
           aria-label="Rinads home"
         >
           <Logo className="h-6 sm:h-7 md:h-9" priority />
@@ -96,7 +97,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="rounded-full text-xs font-semibold uppercase tracking-[0.3em] text-white/80 transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+              className="rounded-full text-xs font-semibold uppercase tracking-[0.3em] text-[var(--nav-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
               {link.label}
             </a>
@@ -105,13 +106,13 @@ export function Navbar() {
 
         {isAuthenticated ? (
           <div className="flex items-center gap-2" data-rinpo-guide={overHero ? undefined : "account"}>
-            <span className="hidden sm:inline max-w-[10rem] truncate text-sm font-medium text-white/85">
+            <span className="hidden sm:inline max-w-[10rem] truncate text-sm font-medium text-[var(--nav-foreground)]">
               {user?.username}
             </span>
             <button
               type="button"
               onClick={logout}
-              className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-white/15 px-3 text-sm font-semibold text-white/85 transition-colors hover:border-rinads-primary/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+              className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-[var(--nav-border)] px-3 text-sm font-semibold text-[var(--nav-foreground)] transition-colors hover:border-rinads-primary/50 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
               <LogOut size={18} aria-hidden />
               <span className="hidden md:inline">Log out</span>
@@ -122,12 +123,14 @@ export function Navbar() {
             type="button"
             onClick={() => openAuth("login")}
             data-rinpo-guide={overHero ? undefined : "account"}
-            className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:gap-2 sm:px-5"
+            className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] sm:gap-2 sm:px-5"
           >
             <UserRound size={18} aria-hidden />
             Log in
           </button>
         )}
+
+        <ThemeToggle />
 
         <button
           type="button"
@@ -135,7 +138,7 @@ export function Navbar() {
           aria-expanded={open}
           aria-controls="rinads-mobile-menu"
           onClick={toggleMenu}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--nav-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
         >
           {open ? <X size={26} /> : <Menu size={26} />}
         </button>
@@ -194,6 +197,8 @@ export function Navbar() {
                 </button>
               </motion.div>
             )}
+
+            <ThemeToggle className="mt-2 h-12 w-12" />
           </motion.div>
         )}
       </AnimatePresence>
