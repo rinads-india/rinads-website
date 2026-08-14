@@ -56,7 +56,6 @@ export function Hero() {
               <span className="mt-1 flex items-center text-[10px] font-light tracking-[0.4em] text-white md:text-xs">
                 R
                 <span
-                  data-rinpo-orb
                   aria-hidden
                   className="mx-[0.38em] h-[0.72em] w-[0.72em] rounded-full bg-rinads-primary shadow-[0_0_12px_rgba(159,75,199,0.9)]"
                 />
@@ -114,8 +113,24 @@ export function Hero() {
               className="anim-stagger w-full text-center"
               style={{ animationDelay: "0.5s" }}
             >
+              <div
+                className="mb-5 flex items-center justify-center md:mb-7"
+                aria-label="R O S"
+              >
+                <span className="text-[22vmin] font-black leading-none tracking-tighter text-white sm:text-[26vmin] md:text-[28vmin] lg:text-[30vmin]">
+                  R
+                </span>
+                <span
+                  data-rinpo-orb
+                  aria-hidden
+                  className="mx-[0.06em] h-[22vmin] w-[22vmin] shrink-0 rounded-full bg-rinads-primary shadow-[0_0_60px_rgba(159,75,199,0.85)] sm:h-[26vmin] sm:w-[26vmin] md:h-[28vmin] md:w-[28vmin] lg:h-[30vmin] lg:w-[30vmin]"
+                />
+                <span className="text-[22vmin] font-black leading-none tracking-tighter text-white sm:text-[26vmin] md:text-[28vmin] lg:text-[30vmin]">
+                  S
+                </span>
+              </div>
               <h1
-                className="text-3xl leading-[1.1] font-normal tracking-[-0.04em] text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+                className="text-2xl leading-[1.1] font-normal tracking-[-0.04em] text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
                 style={{ textShadow: "0 2px 12px rgba(0,0,0,0.25)" }}
               >
                 Business Simplified
