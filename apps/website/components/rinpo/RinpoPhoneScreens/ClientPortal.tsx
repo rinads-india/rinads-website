@@ -14,11 +14,11 @@ export function ClientPortal() {
 
   const isClient = user?.role === "client";
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const ok = login(username, password, "client");
-    if (!ok) setError("Demo session could not start.");
+    const ok = await login(username, password, "client");
+    if (!ok) setError("Sign-in failed. Check credentials or demo settings.");
   };
 
   if (isAuthenticated && isClient) {

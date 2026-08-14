@@ -1,22 +1,30 @@
-# Supabase — RINADS system of record (boundary only)
+# Supabase boundary
 
-**Phase 0 status: NOT LIVE FOR PRODUCTION BUSINESS DATA.**
+**Phase 1:** CORE identity migration is in `migrations/`.  
+**Not connected** until Founder configures a project and applies migrations.
 
-This directory is the home for:
+## Apply migrations (staging)
 
-- PostgreSQL migrations
-- RLS policies
-- seeds
-- Supabase project configuration
+```bash
+# From repo root — requires Supabase CLI login + linked project
+pnpm dlx supabase link --project-ref <project-ref>
+pnpm dlx supabase db push
+```
+
+Or use the Supabase SQL editor to run `migrations/20260814223650_core_identity.sql` in a controlled review.
+
+## Enable website Supabase Auth
+
+1. Apply migration
+2. Set in Vercel / `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_AUTH_PROVIDER=supabase`
+3. Confirm demo mode banner is gone and email sign-in works
 
 ## Rules
 
-1. Schema and migrations live here — **not** inside `packages/*`.
-2. `packages/database` is the application code boundary only.
-3. Do not connect production Supabase in Phase 0.
-4. Do not create CRM / ERP / RINAGLOW / tenant business tables in Phase 0.
-5. Never put the service-role key in client / browser code.
-
-## Phase 1+
-
-Identity, organizations, memberships, RBAC, and RLS migrations will be added here under Founder authorization.
+- Schema lives here — not in `packages/*`
+- RLS is mandatory
+- Never put service-role keys in the browser
+- Founder / Super Admin assignment requires service role (not public signup)
