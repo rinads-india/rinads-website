@@ -364,8 +364,8 @@ function RinpoFloatingWidget({
           <Image
             src={RINPO_AVATAR}
             alt="RINPO, the RINADS assistant"
-            width={388}
-            height={1100}
+            width={471}
+            height={1334}
             priority={false}
             className="h-full w-full object-contain drop-shadow-[0_0_18px_var(--rinads-glow)]"
           />
