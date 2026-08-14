@@ -31,7 +31,7 @@ export function Navbar() {
     const onScroll = () => {
       setScrolled(window.scrollY > 50);
       if (pathname === "/") {
-        setOverHero(window.scrollY < window.innerHeight * 0.45);
+        setOverHero(window.scrollY < window.innerHeight * 0.55);
       } else {
         setOverHero(false);
       }

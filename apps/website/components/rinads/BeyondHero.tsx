@@ -1,0 +1,147 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500"],
+});
+
+const LEFT_WORDS = ["cloud", "simplify", "evolve", "build"];
+const RIGHT_WORDS = ["rinpo", "genesis", "purpose", "ignite"];
+
+const TITLE_LAYERS = [
+  { color: "#5DD4FF", translateClass: "translate-y-[18px] md:translate-y-[36px]" },
+  { color: "#9F4BC7", translateClass: "translate-y-[12px] md:translate-y-[24px]" },
+  { color: "#C06BE8", translateClass: "translate-y-[6px] md:translate-y-[12px]" },
+  { color: "#FFFFFF", translateClass: "translate-y-0" },
+] as const;
+
+function clamp(min: number, max: number, value: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function useBeyondScroll(sectionRef: React.RefObject<HTMLElement | null>) {
+  const [progress, setProgress] = useState(0);
+  const [scaleFactor, setScaleFactor] = useState(1);
+
+  useEffect(() => {
+    const update = () => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const sectionHeight = section.offsetHeight;
+      const innerHeight = window.innerHeight;
+      const range = sectionHeight - innerHeight;
+      const p = range > 0 ? clamp(0, 1, -rect.top / range) : 0;
+      setProgress(p);
+      setScaleFactor(window.innerWidth < 768 ? 0.5 : 1);
+    };
+
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [sectionRef]);
+
+  const getLeftOffset = (index: number) =>
+    -(60 + index * 40) * scaleFactor * (1 - progress);
+  const getRightOffset = (index: number) =>
+    (60 + index * 40) * scaleFactor * (1 - progress);
+  const opacity = 0.35 + progress * 0.65;
+
+  return { getLeftOffset, getRightOffset, opacity };
+}
+
+export function BeyondHero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { getLeftOffset, getRightOffset, opacity } = useBeyondScroll(sectionRef);
+
+  return (
+    <section
+      ref={sectionRef}
+      aria-label="RINADS Hero"
+      className="relative z-10 w-full overflow-hidden font-inter"
+      style={{ height: "120vh", backgroundColor: "#9F4BC7" }}
+    >
+      <div className="pointer-events-none absolute inset-0 z-10">
+        <Image
+          src="/assets/rinpo-avatar.png"
+          alt=""
+          width={800}
+          height={1200}
+          priority
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 object-contain object-bottom"
+          style={{ height: "115%", maxHeight: "115%", minHeight: "80%", width: "auto" }}
+        />
+      </div>
+
+      <div className="sticky top-0 z-[5] h-screen w-full">
+        <div className="absolute inset-0 flex items-start justify-center pt-[2vh] md:pt-[3vh]">
+          <div className="relative">
+            {TITLE_LAYERS.map((layer, index) => {
+              const isFront = index === TITLE_LAYERS.length - 1;
+              return (
+                <h1
+                  key={layer.color}
+                  className={`beyond-display select-none text-[clamp(7.5rem,30vw,28rem)] leading-[0.85] tracking-tight ${layer.translateClass} ${
+                    isFront ? "relative" : "absolute inset-0"
+                  }`}
+                  style={{ color: layer.color }}
+                >
+                  RINADS
+                  {isFront && (
+                    <span
+                      data-rinpo-orb
+                      aria-hidden
+                      className="pointer-events-none absolute left-1/2 top-1/2 h-[0.35em] w-[0.35em] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0"
+                    />
+                  )}
+                </h1>
+              );
+            })}
+          </div>
+        </div>
+
+        <div
+          className={`pointer-events-none absolute inset-0 flex items-end justify-between px-[3vw] md:px-[6vw] ${poppins.className}`}
+          style={{ bottom: "-8vh" }}
+        >
+          <div className="flex flex-col gap-2 md:gap-3">
+            {LEFT_WORDS.map((word, index) => (
+              <span
+                key={word}
+                className="text-sm uppercase text-white/80 md:text-base lg:text-lg"
+                style={{
+                  transform: `translateX(${getLeftOffset(index)}px)`,
+                  opacity,
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-col items-end gap-2 md:gap-3">
+            {RIGHT_WORDS.map((word, index) => (
+              <span
+                key={word}
+                className="text-sm uppercase text-white/80 md:text-base lg:text-lg"
+                style={{
+                  transform: `translateX(${getRightOffset(index)}px)`,
+                  opacity,
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
