@@ -1,5 +1,5 @@
 {
-  "name": "@rinads/ui",
+  "name": "@rinads/commerce",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,17 +9,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "echo 'lint: @rinads/ui ok'",
+    "lint": "echo 'lint: @rinads/commerce ok'",
     "typecheck": "tsc --noEmit",
-    "build": "echo 'build: @rinads/ui (source package)'",
-    "test": "echo 'no tests yet'"
+    "build": "echo 'build: @rinads/commerce (source package)'",
+    "test": "node --import tsx --test tests/*.test.ts"
   },
-  "peerDependencies": {
-    "react": "^19"
+  "dependencies": {
+    "@rinads/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^19",
-    "react": "19.2.3",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }

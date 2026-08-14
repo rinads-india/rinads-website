@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --rinads-primary: #9f4bc7;
+  --rinads-primary-dark: #7a35a0;
+  --rinads-white: #ffffff;
+  --rinads-black: #000000;
+  --background: #f4f5f8;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --surface-muted: #eef0f4;
+  --muted-foreground: #6b7280;
+  --nav-surface: rgba(255, 255, 255, 0.92);
+  --nav-border: rgba(159, 75, 199, 0.22);
+  --ring-offset: #ffffff;
+  --rinads-glow: rgba(159, 75, 199, 0.35);
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #0a0a0a;
+  --surface-muted: #1a1224;
+  --muted-foreground: #94a3b8;
+  --nav-surface: rgba(10, 10, 10, 0.92);
+  --nav-border: rgba(159, 75, 199, 0.3);
+  --ring-offset: #000000;
+  --rinads-glow: rgba(159, 75, 199, 0.45);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-rinads-primary: #9f4bc7;
+  --color-nav-surface: var(--nav-surface);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  background: var(--rinads-primary);
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}

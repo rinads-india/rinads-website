@@ -6,6 +6,10 @@
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "turbo run dev --filter=@rinads/website",
+    "dev:storefront": "turbo run dev --filter=@rinads/storefront",
+    "dev:customer-portal": "turbo run dev --filter=@rinads/customer-portal",
+    "dev:owner-portal": "turbo run dev --filter=@rinads/owner-portal",
+    "dev:commerce": "turbo run dev --filter=@rinads/storefront --filter=@rinads/customer-portal --filter=@rinads/owner-portal",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
