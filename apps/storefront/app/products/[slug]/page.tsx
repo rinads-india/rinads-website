@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Badge, Card } from "@rinads/ui";
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
-import { getOrCreateCart } from "@/lib/cart";
+import { getCartForDisplay } from "@/lib/cart";
 import { AddToCartForm } from "@/components/AddToCartForm";
 import { VariantSelector } from "@/components/VariantSelector";
 import { RinpoPanel } from "@/components/RinpoPanel";
@@ -17,7 +17,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const { slug } = await params;
   const { variant: variantParam } = await searchParams;
   const ctx = getCommerceContext();
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
 
   const result = commerce.catalog.getBySlug(ctx, slug);
   if (!result.ok) notFound();
@@ -85,7 +85,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
       <RinpoPanel
         route={`/products/${slug}`}
         productId={product.id}
-        cartId={cart.id}
+        cartId={cart?.id}
         slug={slug}
       />
     </>

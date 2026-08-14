@@ -19,6 +19,19 @@ export async function setCartId(cartId: string): Promise<void> {
   });
 }
 
+/** Read-only cart lookup for Server Components (no cookie mutation). */
+export async function getCartForDisplay(): Promise<Cart | null> {
+  const existingId = await getCartId();
+  if (!existingId) return null;
+  const ctx = getCommerceContext();
+  return (
+    commerce.repo
+      .getStore()
+      .carts.find((c) => c.id === existingId && c.organizationId === ctx.organizationId) ?? null
+  );
+}
+
+/** Creates or loads cart and persists cookie — use in Server Actions / Route Handlers only. */
 export async function getOrCreateCart(): Promise<Cart> {
   const ctx = getCommerceContext();
   const existingId = await getCartId();
@@ -29,7 +42,8 @@ export async function getOrCreateCart(): Promise<Cart> {
   return cart;
 }
 
-export function getCartLineCount(cart: Cart): number {
+export function getCartLineCount(cart: Cart | null): number {
+  if (!cart) return 0;
   return cart.lines.reduce((sum, line) => sum + line.quantity, 0);
 }
 

@@ -3,11 +3,11 @@ import { Button } from "@rinads/ui";
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RinpoPanel } from "@/components/RinpoPanel";
-import { getOrCreateCart } from "@/lib/cart";
+import { getCartForDisplay } from "@/lib/cart";
 
 export default async function HomePage() {
   const products = commerce.catalog.listPublished(getCommerceContext());
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
 
   return (
     <>
@@ -30,7 +30,7 @@ export default async function HomePage() {
           <ProductGrid products={products} />
         </section>
       </div>
-      <RinpoPanel route="/" cartId={cart.id} />
+      <RinpoPanel route="/" cartId={cart?.id} />
     </>
   );
 }

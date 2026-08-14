@@ -2,17 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@rinads/ui";
 import { commerce, getCommerceContext } from "@/lib/commerce";
-import { getOrCreateCart, getEnrichedCartLines, getCartSubtotal } from "@/lib/cart";
+import { getCartForDisplay, getEnrichedCartLines, getCartSubtotal } from "@/lib/cart";
 import { formatINR } from "@/lib/format";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { RinpoPanel } from "@/components/RinpoPanel";
 
 export default async function CheckoutPage() {
   const ctx = getCommerceContext();
-  const cart = await getOrCreateCart();
-  const lines = await getEnrichedCartLines(cart);
+  const cart = await getCartForDisplay();
+  const lines = cart ? await getEnrichedCartLines(cart) : [];
 
-  if (lines.length === 0) {
+  if (!cart || lines.length === 0) {
     redirect("/cart");
   }
 

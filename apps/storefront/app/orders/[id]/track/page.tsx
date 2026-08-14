@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Badge, Card } from "@rinads/ui";
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
-import { getOrCreateCart } from "@/lib/cart";
+import { getCartForDisplay } from "@/lib/cart";
 import { RinpoPanel } from "@/components/RinpoPanel";
 
 type OrderTrackPageProps = {
@@ -12,7 +12,7 @@ type OrderTrackPageProps = {
 export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
   const { id } = await params;
   const ctx = getCommerceContext();
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
 
   const result = commerce.order.getById(ctx, id, ctx.customerId);
   if (!result.ok) notFound();
@@ -66,7 +66,7 @@ export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
           </p>
         </Card>
       </div>
-      <RinpoPanel route={`/orders/${id}/track`} cartId={cart.id} orderId={id} />
+      <RinpoPanel route={`/orders/${id}/track`} cartId={cart?.id} orderId={id} />
     </>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RinpoPanel } from "@/components/RinpoPanel";
-import { getOrCreateCart } from "@/lib/cart";
+import { getCartForDisplay } from "@/lib/cart";
 
 type ShopPageProps = {
   searchParams: Promise<{ category?: string }>;
@@ -11,7 +11,7 @@ type ShopPageProps = {
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const { category } = await searchParams;
   const ctx = getCommerceContext();
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
 
   const allProducts = commerce.catalog.listPublished(ctx);
   const categories = [...new Set(allProducts.map((p) => p.categorySlug))].sort();
@@ -60,7 +60,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           emptyDescription="Try another category or view all products."
         />
       </div>
-      <RinpoPanel route="/shop" cartId={cart.id} />
+      <RinpoPanel route="/shop" cartId={cart?.id} />
     </>
   );
 }

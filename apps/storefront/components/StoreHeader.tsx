@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Badge } from "@rinads/ui";
 import { brand } from "@rinads/brand";
-import { getOrCreateCart, getCartLineCount } from "@/lib/cart";
+import { getCartForDisplay, getCartLineCount } from "@/lib/cart";
 
 export async function StoreHeader() {
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
   const cartCount = getCartLineCount(cart);
 
   return (

@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Button, EmptyState } from "@rinads/ui";
-import { getOrCreateCart, getEnrichedCartLines, getCartSubtotal } from "@/lib/cart";
+import { getCartForDisplay, getEnrichedCartLines, getCartSubtotal } from "@/lib/cart";
 import { formatINR } from "@/lib/format";
 import { CartLineRow } from "@/components/CartLineRow";
 import { RinpoPanel } from "@/components/RinpoPanel";
 
 export default async function CartPage() {
-  const cart = await getOrCreateCart();
-  const lines = await getEnrichedCartLines(cart);
-  const subtotal = await getCartSubtotal(cart);
+  const cart = await getCartForDisplay();
+  const lines = cart ? await getEnrichedCartLines(cart) : [];
+  const subtotal = cart ? await getCartSubtotal(cart) : 0;
 
   return (
     <>
@@ -54,7 +54,7 @@ export default async function CartPage() {
           </>
         )}
       </div>
-      <RinpoPanel route="/cart" cartId={cart.id} />
+      <RinpoPanel route="/cart" cartId={cart?.id} />
     </>
   );
 }

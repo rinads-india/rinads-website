@@ -1,7 +1,7 @@
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RinpoPanel } from "@/components/RinpoPanel";
-import { getOrCreateCart } from "@/lib/cart";
+import { getCartForDisplay } from "@/lib/cart";
 import { Input } from "@rinads/ui";
 
 type SearchPageProps = {
@@ -11,7 +11,7 @@ type SearchPageProps = {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q = "" } = await searchParams;
   const ctx = getCommerceContext();
-  const cart = await getOrCreateCart();
+  const cart = await getCartForDisplay();
 
   const products = q.trim() ? commerce.catalog.search(ctx, q) : [];
 
@@ -49,7 +49,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <p className="text-sm text-muted-foreground">Enter a search term to get started.</p>
         )}
       </div>
-      <RinpoPanel route="/search" cartId={cart.id} />
+      <RinpoPanel route="/search" cartId={cart?.id} />
     </>
   );
 }
