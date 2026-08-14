@@ -1,0 +1,36 @@
+@font-face {
+  font-family: "Bamboly Demo";
+  src: url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.eot");
+  src:
+    url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.eot?#iefix")
+      format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.woff2")
+      format("woff2"),
+    url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.woff")
+      format("woff"),
+    url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.ttf")
+      format("truetype"),
+    url("https://db.onlinewebfonts.com/t/58ee300970307a1cc399e6bebd7617ce.svg#Bamboly Demo")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.beyond-display {
+  font-family: "Bamboly Demo", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 18s linear infinite;
+}
