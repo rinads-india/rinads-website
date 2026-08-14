@@ -74,7 +74,7 @@ export function Navbar() {
           className="mr-auto flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label="Rinads home"
         >
-          <Logo className="h-7 md:h-9" priority />
+          <Logo className="h-6 sm:h-7 md:h-9" priority />
         </a>
 
         <div className="mr-2 hidden lg:flex items-center gap-8">
@@ -108,11 +108,10 @@ export function Navbar() {
             type="button"
             onClick={() => openAuth("login")}
             data-rinpo-guide="account"
-            className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black md:px-5"
+            className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-lg shadow-rinads-primary/25 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:gap-2 sm:px-5"
           >
             <UserRound size={18} aria-hidden />
-            <span className="hidden md:inline">Log in</span>
-            <span className="sr-only md:hidden">Log in or sign up</span>
+            Log in
           </button>
         )}
 
@@ -122,7 +121,7 @@ export function Navbar() {
           aria-expanded={open}
           aria-controls="rinads-mobile-menu"
           onClick={toggleMenu}
-          className="flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
         >
           {open ? <X size={26} /> : <Menu size={26} />}
         </button>
