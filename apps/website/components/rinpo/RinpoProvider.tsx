@@ -8,6 +8,8 @@ import { LoginModal } from "./LoginModal";
 import { useRinpoGuide } from "@/hooks/useRinpoGuide";
 import { useAuth } from "@/contexts/AuthContext";
 import type { RinpoGuideId } from "@/hooks/useRinpoGuide";
+import { RinpoMemoryProvider } from "@/hooks/useRinpoMemory";
+import type { PhoneScreenId } from "./RinpoPhoneScreens";
 
 export type RinpoState = "idle" | "listening" | "speaking" | "phone-out" | "floating";
 
@@ -27,6 +29,10 @@ type RinpoContextType = {
   /** Set by the navbar so overlays can yield to the full-screen mobile menu. */
   navMenuOpen: boolean;
   setNavMenuOpen: (open: boolean) => void;
+  phoneScreen: PhoneScreenId;
+  openPhoneScreen: (screen: PhoneScreenId, prompt?: string) => void;
+  pendingChatPrompt: string | null;
+  clearPendingChatPrompt: () => void;
   rinpoGuide: RinpoGuideId;
   advanceGuide: () => void;
   dismissGuide: () => void;
@@ -44,13 +50,15 @@ const INTRO_SCROLL_THRESHOLD = 0.5; // 50% of viewport
 
 export function RinpoProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { login, signup } = useAuth();
+  const { login, signup, user } = useAuth();
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [rinpoState, setRinpoState] = useState<RinpoState>("idle");
   const [introComplete, setIntroComplete] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginModalMode, setLoginModalMode] = useState<"login" | "signup">("login");
   const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const [phoneScreen, setPhoneScreen] = useState<PhoneScreenId>("chat");
+  const [pendingChatPrompt, setPendingChatPrompt] = useState<string | null>(null);
 
   const isIntroMode = (pathname === "/" || pathname == null) && !introComplete;
 
@@ -63,6 +71,15 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, []);
+
+  const openPhoneScreen = useCallback((screen: PhoneScreenId, prompt?: string) => {
+    setPhoneScreen(screen);
+    if (prompt) setPendingChatPrompt(prompt);
+    setPhoneOpen(true);
+    setRinpoState("phone-out");
+  }, []);
+
+  const clearPendingChatPrompt = useCallback(() => setPendingChatPrompt(null), []);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -92,21 +109,27 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
         setLoginModalMode,
         navMenuOpen,
         setNavMenuOpen,
+        phoneScreen,
+        openPhoneScreen,
+        pendingChatPrompt,
+        clearPendingChatPrompt,
         rinpoGuide,
         advanceGuide,
         dismissGuide,
       }}
     >
-      {children}
-      <RinpoCharacter />
-      {phoneOpen && <RinpoPhone />}
-      <LoginModal
-        isOpen={loginModalOpen}
-        initialMode={loginModalMode}
-        onClose={() => setLoginModalOpen(false)}
-        onLogin={login}
-        onSignup={signup}
-      />
+      <RinpoMemoryProvider key={user?.username ?? "Guest"}>
+        {children}
+        <RinpoCharacter />
+        {phoneOpen && <RinpoPhone />}
+        <LoginModal
+          isOpen={loginModalOpen}
+          initialMode={loginModalMode}
+          onClose={() => setLoginModalOpen(false)}
+          onLogin={login}
+          onSignup={signup}
+        />
+      </RinpoMemoryProvider>
     </RinpoContext.Provider>
   );
 }

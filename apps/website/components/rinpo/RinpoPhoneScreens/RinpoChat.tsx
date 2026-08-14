@@ -6,12 +6,10 @@ import { motion } from "framer-motion";
 import { useSpeechRecognition, type SpeechLang } from "@/hooks/useSpeechRecognition";
 import { useSpeak } from "@/hooks/useSpeak";
 import { useRinpo } from "../RinpoProvider";
+import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 
 type ChatLink = { label: string; href: string };
 type ChatMessage = { role: "user" | "rinpo"; text: string; links?: ChatLink[] };
-
-const VOICE_OUTPUT_KEY = "rinpo-voice-output";
-const LANGUAGE_KEY = "rinpo-language";
 
 function MicIcon({ isListening }: { isListening: boolean }) {
   return (
@@ -56,34 +54,34 @@ function SpeakerIcon({ enabled }: { enabled: boolean }) {
   );
 }
 
-export function RinpoChat() {
+export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) {
   const router = useRouter();
-  const { setPhoneOpen } = useRinpo();
+  const {
+    setPhoneOpen,
+    setRinpoState,
+    openPhoneScreen,
+    clearPendingChatPrompt,
+  } = useRinpo();
+  const {
+    memory,
+    addMessage,
+    addInterest,
+    updatePreferences,
+    getPersonalizedGreeting,
+  } = useRinpoMemory();
   const [input, setInput] = useState("");
-  const [voiceOutput, setVoiceOutput] = useState(true);
-  const getInitialLang = () =>
-    typeof window !== "undefined" && localStorage.getItem(LANGUAGE_KEY) === "ml" ? "ml" : "en";
-  const [lang, setLang] = useState<SpeechLang>(getInitialLang);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(VOICE_OUTPUT_KEY);
-    if (stored === "false") setVoiceOutput(false);
-  }, []);
-  useEffect(() => {
-    const stored = localStorage.getItem(LANGUAGE_KEY);
-    if (stored === "ml") setLang("ml");
-  }, []);
+  const voiceOutput = memory.preferences.voiceEnabled;
+  const [lang, setLang] = useState<SpeechLang>(memory.preferences.language);
 
   const WELCOME_EN =
     "Hi! I'm RINPO, your RINADS assistant. Ask me anything—services, support, or open the client portal. Business simplified.";
   const WELCOME_ML =
     "നമസ്കാരം! ഞാൻ RINPO, നിങ്ങളുടെ RINADS അസിസ്റ്റന്റ്. സേവനങ്ങൾ, സമ്പർക്ക വിവരങ്ങൾ, ക്ലയന്റ് പോർട്ടൽ എന്നിവയെക്കുറിച്ച് ചോദിക്കുക. ബിസിനസ്സ് ലളിതമാക്കൽ.";
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      role: "rinpo",
-      text: getInitialLang() === "ml" ? WELCOME_ML : WELCOME_EN,
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    memory.messages.length
+      ? memory.messages.map(({ role, text }) => ({ role, text }))
+      : [{ role: "rinpo", text: memory.preferences.language === "ml" ? WELCOME_ML : `${getPersonalizedGreeting()} ${WELCOME_EN}` }]
+  );
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const submitMessageRef = useRef<(text: string) => Promise<void>>(async () => {});
@@ -113,6 +111,8 @@ export function RinpoChat() {
       if (isListening) stopListening();
 
       setMessages((prev) => [...prev, { role: "user", text }]);
+      addMessage({ role: "user", text });
+      addInterest(text);
       setIsLoading(true);
 
       try {
@@ -126,26 +126,32 @@ export function RinpoChat() {
         const links = Array.isArray(data.links) ? data.links : [];
         const effectiveLang = data.effectiveLang as "en" | "ml" | undefined;
         setMessages((prev) => [...prev, { role: "rinpo", text: reply, links }]);
+        addMessage({ role: "rinpo", text: reply });
         if (voiceOutput) speak(reply, effectiveLang);
         if (effectiveLang) setLang(effectiveLang);
+        const intent = data.intent as string | undefined;
+        if (intent === "reminders") openPhoneScreen("plans");
+        if (intent === "cloud") openPhoneScreen("portal");
+        if (intent === "support") openPhoneScreen("support");
+        if (intent === "services" || intent === "customSoftware" || intent === "digitalMarketing" || intent === "aiAutomation") {
+          openPhoneScreen("services");
+        }
       } catch {
         const errMsg = "Sorry, I couldn't process that. Please try again or check your connection.";
         setMessages((prev) => [...prev, { role: "rinpo", text: errMsg }]);
+        addMessage({ role: "rinpo", text: errMsg });
         if (voiceOutput) speak(errMsg);
       } finally {
         setIsLoading(false);
       }
     },
-    [isListening, voiceOutput, resetTranscript, stopListening, speak, lang]
+    [isListening, voiceOutput, resetTranscript, stopListening, speak, lang, addMessage, addInterest, openPhoneScreen]
   );
   submitMessageRef.current = submitMessage;
 
   useEffect(() => {
-    localStorage.setItem(VOICE_OUTPUT_KEY, String(voiceOutput));
-  }, [voiceOutput]);
-  useEffect(() => {
-    localStorage.setItem(LANGUAGE_KEY, lang);
-  }, [lang]);
+    updatePreferences({ language: lang });
+  }, [lang, updatePreferences]);
 
   // Keep welcome message in sync with language when switching
   useEffect(() => {
@@ -157,6 +163,17 @@ export function RinpoChat() {
       return prev;
     });
   }, [lang]);
+
+  useEffect(() => {
+    if (!initialPrompt) return;
+    clearPendingChatPrompt();
+    submitMessageRef.current(initialPrompt);
+  }, [initialPrompt, clearPendingChatPrompt]);
+
+  useEffect(() => {
+    setRinpoState(isListening ? "listening" : isSpeaking ? "speaking" : "phone-out");
+    return () => setRinpoState("floating");
+  }, [isListening, isSpeaking, setRinpoState]);
 
   const toggleLanguage = () => {
     setLang((prev) => (prev === "en" ? "ml" : "en"));
@@ -195,7 +212,7 @@ export function RinpoChat() {
   };
 
   const toggleVoiceOutput = () => {
-    setVoiceOutput((v) => !v);
+    updatePreferences({ voiceEnabled: !voiceOutput });
     if (voiceOutput) stop();
   };
 
@@ -205,22 +222,27 @@ export function RinpoChat() {
         ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 scrollbar-hide"
       >
-        {messages.filter((m) => m.role === "rinpo").map((m, i) => {
+        {messages.map((m, i) => {
           const isMalayalam = /[\u0D00-\u0D7F]/.test(m.text);
+          const isUser = m.role === "user";
           return (
           <motion.div
             key={`rinpo-${i}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-start"
+            className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
           >
-            <span className="text-[10px] font-medium mb-0.5 text-white/60">RINPO</span>
+            <span className="text-[10px] font-medium mb-0.5 text-white/60">{isUser ? "YOU" : "RINPO"}</span>
             <div
-              className="max-w-[85%] rounded-2xl rounded-bl-md px-3 py-2 text-sm bg-white/10 text-[var(--rinads-white)] border border-[var(--rinads-primary)]/30"
+              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm text-[var(--rinads-white)] border ${
+                isUser
+                  ? "rounded-br-md bg-[var(--rinads-primary)]/30 border-[var(--rinads-primary)]/50"
+                  : "rounded-bl-md bg-white/10 border-[var(--rinads-primary)]/30"
+              }`}
             >
               <div className="flex items-start gap-2">
                 <p className="flex-1 min-w-0 whitespace-pre-wrap">{m.text.replace(/\*\*(.*?)\*\*/g, "$1")}</p>
-                {(
+                {!isUser && (
                   <button
                     type="button"
                     onClick={() => speak(m.text, isMalayalam ? "ml" : undefined)}

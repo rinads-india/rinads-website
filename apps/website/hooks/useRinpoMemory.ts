@@ -1,7 +1,36 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useAuth } from "@/contexts/AuthContext";
+
+export type ChatMessage = {
+  id: string;
+  role: "user" | "rinpo";
+  text: string;
+  createdAt: number;
+};
+
+export type Reminder = {
+  id: string;
+  text: string;
+  dueDate: string;
+  createdAt: number;
+};
+
+export type WorkflowRun = {
+  id: string;
+  workflow: string;
+  status: "suggested" | "active" | "complete";
+  createdAt: number;
+};
 
 export type UserMemoryProfile = {
   username: string;
@@ -10,6 +39,9 @@ export type UserMemoryProfile = {
   recentSearches: string[];
   favoriteServices: string[];
   notes: string[];
+  messages: ChatMessage[];
+  reminders: Reminder[];
+  workflows: WorkflowRun[];
   interactionCount: number;
   lastVisitedAt: number;
   preferences: {
@@ -28,6 +60,9 @@ const DEFAULT_ANONYMOUS_PROFILE: UserMemoryProfile = {
   recentSearches: [],
   favoriteServices: ["Digital Marketing", "AI Automation"],
   notes: ["Exploring RINADS Business Cloud ecosystem."],
+  messages: [],
+  reminders: [],
+  workflows: [],
   interactionCount: 1,
   lastVisitedAt: Date.now(),
   preferences: {
@@ -71,15 +106,50 @@ export function saveUserMemory(profile: UserMemoryProfile) {
   }
 }
 
-export function useRinpoMemory() {
+function mergeGuestMemory(profile: UserMemoryProfile, username: string, role: string): UserMemoryProfile {
+  const guest = loadUserMemory("Guest");
+  return {
+    ...profile,
+    username,
+    role,
+    interests: [...new Set([...profile.interests, ...guest.interests])].slice(0, 8),
+    recentSearches: [...new Set([...profile.recentSearches, ...guest.recentSearches])].slice(0, 10),
+    favoriteServices: [...new Set([...profile.favoriteServices, ...guest.favoriteServices])],
+    notes: [...new Set([...profile.notes, ...guest.notes])].slice(0, 15),
+    messages: profile.messages.length ? profile.messages : guest.messages,
+    reminders: profile.reminders.length ? profile.reminders : guest.reminders,
+    workflows: profile.workflows.length ? profile.workflows : guest.workflows,
+  };
+}
+
+type RinpoMemoryContextValue = {
+  memory: UserMemoryProfile;
+  addInterest: (interest: string) => void;
+  addSearch: (search: string) => void;
+  addFavoriteService: (service: string) => void;
+  addNote: (note: string) => void;
+  addMessage: (message: Omit<ChatMessage, "id" | "createdAt">) => void;
+  addReminder: (text: string, dueDate?: string) => void;
+  removeReminder: (id: string) => void;
+  startWorkflow: (workflow: string) => void;
+  updatePreferences: (preferences: Partial<UserMemoryProfile["preferences"]>) => void;
+  getPersonalizedGreeting: () => string;
+  getPersonalizedInsight: () => string;
+};
+
+const RinpoMemoryContext = createContext<RinpoMemoryContextValue | null>(null);
+
+export function RinpoMemoryProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const currentUsername = isAuthenticated && user?.username ? user.username : "Guest";
+  const role = isAuthenticated && user?.role ? user.role : "visitor";
 
   const [memory, setMemory] = useState<UserMemoryProfile>(() => {
     const loaded = loadUserMemory(currentUsername);
     const updated = {
-      ...loaded,
-      role: isAuthenticated && user?.role ? user.role : "visitor",
+      ...(currentUsername === "Guest" ? loaded : mergeGuestMemory(loaded, currentUsername, role)),
+      username: currentUsername,
+      role,
       interactionCount: loaded.interactionCount + 1,
       lastVisitedAt: Date.now(),
     };
@@ -87,45 +157,91 @@ export function useRinpoMemory() {
     return updated;
   });
 
-  const addInterest = useCallback((interest: string) => {
-    setMemory((prev) => {
-      if (prev.interests.includes(interest)) return prev;
-      const next = { ...prev, interests: [interest, ...prev.interests].slice(0, 8) };
+  const updateMemory = useCallback((update: (profile: UserMemoryProfile) => UserMemoryProfile) => {
+    setMemory((previous) => {
+      const next = update(previous);
       saveUserMemory(next);
       return next;
     });
   }, []);
+
+  const addInterest = useCallback((interest: string) => {
+    updateMemory((prev) => {
+      if (prev.interests.includes(interest)) return prev;
+      const next = { ...prev, interests: [interest, ...prev.interests].slice(0, 8) };
+      return next;
+    });
+  }, [updateMemory]);
 
   const addSearch = useCallback((search: string) => {
     if (!search.trim()) return;
-    setMemory((prev) => {
+    updateMemory((prev) => {
       const filtered = prev.recentSearches.filter((s) => s.toLowerCase() !== search.toLowerCase());
       const next = { ...prev, recentSearches: [search, ...filtered].slice(0, 10) };
-      saveUserMemory(next);
       return next;
     });
-  }, []);
+  }, [updateMemory]);
 
   const addFavoriteService = useCallback((service: string) => {
-    setMemory((prev) => {
+    updateMemory((prev) => {
       const isFav = prev.favoriteServices.includes(service);
       const nextServices = isFav
         ? prev.favoriteServices.filter((s) => s !== service)
         : [...prev.favoriteServices, service];
       const next = { ...prev, favoriteServices: nextServices };
-      saveUserMemory(next);
       return next;
     });
-  }, []);
+  }, [updateMemory]);
 
   const addNote = useCallback((note: string) => {
     if (!note.trim()) return;
-    setMemory((prev) => {
+    updateMemory((prev) => {
       const next = { ...prev, notes: [note, ...prev.notes].slice(0, 15) };
-      saveUserMemory(next);
       return next;
     });
-  }, []);
+  }, [updateMemory]);
+
+  const addMessage = useCallback((message: Omit<ChatMessage, "id" | "createdAt">) => {
+    updateMemory((prev) => ({
+      ...prev,
+      messages: [
+        ...prev.messages,
+        { ...message, id: crypto.randomUUID(), createdAt: Date.now() },
+      ].slice(-40),
+    }));
+  }, [updateMemory]);
+
+  const addReminder = useCallback((text: string, dueDate = new Date().toISOString().slice(0, 10)) => {
+    if (!text.trim()) return;
+    updateMemory((prev) => ({
+      ...prev,
+      reminders: [
+        ...prev.reminders,
+        { id: crypto.randomUUID(), text: text.trim(), dueDate, createdAt: Date.now() },
+      ].sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
+    }));
+  }, [updateMemory]);
+
+  const removeReminder = useCallback((id: string) => {
+    updateMemory((prev) => ({ ...prev, reminders: prev.reminders.filter((item) => item.id !== id) }));
+  }, [updateMemory]);
+
+  const startWorkflow = useCallback((workflow: string) => {
+    updateMemory((prev) => ({
+      ...prev,
+      workflows: [
+        { id: crypto.randomUUID(), workflow, status: "active" as const, createdAt: Date.now() },
+        ...prev.workflows,
+      ].slice(0, 12),
+    }));
+  }, [updateMemory]);
+
+  const updatePreferences = useCallback((preferences: Partial<UserMemoryProfile["preferences"]>) => {
+    updateMemory((prev) => ({
+      ...prev,
+      preferences: { ...prev.preferences, ...preferences },
+    }));
+  }, [updateMemory]);
 
   const getPersonalizedGreeting = useCallback(() => {
     const isGuest = memory.username === "Guest" || !isAuthenticated;
@@ -168,13 +284,29 @@ export function useRinpoMemory() {
     return "Did you know? Rinads helps businesses automate, grow & scale with digital intelligence.";
   }, [memory.role, memory.favoriteServices]);
 
-  return {
+  const value = useMemo<RinpoMemoryContextValue>(() => ({
     memory,
     addInterest,
     addSearch,
     addFavoriteService,
     addNote,
+    addMessage,
+    addReminder,
+    removeReminder,
+    startWorkflow,
+    updatePreferences,
     getPersonalizedGreeting,
     getPersonalizedInsight,
-  };
+  }), [
+    memory, addInterest, addSearch, addFavoriteService, addNote, addMessage, addReminder,
+    removeReminder, startWorkflow, updatePreferences, getPersonalizedGreeting, getPersonalizedInsight,
+  ]);
+
+  return createElement(RinpoMemoryContext.Provider, { value }, children);
+}
+
+export function useRinpoMemory() {
+  const memory = useContext(RinpoMemoryContext);
+  if (!memory) throw new Error("useRinpoMemory must be used within RinpoMemoryProvider");
+  return memory;
 }

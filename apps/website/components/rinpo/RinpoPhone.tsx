@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRinpo } from "./RinpoProvider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,8 +40,15 @@ const BOTTOM_BAR_ITEMS: { id: PhoneScreenId; label: string; icon: typeof Message
 ];
 
 export function RinpoPhone() {
-  const { phoneOpen, setPhoneOpen, setLoginModalOpen, setLoginModalMode } = useRinpo();
-  const [screen, setScreen] = useState<PhoneScreenId>("chat");
+  const {
+    phoneOpen,
+    setPhoneOpen,
+    setLoginModalOpen,
+    setLoginModalMode,
+    phoneScreen: screen,
+    openPhoneScreen,
+    pendingChatPrompt,
+  } = useRinpo();
   const [currentTime, setCurrentTime] = useState("9:41");
   const [currentDateStr, setCurrentDateStr] = useState("TUESDAY, 21 JULY");
   const { getPersonalizedGreeting } = useRinpoMemory();
@@ -157,23 +164,18 @@ export function RinpoPhone() {
                 transition={{ duration: 0.18 }}
                 className="h-full"
               >
-                {screen === "chat" && <RinpoChat />}
+                {screen === "chat" && <RinpoChat initialPrompt={pendingChatPrompt} />}
                 {screen === "home" && (
                   <PhoneHomeScreen
-                    onOpenApp={(appId) => {
-                      if (appId === "support-app") setScreen("support");
-                      else if (appId === "invoices") setScreen("portal");
-                      else if (appId === "projects" || appId === "marketing") setScreen("services");
-                    }}
-                    onOpenChat={() => {
-                      setScreen("chat");
+                    onOpenChat={(prompt) => {
+                      openPhoneScreen("chat", prompt);
                     }}
                   />
                 )}
                 {screen === "quick-actions" && (
                   <QuickActionsScreen
-                    onOpenChat={() => {
-                      setScreen("chat");
+                    onOpenChat={(prompt) => {
+                      openPhoneScreen("chat", prompt);
                     }}
                   />
                 )}
@@ -203,7 +205,7 @@ export function RinpoPhone() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setScreen(item.id)}
+                  onClick={() => openPhoneScreen(item.id)}
                   className={`relative flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
                     isActive
                       ? "text-purple-300 font-bold"

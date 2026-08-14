@@ -81,7 +81,7 @@ export function AppDetailModal({
   onOpenChat: (initialMsg?: string) => void;
 }) {
   const app = GRID_APPS.find((a) => a.id === appId);
-  const { memory, addInterest, addNote, addFavoriteService } = useRinpoMemory();
+  const { memory, addInterest, addNote, addFavoriteService, startWorkflow } = useRinpoMemory();
   const [taskDone, setTaskDone] = useState<Record<string, boolean>>({});
 
   if (!app) return null;
@@ -90,6 +90,7 @@ export function AppDetailModal({
   const handleAction = (actionText: string) => {
     addInterest(app.name);
     addNote(`Explored ${app.name} feature`);
+    startWorkflow(`${app.name}: ${actionText}`);
     onOpenChat(`Tell me how RINADS can help me with ${app.name}: ${actionText}`);
     onClose();
   };
