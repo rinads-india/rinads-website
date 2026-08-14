@@ -146,13 +146,14 @@ export function StoryNarrative() {
           <br />
           He transformed into an AI Avatar — a digital intelligence capable of creating software instantly, building intelligent systems, and giving life to virtual entities that can speak, sell, assist and evolve.
         </p>
-        <div className="relative mx-auto mt-10 aspect-[3/4] w-full max-w-md overflow-hidden rounded-3xl border border-[rgba(159,75,199,0.24)]">
+        <div className="relative mx-auto mt-10 w-full max-w-md">
           <Image
             src="/assets/rinpo-full-body.png"
             alt="RINPO avatar birth moment"
-            fill
-            className="object-contain object-bottom"
-            sizes="(max-width: 768px) 100vw, 448px"
+            width={471}
+            height={1334}
+            className="mx-auto h-auto w-full max-w-[min(320px,60vw)] object-contain object-bottom"
+            sizes="(max-width: 768px) 60vw, 320px"
           />
         </div>
         <div className="story-specs mt-10 flex flex-wrap justify-center gap-2.5">
@@ -230,9 +231,14 @@ export function StoryNarrative() {
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 px-[8vw] py-8 text-xs tracking-wide text-white/45">
         <span>© 2026 RINADS TECHNOLOGIES · RINPO IS A RINADS CHARACTER IP</span>
-        <Link href="/" className="transition-colors hover:text-white">
-          WWW.RINADS.COM
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/story-concept" className="transition-colors hover:text-[#C97DFF]">
+            ← Intelligence Platform
+          </Link>
+          <Link href="/" className="transition-colors hover:text-white">
+            WWW.RINADS.COM
+          </Link>
+        </div>
       </footer>
     </div>
   );
