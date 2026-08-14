@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { RinpoOrbFace } from "@/components/rinpo/RinpoOrbFace";
 import { Logo } from "./Logo";
 
 const LANDING_VIDEO =
@@ -120,11 +121,7 @@ export function Hero() {
                 <span className="text-[22vmin] font-black leading-none tracking-tighter text-white sm:text-[26vmin] md:text-[28vmin] lg:text-[30vmin]">
                   R
                 </span>
-                <span
-                  data-rinpo-orb
-                  aria-hidden
-                  className="mx-[0.06em] h-[22vmin] w-[22vmin] shrink-0 rounded-full bg-rinads-primary shadow-[0_0_60px_rgba(159,75,199,0.85)] sm:h-[26vmin] sm:w-[26vmin] md:h-[28vmin] md:w-[28vmin] lg:h-[30vmin] lg:w-[30vmin]"
-                />
+                <RinpoOrbFace />
                 <span className="text-[22vmin] font-black leading-none tracking-tighter text-white sm:text-[26vmin] md:text-[28vmin] lg:text-[30vmin]">
                   S
                 </span>

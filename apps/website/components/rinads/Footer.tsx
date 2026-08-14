@@ -35,7 +35,7 @@ const NAV_COL_1 = [
 
 const NAV_COL_2 = [
   { label: "Contact", href: "#contact" },
-  { label: "Blog", href: "https://www.rinads.com" },
+  { label: "Story", href: "/story-concept" },
   { label: "Terms and Condition", href: "/contact" },
   { label: "Privacy Policy", href: "/contact" },
 ];
@@ -69,7 +69,7 @@ export function Footer() {
   }, [fitWatermark]);
 
   const handleMeetRinpo = () => {
-    openPhoneScreen("chat");
+    window.location.href = "/story-concept";
   };
 
   const handleSubscribe = (event: React.FormEvent<HTMLFormElement>) => {

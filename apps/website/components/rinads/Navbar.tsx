@@ -10,10 +10,11 @@ import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { useAuth } from "@/contexts/AuthContext";
 
 const LINKS = [
-  { label: "Services", href: "#services" },
-  { label: "Solutions", href: "#work" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Services", href: "/#services" },
+  { label: "Solutions", href: "/#work" },
+  { label: "Story", href: "/story-concept" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 export function Navbar() {
@@ -31,7 +32,7 @@ export function Navbar() {
     const onScroll = () => {
       setScrolled(window.scrollY > 50);
       if (pathname === "/") {
-        setOverHero(window.scrollY < window.innerHeight * 0.55);
+        setOverHero(window.scrollY < window.innerHeight * 0.45);
       } else {
         setOverHero(false);
       }
