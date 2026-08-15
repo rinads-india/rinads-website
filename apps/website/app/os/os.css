@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+.os-page {
+  font-family: var(--font-inter-family), "Inter", sans-serif;
+}
+
+.os-glass {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.os-glass-dark {
+  background: rgba(12, 18, 12, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.os-card-green {
+  background: linear-gradient(
+    145deg,
+    rgba(34, 197, 94, 0.28),
+    rgba(22, 101, 52, 0.22)
+  );
+}
+
+.os-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.os-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9f4bc7, #c97dff);
+}

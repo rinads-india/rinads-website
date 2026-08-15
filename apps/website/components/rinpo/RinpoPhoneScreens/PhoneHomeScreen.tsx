@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { GRID_APPS, type GridAppId, AppDetailModal } from "./AppDetailModal";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function PhoneHomeScreen({
   onOpenChat,
@@ -12,6 +14,7 @@ export function PhoneHomeScreen({
   onOpenChat: (initialMsg?: string) => void;
 }) {
   const { getPersonalizedInsight } = useRinpoMemory();
+  const { isAuthenticated } = useAuth();
   const [selectedApp, setSelectedApp] = useState<GridAppId | null>(null);
 
   const handleAppClick = (appId: GridAppId) => {
@@ -35,6 +38,15 @@ export function PhoneHomeScreen({
           </p>
         </div>
       </motion.div>
+
+      {isAuthenticated && (
+        <Link
+          href="/os"
+          className="mb-3 block rounded-2xl border border-purple-400/40 bg-purple-500/20 px-3 py-2.5 text-center text-[11px] font-semibold text-purple-100 transition hover:bg-purple-500/30"
+        >
+          Open Business OS
+        </Link>
+      )}
 
       {/* 4x4 Grid of App Icons */}
       <div className="grid grid-cols-4 gap-2.5 sm:gap-3">

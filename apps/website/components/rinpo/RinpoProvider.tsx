@@ -61,6 +61,7 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
   const [pendingChatPrompt, setPendingChatPrompt] = useState<string | null>(null);
 
   const isIntroMode = (pathname === "/" || pathname == null) && !introComplete;
+  const isOsRoute = pathname?.startsWith("/os") ?? false;
 
   const { currentGuide: rinpoGuide, advanceGuide, dismissGuide } = useRinpoGuide(isIntroMode, introComplete);
 
@@ -120,8 +121,8 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
     >
       <RinpoMemoryProvider key={user?.username ?? "Guest"}>
         {children}
-        <RinpoCharacter />
-        {phoneOpen && <RinpoPhone />}
+        {!isOsRoute && <RinpoCharacter />}
+        {!isOsRoute && phoneOpen && <RinpoPhone />}
         <LoginModal
           isOpen={loginModalOpen}
           initialMode={loginModalMode}

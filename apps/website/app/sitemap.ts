@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/story-concept",
     "/rinpo-story",
     "/projects",
+    "/os",
   ];
   return routes.map((path) => ({
     url: `${siteUrl}${path}`,

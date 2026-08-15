@@ -44,9 +44,14 @@ export function ProvisioningStatusClient() {
             Storefront: <code>{orgId ? `{slug}.store.rinads.com` : "—"}</code>
           </p>
         )}
+        {status === "completed" && (
+          <Link href="/os?welcome=1" className="mt-4 inline-block text-sm font-semibold text-[#9f4bc7]">
+            Open Business OS
+          </Link>
+        )}
       </div>
-      <Link href="/" className="text-sm text-[#9f4bc7]">
-        Return to home
+      <Link href="/os" className="text-sm text-[#9f4bc7]">
+        Return to Business OS
       </Link>
     </div>
   );
