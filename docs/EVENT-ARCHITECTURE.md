@@ -32,13 +32,7 @@ Workflow executions inherit both from the trigger event. The loop guard (`loop-g
 
 In-memory: duplicate `(organizationId, idempotencyKey)` returns the existing record without re-emitting.
 
-Live path example:
-
-```
-idempotencyKey: order.paid:{orderId}
-```
-
-DB: `business_events` has `UNIQUE (organization_id, idempotency_key)`.
+Live path: `idempotencyKey: order.paid:{orderId}`. DB: `UNIQUE (organization_id, idempotency_key)`.
 
 ## business_events columns
 
@@ -73,10 +67,6 @@ runtime.emit({
 });
 ```
 
-## Payload masking
+## Payload masking & sync
 
-`listEvents()` applies `maskEventPayload()` — redacts `email`, `phone`, `paymentReference`, `providerRef` in owner-portal event explorer.
-
-## Supabase sync
-
-Events bridge into legacy `OperationsRepository.businessEvents`. Full Supabase column sync is partial — see completion report.
+`listEvents()` masks `email`, `phone`, `paymentReference`, `providerRef`. Events bridge to legacy `businessEvents`; full Supabase sync is partial.
