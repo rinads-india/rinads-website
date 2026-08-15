@@ -25,6 +25,31 @@ describe("Phase 10 integration", () => {
     assert.equal(variant?.stock, after.available);
   });
 
+  it("TEST 03: order.paid triggers async runtime workflow", async () => {
+    const ctx = demoContext();
+    const cart = commerce.cart.getOrCreate(ctx);
+    commerce.cart.addLine(ctx, cart.id, "var_pebbles_500g", 1);
+    const order = commerce.checkout.placeOrder(ctx, {
+      cartId: cart.id,
+      customerId: ctx.customerId,
+      shippingMethodCode: "standard",
+      paymentProvider: "demo",
+      paymentReference: "pay_runtime_1",
+    });
+    assert.ok(order.ok);
+
+    await operations.runtime.processQueue({
+      organizationId: ctx.organizationId,
+      userId: ctx.userId,
+      roleKey: "founder",
+      permissions: ["org.manage", "commerce.order.read"],
+    });
+
+    const executions = operations.runtime.listExecutions(ctx.organizationId);
+    assert.ok(executions.some((e) => e.workflowKey === "order-fulfilment-v1"));
+    assert.ok(operations.fulfilment.pendingCount(opsContext()) >= 0);
+  });
+
   it("TEST 02: low stock to PO to receipt", () => {
     const ctx = opsContext({ roleKey: "founder" });
     const po = operations.purchaseOrders.create(ctx, {

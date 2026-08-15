@@ -105,6 +105,9 @@ importers:
       '@rinads/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@rinads/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/intelligence
       '@rinads/operations':
         specifier: workspace:*
         version: link:../../packages/operations

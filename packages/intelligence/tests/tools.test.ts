@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { CatalogService, CartService, OrderService, SupportService } from "@rinads/commerce";
 import { createInMemoryRepository, createAmbadySeedStore, AMBADY_ORG_ID } from "@rinads/commerce-server";
-import { executeRinpoTool, RINPO_HARD_LIMITS } from "../src/index";
+import { executeRinpoTool, RINPO_HARD_LIMITS, listRinpoTools } from "../src/index";
 
 const ctx = { organizationId: AMBADY_ORG_ID, customerId: "cust_demo_001" };
 const repo = createInMemoryRepository(createAmbadySeedStore());
@@ -32,5 +32,11 @@ describe("RINPO tools", () => {
       args: { subject: "Help", body: "Need assistance" },
     });
     assert.ok(result.ok);
+  });
+
+  it("lists owner tools from registry", () => {
+    const ownerTools = listRinpoTools({ ownerOnly: true });
+    assert.ok(ownerTools.some((t) => t.key === "ops_daily_briefing"));
+    assert.ok(ownerTools.every((t) => t.category === "READ" || t.category === "DRAFT" || t.category === "ACTION"));
   });
 });

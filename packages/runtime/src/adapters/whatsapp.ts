@@ -1,0 +1,1 @@
+export { whatsappAdapter } from "./email";
