@@ -6,12 +6,14 @@ import { checkEventLoop } from "./loop-guard";
 import {
   enqueueJob,
   processJobQueue,
+  type DurableJob,
   type JobProcessor,
   type JobQueueStore,
 } from "./queue/durable-queue";
 import {
   findWorkflowByTrigger,
   type WorkflowDefinition,
+  type WorkflowExecution,
 } from "./workflow/types";
 import {
   getExecutionCounts,
@@ -36,19 +38,28 @@ import { createMemoryRuntimeStore, type MemoryRuntimeStore } from "./store/memor
 import type { ActionContext } from "./actions/executor";
 import { getAction } from "./actions/registry";
 
+export type RuntimePersistenceHooks = {
+  onJobEnqueued?: (job: DurableJob) => void | Promise<void>;
+  onJobUpdated?: (job: DurableJob) => void | Promise<void>;
+  onExecutionUpdated?: (execution: WorkflowExecution) => void | Promise<void>;
+};
+
 export type RuntimeServiceOptions = {
   store?: MemoryRuntimeStore;
   processors?: Map<string, JobProcessor>;
   opsRepo?: OperationsRepository;
+  persistenceHooks?: RuntimePersistenceHooks;
 };
 
 export class RuntimeService {
   readonly store: MemoryRuntimeStore;
   readonly processors: Map<string, JobProcessor>;
+  private readonly persistenceHooks?: RuntimePersistenceHooks;
 
   constructor(options: RuntimeServiceOptions = {}) {
     this.store = options.store ?? createMemoryRuntimeStore();
     this.processors = options.processors ?? new Map();
+    this.persistenceHooks = options.persistenceHooks;
     if (options.opsRepo) {
       this.bridgeLegacyEventStore(options.opsRepo);
     }
@@ -85,6 +96,70 @@ export class RuntimeService {
 
   registerProcessor(processor: JobProcessor): void {
     this.processors.set(processor.key, processor);
+  }
+
+  hydrateStore(partial: Partial<MemoryRuntimeStore>): void {
+    if (partial.jobs?.length) {
+      for (const job of partial.jobs) {
+        const idx = this.store.jobs.findIndex((j) => j.id === job.id);
+        if (idx >= 0) this.store.jobs[idx] = job;
+        else this.store.jobs.push(job);
+      }
+    }
+    if (partial.messages?.length) {
+      for (const msg of partial.messages) {
+        const idx = this.store.messages.findIndex((m) => m.id === msg.id);
+        if (idx >= 0) this.store.messages[idx] = msg;
+        else this.store.messages.push(msg);
+      }
+    }
+    if (partial.policies?.length) {
+      for (const policy of partial.policies) {
+        const idx = this.store.policies.findIndex(
+          (p) => p.organizationId === policy.organizationId && p.policyKey === policy.policyKey
+        );
+        if (idx >= 0) this.store.policies[idx] = policy;
+        else this.store.policies.push(policy);
+      }
+    }
+    if (partial.deadLetters?.length) {
+      for (const dlq of partial.deadLetters) {
+        if (!this.store.deadLetters.some((d) => d.id === dlq.id)) {
+          this.store.deadLetters.push(dlq);
+        }
+      }
+    }
+    if (partial.executions?.length) {
+      for (const execution of partial.executions) {
+        const idx = this.store.executions.findIndex((e) => e.id === execution.id);
+        if (idx >= 0) this.store.executions[idx] = execution;
+        else this.store.executions.push(execution);
+      }
+    }
+    if (partial.schedules?.length) {
+      for (const schedule of partial.schedules) {
+        if (!this.store.schedules.some((s) => s.id === schedule.id)) {
+          this.store.schedules.push(schedule);
+        }
+      }
+    }
+  }
+
+  private trackJobEnqueue(job: DurableJob): DurableJob {
+    void this.persistenceHooks?.onJobEnqueued?.(job);
+    return job;
+  }
+
+  private trackExecution(execution: WorkflowExecution): WorkflowExecution {
+    void this.persistenceHooks?.onExecutionUpdated?.(execution);
+    return execution;
+  }
+
+  private enqueueTracked(
+    input: Parameters<typeof enqueueJob>[1]
+  ): DurableJob {
+    const job = enqueueJob(this.store, input);
+    return this.trackJobEnqueue(job);
   }
 
   initOrganization(organizationId: string): void {
@@ -164,7 +239,8 @@ export class RuntimeService {
         payload: { orderId: input.orderId, lines: input.lines, templateKey: "order_confirmation", channel: "email", recipient: "customer@demo.local" },
       });
       executionId = execution.id;
-      enqueueJob(this.store, {
+      this.trackExecution(execution);
+      this.enqueueTracked({
         organizationId: input.organizationId,
         processorKey: "workflow_runner",
         idempotencyKey: `workflow:${execution.id}`,
@@ -184,7 +260,7 @@ export class RuntimeService {
     payload: Record<string, unknown>;
   }) {
     const engineOpts = this.workflowOptions();
-    return triggerWorkflowsForEvent(engineOpts, {
+    const execution = triggerWorkflowsForEvent(engineOpts, {
       organizationId: input.organizationId,
       eventType: input.event.eventType,
       eventId: input.event.id,
@@ -193,6 +269,7 @@ export class RuntimeService {
       payload: input.payload,
       workflow: input.workflow,
     });
+    return this.trackExecution(execution);
   }
 
   private workflowOptions(): WorkflowEngineOptions {
@@ -228,6 +305,7 @@ export class RuntimeService {
         };
         const result = await runWorkflowExecution(this.workflowOptions(), executionId, ctxFull);
         if (!result) return { ok: false, error: "Execution not found" };
+        this.trackExecution(result);
         if (result.status === "failed" || result.status === "dead_letter") {
           return { ok: false, error: result.errorMessage ?? "Workflow failed" };
         }
@@ -238,7 +316,7 @@ export class RuntimeService {
     });
 
     tickScheduler(this.store, (orgId, processorKey) => {
-      enqueueJob(this.store, {
+      this.enqueueTracked({
         organizationId: orgId,
         processorKey,
         idempotencyKey: `schedule:${processorKey}:${Date.now()}`,
@@ -247,7 +325,11 @@ export class RuntimeService {
       });
     });
 
-    const jobs = await processJobQueue(this.store, this.processors);
+    const jobs = await processJobQueue(this.store, this.processors, new Date(), {
+      onJobUpdated: (job) => {
+        void this.persistenceHooks?.onJobUpdated?.(job);
+      },
+    });
     const outbox = await processOutbox(this.store, {
       email: emailAdapter,
       whatsapp: whatsappAdapter,
@@ -255,10 +337,11 @@ export class RuntimeService {
 
     let workflows = 0;
     for (const exec of this.store.executions.filter((e) => e.status === "queued")) {
-      await runWorkflowExecution(this.workflowOptions(), exec.id, {
+      const result = await runWorkflowExecution(this.workflowOptions(), exec.id, {
         organizationId: exec.organizationId,
         ...actionCtx,
       });
+      if (result) this.trackExecution(result);
       workflows++;
     }
 
@@ -304,7 +387,7 @@ export class RuntimeService {
       const step = execution?.stepRuns.find((s) => s.id === record.stepRunId);
       if (step) {
         approveWorkflowStep(this.store, record.executionId, step.stepKey);
-        enqueueJob(this.store, {
+        this.enqueueTracked({
           organizationId: record.organizationId,
           processorKey: "workflow_runner",
           idempotencyKey: `workflow:resume:${record.executionId}:${Date.now()}`,

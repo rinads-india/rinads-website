@@ -7,6 +7,8 @@ import {
   createLowStockAlertProcessor,
   type RuntimeService,
   type JobProcessor,
+  type RuntimePersistenceHooks,
+  type MemoryRuntimeStore,
 } from "@rinads/runtime";
 import type {
   FulfilmentService,
@@ -27,8 +29,17 @@ export type RuntimeWiringDeps = {
   alertEngine: AlertEngine;
 };
 
-export function wireRuntime(deps: RuntimeWiringDeps): RuntimeService {
-  const runtime = createRuntimeService({ store: undefined, opsRepo: deps.opsRepo });
+export type WireRuntimeOptions = {
+  persistenceHooks?: RuntimePersistenceHooks;
+  store?: MemoryRuntimeStore;
+};
+
+export function wireRuntime(deps: RuntimeWiringDeps, options: WireRuntimeOptions = {}): RuntimeService {
+  const runtime = createRuntimeService({
+    store: options.store,
+    opsRepo: deps.opsRepo,
+    persistenceHooks: options.persistenceHooks,
+  });
 
   registerAction({
     key: "fulfilment.create_from_order",

@@ -202,10 +202,17 @@ export {
 } from "./supabase";
 export {
   syncRuntimeArtifactsToSupabase,
+  loadRuntimeStoreFromSupabase,
   loadRuntimeJobsFromSupabase,
+  claimRuntimeJobs,
+  enqueueRuntimeJobToSupabase,
+  resetStaleRunningJobs,
+  mapRuntimeJobRow,
   type RuntimeSupabaseClient,
 } from "./runtime-supabase";
-export { wireRuntime, handleOrderPaidRuntime } from "./runtime-wiring";
+export { createRuntimePersistenceHooks } from "./runtime-persistence";
+export { runSupabaseRuntimeWorker, type RunSupabaseRuntimeWorkerResult } from "./runtime-worker";
+export { wireRuntime, handleOrderPaidRuntime, type WireRuntimeOptions } from "./runtime-wiring";
 export {
   createDemoRepositoryBundle,
   createOrgScopedRepositoryBundle,

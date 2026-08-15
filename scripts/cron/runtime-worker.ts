@@ -1,9 +1,10 @@
 /**
- * RINADS Runtime 2.0 worker — processes durable jobs, workflows, scheduler, outbox.
+ * RINADS Runtime 2.0 worker — Supabase-backed durable job processing.
  * Run on schedule: pnpm runtime:worker
  */
+import { runSupabaseRuntimeWorker } from "@rinads/operations-server";
 import { wireRuntime } from "@rinads/operations-server";
-import { createInMemoryOperationsRepository, syncRuntimeArtifactsToSupabase } from "@rinads/operations-server";
+import { createInMemoryOperationsRepository } from "@rinads/operations-server";
 import {
   FulfilmentService,
   ReservationService,
@@ -13,7 +14,7 @@ import {
 } from "@rinads/operations";
 import { AlertEngine } from "@rinads/runtime";
 
-async function main() {
+async function runDemoWorker(orgId: string) {
   const opsRepo = createInMemoryOperationsRepository();
   const ledger = new StockLedgerService(opsRepo);
   const fulfilment = new FulfilmentService(opsRepo);
@@ -31,7 +32,6 @@ async function main() {
     alertEngine,
   });
 
-  const orgId = process.env.RUNTIME_ORG_ID ?? "org_ambady_demo";
   runtime.initOrganization(orgId);
   const result = await runtime.processQueue({
     organizationId: orgId,
@@ -39,20 +39,28 @@ async function main() {
     permissions: ["org.manage", "commerce.order.read"],
   });
 
-  if (process.env.USE_SUPABASE === "1") {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (url && key) {
-      const { createClient } = await import("@supabase/supabase-js");
-      const client = createClient(url, key);
-      await syncRuntimeArtifactsToSupabase(client as never, orgId, runtime.store);
-    } else {
-      console.error("Missing Supabase credentials for runtime worker");
-      process.exit(1);
-    }
+  console.log(JSON.stringify({ ok: true, mode: "demo", ...result }));
+}
+
+async function main() {
+  const orgId = process.env.RUNTIME_ORG_ID ?? "org_ambady_demo";
+
+  if (process.env.USE_SUPABASE !== "1") {
+    await runDemoWorker(orgId);
+    return;
   }
 
-  console.log(JSON.stringify({ ok: true, ...result }));
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.error("Missing Supabase credentials for runtime worker");
+    process.exit(1);
+  }
+
+  const { createClient } = await import("@supabase/supabase-js");
+  const client = createClient(url, key, { auth: { persistSession: false } });
+  const result = await runSupabaseRuntimeWorker(client as never, orgId);
+  console.log(JSON.stringify({ ok: true, mode: "supabase", ...result }));
 }
 
 main().catch((e) => {

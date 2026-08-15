@@ -22,4 +22,4 @@ export * from "./adapters/shipping";
 export * from "./adapters/payment";
 export * from "./loop-guard";
 export * from "./store/memory-store";
-export { RuntimeService, createRuntimeService } from "./runtime-service";
+export { RuntimeService, createRuntimeService, type RuntimePersistenceHooks } from "./runtime-service";

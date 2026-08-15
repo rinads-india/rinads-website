@@ -14,4 +14,14 @@ describe("Runtime RLS policies", () => {
     assert.match(sql, /runtime_approvals ENABLE ROW LEVEL SECURITY/);
     assert.match(sql, /private\.is_org_member\(organization_id\)/);
   });
+
+  it("Phase 13 migration adds execution snapshots and claim RPC", () => {
+    const sql = readFileSync(
+      join(process.cwd(), "../../supabase/migrations/20260819100000_runtime_worker_persistence.sql"),
+      "utf8"
+    );
+    assert.match(sql, /runtime_execution_snapshots/);
+    assert.match(sql, /claim_runtime_jobs/);
+    assert.match(sql, /reset_stale_runtime_jobs/);
+  });
 });
