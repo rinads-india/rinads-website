@@ -14,7 +14,7 @@ Runtime 2.0 is the tenant-scoped orchestration layer for business-critical flows
 - **Action registry** for validated side effects
 - **Notification outbox** for async delivery
 
-Primary store is in-memory (`MemoryRuntimeStore`). Supabase tables mirror selected artifacts when `USE_SUPABASE=1` (see [RUNTIME-SECURITY.md](./RUNTIME-SECURITY.md)).
+Primary store remains in-memory (`MemoryRuntimeStore`) for request-path latency. **Phase 13:** when `USE_SUPABASE=1`, the worker hydrates from Supabase, claims jobs via RPC, and syncs back after each run. Persistence hooks write jobs and execution snapshots on enqueue/update. See [PHASE_13_WORKER_PERSISTENCE.md](./PHASE_13_WORKER_PERSISTENCE.md).
 
 ## Architecture
 
@@ -45,7 +45,15 @@ Checkout (order paid)
 
 ### Worker
 
-`scripts/cron/runtime-worker.ts` wires operations services via `wireRuntime()`, runs `processQueue()`, and optionally syncs to Supabase.
+`scripts/cron/runtime-worker.ts` calls `runSupabaseRuntimeWorker()` when `USE_SUPABASE=1`:
+
+1. Reset stale `running` jobs (>10 min)
+2. Load ops/commerce from Supabase
+3. Hydrate runtime store + claim jobs
+4. `processQueue()` with persistence hooks
+5. Full artifact sync
+
+Demo mode (no `USE_SUPABASE`) uses in-memory wiring unchanged.
 
 Env: `RUNTIME_ORG_ID`, `USE_SUPABASE=1`, Supabase URL + service role key.
 

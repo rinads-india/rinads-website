@@ -63,7 +63,8 @@ export type JobProcessor = {
 export async function processJobQueue(
   store: JobQueueStore,
   processors: Map<string, JobProcessor>,
-  now = new Date()
+  now = new Date(),
+  options?: { onJobUpdated?: (job: DurableJob) => void }
 ): Promise<{ processed: number; failed: number; deadLetter: number }> {
   let processed = 0;
   let failed = 0;
@@ -126,6 +127,7 @@ export async function processJobQueue(
       else failed++;
     }
     job.updatedAt = new Date().toISOString();
+    options?.onJobUpdated?.(job);
   }
 
   return { processed, failed, deadLetter };

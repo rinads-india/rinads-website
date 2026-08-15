@@ -41,12 +41,16 @@ pnpm runtime:worker
 
 Script: `scripts/cron/runtime-worker.ts`
 
-1. Wire operations + runtime services
-2. `initOrganization(RUNTIME_ORG_ID)` — seeds schedules + refund policy
-3. `processQueue()` — tick scheduler, run jobs, workflows, outbox
-4. Optional Supabase sync when `USE_SUPABASE=1`
+**Supabase mode (`USE_SUPABASE=1`):**
 
-Schedule in production: cron every 1–5 minutes (covers both processors via tick).
+1. `runSupabaseRuntimeWorker()` — load, claim, process, sync
+2. `reset_stale_runtime_jobs` on boot
+3. `initOrganization(RUNTIME_ORG_ID)` — seeds schedules + refund policy
+4. `processQueue()` — tick scheduler, run jobs, workflows, outbox
+
+**Demo mode:** in-memory wiring only (no Supabase required).
+
+Schedule in production: cron every 1–5 minutes.
 
 ## Env vars
 

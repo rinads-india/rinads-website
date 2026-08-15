@@ -32,9 +32,9 @@
 | 12 | Scheduler (`reservation_expiry`, `low_stock_scan`) | **PARTIAL** | Simplified tick; cron parsing deferred |
 | 13 | `pnpm runtime:worker` | **DONE** | `scripts/cron/runtime-worker.ts` |
 | 14 | Notification outbox + adapters | **PARTIAL** | Table + processor; email/WhatsApp stubs |
-| 15 | Supabase artifact sync | **PARTIAL** | Jobs, outbox, policies only |
+| 15 | Supabase artifact sync | **DONE** | Phase 13: load, claim, hooks, full sync |
 | 16 | DB-driven workflow definitions | **DEFERRED** | Code uses `BUILTIN_WORKFLOWS` |
-| 17 | Hydrate runtime store from Supabase on boot | **DEFERRED** | Worker is memory-first |
+| 17 | Hydrate runtime store from Supabase on boot | **DONE** | Phase 13 `loadRuntimeStoreFromSupabase` + worker |
 | 18 | Set `business_events.processed_at` | **DEFERRED** | Column unused |
 | 19 | Append-only DB enforcement (triggers) | **DEFERRED** | Policy comment only |
 | 20 | RINPO tool registry READ/DRAFT/ACTION | **DONE** | `@rinads/intelligence` |
