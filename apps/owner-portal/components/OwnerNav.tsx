@@ -5,9 +5,15 @@ import { usePathname } from "next/navigation";
 import type { RoleKey } from "@rinads/permissions";
 
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/products", label: "Products" },
+  { href: "/operations", label: "Control Tower" },
+  { href: "/inventory", label: "Inventory" },
+  { href: "/procurement/purchase-orders", label: "Procurement" },
+  { href: "/fulfilment", label: "Fulfilment" },
+  { href: "/returns", label: "Returns" },
   { href: "/orders", label: "Orders" },
+  { href: "/products", label: "Products" },
+  { href: "/tasks", label: "Tasks" },
+  { href: "/search", label: "Search" },
   { href: "/support", label: "Support" },
 ] as const;
 
@@ -20,20 +26,22 @@ export function OwnerNav({ role = "founder" }: OwnerNavProps) {
 
   return (
     <header className="border-b border-rinads-primary/15 bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">Ambady</p>
-          <h1 className="text-lg font-semibold text-foreground">Owner Portal</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">Ambady ERP</p>
+          <h1 className="text-lg font-semibold text-foreground">Operations Control Tower</h1>
         </div>
-        <nav aria-label="Owner portal" className="flex flex-wrap gap-2">
+        <nav aria-label="Owner portal" className="flex flex-wrap gap-1">
           {links.map(({ href, label }) => {
             const active =
-              href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+              href === "/operations"
+                ? pathname === "/" || pathname === "/operations"
+                : pathname === href || pathname.startsWith(`${href}/`);
             return (
               <Link
                 key={href}
-                href={href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                href={href === "/operations" ? "/operations" : href}
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition sm:text-sm ${
                   active
                     ? "bg-rinads-primary text-white"
                     : "text-foreground hover:bg-surface-muted"
@@ -46,9 +54,8 @@ export function OwnerNav({ role = "founder" }: OwnerNavProps) {
           })}
         </nav>
       </div>
-      <p className="mx-auto max-w-6xl px-4 pb-3 text-xs text-muted-foreground">
-        Signed in as <span className="font-medium text-foreground">{role}</span> — UI role labels are
-        not authorization. Staff RBAC will be enforced server-side in Phase 1+.
+      <p className="mx-auto max-w-7xl px-4 pb-3 text-xs text-muted-foreground">
+        Signed in as <span className="font-medium text-foreground">{role}</span> — RBAC enforced via domain services + RLS in production.
       </p>
     </header>
   );

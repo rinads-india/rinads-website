@@ -27,6 +27,18 @@ export type PermissionKey =
   | "org.members.manage"
   | "audit.read"
   | "flags.read"
+  | "commerce.catalog.read"
+  | "commerce.catalog.write"
+  | "commerce.order.read"
+  | "commerce.order.manage"
+  | "inventory.read"
+  | "inventory.adjust"
+  | "procurement.read"
+  | "procurement.approve"
+  | "fulfilment.manage"
+  | "returns.manage"
+  | "refund.approve"
+  | "tasks.manage"
   | (string & {});
 
 export type Permission = {

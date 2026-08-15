@@ -2,7 +2,7 @@ import {
   commerce,
   demoContext,
   DEMO_CUSTOMER_ID,
-} from "@rinads/commerce-server";
+} from "@rinads/operations-server";
 import type {
   Address,
   CommerceContext,

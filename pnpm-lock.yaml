@@ -29,64 +29,15 @@ importers:
       '@rinads/intelligence':
         specifier: workspace:*
         version: link:../../packages/intelligence
+      '@rinads/operations-server':
+        specifier: workspace:*
+        version: link:../../packages/operations-server
       '@rinads/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       lucide-react:
         specifier: ^1.28.0
         version: 1.31.0(react@19.2.3)
-      next:
-        specifier: 16.1.6
-        version: 16.1.6(@babel/core@7.29.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
-      react-dom:
-        specifier: 19.2.3
-        version: 19.2.3(react@19.2.3)
-    devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4
-        version: 4.3.3
-      '@types/node':
-        specifier: ^20
-        version: 20.19.43
-      '@types/react':
-        specifier: ^19
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: ^19
-        version: 19.2.4(@types/react@19.2.18)
-      eslint:
-        specifier: ^9
-        version: 9.39.5(jiti@2.7.0)
-      eslint-config-next:
-        specifier: 16.1.6
-        version: 16.1.6(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
-      tailwindcss:
-        specifier: ^4
-        version: 4.3.3
-      tsx:
-        specifier: ^4.19.4
-        version: 4.23.12
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-
-  apps/owner-portal:
-    dependencies:
-      '@rinads/commerce':
-        specifier: workspace:*
-        version: link:../../packages/commerce
-      '@rinads/commerce-server':
-        specifier: workspace:*
-        version: link:../../packages/commerce-server
-      '@rinads/permissions':
-        specifier: workspace:*
-        version: link:../../packages/permissions
-      '@rinads/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -125,6 +76,64 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  apps/owner-portal:
+    dependencies:
+      '@rinads/commerce':
+        specifier: workspace:*
+        version: link:../../packages/commerce
+      '@rinads/commerce-server':
+        specifier: workspace:*
+        version: link:../../packages/commerce-server
+      '@rinads/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
+      '@rinads/operations-server':
+        specifier: workspace:*
+        version: link:../../packages/operations-server
+      '@rinads/permissions':
+        specifier: workspace:*
+        version: link:../../packages/permissions
+      '@rinads/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: 16.1.6
+        version: 16.1.6(@babel/core@7.29.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.3.3
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.4(@types/react@19.2.18)
+      eslint:
+        specifier: ^9
+        version: 9.39.5(jiti@2.7.0)
+      eslint-config-next:
+        specifier: 16.1.6
+        version: 16.1.6(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^4
+        version: 4.3.3
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   apps/storefront:
     dependencies:
       '@rinads/brand':
@@ -139,6 +148,9 @@ importers:
       '@rinads/intelligence':
         specifier: workspace:*
         version: link:../../packages/intelligence
+      '@rinads/operations-server':
+        specifier: workspace:*
+        version: link:../../packages/operations-server
       '@rinads/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -328,6 +340,9 @@ importers:
       '@rinads/commerce':
         specifier: workspace:*
         version: link:../commerce
+      '@rinads/operations':
+        specifier: workspace:*
+        version: link:../operations
     devDependencies:
       '@rinads/commerce-server':
         specifier: workspace:*
@@ -339,7 +354,55 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/operations:
+    dependencies:
+      '@rinads/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/operations-server:
+    dependencies:
+      '@rinads/commerce':
+        specifier: workspace:*
+        version: link:../commerce
+      '@rinads/commerce-server':
+        specifier: workspace:*
+        version: link:../commerce-server
+      '@rinads/operations':
+        specifier: workspace:*
+        version: link:../operations
+      '@rinads/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+    devDependencies:
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/permissions:
+    devDependencies:
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/runtime:
+    dependencies:
+      '@rinads/operations':
+        specifier: workspace:*
+        version: link:../operations
     devDependencies:
       tsx:
         specifier: ^4.19.4

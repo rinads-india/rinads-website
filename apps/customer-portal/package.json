@@ -14,6 +14,7 @@
     "@rinads/brand": "workspace:*",
     "@rinads/commerce": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
+    "@rinads/operations-server": "workspace:*",
     "@rinads/intelligence": "workspace:*",
     "@rinads/ui": "workspace:*",
     "lucide-react": "^1.28.0",

@@ -1,4 +1,5 @@
 import type { CommerceRepository } from "../repository";
+import type { InventoryPort, OrderPaidCallback } from "../inventory-port";
 import { err, ok, roundMoney } from "../result";
 import type { CheckoutInput, CommerceContext, Order, Result } from "../types";
 import { CartService } from "./cart";
@@ -28,8 +29,12 @@ export class CheckoutService {
   private payment: PaymentService;
   private orders: OrderService;
 
-  constructor(private readonly repo: CommerceRepository) {
-    this.cart = new CartService(this.repo);
+  constructor(
+    private readonly repo: CommerceRepository,
+    private readonly inventory?: InventoryPort,
+    private readonly onOrderPaid?: OrderPaidCallback
+  ) {
+    this.cart = new CartService(this.repo, inventory);
     this.catalog = new CatalogService(this.repo);
     this.shipping = new ShippingService(this.repo);
     this.tax = new TaxService(this.repo);
@@ -76,6 +81,19 @@ export class CheckoutService {
     const validated = this.cart.validate(ctx, input.cartId);
     if (!validated.ok) return validated;
 
+    const store = this.repo.getStore();
+    const cart = store.carts.find((c) => c.id === input.cartId);
+    if (!cart) return err("CART_NOT_FOUND", "Cart not found.");
+
+    if (this.inventory) {
+      const reserveResult = this.inventory.reserveForCart(
+        ctx,
+        input.cartId,
+        cart.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity }))
+      );
+      if (!reserveResult.ok) return reserveResult;
+    }
+
     const paymentRef = input.paymentReference ?? `demo_${Date.now()}`;
     const paymentResult = this.payment.verify({
       provider: input.paymentProvider,
@@ -83,14 +101,14 @@ export class CheckoutService {
       amount: quoteResult.data.grandTotal,
       currency: "INR",
     });
-    if (!paymentResult.ok) return paymentResult;
+    if (!paymentResult.ok) {
+      this.inventory?.releaseCartReservations(ctx, input.cartId);
+      return paymentResult;
+    }
     if (paymentResult.data.status === "failed") {
+      this.inventory?.releaseCartReservations(ctx, input.cartId);
       return err("PAYMENT_FAILED", "Payment verification failed.");
     }
-
-    const store = this.repo.getStore();
-    const cart = store.carts.find((c) => c.id === input.cartId);
-    if (!cart) return err("CART_NOT_FOUND", "Cart not found.");
 
     const lineSnapshots = cart.lines.map((line) => {
       const variant = this.catalog.getVariant(ctx, line.variantId)!;
@@ -112,11 +130,6 @@ export class CheckoutService {
       };
     });
 
-    for (const line of cart.lines) {
-      const variant = store.variants.find((v) => v.id === line.variantId);
-      if (variant) variant.stock -= line.quantity;
-    }
-
     const orderResult = this.orders.createFromCheckout(ctx, {
       customerId: input.customerId ?? ctx.customerId,
       guestEmail: input.guestEmail,
@@ -125,7 +138,25 @@ export class CheckoutService {
       paymentRef: paymentResult.data.providerRef,
       shippingMethodCode: input.shippingMethodCode,
     });
-    if (!orderResult.ok) return orderResult;
+    if (!orderResult.ok) {
+      this.inventory?.releaseCartReservations(ctx, input.cartId);
+      return orderResult;
+    }
+
+    if (this.inventory) {
+      const saleResult = this.inventory.convertReservationToSale(
+        ctx,
+        input.cartId,
+        orderResult.data.id
+      );
+      if (!saleResult.ok) return saleResult;
+      this.inventory.refreshProjections?.(ctx);
+    } else {
+      for (const line of cart.lines) {
+        const variant = store.variants.find((v) => v.id === line.variantId);
+        if (variant) variant.stock -= line.quantity;
+      }
+    }
 
     if (quoteResult.data.promotionCode) {
       const promo = store.promotions.find(
@@ -135,6 +166,7 @@ export class CheckoutService {
     }
 
     this.cart.clear(ctx, input.cartId);
+    this.onOrderPaid?.(ctx, orderResult.data);
     return orderResult;
   }
 }
