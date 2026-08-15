@@ -1,4 +1,5 @@
 import type { CommerceRepository } from "../repository";
+import type { InventoryPort } from "../inventory-port";
 import { err, ok, roundMoney } from "../result";
 import type { Cart, CommerceContext, Result } from "../types";
 import { CatalogService } from "./catalog";
@@ -6,8 +7,17 @@ import { CatalogService } from "./catalog";
 export class CartService {
   private catalog: CatalogService;
 
-  constructor(private readonly repo: CommerceRepository) {
+  constructor(
+    private readonly repo: CommerceRepository,
+    private readonly inventory?: InventoryPort
+  ) {
     this.catalog = new CatalogService(this.repo);
+  }
+
+  private available(ctx: CommerceContext, variantId: string): number {
+    if (this.inventory) return this.inventory.getAvailable(ctx, variantId);
+    const variant = this.catalog.getVariant(ctx, variantId);
+    return variant?.stock ?? 0;
   }
 
   getOrCreate(ctx: CommerceContext, cartId?: string, guestToken?: string): Cart {
@@ -39,7 +49,9 @@ export class CartService {
     if (quantity < 1) return err("INVALID_QUANTITY", "Quantity must be at least 1.");
     const variant = this.catalog.getVariant(ctx, variantId);
     if (!variant) return err("VARIANT_NOT_FOUND", "Variant not found.");
-    if (variant.stock < quantity) return err("OUT_OF_STOCK", "Not enough stock available.");
+    if (this.available(ctx, variantId) < quantity) {
+      return err("OUT_OF_STOCK", "Not enough stock available.");
+    }
     const store = this.repo.getStore();
     const cart = store.carts.find((c) => c.id === cartId && c.organizationId === ctx.organizationId);
     if (!cart) return err("CART_NOT_FOUND", "Cart not found.");
@@ -60,8 +72,9 @@ export class CartService {
     if (quantity <= 0) {
       cart.lines = cart.lines.filter((l) => l.id !== lineId);
     } else {
-      const variant = this.catalog.getVariant(ctx, line.variantId);
-      if (!variant || variant.stock < quantity) return err("OUT_OF_STOCK", "Not enough stock available.");
+      if (this.available(ctx, line.variantId) < quantity) {
+        return err("OUT_OF_STOCK", "Not enough stock available.");
+      }
       line.quantity = quantity;
     }
     cart.updatedAt = new Date().toISOString();
@@ -95,7 +108,9 @@ export class CartService {
         issues.push(`Variant ${line.variantId} no longer exists.`);
         continue;
       }
-      if (variant.stock < line.quantity) issues.push(`${variant.name} has insufficient stock.`);
+      if (this.available(ctx, line.variantId) < line.quantity) {
+        issues.push(`${variant.name} has insufficient stock.`);
+      }
       subtotal += variant.price * line.quantity;
     }
     if (issues.length) return err("CART_INVALID", issues.join(" "), undefined, ctx.requestId);

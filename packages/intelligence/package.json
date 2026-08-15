@@ -15,7 +15,8 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@rinads/commerce": "workspace:*"
+    "@rinads/commerce": "workspace:*",
+    "@rinads/operations": "workspace:*"
   },
   "devDependencies": {
     "@rinads/commerce-server": "workspace:*",

@@ -1,4 +1,4 @@
-import { commerce, AMBADY_ORG_ID } from "@rinads/commerce-server";
+import { commerce, operations, opsContext, AMBADY_ORG_ID } from "@rinads/operations-server";
 import type {
   CommerceContext,
   Order,
@@ -8,19 +8,10 @@ import type {
   SupportTicket,
 } from "@rinads/commerce";
 
-export { commerce, AMBADY_ORG_ID };
+export { commerce, operations, opsContext, AMBADY_ORG_ID };
 
-/**
- * Org-owner context — no customerId so order/ticket queries are not scoped to a single customer.
- * Real authorization will be enforced server-side in Phase 1+; this is demo context only.
- */
 export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceContext {
-  return {
-    organizationId: AMBADY_ORG_ID,
-    userId: "user_owner_001",
-    requestId: `req_${Date.now()}`,
-    ...overrides,
-  };
+  return opsContext(overrides) as CommerceContext;
 }
 
 export function listAllProducts(ctx: CommerceContext): Product[] {
@@ -55,7 +46,9 @@ export function listOrgTickets(ctx: CommerceContext): SupportTicket[] {
 }
 
 export function countOpenTickets(ctx: CommerceContext): number {
-  return listOrgTickets(ctx).filter((t) => t.status === "open" || t.status === "assigned" || t.status === "in_progress").length;
+  return listOrgTickets(ctx).filter(
+    (t) => t.status === "open" || t.status === "assigned" || t.status === "in_progress"
+  ).length;
 }
 
 export const DEMO_OWNER_ROLE = "founder" as const;

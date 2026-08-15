@@ -1,4 +1,4 @@
-import { commerce, demoContext, AMBADY_ORG_ID } from "@rinads/commerce-server";
+import { commerce, demoContext, AMBADY_ORG_ID } from "@rinads/operations-server";
 
 export { commerce, demoContext, AMBADY_ORG_ID };
 

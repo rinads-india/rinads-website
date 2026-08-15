@@ -13,6 +13,8 @@
   "dependencies": {
     "@rinads/commerce": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
+    "@rinads/operations": "workspace:*",
+    "@rinads/operations-server": "workspace:*",
     "@rinads/permissions": "workspace:*",
     "@rinads/ui": "workspace:*",
     "next": "16.1.6",

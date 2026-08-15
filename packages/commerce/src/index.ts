@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./result";
 export * from "./repository";
+export * from "./inventory-port";
 export { CatalogService } from "./services/catalog";
 export { CartService } from "./services/cart";
 export { TaxService } from "./services/tax";

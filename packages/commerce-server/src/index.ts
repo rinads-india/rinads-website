@@ -10,9 +10,9 @@ import {
   TaxService,
   type CommerceContext,
 } from "@rinads/commerce";
-import { createInMemoryRepository, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
+import { getSharedCommerceRepository, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
 
-const repo = createInMemoryRepository();
+const repo = getSharedCommerceRepository();
 
 export const commerce = {
   repo,
@@ -37,5 +37,5 @@ export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceC
   };
 }
 
-export { createInMemoryRepository, resetCommerceStore, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
+export { createInMemoryRepository, getSharedCommerceRepository, resetCommerceStore, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
 export { createAmbadySeedStore } from "./seed";
