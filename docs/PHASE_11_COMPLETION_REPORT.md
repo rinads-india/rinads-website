@@ -14,7 +14,7 @@
 | 5 | Founder suspends tenant → portal denied | **DONE** — `requireOrgActive` + RPC |
 | 6 | Feature flags + plan attachment | **PARTIAL** — plan attachment on provision; override UI read-only |
 | 7 | Provisioning auditable | **DONE** — RPC writes `audit_logs` |
-| 8 | CI green | **Verify in PR** |
+| 8 | CI green | **DONE** — verified on `main` after merge (#27) |
 
 ## Workstream summary
 

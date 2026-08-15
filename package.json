@@ -15,10 +15,12 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "staging:ambady-seed": "pnpm exec tsx scripts/staging/ambady-cutover.ts",
     "deploy:emergency": "pnpm --filter @rinads/website deploy:emergency",
     "push:github": "pnpm --filter @rinads/website push:github"
   },
   "devDependencies": {
+    "tsx": "^4.19.4",
     "turbo": "^2.5.4",
     "typescript": "^5"
   },
