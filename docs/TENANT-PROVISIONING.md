@@ -28,3 +28,19 @@ Phase 11 introduces auditable tenant provisioning via `provision_tenant` RPC and
 
 - SQL seed jobs: **PARTIAL** — app-layer seed runs synchronously after RPC
 - Async worker for `tenant_provisioning_jobs`: **PARTIAL** — schema + helpers in `@rinads/platform/runtime-jobs`
+
+## Ambady Tenant #1 cutover (staging)
+
+1. Apply all migrations through `20260816100001_rls_complete.sql` (see `docs/deployment/SUPABASE_MIGRATIONS.md`).
+2. Provision or confirm org slug `ambady`:
+   - Platform admin → Provision tenant (slug `ambady`, template `ambady-nursery`), or
+   - `provision_tenant('Ambady Nursery', 'ambady', 'ambady-nursery', 'growth')`
+3. Seed app-layer catalog + ops ledger for the real org UUID:
+   ```bash
+   USE_SUPABASE=1 pnpm staging:ambady-seed -- --org-id <organization-uuid>
+   ```
+4. Demo/local without Supabase:
+   ```bash
+   USE_DEMO_STORE=1 pnpm staging:ambady-seed
+   ```
+5. Verify: owner portal lists inventory; platform admin shows tenant `active`.
