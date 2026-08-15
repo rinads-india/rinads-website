@@ -20,4 +20,4 @@ Domain guards use feature flags + plan limits — read-only messages, not billin
 
 ## Status
 
-**PARTIAL** — schema + attachment complete; usage metering and payment webhooks deferred to Phase 12+.
+**Phase 12** — Razorpay webhooks, `billing_*` tables, and `usage_counters` metering implemented in `@rinads/billing`. Stripe adapter remains stub (Phase 13).

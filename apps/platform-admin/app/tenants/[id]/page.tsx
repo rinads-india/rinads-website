@@ -44,6 +44,8 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         </div>
         <div className="flex gap-4 text-sm">
           <Link href={`/tenants/${id}/flags`} className="text-rinads-primary">Feature flags</Link>
+          <Link href={`/tenants/${id}/billing`} className="text-rinads-primary">Billing</Link>
+          <Link href={`/tenants/${id}/domains`} className="text-rinads-primary">Domains</Link>
           <Link href={`/tenants/${id}/audit`} className="text-rinads-primary">Audit log</Link>
         </div>
       </div>

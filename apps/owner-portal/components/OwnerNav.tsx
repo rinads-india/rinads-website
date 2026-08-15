@@ -6,6 +6,8 @@ import type { RoleKey } from "@rinads/permissions";
 
 const links = [
   { href: "/operations", label: "Control Tower" },
+  { href: "/runtime", label: "Runtime" },
+  { href: "/approvals", label: "Approvals" },
   { href: "/inventory", label: "Inventory" },
   { href: "/procurement/purchase-orders", label: "Procurement" },
   { href: "/fulfilment", label: "Fulfilment" },

@@ -15,6 +15,7 @@
     "@rinads/commerce-server": "workspace:*",
     "@rinads/operations": "workspace:*",
     "@rinads/operations-server": "workspace:*",
+    "@rinads/intelligence": "workspace:*",
     "@rinads/auth": "workspace:*",
     "@rinads/database": "workspace:*",
     "@rinads/tenancy": "workspace:*",

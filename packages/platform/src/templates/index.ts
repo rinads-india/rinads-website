@@ -1,21 +1,73 @@
 import type { CommerceStore } from "@rinads/commerce";
 import type { OperationsStore } from "@rinads/operations";
-import { createAmbadySeedStore } from "@rinads/commerce-server";
-import { createAmbadyOperationsSeed } from "@rinads/operations-server";
+import { createAmbadySeedStore, createGenericRetailSeedStore } from "@rinads/commerce-server";
+import { createAmbadyOperationsSeed, createGenericRetailOperationsSeed } from "@rinads/operations-server";
 
-export type VerticalTemplateKey = "ambady-nursery";
+export type VerticalTemplateKey = "ambady-nursery" | "generic-retail";
 
 export type TenantSeedBundle = {
   commerce: CommerceStore;
   operations: OperationsStore;
 };
 
-export const VERTICAL_TEMPLATES: Record<VerticalTemplateKey, { name: string; description: string }> = {
+export type VerticalTemplateMeta = {
+  key: VerticalTemplateKey;
+  name: string;
+  description: string;
+  category: string;
+  isPublished: boolean;
+};
+
+export const VERTICAL_TEMPLATES: Record<VerticalTemplateKey, Omit<VerticalTemplateMeta, "key">> = {
   "ambady-nursery": {
     name: "Ambady Nursery & Garden",
     description: "Pebbles, landscaping products, full ERP starter catalog and inventory.",
+    category: "nursery",
+    isPublished: true,
+  },
+  "generic-retail": {
+    name: "Generic Retail",
+    description: "Minimal catalog, single location, basic shipping for general retail.",
+    category: "retail",
+    isPublished: true,
   },
 };
+
+export type TemplateRegistryClient = {
+  from: (table: string) => {
+    select: (cols?: string) => {
+      eq: (
+        col: string,
+        val: string | boolean
+      ) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+
+/** Load published templates from DB with code fallback. */
+export async function loadPublishedTemplates(
+  client?: TemplateRegistryClient
+): Promise<VerticalTemplateMeta[]> {
+  if (client) {
+    const { data, error } = await client
+      .from("vertical_templates")
+      .select("*")
+      .eq("is_published", true);
+    if (!error && data?.length) {
+      return data.map((row) => ({
+        key: String(row.key) as VerticalTemplateKey,
+        name: String(row.name),
+        description: String(row.description ?? ""),
+        category: String(row.category ?? "retail"),
+        isPublished: Boolean(row.is_published),
+      }));
+    }
+  }
+
+  return (Object.entries(VERTICAL_TEMPLATES) as [VerticalTemplateKey, (typeof VERTICAL_TEMPLATES)[VerticalTemplateKey]][])
+    .filter(([, meta]) => meta.isPublished)
+    .map(([key, meta]) => ({ key, ...meta }));
+}
 
 function remapCommerceStore(store: CommerceStore, organizationId: string): CommerceStore {
   return {
@@ -43,12 +95,14 @@ function remapOperationsStore(store: OperationsStore, organizationId: string): O
     locations: store.locations.map((l) => ({
       ...l,
       organizationId,
-      id: l.id.replace("loc_", `loc_${idPrefix}_`),
+      id: l.id.startsWith("loc_") ? l.id.replace(/^loc_/, `loc_${idPrefix}_`) : l.id,
     })),
     movements: store.movements.map((m) => ({
       ...m,
       organizationId,
-      locationId: m.locationId.replace("loc_", `loc_${idPrefix}_`),
+      locationId: m.locationId.startsWith("loc_")
+        ? m.locationId.replace(/^loc_/, `loc_${idPrefix}_`)
+        : m.locationId,
     })),
     suppliers: store.suppliers.map((s) => ({ ...s, organizationId })),
     supplierProducts: store.supplierProducts.map((s) => ({ ...s, organizationId })),
@@ -80,18 +134,27 @@ function remapOperationsStore(store: OperationsStore, organizationId: string): O
   };
 }
 
+function seedForTemplate(templateKey: VerticalTemplateKey, organizationId: string): TenantSeedBundle {
+  if (templateKey === "generic-retail") {
+    return {
+      commerce: remapCommerceStore(createGenericRetailSeedStore(organizationId), organizationId),
+      operations: remapOperationsStore(createGenericRetailOperationsSeed(organizationId), organizationId),
+    };
+  }
+  return {
+    commerce: remapCommerceStore(createAmbadySeedStore(), organizationId),
+    operations: remapOperationsStore(createAmbadyOperationsSeed(), organizationId),
+  };
+}
+
 export function seedTenantBundle(
   organizationId: string,
   templateKey: VerticalTemplateKey = "ambady-nursery"
 ): TenantSeedBundle {
-  if (templateKey !== "ambady-nursery") {
+  if (!(templateKey in VERTICAL_TEMPLATES)) {
     throw new Error(`Unknown template: ${templateKey}`);
   }
-
-  const commerce = remapCommerceStore(createAmbadySeedStore(), organizationId);
-  const operations = remapOperationsStore(createAmbadyOperationsSeed(), organizationId);
-
-  return { commerce, operations };
+  return seedForTemplate(templateKey, organizationId);
 }
 
 /** Ambady Tenant #1 canonical slug */

@@ -1,4 +1,5 @@
 import { commerce, operations, opsContext, AMBADY_ORG_ID } from "@rinads/operations-server";
+import { getDailyBriefing, listRinpoTools } from "@rinads/intelligence";
 import type {
   CommerceContext,
   Order,
@@ -9,6 +10,7 @@ import type {
 } from "@rinads/commerce";
 
 export { commerce, operations, opsContext, AMBADY_ORG_ID };
+export { getDailyBriefing, listRinpoTools };
 
 export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceContext {
   return opsContext(overrides) as CommerceContext;

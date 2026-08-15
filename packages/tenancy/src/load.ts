@@ -1,7 +1,8 @@
 import type { PermissionKey, RoleKey } from "@rinads/permissions";
 import { buildTenancyContext } from "./context";
 import { readActiveOrgIdFromCookie } from "./org-switch";
-import { planFeatureFlags } from "./feature-flags";
+import { planFeatureFlags, evaluateFeatureFlags } from "./feature-flags";
+import type { FeatureFlagDefinition, FeatureFlagOverrides } from "./feature-flags-types";
 import type { OrgMembership, TenancyContext } from "./types";
 
 export type TenancySupabaseClient = {
@@ -113,7 +114,13 @@ export async function resolveTenancyFromSupabase(
     memberships.find((m) => m.organizationId === activeOrganizationId) ?? memberships[0];
 
   const { planKey, verticalKey } = await loadOrgPlanAndSettings(client, active.organizationId);
-  const featureFlags = planFeatureFlags({ planKey, verticalKey });
+  const overrides = await loadFeatureFlagOverridesForOrg(client, active.organizationId);
+  const definitions = defaultFlagDefinitions();
+  const evaluated = evaluateFeatureFlags(definitions, overrides, {
+    organizationId: active.organizationId,
+    userId: userData.user.id,
+  });
+  const featureFlags = { ...planFeatureFlags({ planKey, verticalKey }), ...evaluated };
 
   return buildTenancyContext({
     userId: userData.user.id,
@@ -170,4 +177,31 @@ export function buildDemoTenancyContext(overrides?: Partial<TenancyContext>): Te
     verticalKey: overrides?.verticalKey ?? "ambady-nursery",
     featureFlags: overrides?.featureFlags ?? planFeatureFlags({ planKey: "growth" }),
   };
+}
+
+async function loadFeatureFlagOverridesForOrg(
+  client: TenancySupabaseClient,
+  organizationId: string
+): Promise<FeatureFlagOverrides> {
+  const { data } = await client
+    .from("feature_flag_overrides")
+    .select("flag_key, organization_id, user_id, enabled")
+    .eq("organization_id", organizationId);
+
+  return (data ?? []).map((row) => ({
+    flagKey: String(row.flag_key),
+    organizationId: row.organization_id ? String(row.organization_id) : undefined,
+    userId: row.user_id ? String(row.user_id) : undefined,
+    enabled: Boolean(row.enabled),
+  }));
+}
+
+function defaultFlagDefinitions(): FeatureFlagDefinition[] {
+  return [
+    { key: "commerce.enabled", defaultEnabled: true },
+    { key: "erp.inventory", defaultEnabled: true },
+    { key: "erp.procurement", defaultEnabled: false },
+    { key: "erp.fulfilment", defaultEnabled: false },
+    { key: "rinpo.ops", defaultEnabled: false },
+  ];
 }

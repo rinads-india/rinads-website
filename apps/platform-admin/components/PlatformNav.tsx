@@ -4,7 +4,9 @@ const links = [
   { href: "/", label: "Dashboard" },
   { href: "/tenants", label: "Tenants" },
   { href: "/tenants/new", label: "Provision" },
+  { href: "/templates", label: "Templates" },
   { href: "/plans", label: "Plans" },
+  { href: "/billing/events", label: "Billing events" },
 ];
 
 export function PlatformNav() {

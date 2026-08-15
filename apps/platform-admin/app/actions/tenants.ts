@@ -1,11 +1,16 @@
 "use server";
 
-import { provisionTenantViaRpc, buildAuditInsert, seedTenantBundle } from "@rinads/platform";
+import { provisionTenantViaRpc, buildAuditInsert, seedTenantBundle, type VerticalTemplateKey } from "@rinads/platform";
 import { createPlatformServerClient, createPlatformServiceClient } from "@/lib/supabase/server";
 import { requirePlatformTenancy } from "@/lib/tenancy";
 import { isDemoMode } from "@/lib/supabase/env";
 import { seedOrgCommerceStore } from "@rinads/commerce-server";
 import { createSupabaseOperationsRepository } from "@rinads/operations-server";
+
+function asTemplateKey(key: string): VerticalTemplateKey {
+  if (key === "generic-retail" || key === "ambady-nursery") return key;
+  throw new Error(`Unknown template: ${key}`);
+}
 
 export async function provisionTenantAction(input: {
   name: string;
@@ -15,10 +20,11 @@ export async function provisionTenantAction(input: {
 }): Promise<{ ok: true; organizationId: string } | { ok: false; error: string }> {
   try {
     await requirePlatformTenancy();
+    const templateKey = asTemplateKey(input.templateKey);
 
     if (isDemoMode()) {
       const orgId = `org_${input.slug.replace(/-/g, "_")}`;
-      const bundle = seedTenantBundle(orgId, input.templateKey as "ambady-nursery");
+      const bundle = seedTenantBundle(orgId, templateKey);
       seedOrgCommerceStore(orgId, bundle.commerce);
       createSupabaseOperationsRepository({ organizationId: orgId, initialStore: bundle.operations });
       return { ok: true, organizationId: orgId };
@@ -37,7 +43,7 @@ export async function provisionTenantAction(input: {
         ).rpc("provision_tenant", args);
         return { data, error };
       },
-      input
+      { ...input, templateKey }
     );
 
     if (!result.ok) {
@@ -46,13 +52,6 @@ export async function provisionTenantAction(input: {
     if (!result.organizationId) {
       return { ok: false, error: "Provision failed" };
     }
-
-    const bundle = seedTenantBundle(result.organizationId, input.templateKey as "ambady-nursery");
-    seedOrgCommerceStore(result.organizationId, bundle.commerce);
-    createSupabaseOperationsRepository({
-      organizationId: result.organizationId,
-      initialStore: bundle.operations,
-    });
 
     return { ok: true, organizationId: result.organizationId };
   } catch (e) {
@@ -154,9 +153,9 @@ export async function listPlansAction(): Promise<
       return {
         ok: true,
         plans: [
-          { key: "starter", name: "Starter", limits: { modules: ["commerce", "inventory"] } },
-          { key: "growth", name: "Growth", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment"] } },
-          { key: "platform", name: "Platform", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"] } },
+          { key: "starter", name: "Starter", limits: { modules: ["commerce", "inventory"], ordersPerMonth: 100 } },
+          { key: "growth", name: "Growth", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment"], ordersPerMonth: 1000 } },
+          { key: "platform", name: "Platform", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"], ordersPerMonth: 10000 } },
         ],
       };
     }
