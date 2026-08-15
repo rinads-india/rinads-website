@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/signup",
     "/story-concept",
     "/rinpo-story",
+    "/projects",
   ];
   return routes.map((path) => ({
     url: `${siteUrl}${path}`,
