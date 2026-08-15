@@ -93,27 +93,6 @@ a {
   padding: clamp(16px, 2.4vh, 28px) clamp(14px, 3vw, 32px);
 }
 
-.rinpo-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.rinpo-figure {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: auto;
-  width: auto;
-  max-height: 115%;
-  max-width: none;
-  object-fit: contain;
-  object-position: bottom center;
-}
-
 .header {
   position: relative;
   flex-shrink: 0;
@@ -697,13 +676,6 @@ a {
   opacity: 0;
   animation: reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: var(--d, 0.5s);
-}
-
-@media (max-width: 767px) {
-  .rinpo-figure {
-    max-height: min(78vh, 105%);
-    max-width: min(88vw, 420px);
-  }
 }
 
 @media (max-width: 720px) {
