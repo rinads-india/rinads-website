@@ -18,10 +18,13 @@ PR
 
 ## Vercel (Public Experience)
 
-- Project root directory: `apps/website`
+Full checklist: [`VERCEL_PUBLIC_EXPERIENCE.md`](./VERCEL_PUBLIC_EXPERIENCE.md).
+
+- Project root directory: `apps/website` (required after monorepo move)
 - Framework: Next.js
-- Install command (monorepo): `pnpm install` from repository root (configure Vercel accordingly)
-- Build command: `pnpm --filter @rinads/website build` (or turbo filter)
+- Install / build: committed in [`apps/website/vercel.json`](../../apps/website/vercel.json) (`pnpm install --filter @rinads/website...`, `pnpm --filter @rinads/website build` from monorepo root)
+- Production branch: `main`
+- Canonical host: `www.rinads.com` (not a team SSO / per-deployment `*.vercel.app` alias)
 
 ## EMERGENCY MODE
 
