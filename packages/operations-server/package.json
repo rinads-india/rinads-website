@@ -21,6 +21,7 @@
     "@rinads/runtime": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "tsx": "^4.19.4",
     "typescript": "^5"
   }

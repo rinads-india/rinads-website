@@ -58,7 +58,46 @@ export type AuditLog = {
   created_at: string;
 };
 
-/** Minimal Database typing for CORE tables (expand in later phases). */
+export type Plan = {
+  key: string;
+  name: string;
+  description: string;
+  limits: Json;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type OrganizationSubscription = {
+  id: string;
+  organization_id: string;
+  plan_key: string;
+  status: "active" | "trialing" | "past_due" | "cancelled";
+  started_at: string;
+  ends_at: string | null;
+};
+
+export type OrganizationSettings = {
+  organization_id: string;
+  timezone: string;
+  currency: string;
+  vertical_key: string;
+  storefront_slug: string | null;
+  settings: Json;
+  updated_at: string;
+};
+
+export type TenantProvisioningJob = {
+  id: string;
+  organization_id: string;
+  template_key: string;
+  status: "pending" | "running" | "completed" | "failed";
+  idempotency_key: string | null;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+};
+
+/** Minimal Database typing for CORE + platform tables (expand via supabase gen types). */
 export type Database = {
   public: {
     Tables: {
@@ -87,11 +126,43 @@ export type Database = {
         Update: Partial<{ description: string; default_enabled: boolean }>;
         Relationships: [];
       };
+      plans: {
+        Row: Plan;
+        Insert: Partial<Plan> & { key: string; name: string };
+        Update: Partial<Plan>;
+        Relationships: [];
+      };
+      organization_subscriptions: {
+        Row: OrganizationSubscription;
+        Insert: Partial<OrganizationSubscription> & { organization_id: string; plan_key: string };
+        Update: Partial<OrganizationSubscription>;
+        Relationships: [];
+      };
+      organization_settings: {
+        Row: OrganizationSettings;
+        Insert: Partial<OrganizationSettings> & { organization_id: string };
+        Update: Partial<OrganizationSettings>;
+        Relationships: [];
+      };
+      tenant_provisioning_jobs: {
+        Row: TenantProvisioningJob;
+        Insert: Partial<TenantProvisioningJob> & { organization_id: string; template_key: string };
+        Update: Partial<TenantProvisioningJob>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
       create_organization: {
         Args: { p_name: string; p_slug: string };
+        Returns: Organization;
+      };
+      provision_tenant: {
+        Args: { p_name: string; p_slug: string; p_template_key?: string; p_plan_key?: string };
+        Returns: Organization;
+      };
+      set_organization_status: {
+        Args: { p_org_id: string; p_status: string };
         Returns: Organization;
       };
     };
