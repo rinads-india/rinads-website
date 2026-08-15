@@ -1,0 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+.projects-page {
+  font-family: var(--font-inter-family), "Inter", sans-serif;
+}
+
+.projects-page .projects-accent {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+}
