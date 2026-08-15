@@ -212,3 +212,17 @@ export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceC
 
 export { createInMemoryOperationsRepository, resetOperationsStore } from "./memory";
 export { createAmbadyOperationsSeed, syncCommerceStockFromLedger } from "./seed";
+export {
+  createSupabaseOperationsRepository,
+  resetSupabaseOperationsRepositories,
+  type OperationsSupabaseClient,
+} from "./supabase";
+export {
+  createDemoRepositoryBundle,
+  createOrgScopedRepositoryBundle,
+  createSupabaseRepositoryBundle,
+  resolveRepositoryBundle,
+  isDemoStoreMode,
+  isSupabasePersistenceMode,
+  type RepositoryBundle,
+} from "./factory";

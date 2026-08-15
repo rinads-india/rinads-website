@@ -16,6 +16,26 @@
 7. Test signup → profile row created; create org via `create_organization` RPC / server action
 8. Confirm cannot assign `founder` / `super_admin` from client
 
+## Phase 11 — Platform SaaS migrations
+
+After Phase 10 operations migrations:
+
+1. Review [`supabase/migrations/20260816100000_platform_saas.sql`](../../supabase/migrations/20260816100000_platform_saas.sql)
+2. Review [`supabase/migrations/20260816100001_rls_complete.sql`](../../supabase/migrations/20260816100001_rls_complete.sql)
+3. Push: `pnpm dlx supabase db push`
+4. Verify: `plans`, `organization_subscriptions`, `organization_settings`, `tenant_provisioning_jobs`, `organization_invites`
+5. Test `provision_tenant` RPC and platform-admin on port 3004
+
+### Generated types
+
+When the Supabase project is linked, regenerate types for CI:
+
+```bash
+pnpm dlx supabase gen types typescript --linked > packages/database/src/generated.ts
+```
+
+Phase 11 extends hand-maintained types in [`packages/database/src/types.ts`](../../packages/database/src/types.ts) until generated types are wired in CI.
+
 ## Rollback
 
 Prefer forward-fix migrations. If needed, restore from Supabase backup; do not drop auth.users casually.
