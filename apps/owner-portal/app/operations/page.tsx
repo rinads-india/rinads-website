@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge, Card } from "@rinads/ui";
 import { OwnerRinpoBrief } from "@/components/OwnerRinpoBrief";
-import { commerce, demoContext, listOrgOrders, operations, opsContext } from "@/lib/commerce";
+import { demoContext, listOrgOrders, operations, opsContext } from "@/lib/commerce";
 
 export default function OperationsPage() {
   const ctx = opsContext();
