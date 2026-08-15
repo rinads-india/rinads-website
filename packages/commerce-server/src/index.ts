@@ -39,6 +39,7 @@ export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceC
 
 export { createInMemoryRepository, getSharedCommerceRepository, resetCommerceStore, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
 export { createAmbadySeedStore } from "./seed";
+export { createGenericRetailSeedStore } from "./generic-retail-seed";
 export {
   createOrgScopedCommerceRepository,
   seedOrgCommerceStore,

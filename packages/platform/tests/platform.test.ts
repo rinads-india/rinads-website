@@ -11,6 +11,12 @@ describe("Vertical templates", () => {
     assert.ok(bundle.operations.movements.length >= 1);
   });
 
+  it("seeds generic-retail template", () => {
+    const bundle = seedTenantBundle("org_retail", "generic-retail");
+    assert.equal(bundle.commerce.products.length, 1);
+    assert.equal(bundle.operations.locations.length, 1);
+  });
+
   it("defines ambady slug constant", () => {
     assert.equal(AMBADY_TENANT_SLUG, "ambady");
   });

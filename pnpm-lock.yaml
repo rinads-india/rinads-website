@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.49.8
+        version: 2.112.3
       tsx:
         specifier: ^4.19.4
         version: 4.23.12
@@ -163,12 +166,18 @@ importers:
       '@rinads/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@rinads/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
       '@rinads/commerce-server':
         specifier: workspace:*
         version: link:../../packages/commerce-server
       '@rinads/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@rinads/domains':
+        specifier: workspace:*
+        version: link:../../packages/domains
       '@rinads/operations-server':
         specifier: workspace:*
         version: link:../../packages/operations-server
@@ -402,6 +411,22 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/billing:
+    dependencies:
+      '@rinads/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/brand:
     devDependencies:
       typescript:
@@ -443,6 +468,22 @@ importers:
         specifier: ^2.49.8
         version: 2.112.3
     devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/domains:
+    dependencies:
+      '@rinads/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
       typescript:
         specifier: ^5
         version: 5.9.3

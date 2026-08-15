@@ -6,7 +6,7 @@ import {
   type TenancyContext,
 } from "@rinads/tenancy";
 import type { CommerceContext } from "@rinads/commerce";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { ACTIVE_ORG_COOKIE } from "@rinads/tenancy";
 import "server-only";
 
@@ -22,6 +22,23 @@ export async function resolveTenancyContext(
   createClient: () => Promise<unknown>
 ): Promise<TenancyContext | null> {
   if (isDemoMode()) return buildDemoTenancyContext();
+
+  const headerStore = await headers();
+  const hostOrgId = headerStore.get("x-rinads-organization-id");
+  const hostSlug = headerStore.get("x-rinads-storefront-slug");
+
+  if (hostOrgId) {
+    const ctx = buildDemoTenancyContext({
+      organizationId: hostOrgId,
+      organizationSlug: hostSlug ?? "storefront",
+      roleKey: "client",
+      permissions: [],
+    });
+    const active = requireOrgActive(ctx);
+    if (!active.allowed) return null;
+    return ctx;
+  }
+
   const cookieStore = await cookies();
   const supabase = await createClient();
   return resolveTenancyFromSupabase(
