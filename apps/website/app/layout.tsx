@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { RinpoProvider } from "@/components/rinpo/RinpoProvider";
 import { ThemeScript } from "@/components/rinads/ThemeScript";
 import { siteBrand } from "@/lib/brand";
+import { Analytics } from "@vercel/analytics/next";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -80,6 +81,7 @@ export default function RootLayout({
             <RinpoProvider>{children}</RinpoProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
