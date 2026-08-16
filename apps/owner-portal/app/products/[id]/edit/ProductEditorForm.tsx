@@ -146,6 +146,11 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
             <Input name="seoDescription" defaultValue={product.seoDescription ?? ""} />
           </label>
         </div>
+        <p className="rounded-lg border border-dashed border-rinads-primary/20 bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
+          Search preview: <span className="font-medium text-rinads-primary">{product.seoTitle || product.name}</span>
+          {" · "}
+          {(product.seoDescription || product.description).slice(0, 140)}
+        </p>
       </Card>
 
       <div className="flex items-center gap-4">
