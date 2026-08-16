@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { RinpoOrbFace } from "@/components/rinpo/RinpoOrbFace";
 
 const LANDING_VIDEO =
@@ -51,12 +52,12 @@ export function Hero() {
 
         <nav className="relative z-10 flex items-center justify-end px-6 pt-16 md:px-10 md:pt-20">
           <div className="anim-stagger flex items-center gap-3" style={{ animationDelay: "0.2s" }}>
-            <a
-              href="#services"
+            <Link
+              href="/grow"
               className="btn-cut-border hidden px-5 py-2.5 text-sm text-white hover:bg-white/10 md:block"
             >
-              <span>RINPO Intelligence</span>
-            </a>
+              <span>RINADS Grow</span>
+            </Link>
             <a
               href="#work"
               className="btn-cut hidden bg-white px-5 py-2.5 text-sm text-black hover:bg-white/90 md:block"

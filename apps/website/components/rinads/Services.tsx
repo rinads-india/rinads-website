@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { Megaphone, Code2, Bot } from "lucide-react";
 
@@ -12,6 +13,7 @@ const CARDS = [
     bg: "bg-[#1a1224]",
     accent: "from-rinads-primary/40",
     icon: Megaphone,
+    href: "/grow",
   },
   {
     title: "Custom Software Development",
@@ -49,17 +51,8 @@ function ServiceCard({
     [1, 1 - (CARDS.length - 1 - index) * 0.05]
   );
   const Icon = card.icon;
-
-  return (
-    <motion.div
-      style={{
-        y,
-        scale,
-        top: index * 40,
-        zIndex: index + 1,
-      }}
-      className={`absolute inset-x-0 h-full overflow-hidden rounded-3xl border border-rinads-primary/25 ${card.bg} will-change-transform shadow-2xl shadow-rinads-primary/20`}
-    >
+  const content = (
+    <>
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${card.accent} to-transparent opacity-40`}
@@ -97,6 +90,26 @@ function ServiceCard({
           </ul>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <motion.div
+      style={{
+        y,
+        scale,
+        top: index * 40,
+        zIndex: index + 1,
+      }}
+      className={`absolute inset-x-0 h-full overflow-hidden rounded-3xl border border-rinads-primary/25 ${card.bg} will-change-transform shadow-2xl shadow-rinads-primary/20`}
+    >
+      {"href" in card && card.href ? (
+        <Link href={card.href} className="relative block h-full">
+          {content}
+        </Link>
+      ) : (
+        content
+      )}
     </motion.div>
   );
 }

@@ -109,6 +109,15 @@ export function getOsCards(role: LoginRole = "client"): OsCardItem[] {
 
   return [
     {
+      id: "grow",
+      title: "RINADS Grow",
+      subtitle: "Marketing hub — SEO, paid media, social packages",
+      meta: "New",
+      href: "/grow",
+      tone: "green",
+      size: "md",
+    },
+    {
       id: "create-room",
       title: "Create a room",
       subtitle: "Start a collaborative workspace",

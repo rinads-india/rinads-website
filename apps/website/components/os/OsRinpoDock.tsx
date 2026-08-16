@@ -5,16 +5,18 @@ import { Mic, MicOff, MessageCircle, Video, VideoOff } from "lucide-react";
 
 type OsRinpoDockProps = {
   welcome?: boolean;
+  welcomeMessage?: string;
 };
 
-export function OsRinpoDock({ welcome = false }: OsRinpoDockProps) {
+export function OsRinpoDock({
+  welcome = false,
+  welcomeMessage = "Welcome to RINADS Business OS. Explore Dashboard to launch your workspace modules.",
+}: OsRinpoDockProps) {
   const [expanded, setExpanded] = useState(welcome);
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [reply, setReply] = useState<string | null>(
-    welcome ? "Welcome to RINADS Business OS. Explore Dashboard to launch your workspace modules." : null
-  );
+  const [reply, setReply] = useState<string | null>(welcome ? welcomeMessage : null);
   const [sending, setSending] = useState(false);
 
   async function sendPrompt(event: React.FormEvent) {

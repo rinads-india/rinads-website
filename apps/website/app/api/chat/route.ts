@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "Our **Digital Marketing** services include SEO, Social Media, and Performance Ads. " +
-        "We help you reach more customers and grow your brand. Check our full offerings.";
+        "Explore **RINADS Grow** to browse packages and launch campaigns.";
       links = [
-        { label: "Services Page", href: "/services" },
+        { label: "RINADS Grow", href: "/grow" },
         { label: "Contact Us", href: "/contact" },
       ];
       intent = "digitalMarketing";
@@ -303,9 +303,9 @@ export async function POST(request: NextRequest) {
         },
         digitalMarketing: {
           reply:
-            "ഞങ്ങളുടെ **ഡിജിറ്റൽ മാർക്കറ്റിംഗ്** സേവനങ്ങളിൽ SEO, സോഷ്യൽ മീഡിയ, പെർഫോർമൻസ് വിജ്ഞാപനങ്ങൾ ഉൾപ്പെടുന്നു. കൂടുതൽ ഉപഭോക്താക്കളെ എത്തിക്കാനും ബ്രാൻഡ് വളർത്താനും ഞങ്ങൾ സഹായിക്കുന്നു.",
+            "ഞങ്ങളുടെ **ഡിജിറ്റൽ മാർക്കറ്റിംഗ്** സേവനങ്ങളിൽ SEO, സോഷ്യൽ മീഡിയ, പെർഫോർമൻസ് വിജ്ഞാപനങ്ങൾ ഉൾപ്പെടുന്നു. **RINADS Grow**-ൽ പാക്കേജുകൾ കാണുക.",
           links: [
-            { label: "സേവനങ്ങൾ", href: "/services" },
+            { label: "RINADS Grow", href: "/grow" },
             { label: "ബന്ധപ്പെടുക", href: "/contact" },
           ],
         },
