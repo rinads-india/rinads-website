@@ -9,6 +9,7 @@ import {
   Portfolio,
   Footer,
 } from "@/components/rinads";
+import { OsReturnBanner } from "@/components/os/OsReturnBanner";
 
 export default function HomePage() {
   return (
@@ -54,6 +55,7 @@ export default function HomePage() {
         <Portfolio />
         <Footer />
       </main>
+      <OsReturnBanner />
     </>
   );
 }

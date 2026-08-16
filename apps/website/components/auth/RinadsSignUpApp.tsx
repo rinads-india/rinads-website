@@ -8,6 +8,7 @@ import { Logo } from "@/components/rinads/Logo";
 import { ThemeToggle } from "@/components/rinads/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
+import { navigateAfterAuth } from "@/lib/post-auth-navigation";
 
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260506_081238_406ed0e3-5d83-436e-a512-0bbff7ec5b95.mp4";
@@ -29,6 +30,7 @@ export default function RinadsSignUpApp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isLogin = searchParams.get("mode") === "login";
+  const nextParam = searchParams.get("next");
   const { signup, login } = useAuth();
   const { openPhoneScreen } = useRinpo();
 
@@ -92,7 +94,7 @@ export default function RinadsSignUpApp() {
       openPhoneScreen("chat", "Hi RINPO — I just created my RINADS account.");
     }
 
-    router.push("/");
+    await navigateAfterAuth(router, nextParam);
   };
 
   return (

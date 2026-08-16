@@ -95,6 +95,14 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
+          {isAuthenticated && (
+            <a
+              href="/os"
+              className="rounded-full text-xs font-semibold uppercase tracking-[0.3em] text-rinads-primary transition-colors hover:text-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            >
+              Business OS
+            </a>
+          )}
         </div>
 
         {isAuthenticated ? (
@@ -163,6 +171,22 @@ export function Navbar() {
                   </a>
                 </motion.li>
               ))}
+              {isAuthenticated && (
+                <motion.li
+                  initial={{ y: "-100%", opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: "-100%", opacity: 0 }}
+                  transition={{ delay: LINKS.length * 0.08, duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                >
+                  <a
+                    href="/os"
+                    onClick={() => setOpen(false)}
+                    className="block rounded-2xl px-4 py-1 text-4xl md:text-6xl font-black text-rinads-primary transition-transform duration-300 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+                  >
+                    Business OS
+                  </a>
+                </motion.li>
+              )}
             </ul>
 
             {!isAuthenticated && (

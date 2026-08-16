@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { DEMO_ALLOWED_ROLES, type DemoAllowedRole } from "@/lib/demo-auth";
 import { useAuth } from "@/contexts/AuthContext";
+import { navigateAfterAuth } from "@/lib/post-auth-navigation";
 
 /** Privileged roles exist in CORE but are never selectable in public UI. */
 export type LoginRole = DemoAllowedRole | "founder" | "super-admin";
@@ -29,6 +31,7 @@ type LoginModalProps = {
 };
 
 export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, onSignup }: LoginModalProps) {
+  const router = useRouter();
   const { authMode, isDemoMode } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [username, setUsername] = useState("");
@@ -93,6 +96,7 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
         onClose();
         setUsername("");
         setPassword("");
+        await navigateAfterAuth(router);
       }
     } finally {
       setPending(false);
