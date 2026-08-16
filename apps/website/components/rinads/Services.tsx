@@ -3,9 +3,10 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
-import { Megaphone, Code2, Bot } from "lucide-react";
+import { Megaphone, Code2, Bot, type LucideIcon } from "lucide-react";
+import type { ServiceCardContent } from "@rinads/cms";
 
-const CARDS = [
+const CARDS: Array<ServiceCardContent & { bg: string; accent: string; icon: LucideIcon }> = [
   {
     title: "Digital Marketing",
     description: "SEO, Social Media, and Performance Ads that turn attention into growth.",
@@ -114,7 +115,12 @@ function ServiceCard({
   );
 }
 
-export function Services() {
+export function Services({ cards }: { cards?: ServiceCardContent[] }) {
+  const resolvedCards = CARDS.map((defaults, index) => ({
+    ...defaults,
+    ...(cards?.[index] ?? {}),
+    details: cards?.[index]?.details ?? defaults.details,
+  }));
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -142,7 +148,7 @@ export function Services() {
         </div>
 
         <div className="relative w-full flex-1 md:w-3/5 md:flex-none md:h-[60vh]">
-          {CARDS.map((card, i) => (
+          {resolvedCards.map((card, i) => (
             <ServiceCard
               key={card.title}
               card={card}

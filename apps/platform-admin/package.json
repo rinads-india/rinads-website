@@ -17,6 +17,7 @@
     "@rinads/platform": "workspace:*",
     "@rinads/billing": "workspace:*",
     "@rinads/domains": "workspace:*",
+    "@rinads/cms": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
     "@rinads/operations-server": "workspace:*",
     "@rinads/tenancy": "workspace:*",

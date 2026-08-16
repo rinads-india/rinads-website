@@ -21,6 +21,7 @@
     "@rinads/permissions": "workspace:*",
     "@rinads/shared": "workspace:*",
     "@rinads/platform": "workspace:*",
+    "@rinads/cms": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
     "@rinads/operations-server": "workspace:*",
     "@rinads/tenancy": "workspace:*",

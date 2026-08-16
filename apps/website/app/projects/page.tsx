@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { ProjectsClient } from "./ProjectsClient";
+import { getPageMetadata } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "Start a Project | RINADS",
-  description:
-    "Tell us about your vision. RINADS crafts bold ideas and ships them as products — websites, apps, commerce, and growth.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("/projects");
+}
 
 export default function ProjectsPage() {
   return <ProjectsClient />;

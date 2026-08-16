@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { RinpoStoryClient } from "./RinpoStoryClient";
+import { getPageMetadata } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "RINPO — The Awakening of Intelligence | RINADS",
-  description:
-    "World's First Business Intelligence Character. Born with a gift. Awakened under a banyan tree. Built by RINADS to make every business think, speak and grow.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("/rinpo-story");
+}
 
 export default function RinpoStoryPage() {
   return <RinpoStoryClient />;

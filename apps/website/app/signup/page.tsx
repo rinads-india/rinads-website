@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./signup.css";
 import RinadsSignUpApp from "@/components/auth/RinadsSignUpApp";
+import { getPageMetadata } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "RINADS | Sign Up",
-  description: "Create your RINADS profile and activate RINADS Cloud with RINPO Intelligence.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("/signup");
+}
 
 export default function SignUpPage() {
   return (

@@ -4,13 +4,12 @@ import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
 import { ONBOARDING_PATH } from "@/lib/post-auth-destination";
+import { getPageMetadata } from "@/lib/cms";
 import { OsClient } from "./OsClient";
 
-export const metadata: Metadata = {
-  title: "RINADS Business Operating System",
-  description: "RINADS Business OS — workspace launcher with RINPO intelligence dock.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("/os");
+}
 
 export default async function OsPage() {
   if (isSupabaseMode()) {
