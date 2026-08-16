@@ -18,7 +18,9 @@ export function DynamicIslandNav({
 }: DynamicIslandNavProps) {
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center pt-[max(0.5rem,env(safe-area-inset-top))]"
+      className={`pointer-events-none fixed inset-x-0 top-0 flex justify-center pt-[max(0.5rem,env(safe-area-inset-top))] ${
+        expanded ? "z-[52]" : "z-50"
+      }`}
     >
       <motion.nav
         layout

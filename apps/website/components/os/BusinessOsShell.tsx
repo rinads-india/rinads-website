@@ -20,6 +20,11 @@ export function BusinessOsShell() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const welcome = searchParams.get("welcome") === "1";
+  const growModule = searchParams.get("module") === "grow";
+  const rinpoWelcome = welcome || growModule;
+  const rinpoWelcomeMessage = growModule
+    ? "Welcome to RINADS Grow in Business OS. Open the Grow card to browse marketing packages and manage campaigns."
+    : undefined;
   const [activeNav, setActiveNav] = useState<OsNavId>("dashboard");
   const [view, setView] = useState<"dashboard" | "rooms">("dashboard");
 
@@ -58,7 +63,7 @@ export function BusinessOsShell() {
           </div>
         </div>
 
-        <OsRinpoDock welcome={welcome} />
+        <OsRinpoDock welcome={rinpoWelcome} welcomeMessage={rinpoWelcomeMessage} />
       </div>
     </OsAuthGate>
   );
