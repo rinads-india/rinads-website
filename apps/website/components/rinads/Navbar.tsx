@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, UserRound, X } from "lucide-react";
 import { DynamicIslandNav } from "./DynamicIslandNav";
@@ -53,7 +54,7 @@ export function Navbar() {
   return (
     <>
       <DynamicIslandNav expanded={open} ariaLabel="Site">
-        <a
+        <Link
           href="/"
           className="relative flex shrink-0 items-center rounded-full pl-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           aria-label="Rinads home"
@@ -63,7 +64,7 @@ export function Navbar() {
             className="absolute -right-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-rinads-primary/80 animate-pulse"
           />
           <Logo className="h-6 sm:h-7 md:h-8" priority />
-        </a>
+        </Link>
 
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-8">
           {LINKS.map((link) => (
