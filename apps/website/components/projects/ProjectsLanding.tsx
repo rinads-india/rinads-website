@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/rinads/Logo";
+import { DynamicIslandNav } from "@/components/rinads/DynamicIslandNav";
 
 const VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260602_150901_c45b90ec-18d7-42ff-90e2-b95d7109e330.mp4";
@@ -93,17 +94,17 @@ export function ProjectsLanding() {
         </video>
 
         <div className="relative z-10 flex min-h-[calc(100vh-24px)] flex-col gap-6 p-4 sm:min-h-[calc(100vh-32px)] sm:p-6 md:min-h-[calc(100vh-48px)] md:p-8 lg:h-full">
-          <nav className="flex w-full items-center gap-3 rounded-2xl bg-white/60 py-2 pl-3 pr-2 shadow-sm backdrop-blur-md sm:w-auto sm:gap-6 sm:pl-4">
-            <Link href="/" aria-label="RINADS home" className="flex shrink-0 items-center">
-              <Logo className="h-8 w-auto" priority />
+          <DynamicIslandNav ariaLabel="Projects">
+            <Link href="/" aria-label="RINADS home" className="flex shrink-0 items-center pl-1">
+              <Logo className="h-7 w-auto sm:h-8" priority />
             </Link>
 
-            <div className="hidden items-center gap-6 sm:flex">
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 sm:flex">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="whitespace-nowrap text-sm font-medium text-gray-800 transition-opacity hover:opacity-60"
+                  className="whitespace-nowrap text-sm font-medium text-[var(--island-foreground)] transition-opacity hover:opacity-60"
                 >
                   {link.label}
                 </Link>
@@ -116,7 +117,9 @@ export function ProjectsLanding() {
             >
               Start a project
             </a>
-          </nav>
+          </DynamicIslandNav>
+
+          <div className="min-h-[3.5rem] sm:min-h-[4rem]" aria-hidden />
 
           <div className="min-h-[2rem] flex-1" />
 
