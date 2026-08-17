@@ -70,6 +70,24 @@ async function syncOperationsToSupabase(
     );
   }
 
+  const reservations = store.reservations.filter((r) => r.organizationId === orgId);
+  if (reservations.length) {
+    await client.from("inventory_reservations").upsert(
+      reservations.map((r) => ({
+        id: r.id,
+        organization_id: orgId,
+        variant_id: r.variantId,
+        location_id: r.locationId ?? null,
+        cart_id: r.cartId ?? null,
+        order_id: r.orderId ?? null,
+        quantity: r.quantity,
+        status: r.status,
+        expires_at: r.expiresAt,
+        created_at: r.createdAt,
+      }))
+    );
+  }
+
   const movements = store.movements.filter((m) => m.organizationId === orgId);
   if (movements.length) {
     await client.from("stock_movements").upsert(
@@ -206,16 +224,28 @@ async function syncOperationsToSupabase(
   const events = store.businessEvents.filter((e) => e.organizationId === orgId);
   if (events.length) {
     await client.from("business_events").upsert(
-      events.map((e) => ({
-        id: e.id,
-        organization_id: orgId,
-        event_type: e.eventType,
-        entity_type: e.entityType ?? null,
-        entity_id: e.entityId ?? null,
-        payload: e.payload,
-        idempotency_key: e.idempotencyKey ?? null,
-        created_at: e.createdAt,
-      }))
+      events.map((e) => {
+        const payload = e.payload ?? {};
+        return {
+          id: e.id,
+          organization_id: orgId,
+          event_type: e.eventType,
+          entity_type: e.entityType ?? null,
+          entity_id: e.entityId ?? null,
+          aggregate_type: e.entityType ?? (payload.aggregateType as string | undefined) ?? null,
+          aggregate_id: e.entityId ?? (payload.aggregateId as string | undefined) ?? null,
+          payload,
+          metadata: (payload.metadata as Record<string, unknown>) ?? {},
+          source: (payload.source as string) ?? "system",
+          correlation_id: (payload.correlationId as string) ?? null,
+          causation_id: (payload.causationId as string) ?? null,
+          actor_type: (payload.actorType as string) ?? null,
+          actor_id: (payload.actorId as string) ?? null,
+          schema_version: e.eventType.match(/\.v(\d+)$/)?.[0] ?? "v1",
+          idempotency_key: e.idempotencyKey ?? null,
+          created_at: e.createdAt,
+        };
+      })
     );
   }
 
@@ -251,6 +281,7 @@ export async function loadOperationsStoreFromSupabase(
 
   const [
     { data: movements },
+    { data: reservationRows },
     { data: suppliers },
     { data: supplierProducts },
     { data: pos },
@@ -259,6 +290,7 @@ export async function loadOperationsStoreFromSupabase(
     { data: logs },
   ] = await Promise.all([
     fetch("stock_movements"),
+    fetch("inventory_reservations"),
     fetch("suppliers"),
     fetch("supplier_products"),
     fetch("purchase_orders"),
@@ -314,7 +346,18 @@ export async function loadOperationsStoreFromSupabase(
       performedBy: row.performed_by ? String(row.performed_by) : undefined,
       createdAt: String(row.created_at),
     })),
-    reservations: [],
+    reservations: (reservationRows ?? []).map((row) => ({
+      id: String(row.id),
+      organizationId,
+      variantId: String(row.variant_id),
+      locationId: row.location_id ? String(row.location_id) : "loc_main_store",
+      cartId: row.cart_id ? String(row.cart_id) : undefined,
+      orderId: row.order_id ? String(row.order_id) : undefined,
+      quantity: Number(row.quantity),
+      status: (row.status as OperationsStore["reservations"][0]["status"]) ?? "active",
+      expiresAt: String(row.expires_at),
+      createdAt: String(row.created_at),
+    })),
     transfers: [],
     transferLines: [],
     suppliers: (suppliers ?? []).map((row) => ({

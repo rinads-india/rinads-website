@@ -105,6 +105,9 @@ importers:
       '@rinads/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@rinads/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/intelligence
       '@rinads/operations':
         specifier: workspace:*
         version: link:../../packages/operations
@@ -169,6 +172,9 @@ importers:
       '@rinads/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@rinads/cms':
+        specifier: workspace:*
+        version: link:../../packages/cms
       '@rinads/commerce-server':
         specifier: workspace:*
         version: link:../../packages/commerce-server
@@ -315,6 +321,9 @@ importers:
       '@rinads/brand':
         specifier: workspace:*
         version: link:../../packages/brand
+      '@rinads/cms':
+        specifier: workspace:*
+        version: link:../../packages/cms
       '@rinads/commerce-server':
         specifier: workspace:*
         version: link:../../packages/commerce-server
@@ -429,6 +438,22 @@ importers:
 
   packages/brand:
     devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/cms:
+    dependencies:
+      '@rinads/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
       typescript:
         specifier: ^5
         version: 5.9.3

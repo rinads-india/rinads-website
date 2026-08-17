@@ -72,6 +72,34 @@ describe("Supabase operations sync", () => {
     assert.equal((client.tables.get("audit_logs") ?? []).length, 1);
   });
 
+  it("syncs inventory reservations", async () => {
+    resetSupabaseOperationsRepositories();
+    const orgId = "org_res_sync";
+    const client = createMockClient();
+    const seed = createAmbadyOperationsSeed();
+    seed.locations.forEach((l) => (l.organizationId = orgId));
+    seed.reservations.push({
+      id: "res_1",
+      organizationId: orgId,
+      variantId: "var_pebbles_500g",
+      locationId: seed.locations[0]!.id,
+      cartId: "cart_1",
+      quantity: 2,
+      status: "active",
+      expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      createdAt: new Date().toISOString(),
+    });
+
+    const repo = createSupabaseOperationsRepository({
+      organizationId: orgId,
+      client,
+      initialStore: seed,
+    });
+    repo.saveStore(repo.getStore());
+    await new Promise((r) => setTimeout(r, 10));
+    assert.equal((client.tables.get("inventory_reservations") ?? []).length, 1);
+  });
+
   it("loads operations store from Supabase", async () => {
     const orgId = "org_ops_load";
     const client = createMockClient();

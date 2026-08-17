@@ -17,6 +17,7 @@
     "test": "turbo run test",
     "staging:ambady-seed": "pnpm exec tsx scripts/staging/ambady-cutover.ts",
     "provisioning:worker": "pnpm exec tsx scripts/cron/provisioning-worker.ts",
+    "runtime:worker": "pnpm exec tsx scripts/cron/runtime-worker.ts",
     "deploy:emergency": "pnpm --filter @rinads/website deploy:emergency",
     "push:github": "pnpm --filter @rinads/website push:github"
   },

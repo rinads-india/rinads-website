@@ -1,3 +1,4 @@
+export { DynamicIslandNav } from "./DynamicIslandNav";
 export { GridOverlay } from "./GridOverlay";
 export { Logo } from "./Logo";
 export { Navbar } from "./Navbar";

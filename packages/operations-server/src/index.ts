@@ -11,10 +11,11 @@ import {
   TaxService,
   type Order,
 } from "@rinads/commerce";
-import { EventStore, JobRunner, AlertEngine, createFulfilmentProcessor } from "@rinads/runtime";
+import { EventStore, JobRunner, AlertEngine } from "@rinads/runtime";
 import { getSharedCommerceRepository } from "@rinads/commerce-server";
 import { createInMemoryOperationsRepository } from "./memory";
 import { syncCommerceStockFromLedger } from "./seed";
+import { wireRuntime, handleOrderPaidRuntime } from "./runtime-wiring";
 import {
   AuditService,
   FulfilmentService,
@@ -85,54 +86,6 @@ const fulfilment = new FulfilmentService(opsRepo);
 const eventStore = new EventStore(opsRepo);
 const alertEngine = new AlertEngine(opsRepo);
 const jobRunner = new JobRunner();
-jobRunner.register(createFulfilmentProcessor(fulfilment));
-
-function handleOrderPaid(ctx: CommerceContext, order: Order): void {
-  eventStore.emit(toOps(ctx), "order.paid", {
-    entityType: "order",
-    entityId: order.id,
-    orderId: order.id,
-    lines: order.lines.map((l) => ({
-      orderLineId: l.id,
-      variantId: l.variantId,
-      sku: l.sku,
-      productName: l.productName,
-      variantName: l.variantName,
-      quantity: l.quantity,
-    })),
-  });
-  jobRunner.enqueue({
-    organizationId: ctx.organizationId,
-    processorKey: "fulfilment_on_paid",
-    idempotencyKey: `fulfilment:${order.id}`,
-    payload: {
-      orderId: order.id,
-      lines: order.lines.map((l) => ({
-        orderLineId: l.id,
-        variantId: l.variantId,
-        sku: l.sku,
-        productName: l.productName,
-        variantName: l.variantName,
-        quantity: l.quantity,
-      })),
-    },
-    maxAttempts: 3,
-  });
-  void jobRunner.processPending();
-}
-
-export const commerce = {
-  repo: commerceRepo,
-  catalog: new CatalogService(commerceRepo),
-  cart: new CartService(commerceRepo, inventoryPort),
-  checkout: new CheckoutService(commerceRepo, inventoryPort, handleOrderPaid),
-  order: new OrderService(commerceRepo),
-  tax: new TaxService(commerceRepo),
-  shipping: new ShippingService(commerceRepo),
-  promotion: new PromotionService(commerceRepo),
-  support: new SupportService(commerceRepo),
-  personalization: new PersonalizationService(commerceRepo),
-};
 
 const locations = new InventoryLocationService(opsRepo);
 const reservations = new ReservationService(opsRepo, ledger);
@@ -155,6 +108,33 @@ const search = new SearchService(opsRepo, suppliers, purchaseOrders);
 const kpi = new KpiService(opsRepo, ledger, lowStock, fulfilment, purchaseOrders, refunds);
 const audit = new AuditService(opsRepo);
 const barcode = new BarcodeService();
+
+const runtimeService = wireRuntime({
+  opsRepo,
+  fulfilment,
+  reservations,
+  lowStock,
+  tasks,
+  alertEngine,
+});
+runtimeService.initOrganization(AMBADY_ORG_ID);
+
+function handleOrderPaid(ctx: CommerceContext, order: Order): void {
+  handleOrderPaidRuntime(runtimeService, ctx, order);
+}
+
+export const commerce = {
+  repo: commerceRepo,
+  catalog: new CatalogService(commerceRepo),
+  cart: new CartService(commerceRepo, inventoryPort),
+  checkout: new CheckoutService(commerceRepo, inventoryPort, handleOrderPaid),
+  order: new OrderService(commerceRepo),
+  tax: new TaxService(commerceRepo),
+  shipping: new ShippingService(commerceRepo),
+  promotion: new PromotionService(commerceRepo),
+  support: new SupportService(commerceRepo),
+  personalization: new PersonalizationService(commerceRepo),
+};
 
 inventoryPort.refreshProjections?.({ organizationId: AMBADY_ORG_ID });
 
@@ -187,6 +167,7 @@ export const operations = {
   eventStore,
   alertEngine,
   jobRunner,
+  runtime: runtimeService,
   refreshStockProjections: () => inventoryPort.refreshProjections?.({ organizationId: AMBADY_ORG_ID }),
 };
 
@@ -219,6 +200,19 @@ export {
   resetSupabaseOperationsRepositories,
   type OperationsSupabaseClient,
 } from "./supabase";
+export {
+  syncRuntimeArtifactsToSupabase,
+  loadRuntimeStoreFromSupabase,
+  loadRuntimeJobsFromSupabase,
+  claimRuntimeJobs,
+  enqueueRuntimeJobToSupabase,
+  resetStaleRunningJobs,
+  mapRuntimeJobRow,
+  type RuntimeSupabaseClient,
+} from "./runtime-supabase";
+export { createRuntimePersistenceHooks } from "./runtime-persistence";
+export { runSupabaseRuntimeWorker, type RunSupabaseRuntimeWorkerResult } from "./runtime-worker";
+export { wireRuntime, handleOrderPaidRuntime, type WireRuntimeOptions } from "./runtime-wiring";
 export {
   createDemoRepositoryBundle,
   createOrgScopedRepositoryBundle,

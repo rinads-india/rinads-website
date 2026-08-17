@@ -39,6 +39,11 @@
   --footer-btn-bg: #111214;
   --footer-btn-hover: #000000;
   --footer-watermark-fill: rgba(0, 0, 0, 0.04);
+
+  --island-bg: #ffffff;
+  --island-border: rgba(0, 0, 0, 0.06);
+  --island-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --island-foreground: #111827;
 }
 
 .dark {

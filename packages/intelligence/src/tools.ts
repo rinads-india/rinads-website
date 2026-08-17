@@ -17,6 +17,7 @@ import type {
 } from "@rinads/operations";
 import type { RinpoRouteContext, RinpoToolInput, RinpoToolResult } from "./types";
 import { RINPO_HARD_LIMITS } from "./types";
+import { getRinpoTool, isRegisteredRinpoTool } from "./registry";
 
 export type RinpoServices = {
   catalog: CatalogService;
@@ -72,6 +73,15 @@ export function executeRinpoTool(
   input: RinpoToolInput,
   ops?: RinpoOpsServices
 ): RinpoToolResult {
+  if (!isRegisteredRinpoTool(input.tool)) {
+    return { tool: input.tool, ok: false, message: "Unknown tool." };
+  }
+
+  const def = getRinpoTool(input.tool);
+  if (def?.ownerOnly && !ops) {
+    return { tool: input.tool, ok: false, message: "Operations services unavailable." };
+  }
+
   switch (input.tool) {
     case "similar_products": {
       const productId = String(input.args.productId ?? "");

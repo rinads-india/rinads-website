@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { RinpoOrbFace } from "@/components/rinpo/RinpoOrbFace";
-import { Logo } from "./Logo";
 
 const LANDING_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260717_120352_eb988725-1351-43b3-8095-16e4a1005e3d.mp4";
@@ -50,28 +50,14 @@ export function Hero() {
           />
         )}
 
-        <nav className="relative z-10 flex items-center justify-between px-6 pt-6 md:px-10 md:pt-8">
-          <div className="anim-stagger" style={{ animationDelay: "0.1s" }}>
-            <a href="#" aria-label="Rinads home" className="inline-flex flex-col items-start">
-              <Logo className="h-14 md:h-16" priority />
-              <span className="mt-1 flex items-center text-[10px] font-light tracking-[0.4em] text-white md:text-xs">
-                R
-                <span
-                  aria-hidden
-                  className="mx-[0.38em] h-[0.72em] w-[0.72em] rounded-full bg-rinads-primary shadow-[0_0_12px_rgba(159,75,199,0.9)]"
-                />
-                S
-              </span>
-            </a>
-          </div>
-
+        <nav className="relative z-10 flex items-center justify-end px-6 pt-16 md:px-10 md:pt-20">
           <div className="anim-stagger flex items-center gap-3" style={{ animationDelay: "0.2s" }}>
-            <a
-              href="#services"
+            <Link
+              href="/grow"
               className="btn-cut-border hidden px-5 py-2.5 text-sm text-white hover:bg-white/10 md:block"
             >
-              <span>RINPO Intelligence</span>
-            </a>
+              <span>RINADS Grow</span>
+            </Link>
             <a
               href="#work"
               className="btn-cut hidden bg-white px-5 py-2.5 text-sm text-black hover:bg-white/90 md:block"

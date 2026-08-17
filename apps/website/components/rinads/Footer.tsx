@@ -35,6 +35,8 @@ const NAV_COL_1 = [
 
 const NAV_COL_2 = [
   { label: "Contact", href: "#contact" },
+  { label: "Business OS", href: "/os" },
+  { label: "Project", href: "/projects" },
   { label: "Story", href: "/story-concept" },
   { label: "Terms and Condition", href: "/contact" },
   { label: "Privacy Policy", href: "/contact" },

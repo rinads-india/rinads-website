@@ -7,6 +7,10 @@ const links = [
   { href: "/templates", label: "Templates" },
   { href: "/plans", label: "Plans" },
   { href: "/billing/events", label: "Billing events" },
+  { href: "/website/pages", label: "Website CMS" },
+  { href: "/website/seo", label: "SEO" },
+  { href: "/website/media", label: "Media" },
+  { href: "/website/redirects", label: "Redirects" },
 ];
 
 export function PlatformNav() {

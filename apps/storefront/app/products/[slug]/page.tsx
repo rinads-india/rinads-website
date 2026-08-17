@@ -1,5 +1,6 @@
-import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { Badge, Card } from "@rinads/ui";
 import { commerce, getCommerceContext } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
@@ -12,6 +13,27 @@ type ProductPageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ variant?: string }>;
 };
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const ctx = getCommerceContext();
+  const result = commerce.catalog.getBySlug(ctx, slug);
+  if (!result.ok) {
+    return { title: "Product not found" };
+  }
+  const product = result.data;
+  const primaryImage = product.media.find((m) => m.isPrimary) ?? product.media[0];
+  return {
+    title: product.seoTitle ?? product.name,
+    description: product.seoDescription ?? product.description,
+    openGraph: {
+      title: product.seoTitle ?? product.name,
+      description: product.seoDescription ?? product.description,
+      type: "website",
+      ...(primaryImage ? { images: [{ url: primaryImage.url, alt: primaryImage.altText }] } : {}),
+    },
+  };
+}
 
 export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;

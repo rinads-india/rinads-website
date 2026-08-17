@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, Card } from "@rinads/ui";
-import { commerce, demoContext, listOrgOrders, operations, opsContext } from "@/lib/commerce";
+import { OwnerRinpoBrief } from "@/components/OwnerRinpoBrief";
+import { demoContext, listOrgOrders, operations, opsContext } from "@/lib/commerce";
 
 export default function OperationsPage() {
   const ctx = opsContext();
@@ -90,6 +91,8 @@ export default function OperationsPage() {
           </ul>
         </Card>
       ) : null}
+
+      <OwnerRinpoBrief />
     </div>
   );
 }
