@@ -1,10 +1,21 @@
-# Minimal placeholder. Full `supabase init` config arrives when Phase 1 is authorized.
-# Phase 0: NOT LIVE FOR PRODUCTION BUSINESS DATA.
+# rinads-platform (staging)
+# Project URL: https://zznigagovlhfyzcrjl.supabase.co
+# Link: pnpm dlx supabase link --project-ref zznigagovlhfyzcrjl
 
-project_id = "rinads-phase0-placeholder"
+project_id = "zznigagovlhfyzcrjl"
 
 [api]
-enabled = false
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
 [db]
+port = 54322
+shadow_port = 54320
 major_version = 15
+
+[studio]
+enabled = true
+port = 54323
