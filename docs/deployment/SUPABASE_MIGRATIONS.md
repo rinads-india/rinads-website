@@ -1,5 +1,13 @@
 # Phase 1 — CORE migrations runbook
 
+## rinads-platform (staging)
+
+See **[RINADS_PLATFORM_STAGING.md](./RINADS_PLATFORM_STAGING.md)** for the live project:
+
+- URL: `https://zznigagovlhfyzcrjl.supabase.co`
+- Ref: `zznigagovlhfyzcrjl`
+- Push: `bash scripts/supabase/link-and-push.sh` (requires `SUPABASE_ACCESS_TOKEN`)
+
 ## Prerequisites
 
 - Supabase project for **staging** (not production until verified)
