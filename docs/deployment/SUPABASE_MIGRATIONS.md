@@ -4,8 +4,8 @@
 
 See **[RINADS_PLATFORM_STAGING.md](./RINADS_PLATFORM_STAGING.md)** for the live project:
 
-- URL: `https://zznigagovlhfyzcrjl.supabase.co`
-- Ref: `zznigagovlhfyzcrjl`
+- URL: `https://zznigagovilnffyzcrlj.supabase.co`
+- Ref: `zznigagovilnffyzcrlj`
 - Push: `bash scripts/supabase/link-and-push.sh` (requires `SUPABASE_ACCESS_TOKEN`)
 
 ## Prerequisites
