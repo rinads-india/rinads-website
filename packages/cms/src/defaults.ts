@@ -21,21 +21,21 @@ export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
 
 export const DEFAULT_ABOUT = {
   eyebrow: "About RINADS",
-  headline: "Business simplified.",
-  body: "RINADS® is a software and growth company building Business Cloud, websites, marketing systems, and AI-powered automation — from India to the world.",
-  subbody: "Software · Websites · Marketing · AI automation. Built to run businesses.",
+  headline: "A business technology platform.",
+  body: "RINADS® is a Business Operating System that connects customers, work, finance, marketing and automation — with RINPO Intelligence helping you manage it.",
+  subbody: "Business OS · RINPO Intelligence · RINADS Cloud · Services. Built to run businesses.",
 };
 
 export const DEFAULT_SEO: SiteSeo[] = [
   {
     id: "seo_home",
     path: "/",
-    title: "RINADS | Business Simplified",
+    title: "RINADS | Run Your Business From One Place",
     description:
-      "RINADS Technologies — AI-powered automation, custom software, and digital marketing. Business Cloud built to run businesses.",
-    ogTitle: "RINADS | Business Simplified",
+      "RINADS Business OS connects CRM, projects, finance, marketing and automation into one intelligent workspace — with RINPO Intelligence.",
+    ogTitle: "RINADS | Business Technology Platform",
     ogDescription:
-      "AI-powered automation, custom software, and digital marketing. Business simplified.",
+      "Run your business from one place. Business OS, RINPO Intelligence, and connected automation.",
     robotsIndex: true,
     robotsFollow: true,
     updatedAt: new Date(0).toISOString(),
@@ -90,12 +90,60 @@ export const DEFAULT_SEO: SiteSeo[] = [
   {
     id: "seo_os",
     path: "/os",
-    title: "RINADS Business Operating System",
+    title: "RINADS Business OS",
     description: "RINADS Business OS — workspace launcher with RINPO intelligence dock.",
     ogTitle: "RINADS Business OS",
     ogDescription: "Authenticated workspace launcher.",
     robotsIndex: false,
     robotsFollow: false,
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
+    id: "seo_business_os",
+    path: "/business-os",
+    title: "RINADS Business OS — Your Business, Connected",
+    description:
+      "One operating system for customers, work, finance, growth and automation. Run your business from one intelligent workspace.",
+    ogTitle: "RINADS Business OS",
+    ogDescription: "Your business, connected.",
+    robotsIndex: true,
+    robotsFollow: true,
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
+    id: "seo_rinpo_intelligence",
+    path: "/rinpo-intelligence",
+    title: "RINPO Intelligence | RINADS",
+    description:
+      "RINPO turns your business data into direction — insights, recommendations, and contextual intelligence across Business OS.",
+    ogTitle: "RINPO Intelligence",
+    ogDescription: "Understand your business. Know what to do next.",
+    robotsIndex: true,
+    robotsFollow: true,
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
+    id: "seo_cloud",
+    path: "/cloud",
+    title: "RINADS Cloud — The Platform Behind RINADS",
+    description:
+      "RINADS Cloud connects your business applications, data, integrations and services into one ecosystem.",
+    ogTitle: "RINADS Cloud",
+    ogDescription: "Connected data and ecosystem.",
+    robotsIndex: true,
+    robotsFollow: true,
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
+    id: "seo_services",
+    path: "/services",
+    title: "RINADS Services — Build. Grow. Automate.",
+    description:
+      "Custom software, growth marketing, AI automation, and business systems — RINADS Services help you build and grow.",
+    ogTitle: "RINADS Services",
+    ogDescription: "Build. Grow. Automate.",
+    robotsIndex: true,
+    robotsFollow: true,
     updatedAt: new Date(0).toISOString(),
   },
 ];

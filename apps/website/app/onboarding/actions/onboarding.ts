@@ -32,12 +32,16 @@ export async function provisionOrganizationAction(input: {
   name: string;
   slug: string;
   templateKey: string;
+  selectedModules?: string[];
+  businessType?: string;
 }): Promise<{ ok: true; organizationId: string } | { ok: false; error: string }> {
   const name = input.name.trim();
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
   if (!name || !slug) return { ok: false, error: "Name and slug are required." };
 
   const templateKey = (input.templateKey === "generic-retail" ? "generic-retail" : "ambady-nursery") as VerticalTemplateKey;
+  const selectedModules = input.selectedModules ?? [];
+  const businessType = input.businessType ?? "other";
 
   if (!isSupabaseMode()) {
     const orgId = slug === AMBADY_TENANT_SLUG ? "org_ambady_demo" : `org_${slug.replace(/-/g, "_")}`;
@@ -69,6 +73,24 @@ export async function provisionOrganizationAction(input: {
     }
     if (!result.organizationId) {
       return { ok: false, error: "Provision failed" };
+    }
+
+    if (selectedModules.length || businessType) {
+      await (
+        supabase as unknown as {
+          from: (table: string) => {
+            update: (row: Record<string, unknown>) => {
+              eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+            };
+          };
+        }
+      )
+        .from("organization_settings")
+        .update({
+          enabled_modules: selectedModules,
+          business_type: businessType,
+        })
+        .eq("organization_id", result.organizationId);
     }
 
     return { ok: true, organizationId: result.organizationId };

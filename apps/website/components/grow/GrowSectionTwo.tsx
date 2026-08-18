@@ -143,8 +143,10 @@ export function GrowSectionTwo() {
             </ul>
 
             <p className="mt-4 text-xs text-white/50">
-              Checkout connects to Business OS storefront in a future release. Sign up to reserve
-              your workspace.
+              Need software instead?{" "}
+              <Link href="/business-os" className="font-semibold text-rinads-primary hover:underline">
+                Build your business system with RINADS Business OS.
+              </Link>
             </p>
           </div>
         </div>

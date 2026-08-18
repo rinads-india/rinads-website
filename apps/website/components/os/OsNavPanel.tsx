@@ -12,17 +12,15 @@ type OsNavPanelProps = {
 export function OsNavPanel({ items, activeId, onSelect }: OsNavPanelProps) {
   return (
     <nav
-      aria-label="RINADS Business Operating System"
+      aria-label="RINADS Business OS"
       data-os-guide="dashboard"
       className="os-glass flex flex-col gap-4 rounded-3xl p-4 shadow-sm lg:min-h-[420px] lg:w-56"
     >
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
-          RINPO BUSINESS OS
+          BUSINESS OS
         </p>
-        <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">
-          RINADS Business Operating System
-        </h2>
+        <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">RINADS Business OS</h2>
       </div>
 
       <ul className="flex flex-row gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible">

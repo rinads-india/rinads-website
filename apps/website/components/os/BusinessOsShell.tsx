@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOsCards, getOsNavItems, type OsNavId } from "@/lib/os-modules";
+import { resolveOsModuleFromParam } from "@/lib/os-rinpo-prompts";
 import { OsAuthGate } from "./OsAuthGate";
 import { OsCardGrid } from "./OsCardGrid";
+import { OsDashboardHero } from "./OsDashboardHero";
 import { OsNavPanel } from "./OsNavPanel";
 import { OsPresenceRow } from "./OsPresenceRow";
 import { OsRinpoDock } from "./OsRinpoDock";
@@ -21,12 +23,15 @@ export function BusinessOsShell() {
   const searchParams = useSearchParams();
   const welcome = searchParams.get("welcome") === "1";
   const growModule = searchParams.get("module") === "grow";
+  const rinpoModule = resolveOsModuleFromParam(searchParams.get("module"));
   const rinpoWelcome = welcome || growModule;
   const rinpoWelcomeMessage = growModule
     ? "Welcome to RINADS Grow in Business OS. Open the Grow card to browse marketing packages and manage campaigns."
     : undefined;
   const [activeNav, setActiveNav] = useState<OsNavId>("dashboard");
   const [view, setView] = useState<"dashboard" | "rooms">("dashboard");
+  const [rinpoOpen, setRinpoOpen] = useState(welcome || growModule);
+  const [rinpoSeedPrompt, setRinpoSeedPrompt] = useState<string | null>(null);
 
   const navItems = useMemo(() => getOsNavItems(user?.role ?? "client"), [user?.role]);
   const cards = useMemo(() => getOsCards(user?.role ?? "client"), [user?.role]);
@@ -54,6 +59,14 @@ export function BusinessOsShell() {
             <OsNavPanel items={navItems} activeId={activeNav} onSelect={setActiveNav} />
 
             <div className="flex min-h-0 flex-1 flex-col gap-4">
+              {view === "dashboard" && (
+                <OsDashboardHero
+                  onAskRinpo={(prompt) => {
+                    setRinpoOpen(true);
+                    setRinpoSeedPrompt(prompt);
+                  }}
+                />
+              )}
               <div className="flex flex-1 flex-col gap-4 xl:flex-row">
                 <OsCardGrid cards={cards} view={view} />
                 <OsSystemStatus />
@@ -63,7 +76,15 @@ export function BusinessOsShell() {
           </div>
         </div>
 
-        <OsRinpoDock welcome={rinpoWelcome} welcomeMessage={rinpoWelcomeMessage} />
+        <OsRinpoDock
+          welcome={rinpoWelcome}
+          welcomeMessage={rinpoWelcomeMessage}
+          module={growModule ? "marketing" : rinpoModule}
+          expanded={rinpoOpen}
+          onExpandedChange={setRinpoOpen}
+          seedPrompt={rinpoSeedPrompt}
+          onSeedPromptHandled={() => setRinpoSeedPrompt(null)}
+        />
       </div>
     </OsAuthGate>
   );

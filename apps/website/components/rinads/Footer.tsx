@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
+import { FOOTER_COMPANY, FOOTER_PRODUCTS } from "@/lib/product-ia";
 
 const FOOTER_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260503_104800_bc43ae09-f494-43e3-97d7-2f8c1692cfd7.mp4";
@@ -24,22 +26,6 @@ const SOCIALS: { name: string; href: string; path: string }[] = [
     href: "https://www.rinads.com",
     path: "M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97H15.83c-1.491 0-1.956.93-1.956 1.886v2.265h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z",
   },
-];
-
-const NAV_COL_1 = [
-  { label: "Services", href: "#services" },
-  { label: "Solutions", href: "#work" },
-  { label: "RINADS Cloud", href: "/rinads-cloud" },
-  { label: "About", href: "#about" },
-];
-
-const NAV_COL_2 = [
-  { label: "Contact", href: "#contact" },
-  { label: "Business OS", href: "/os" },
-  { label: "Project", href: "/projects" },
-  { label: "Story", href: "/story-concept" },
-  { label: "Terms and Condition", href: "/contact" },
-  { label: "Privacy Policy", href: "/contact" },
 ];
 
 export function Footer() {
@@ -107,7 +93,7 @@ export function Footer() {
 
           <div className="footer-tagline-container">
             <p className="footer-tagline">
-              Business simplified,
+              Run your business from one place,
               <br />
               <span>powered by RINPO Intelligence.</span>
             </p>
@@ -164,19 +150,19 @@ export function Footer() {
           <div className="footer-right-top">
             <div className="footer-nav-cols">
               <div className="footer-col">
-                <p className="footer-col-title">Navigation</p>
-                {NAV_COL_1.map((link) => (
-                  <a key={link.label} href={link.href}>
+                <p className="footer-col-title">Products</p>
+                {FOOTER_PRODUCTS.map((link) => (
+                  <Link key={link.label} href={link.href}>
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
               </div>
               <div className="footer-col">
                 <p className="footer-col-title">Company</p>
-                {NAV_COL_2.map((link) => (
-                  <a key={link.label} href={link.href}>
+                {FOOTER_COMPANY.map((link) => (
+                  <Link key={link.label} href={link.href}>
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>

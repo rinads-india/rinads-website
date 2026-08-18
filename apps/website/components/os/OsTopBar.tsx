@@ -29,10 +29,9 @@ export function OsTopBar({ view, onViewChange }: OsTopBarProps) {
       </div>
 
       <div className="hidden items-center gap-2 rounded-2xl bg-white/50 px-3 py-1.5 text-xs text-gray-700 md:flex">
-        <span className="font-medium">Meeting is about to start</span>
-        <span className="rounded-full bg-black px-2 py-0.5 font-semibold text-white">-5:23</span>
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-rinads-primary text-[10px] font-bold text-white">
-          A
+        <span className="font-medium">RINADS Business OS</span>
+        <span className="rounded-full bg-emerald-500/90 px-2 py-0.5 font-semibold text-white">
+          Live
         </span>
       </div>
 

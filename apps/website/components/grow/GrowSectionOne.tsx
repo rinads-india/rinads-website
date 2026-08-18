@@ -19,19 +19,19 @@ export function GrowSectionOne() {
         <div className="max-w-3xl">
           <Reveal>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
-              RINADS Grow
+              RINADS Marketplace
             </p>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              Clear. Precise.{" "}
-              <span className="text-rinads-primary">Growing.</span>
+              Services and solutions{" "}
+              <span className="text-rinads-primary">for your business.</span>
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-6 max-w-xl text-base text-white/75 sm:text-lg">
-              Marketing that scales with intelligence — browse SEO, paid media, and social
-              growth packages, buy through RINADS, and manage campaigns inside Business OS.
+              Browse SEO, paid media, and social growth packages — buy through RINADS, manage in
+              Business OS, or let our team run it for you.
             </p>
           </Reveal>
           <Reveal delay={240}>

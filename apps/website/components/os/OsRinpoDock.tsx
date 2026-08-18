@@ -1,46 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Mic, MicOff, MessageCircle, Video, VideoOff } from "lucide-react";
+import { useRinpoMemory } from "@/hooks/useRinpoMemory";
+import { getOsRinpoPrompts, type OsRinpoModule } from "@/lib/os-rinpo-prompts";
 
 type OsRinpoDockProps = {
   welcome?: boolean;
   welcomeMessage?: string;
+  module?: OsRinpoModule;
+  expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
+  seedPrompt?: string | null;
+  onSeedPromptHandled?: () => void;
 };
 
 export function OsRinpoDock({
   welcome = false,
   welcomeMessage = "Welcome to RINADS Business OS. Explore Dashboard to launch your workspace modules.",
+  module = "dashboard",
+  expanded: expandedProp,
+  onExpandedChange,
+  seedPrompt = null,
+  onSeedPromptHandled,
 }: OsRinpoDockProps) {
-  const [expanded, setExpanded] = useState(welcome);
+  const { getPersonalizedGreeting } = useRinpoMemory();
+  const [internalExpanded, setInternalExpanded] = useState(welcome);
+  const expanded = expandedProp ?? internalExpanded;
+  const setExpanded = onExpandedChange ?? setInternalExpanded;
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [reply, setReply] = useState<string | null>(welcome ? welcomeMessage : null);
+  const [reply, setReply] = useState<string | null>(
+    welcome ? getPersonalizedGreeting() || welcomeMessage : null
+  );
   const [sending, setSending] = useState(false);
+
+  const suggestedPrompts = getOsRinpoPrompts(module);
+
+  const sendMessage = useCallback(
+    async (message: string) => {
+      const trimmed = message.trim();
+      if (!trimmed) return;
+
+      setSending(true);
+      setReply(null);
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: trimmed,
+            context: { surface: "os", module },
+          }),
+        });
+        const data = (await response.json()) as { reply?: string };
+        setReply(data.reply ?? "RINPO is ready to help with your workspace.");
+        setPrompt("");
+      } catch {
+        setReply("RINPO intelligence is temporarily unavailable.");
+      } finally {
+        setSending(false);
+      }
+    },
+    [module]
+  );
+
+  useEffect(() => {
+    if (!seedPrompt) return;
+    void sendMessage(seedPrompt).then(() => {
+      onSeedPromptHandled?.();
+    });
+  }, [seedPrompt, sendMessage, onSeedPromptHandled]);
 
   async function sendPrompt(event: React.FormEvent) {
     event.preventDefault();
-    const message = prompt.trim();
-    if (!message) return;
-
-    setSending(true);
-    setReply(null);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
-      const data = (await response.json()) as { reply?: string };
-      setReply(data.reply ?? "RINPO is ready to help with your workspace.");
-      setPrompt("");
-    } catch {
-      setReply("RINPO intelligence is temporarily unavailable.");
-    } finally {
-      setSending(false);
-    }
+    await sendMessage(prompt);
   }
 
   return (
@@ -58,8 +94,23 @@ export function OsRinpoDock({
           </div>
 
           {reply && (
-            <p className="mb-3 rounded-2xl bg-gray-50 px-3 py-2 text-sm text-gray-700">{reply}</p>
+            <p className="mb-3 whitespace-pre-line rounded-2xl bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {reply}
+            </p>
           )}
+
+          <div className="mb-3 flex flex-wrap gap-2">
+            {suggestedPrompts.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => void sendMessage(suggestion)}
+                className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-700 transition hover:border-rinads-primary hover:text-rinads-primary"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
 
           <form onSubmit={sendPrompt} className="flex gap-2">
             <input
@@ -82,7 +133,7 @@ export function OsRinpoDock({
       <div className="pointer-events-auto flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setExpanded((value) => !value)}
+          onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
           className="flex h-11 items-center gap-2 rounded-2xl bg-black px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-gray-800"
         >
