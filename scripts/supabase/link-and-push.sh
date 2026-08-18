@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-PROJECT_REF="${SUPABASE_PROJECT_REF:-zznigagovlhfyzcrjl}"
+PROJECT_REF="${SUPABASE_PROJECT_REF:-zznigagovilnffyzcrlj}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 cd "$ROOT"
