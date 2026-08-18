@@ -1,56 +1,36 @@
 "use client";
 
-import Image from "next/image";
 import {
   GridOverlay,
   Navbar,
-  Hero,
-  Services,
   Portfolio,
   Footer,
 } from "@/components/rinads";
 import { OsReturnBanner } from "@/components/os/OsReturnBanner";
-import type { HomeCmsContent } from "@/lib/cms";
+import { HomeHero } from "@/components/home/HomeHero";
+import { WhatIsRinads } from "@/components/home/WhatIsRinads";
+import { BusinessOsOverview } from "@/components/home/BusinessOsOverview";
+import { ConnectedWorkflow } from "@/components/home/ConnectedWorkflow";
+import { RinpoSection } from "@/components/home/RinpoSection";
+import { IndustrySolutions } from "@/components/home/IndustrySolutions";
+import { ServicesOverview } from "@/components/home/ServicesOverview";
+import { HomeCta } from "@/components/home/HomeCta";
 
-type HomeClientProps = {
-  cms: HomeCmsContent;
-};
-
-export function HomeClient({ cms }: HomeClientProps) {
+export function HomeClient() {
   return (
     <>
       <GridOverlay />
       <Navbar />
       <main id="main">
-        <Hero />
-        <Services cards={cms.serviceCards} />
-        <section
-          id="about"
-          className="relative z-40 bg-surface px-6 md:px-12 lg:px-20 py-24 md:py-32"
-        >
-          <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-            <div>
-              <p className="mb-4 text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
-                {cms.about.eyebrow}
-              </p>
-              <h2 className="text-4xl md:text-6xl font-black leading-tight text-foreground">
-                {cms.about.headline}
-              </h2>
-              <p className="mt-8 max-w-xl text-lg text-muted-foreground">{cms.about.body}</p>
-              <p className="mt-4 max-w-xl text-lg text-muted-foreground/80">{cms.about.subbody}</p>
-            </div>
-            <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-rinads-primary/30 shadow-[0_0_60px_rgba(159,75,199,0.2)]">
-              <Image
-                src="/assets/rinads-promo.png"
-                alt="RINADS Business Cloud dashboard and services"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </section>
+        <HomeHero />
+        <WhatIsRinads />
+        <BusinessOsOverview />
+        <ConnectedWorkflow />
+        <RinpoSection />
+        <IndustrySolutions />
+        <ServicesOverview />
         <Portfolio />
+        <HomeCta />
         <Footer />
       </main>
       <OsReturnBanner />

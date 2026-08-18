@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { ServicesClient } from "./ServicesClient";
+import { RinpoIntelligenceClient } from "./RinpoIntelligenceClient";
 import { getCachedSeoByPath, getPageMetadata, getWebPageJsonLd } from "@/lib/cms";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/services");
+  return getPageMetadata("/rinpo-intelligence");
 }
 
-export default async function ServicesPage() {
-  const seo = await getCachedSeoByPath("/services");
-  const jsonLd = getWebPageJsonLd("/services", seo);
+export default async function RinpoIntelligencePage() {
+  const seo = await getCachedSeoByPath("/rinpo-intelligence");
+  const jsonLd = getWebPageJsonLd("/rinpo-intelligence", seo);
 
   return (
     <>
       <Script
-        id="services-jsonld"
+        id="rinpo-intelligence-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ServicesClient />
+      <RinpoIntelligenceClient />
     </>
   );
 }

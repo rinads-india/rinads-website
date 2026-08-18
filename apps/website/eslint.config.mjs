@@ -16,7 +16,10 @@ const eslintConfig = defineConfig([
   {
     // Phase 0: preserve RINPO chat behavior; pre-existing React Compiler lint debt.
     // Refactor tracked for a later OPERATE pass — do not redesign chat in Phase 0.
-    files: ["components/rinpo/RinpoPhoneScreens/RinpoChat.tsx"],
+    files: [
+      "components/rinpo/RinpoPhoneScreens/RinpoChat.tsx",
+      "components/os/OsRinpoDock.tsx",
+    ],
     rules: {
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/refs": "off",

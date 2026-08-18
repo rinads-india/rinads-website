@@ -1,5 +1,5 @@
 import Script from "next/script";
-import { getCachedSeoByPath, getHomeCmsContent, getOrganizationJsonLd, getPageMetadata, getWebPageJsonLd } from "@/lib/cms";
+import { getCachedSeoByPath, getOrganizationJsonLd, getPageMetadata, getWebPageJsonLd } from "@/lib/cms";
 import { HomeClient } from "./HomeClient";
 
 export async function generateMetadata() {
@@ -7,7 +7,7 @@ export async function generateMetadata() {
 }
 
 export default async function HomePage() {
-  const [cms, seo] = await Promise.all([getHomeCmsContent(), getCachedSeoByPath("/")]);
+  const seo = await getCachedSeoByPath("/");
   const jsonLd = [getOrganizationJsonLd(), getWebPageJsonLd("/", seo)];
 
   return (
@@ -17,7 +17,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <HomeClient cms={cms} />
+      <HomeClient />
     </>
   );
 }

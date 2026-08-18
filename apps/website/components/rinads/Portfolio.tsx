@@ -1,39 +1,45 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const SOLUTIONS = [
   {
-    name: "Business Cloud",
+    name: "Business OS",
     category: "Platform",
-    description: "AI-powered systems built to run your business end to end.",
+    description: "One operating system for customers, work, finance, growth and automation.",
     image: "/assets/rinads-promo.png",
-  },
-  {
-    name: "Growth Marketing",
-    category: "Digital Marketing",
-    description: "SEO, social, and performance ads that compound results.",
-    image: "/assets/rinads-brand-kit.png",
-  },
-  {
-    name: "Custom Software",
-    category: "Development",
-    description: "Web, mobile, and ERP products engineered for scale.",
-    image: "/assets/rinads-brand-board.png",
+    href: "/business-os",
   },
   {
     name: "RINPO Intelligence",
-    category: "AI Automation",
-    description: "Conversational AI and workflow automation for teams.",
+    category: "Intelligence",
+    description: "Understand what's happening and know what to do next.",
     image: "/assets/rinpo-avatar.png",
     objectPosition: "object-top",
+    href: "/rinpo-intelligence",
   },
   {
-    name: "Brand Systems",
-    category: "Identity",
-    description: "Purple-forward visual systems that feel unmistakably Rinads.",
+    name: "Growth Marketing",
+    category: "Services",
+    description: "SEO, social, and performance ads that compound results.",
+    image: "/assets/rinads-brand-kit.png",
+    href: "/grow",
+  },
+  {
+    name: "Custom Software",
+    category: "Services",
+    description: "Web, mobile, and ERP products engineered for scale.",
     image: "/assets/rinads-brand-board.png",
+    href: "/services#build",
+  },
+  {
+    name: "RINADS Cloud",
+    category: "Platform",
+    description: "Connected data, integrations, and ecosystem behind RINADS.",
+    image: "/assets/rinads-brand-board.png",
+    href: "/cloud",
   },
 ];
 
@@ -43,32 +49,30 @@ export function Portfolio() {
   return (
     <section
       id="work"
-      className="relative z-40 min-h-screen bg-surface px-6 md:px-12 lg:px-20 py-24"
+      className="relative z-40 min-h-screen bg-surface px-6 py-24 md:px-12 lg:px-20"
     >
       <div className="mx-auto max-w-7xl">
-        <p className="mb-4 text-sm md:text-lg font-semibold uppercase tracking-[0.3em] text-rinads-primary">
-          Solutions
+        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-rinads-primary md:text-lg">
+          Proof
         </p>
-        <h2 className="mb-12 md:mb-16 text-4xl md:text-6xl font-black leading-tight text-foreground">
-          How we simplify business.
+        <h2 className="mb-12 text-4xl font-black leading-tight text-foreground md:mb-16 md:text-6xl">
+          Real systems. Real client work.
         </h2>
 
-        <div className="flex h-[75vh] md:h-[60vh] flex-col md:flex-row gap-2 md:gap-3">
+        <div className="flex h-[75vh] flex-col gap-2 md:h-[60vh] md:flex-row md:gap-3">
           {SOLUTIONS.map((item, i) => {
             const isActive = active === i;
             return (
-              <button
+              <Link
                 key={item.name}
-                type="button"
+                href={item.href}
                 onMouseEnter={() => setActive(i)}
                 onFocus={() => setActive(i)}
-                onClick={() => setActive(i)}
                 className={`relative min-h-[3.5rem] overflow-hidden rounded-2xl border border-rinads-primary/20 text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                   isActive
-                    ? "flex-[4] md:flex-[5] opacity-100"
+                    ? "flex-[4] opacity-100 md:flex-[5]"
                     : "flex-[1] opacity-80 hover:opacity-95"
                 }`}
-                aria-expanded={isActive}
                 aria-label={`View ${item.name}`}
               >
                 <Image
@@ -80,8 +84,8 @@ export function Portfolio() {
                     "objectPosition" in item ? item.objectPosition : ""
                   } transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                     isActive
-                      ? "opacity-100 blur-none scale-100"
-                      : "opacity-50 blur-sm scale-105"
+                      ? "scale-100 opacity-100 blur-none"
+                      : "scale-105 opacity-50 blur-sm"
                   }`}
                 />
                 <div
@@ -92,23 +96,23 @@ export function Portfolio() {
                   }`}
                 />
                 <div className="absolute inset-x-0 bottom-0 p-4 md:p-8">
-                  <p className="text-xs md:text-sm font-semibold uppercase tracking-[0.3em] text-rinads-primary">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rinads-primary md:text-sm">
                     {item.category}
                   </p>
                   <h3
-                    className={`mt-2 font-black text-white whitespace-normal md:whitespace-nowrap ${
+                    className={`mt-2 whitespace-normal font-black text-white md:whitespace-nowrap ${
                       isActive ? "text-2xl md:text-4xl" : "text-lg md:text-xl"
                     }`}
                   >
                     {item.name}
                   </h3>
                   {isActive && (
-                    <p className="mt-3 max-w-md text-sm md:text-base text-slate-200">
+                    <p className="mt-3 max-w-md text-sm text-slate-200 md:text-base">
                       {item.description}
                     </p>
                   )}
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>

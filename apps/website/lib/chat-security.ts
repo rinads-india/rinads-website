@@ -7,6 +7,11 @@ export const CHAT_RATE_LIMIT_MAX = 30;
 export type ChatRequestBody = {
   message: string;
   lang?: "en" | "ml";
+  context?: {
+    surface?: "os" | "phone";
+    module?: string;
+    orgId?: string;
+  };
 };
 
 export type ChatValidationError = {
@@ -36,7 +41,11 @@ export function validateChatBody(input: unknown): ChatRequestBody | ChatValidati
   if (lang === null) {
     return { status: 400, error: "Invalid language" };
   }
-  return { message, lang };
+  const context =
+    body.context && typeof body.context === "object"
+      ? (body.context as ChatRequestBody["context"])
+      : undefined;
+  return { message, lang, context };
 }
 
 /**

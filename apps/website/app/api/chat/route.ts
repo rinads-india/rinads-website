@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     const message = validated.message;
     const requestedLang: Lang = validated.lang ?? "en";
+    const osContext = validated.context?.surface === "os" ? validated.context : undefined;
     // Auto-detect Malayalam in user input (Unicode \u0D00-\u0D7F) for true 2-way conversation
     const hasMalayalam = /[\u0D00-\u0D7F]/.test(message);
     const lang: Lang = hasMalayalam || requestedLang === "ml" ? "ml" : "en";
@@ -54,8 +55,51 @@ export async function POST(request: NextRequest) {
     let links: ChatLink[] = [];
     let intent: string = "default";
 
-    // Custom Software
-    if (
+    if (osContext) {
+      const osModule = osContext.module ?? "dashboard";
+      if (
+        lower.includes("attention") ||
+        lower.includes("focus") ||
+        lower.includes("today") ||
+        osModule === "dashboard"
+      ) {
+        reply =
+          "**Here's what needs your attention today:**\n\n" +
+          "• 3 overdue invoices\n" +
+          "• 7 leads need follow-up\n" +
+          "• 2 projects are behind schedule\n" +
+          "• 1 campaign is underperforming\n\n" +
+          "Start with overdue invoices, then follow up on hot leads.";
+        links = [{ label: "Open Leads", href: "/os?module=leads" }];
+        intent = "osAttention";
+      } else if (lower.includes("lead") || osModule === "leads") {
+        reply =
+          "Based on your pipeline, **7 leads need follow-up today**. Priority: leads with no contact in 5+ days.";
+        intent = "osLeads";
+      } else if (lower.includes("project") || osModule === "projects") {
+        reply = "**2 projects are at risk** — both are past milestone dates with open tasks.";
+        intent = "osProjects";
+      } else if (lower.includes("invoice") || lower.includes("overdue") || osModule === "finance") {
+        reply = "You have **3 overdue invoices** totaling pending collections. Send reminders today.";
+        intent = "osFinance";
+      } else if (lower.includes("campaign") || osModule === "marketing") {
+        reply = "Your **social campaign is underperforming** — CTR dropped 18% this week.";
+        intent = "osMarketing";
+      } else if (lower.includes("changed") || osModule === "analytics") {
+        reply =
+          "This month: **+12 new leads**, revenue flat, **2 projects completed**, marketing spend up 8%.";
+        intent = "osAnalytics";
+      } else if (lower.includes("prioritize") || osModule === "tasks") {
+        reply =
+          "Priority for today: finish invoice follow-ups, review at-risk projects, then campaign adjustments.";
+        intent = "osTasks";
+      } else {
+        reply =
+          "I'm connected to your **Business OS** workspace. Ask about leads, projects, invoices, campaigns, or what needs attention.";
+        links = [{ label: "Business OS", href: "/business-os" }];
+        intent = "osDefault";
+      }
+    } else if (
       lower.includes("custom software") ||
       (lower.includes("custom") && (lower.includes("software") || lower.includes("app") || lower.includes("development")))
     ) {
@@ -97,7 +141,7 @@ export async function POST(request: NextRequest) {
         "Less paperwork, more clarity. We help you automate operations so you can focus on growth.";
       links = [
         { label: "Explore Services", href: "/services" },
-        { label: "Rinads Cloud", href: "/rinads-cloud" },
+        { label: "RINADS Cloud", href: "/cloud" },
       ];
       intent = "aiAutomation";
     }
@@ -160,10 +204,11 @@ export async function POST(request: NextRequest) {
       lower.includes("ഇൻവോയ്സ്")
     ) {
       reply =
-        "**Rinads Cloud** is our Business Cloud platform—Software, Websites, Marketing. " +
-        "RINADS Intelligence and full ERP features are available. Open the Portal tab in this phone for invoices and client dashboard.";
+        "**RINADS Cloud** connects your business applications, data, integrations and services. " +
+        "Business OS runs on top — open your workspace to get started.";
       links = [
-        { label: "Rinads Cloud", href: "/rinads-cloud" },
+        { label: "RINADS Cloud", href: "/cloud" },
+        { label: "Business OS", href: "/business-os" },
       ];
       intent = "cloud";
     }
@@ -179,11 +224,10 @@ export async function POST(request: NextRequest) {
       lower.includes("റിനാഡ്സ്")
     ) {
       reply =
-        "RINADS stands for **Business Simplified**. We provide Digital Marketing, Custom Software, and AI Automation. " +
-        "Whether you run a Salon, Accounting Firm, Clinic, or Manufacturing—we've got you covered.";
+        "RINADS is a **Business Technology Platform**. **Business OS** runs your business — CRM, projects, finance, marketing and automation. **RINPO Intelligence** helps you understand what to do next.";
       links = [
+        { label: "Business OS", href: "/business-os" },
         { label: "Home", href: "/" },
-        { label: "Services", href: "/services" },
       ];
       intent = "home";
     }
@@ -230,10 +274,10 @@ export async function POST(request: NextRequest) {
       lower.includes("വണക്കം")
     ) {
       reply =
-        "Hi! I'm RINPO, your RINADS assistant. Ask me about our services, contact info, or the client portal. Business simplified.";
+        "Hi! I'm RINPO, your RINADS intelligence layer. Ask me about Business OS, what needs attention, or explore our services.";
       links = [
+        { label: "Business OS", href: "/business-os" },
         { label: "Services", href: "/services" },
-        { label: "Contact", href: "/contact" },
       ];
       intent = "greetings";
     }
@@ -281,11 +325,10 @@ export async function POST(request: NextRequest) {
     // Default
     else {
       reply =
-        "I can help with **Services** (Digital Marketing, Custom Software, AI Automation), **Contact** info, " +
-        "the **Client Portal**, or **Rinads Cloud**. What would you like to explore?";
+        "I can help with **Business OS**, **RINPO Intelligence**, **Services**, or **RINADS Cloud**. What would you like to explore?";
       links = [
+        { label: "Business OS", href: "/business-os" },
         { label: "Services", href: "/services" },
-        { label: "Contact", href: "/contact" },
         { label: "Home", href: "/" },
       ];
     }
@@ -314,7 +357,7 @@ export async function POST(request: NextRequest) {
             "RINADS-ൽ **AI ഓട്ടോമേഷൻ** ചാറ്റ്ബോട്ടുകൾ, വർക്ക്ഫ്ലോ ഓട്ടോമേഷൻ, AI ടൂളുകൾ ഉൾപ്പെടുന്നു. കുറഞ്ഞ പേപ്പർവർക്ക്, കൂടുതൽ വ്യക്തത.",
           links: [
             { label: "സേവനങ്ങൾ", href: "/services" },
-            { label: "Rinads Cloud", href: "/rinads-cloud" },
+            { label: "RINADS Cloud", href: "/cloud" },
           ],
         },
         services: {

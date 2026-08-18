@@ -48,12 +48,12 @@ export default function RinadsSignUpApp() {
         ? [
             { number: 1, text: "Sign in to your workspace", active: true },
             { number: 2, text: "Connect RINPO Intelligence", active: false },
-            { number: 3, text: "Access RINADS Cloud", active: false },
+            { number: 3, text: "Open your Business OS workspace", active: false },
           ]
         : [
             { number: 1, text: "Create your account", active: true },
             { number: 2, text: "Connect RINPO Intelligence", active: false },
-            { number: 3, text: "Access RINADS Cloud", active: false },
+            { number: 3, text: "Open your Business OS workspace", active: false },
           ],
     [isLogin]
   );
@@ -128,8 +128,8 @@ export default function RinadsSignUpApp() {
             </h1>
             <p className="px-4 text-sm leading-relaxed text-white/60">
               {isLogin
-                ? "Sign in to continue your RINADS Cloud journey with RINPO Intelligence."
-                : "Follow these 3 quick phases to activate RINADS Cloud with RINPO Intelligence."}
+                ? "Sign in to continue with RINADS Business OS and RINPO Intelligence."
+                : "Follow these 3 quick phases to set up your business workspace."}
             </p>
           </motion.div>
 
@@ -154,12 +154,12 @@ export default function RinadsSignUpApp() {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-medium tracking-tight">
-              {isLogin ? "Log in to RINADS Cloud" : "Create your RINADS profile"}
+              {isLogin ? "Log in to RINADS" : "Let's set up your business workspace"}
             </h2>
             <p className="signup-subtitle">
               {isLogin
                 ? "Enter your credentials to access your workspace."
-                : "Enter your details to start your Business Cloud journey."}
+                : "Get started with RINADS Business OS."}
             </p>
           </div>
 
@@ -167,12 +167,12 @@ export default function RinadsSignUpApp() {
             <SocialButton
               icon={<GoogleIcon />}
               label="Google"
-              onClick={() => setSocialHint("Google sign-in is coming soon to RINADS Cloud.")}
+              onClick={() => setSocialHint("Google sign-in is coming soon to RINADS Business OS.")}
             />
             <SocialButton
               icon={<LinkedInIcon />}
               label="LinkedIn"
-              onClick={() => setSocialHint("LinkedIn sign-in is coming soon to RINADS Cloud.")}
+              onClick={() => setSocialHint("LinkedIn sign-in is coming soon to RINADS Business OS.")}
             />
           </div>
 

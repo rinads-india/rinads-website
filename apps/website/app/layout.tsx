@@ -29,14 +29,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "RINADS | Business Simplified",
+  title: "RINADS | Run Your Business From One Place",
   description:
-    "RINADS Technologies — AI-powered automation, custom software, and digital marketing. Business Cloud built to run businesses.",
+    "RINADS Business OS connects CRM, projects, finance, marketing and automation into one intelligent workspace.",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: siteBrand.name },
   openGraph: {
-    title: "RINADS | Business Simplified",
+    title: "RINADS | Business Technology Platform",
     description:
-      "AI-powered automation, custom software, and digital marketing. Business simplified.",
+      "Run your business from one place. Business OS, RINPO Intelligence, and connected automation.",
     url: siteUrl,
     siteName: siteBrand.name,
     locale: "en_US",

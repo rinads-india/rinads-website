@@ -1,7 +1,17 @@
 import type { MetadataRoute } from "next";
 import { getCachedPublishedPaths } from "@/lib/cms";
 
-const STATIC_PATHS = ["/services", "/rinads-cloud", "/contact", "/story-concept"];
+const STATIC_PATHS = [
+  "/business-os",
+  "/rinpo-intelligence",
+  "/cloud",
+  "/services",
+  "/grow",
+  "/projects",
+  "/rinpo-story",
+  "/contact",
+  "/story-concept",
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";

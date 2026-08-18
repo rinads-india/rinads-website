@@ -8,6 +8,10 @@ import { getProvisioningJobStatusAction } from "@/app/onboarding/actions/onboard
 export function ProvisioningStatusClient() {
   const searchParams = useSearchParams();
   const orgId = searchParams.get("orgId") ?? "";
+  const modules = searchParams.get("modules") ?? "";
+  const welcomeHref = modules
+    ? `/os?welcome=1&modules=${encodeURIComponent(modules.split(",")[0] ?? "customers")}`
+    : "/os?welcome=1";
   const [status, setStatus] = useState("pending");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
@@ -31,10 +35,9 @@ export function ProvisioningStatusClient() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-12">
-      <h1 className="text-3xl font-semibold">Provisioning your workspace</h1>
+      <h1 className="text-3xl font-semibold">RINADS is preparing your workspace…</h1>
       <p className="text-muted-foreground">
-        Organization {orgId || "(unknown)"} — async seed job status from{" "}
-        <code>tenant_provisioning_jobs</code>.
+        Configuring your modules and provisioning your tenant workspace.
       </p>
       <div className="rounded-xl border border-black/10 bg-white p-6 text-sm">
         <p className="font-medium">Status: {status}</p>
@@ -45,7 +48,7 @@ export function ProvisioningStatusClient() {
           </p>
         )}
         {status === "completed" && (
-          <Link href="/os?welcome=1" className="mt-4 inline-block text-sm font-semibold text-[#9f4bc7]">
+          <Link href={welcomeHref} className="mt-4 inline-block text-sm font-semibold text-[#9f4bc7]">
             Open Business OS
           </Link>
         )}
