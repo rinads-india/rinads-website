@@ -305,6 +305,7 @@ DECLARE
   v_partner service_partners%ROWTYPE;
   v_task_id UUID;
   v_payout NUMERIC(12,2);
+  v_required_skills TEXT[];
 BEGIN
   SELECT * INTO v_order FROM service_orders WHERE id = p_order_id FOR UPDATE;
   IF NOT FOUND THEN
@@ -319,14 +320,23 @@ BEGIN
     RAISE EXCEPTION 'service not found for order %', p_order_id;
   END IF;
 
+  IF v_service.metadata ? 'required_skills' AND jsonb_typeof(v_service.metadata->'required_skills') = 'array' THEN
+    SELECT ARRAY_AGG(x) INTO v_required_skills
+    FROM jsonb_array_elements_text(v_service.metadata->'required_skills') AS x;
+  ELSE
+    v_required_skills := ARRAY[]::TEXT[];
+  END IF;
+
   SELECT sp.* INTO v_partner
   FROM service_partners sp
   WHERE sp.status = 'active'
     AND sp.level <> 'trainee'
     AND sp.current_tasks < sp.max_tasks
     AND (v_service.pod_id IS NULL OR sp.pod_id = v_service.pod_id)
-    AND (cardinality(v_service.metadata->'required_skills') = 0
-         OR sp.skills && ARRAY(SELECT jsonb_array_elements_text(v_service.metadata->'required_skills')))
+    AND (
+      COALESCE(array_length(v_required_skills, 1), 0) = 0
+      OR sp.skills && v_required_skills
+    )
   ORDER BY sp.current_tasks ASC, sp.average_rating DESC, sp.completed_tasks DESC
   LIMIT 1;
 
