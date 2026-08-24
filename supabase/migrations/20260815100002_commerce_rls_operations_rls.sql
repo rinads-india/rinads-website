@@ -72,7 +72,7 @@ DO $$
 DECLARE
   t text;
   tables text[] := ARRAY[
-    'products', 'product_variants', 'product_media', 'orders', 'order_lines', 'order_events',
+    'products', 'product_variants', 'product_media', 'orders',
     'customer_profiles', 'inventory_locations', 'stock_movements', 'suppliers', 'purchase_orders',
     'fulfilments', 'shipments', 'return_requests', 'operational_tasks', 'operational_alerts'
   ];
@@ -91,3 +91,24 @@ BEGIN
     );
   END LOOP;
 END $$;
+
+-- Child order tables inherit org scope via orders
+DROP POLICY IF EXISTS order_lines_org_member_select ON order_lines;
+CREATE POLICY order_lines_org_member_select ON order_lines FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM orders o
+    WHERE o.id = order_lines.order_id
+      AND private.is_org_member(o.organization_id)
+  )
+);
+
+DROP POLICY IF EXISTS order_events_org_member_select ON order_events;
+CREATE POLICY order_events_org_member_select ON order_events FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM orders o
+    WHERE o.id = order_events.order_id
+      AND private.is_org_member(o.organization_id)
+  )
+);
