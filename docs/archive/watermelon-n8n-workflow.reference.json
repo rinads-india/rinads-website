@@ -1,0 +1,618 @@
+{
+  "name": "Watermelon — Order Intake & AI Assignment Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "watermelon-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-01",
+      "name": "🛒 Razorpay Payment Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [180, 400],
+      "notes": "Razorpay sends a POST to this URL when a payment is captured. Configure this URL in your Razorpay Dashboard → Webhooks → payment.captured event. The payload contains payment_id, order_id, and the metadata you attached at checkout (client details, service ID)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.event }}",
+              "operation": "equals",
+              "value2": "payment.captured"
+            }
+          ]
+        }
+      },
+      "id": "node-verify-01",
+      "name": "✅ Verify Payment Event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [420, 400],
+      "notes": "Razorpay sends many event types (payment.failed, refund.created, etc). We only proceed if the event is payment.captured — meaning money has actually landed. All other events fall through to the Ignore branch and return 200 OK silently."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ignored\", \"event\": \"{{ $json.body.event }}\" }",
+        "options": { "responseCode": 200 }
+      },
+      "id": "node-ignore-01",
+      "name": "🔇 Ignore Non-Payment Events",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [660, 600],
+      "notes": "Return 200 OK immediately so Razorpay doesn't retry. We just don't process it further."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ──────────────────────────────────────────────────────\n// STEP: Extract & normalise the Razorpay payload\n//\n// Razorpay's payment.captured payload nests the data we care\n// about inside payload.payment.entity. We also check for the\n// custom metadata (called 'notes' in Razorpay) that the checkout\n// page attached at the time the Razorpay order was created.\n// ──────────────────────────────────────────────────────\n\nconst body = $input.item.json.body;\nconst payment = body.payload?.payment?.entity || {};\nconst notes = payment.notes || {}; // Custom metadata from checkout\n\n// The checkout UI should pass these in Razorpay order notes:\n// notes.supabase_order_id  — the UUID from our orders table\n// notes.client_id           — the client's profile UUID\n// notes.service_id          — which service was purchased\n// notes.client_name         — display name for WhatsApp msg\n// notes.client_phone        — WhatsApp number (+91...)\n// notes.client_email        — for email confirmation\n// notes.business_name       — for the notification message\n\nif (!notes.supabase_order_id) {\n  throw new Error('Missing supabase_order_id in payment notes. Check your checkout integration.');\n}\n\nreturn [{\n  json: {\n    // Razorpay identifiers\n    razorpay_payment_id:  payment.id,\n    razorpay_order_id:    payment.order_id,\n    amount_paise:         payment.amount,          // Razorpay uses paise (₹ × 100)\n    amount_inr:           payment.amount / 100,    // Convert to rupees\n    payment_method:       payment.method,          // 'upi', 'card', 'netbanking'\n    currency:             payment.currency,\n    captured_at:          new Date(payment.created_at * 1000).toISOString(),\n\n    // Our app identifiers (from checkout notes)\n    supabase_order_id:    notes.supabase_order_id,\n    client_id:            notes.client_id,\n    service_id:           notes.service_id,\n    client_name:          notes.client_name || 'Valued Client',\n    client_phone:         notes.client_phone,\n    client_email:         notes.client_email,\n    business_name:        notes.business_name || notes.client_name,\n  }\n}];"
+      },
+      "id": "node-extract-01",
+      "name": "🔍 Extract Payment Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300],
+      "notes": "Normalises the Razorpay payload into a clean flat object. Also converts paise to rupees (Razorpay stores ₹100 as 10000 paise — a common gotcha). Throws an error if supabase_order_id is missing so we catch bad integrations early."
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/orders?id=eq.{{ $json.supabase_order_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" },
+            { "name": "Prefer",        "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"paid\",\n  \"paid_at\": \"{{ $json.captured_at }}\",\n  \"payment_method\": \"{{ $json.payment_method }}\",\n  \"payment_ref\": \"{{ $json.razorpay_payment_id }}\",\n  \"amount_paid\": {{ $json.amount_inr }}\n}",
+        "options": {}
+      },
+      "id": "node-supabase-paid-01",
+      "name": "💾 Mark Order as PAID in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "notes": "Updates the order row status from 'pending' to 'paid'. Uses the Supabase REST API with the service role key (which bypasses RLS — only safe in server-side n8n, never in frontend). The Prefer: return=representation header makes Supabase return the updated row so the next step has the order data."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/ai_assign_order",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_order_id\": \"{{ $('🔍 Extract Payment Data').item.json.supabase_order_id }}\"\n}",
+        "options": {}
+      },
+      "id": "node-ai-assign-01",
+      "name": "🤖 Call AI Assignment Function",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1140, 300],
+      "notes": "Calls the ai_assign_order() PostgreSQL function we built in the schema. This single RPC call does everything inside one database transaction: finds the best intern by load ratio, creates the parent task and all subtasks, inserts notifications for both client and intern, and returns the routing log JSON. If anything fails, Postgres rolls back — no partial state."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ──────────────────────────────────────────────────────\n// STEP: Parse the AI assignment result\n//\n// ai_assign_order() returns a JSONB object with the routing\n// decision: which pod was chosen, which intern was assigned,\n// what the delivery date is, etc. We merge this with the\n// payment data from earlier steps so the WhatsApp message\n// has everything it needs.\n// ──────────────────────────────────────────────────────\n\nconst assignResult = $input.item.json; // JSONB from Postgres function\nconst paymentData = $('🔍 Extract Payment Data').item.json;\n\n// Build the delivery date string for human display\nconst deliveryDate = assignResult.delivery_due\n  ? new Date(assignResult.delivery_due).toLocaleDateString('en-IN', {\n      day: 'numeric', month: 'long', year: 'numeric'\n    })\n  : 'within the committed window';\n\n// Format the amount nicely\nconst amountFormatted = '₹' + Number(paymentData.amount_inr).toLocaleString('en-IN');\n\nreturn [{\n  json: {\n    ...paymentData,\n    // From AI assignment result\n    assigned_pod:     assignResult.matched_pod,\n    assigned_intern:  assignResult.assigned_to,\n    delivery_due:     assignResult.delivery_due,\n    delivery_display: deliveryDate,\n    amount_display:   amountFormatted,\n    order_number:     assignResult.order_number || paymentData.supabase_order_id.slice(0,8).toUpperCase(),\n    // Portal deep link\n    portal_url:       `${process.env.APP_URL || 'https://watermelon.in'}/portal/orders/${paymentData.supabase_order_id}`,\n  }\n}];"
+      },
+      "id": "node-parse-assign-01",
+      "name": "📊 Parse Assignment Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1380, 300],
+      "notes": "Merges the AI assignment result with the payment data collected earlier. Formats the delivery date in human-readable en-IN locale (e.g. '20 May 2026') and prepares the portal deep link. This merged object feeds both the WhatsApp and email nodes below."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $env.TWILIO_ACCOUNT_SID }}/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/x-www-form-urlencoded" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "whatsapp:{{ $env.TWILIO_WHATSAPP_FROM }}"
+            },
+            {
+              "name": "To",
+              "value": "=whatsapp:{{ $json.client_phone }}"
+            },
+            {
+              "name": "Body",
+              "value": "=🍉 *Watermelon Digital*\n\nHi {{ $json.client_name }}! Your order is confirmed ✅\n\n📦 *Order ID:* WM-{{ $json.order_number }}\n💰 *Amount Paid:* {{ $json.amount_display }}\n👤 *Team Assigned:* {{ $json.assigned_intern }} ({{ $json.assigned_pod }})\n🚀 *Delivery By:* {{ $json.delivery_display }}\n\nTrack your order live 👇\n{{ $json.portal_url }}\n\nFor any questions, just reply here.\n\n*Team Watermelon* 🍉"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-whatsapp-client-01",
+      "name": "💬 WhatsApp to Client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1620, 180],
+      "notes": "Sends the client a WhatsApp confirmation via Twilio's WhatsApp Business API. The message includes the order ID, amount, assigned team member name, exact delivery date, and a direct link to their Client Portal order page. This is the moment that makes Watermelon feel like Flipkart — the client gets this within 5 seconds of paying."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $env.TWILIO_ACCOUNT_SID }}/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/x-www-form-urlencoded" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "whatsapp:{{ $env.TWILIO_WHATSAPP_FROM }}"
+            },
+            {
+              "name": "To",
+              "value": "=whatsapp:{{ $env.OPS_TEAM_PHONE }}"
+            },
+            {
+              "name": "Body",
+              "value": "=🍉 *New Order — Watermelon Ops*\n\n📦 *Service ordered:* see portal\n🏢 *Client:* {{ $json.business_name }}\n💰 *Amount:* {{ $json.amount_display }}\n👤 *Assigned to:* {{ $json.assigned_intern }}\n🎯 *Pod:* {{ $json.assigned_pod }}\n🚀 *Due by:* {{ $json.delivery_display }}\n\nCheck ops dashboard 👇\n{{ $env.APP_URL }}/ops"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-whatsapp-ops-01",
+      "name": "📣 WhatsApp to Ops Team",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1620, 360],
+      "notes": "A parallel alert to your ops team WhatsApp number (or group). This means even before anyone opens the dashboard, the right people know a new order has landed and been assigned. Critical for the first few months when you want eyes on every order."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/whatsapp_log",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\":    \"{{ $('📊 Parse Assignment Result').item.json.client_phone }}\",\n  \"user_id\":      \"{{ $('📊 Parse Assignment Result').item.json.client_id }}\",\n  \"order_id\":     \"{{ $('📊 Parse Assignment Result').item.json.supabase_order_id }}\",\n  \"template\":     \"order_confirmation\",\n  \"message_body\": \"Order confirmation sent to {{ $('📊 Parse Assignment Result').item.json.client_name }}\",\n  \"status\":       \"sent\",\n  \"provider_id\":  \"{{ $('💬 WhatsApp to Client').item.json.sid }}\"\n}",
+        "options": {}
+      },
+      "id": "node-log-whatsapp-01",
+      "name": "📝 Log WhatsApp in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1860, 180],
+      "notes": "Writes an audit record to the whatsapp_log table. Stores the Twilio message SID (provider_id) so you can check delivery status later. This log is visible to admin in the ops dashboard and is essential for debugging when a client says 'I never received a WhatsApp'."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ──────────────────────────────────────────────────────\n// STEP: Build the email HTML\n//\n// A professional order confirmation email that mirrors\n// the WhatsApp message but with more visual richness.\n// Uses inline styles for email client compatibility\n// (Gmail strips <style> tags — inline is the only safe way).\n// ──────────────────────────────────────────────────────\n\nconst d = $input.item.json;\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\"></head>\n<body style=\"font-family:sans-serif;background:#f1f5f9;padding:32px 16px;\">\n  <div style=\"max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.10);\">\n\n    <!-- Header -->\n    <div style=\"background:linear-gradient(135deg,#1a7a3c,#0c1a14);padding:32px 32px 28px;text-align:center;\">\n      <div style=\"font-size:42px;margin-bottom:8px;\">🍉</div>\n      <div style=\"color:#fff;font-size:22px;font-weight:900;letter-spacing:-0.5px;\">Order Confirmed!</div>\n      <div style=\"color:rgba(255,255,255,0.6);font-size:13px;margin-top:6px;\">Watermelon Digital Marketplace</div>\n    </div>\n\n    <!-- Body -->\n    <div style=\"padding:32px;\">\n      <p style=\"color:#374151;font-size:15px;line-height:1.7;margin:0 0 24px;\">Hi <strong>${d.client_name}</strong>,<br/>Your payment of <strong>${d.amount_display}</strong> has been received and your dedicated team has been assigned. Here's your order summary:</p>\n\n      <!-- Order Details Box -->\n      <div style=\"background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px 22px;margin-bottom:24px;\">\n        <div style=\"display:grid;gap:12px;\">\n          <div style=\"display:flex;justify-content:space-between;border-bottom:1px solid #d1fae5;padding-bottom:12px;\">\n            <span style=\"color:#6b7280;font-size:13px;font-weight:600;\">Order ID</span>\n            <span style=\"color:#0c1a14;font-size:13px;font-weight:800;font-family:monospace;\">WM-${d.order_number}</span>\n          </div>\n          <div style=\"display:flex;justify-content:space-between;border-bottom:1px solid #d1fae5;padding-bottom:12px;\">\n            <span style=\"color:#6b7280;font-size:13px;font-weight:600;\">Amount Paid</span>\n            <span style=\"color:#1a7a3c;font-size:14px;font-weight:900;\">${d.amount_display}</span>\n          </div>\n          <div style=\"display:flex;justify-content:space-between;border-bottom:1px solid #d1fae5;padding-bottom:12px;\">\n            <span style=\"color:#6b7280;font-size:13px;font-weight:600;\">Assigned Team</span>\n            <span style=\"color:#0c1a14;font-size:13px;font-weight:700;\">${d.assigned_intern} · ${d.assigned_pod}</span>\n          </div>\n          <div style=\"display:flex;justify-content:space-between;\">\n            <span style=\"color:#6b7280;font-size:13px;font-weight:600;\">Delivery By</span>\n            <span style=\"color:#e8394d;font-size:13px;font-weight:800;\">${d.delivery_display}</span>\n          </div>\n        </div>\n      </div>\n\n      <!-- CTA Button -->\n      <div style=\"text-align:center;margin-bottom:28px;\">\n        <a href=\"${d.portal_url}\" style=\"display:inline-block;background:linear-gradient(135deg,#1a7a3c,#27ae60);color:#fff;font-weight:800;font-size:14px;padding:14px 32px;border-radius:12px;text-decoration:none;\">Track My Order Live →</a>\n      </div>\n\n      <p style=\"color:#9ca3af;font-size:12px;text-align:center;line-height:1.6;\">\n        You'll also receive progress updates on WhatsApp at ${d.client_phone}.<br/>\n        Questions? Reply to this email or WhatsApp us.\n      </p>\n    </div>\n\n    <!-- Footer -->\n    <div style=\"background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;\">\n      <div style=\"color:#9ca3af;font-size:11px;\">© 2026 Watermelon Digital · Thrissur, Kerala<br/>A RINADS Technologies venture 🍉</div>\n    </div>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{ json: { ...d, email_html: html } }];"
+      },
+      "id": "node-build-email-01",
+      "name": "✉️ Build Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 360],
+      "notes": "Builds a full HTML email using inline styles (required for Gmail/Outlook compatibility — both strip <style> tags). The email mirrors the WhatsApp message but adds visual hierarchy with the green order details box and a CTA button linking to the Client Portal."
+    },
+    {
+      "parameters": {
+        "fromEmail": "orders@watermelon.in",
+        "toEmail": "={{ $json.client_email }}",
+        "subject": "=✅ Order Confirmed — WM-{{ $json.order_number }} | Watermelon Digital",
+        "emailType": "html",
+        "message": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "id": "node-send-email-01",
+      "name": "📧 Send Confirmation Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2100, 360],
+      "notes": "Sends the HTML email via your configured SMTP provider (Resend, SendGrid, or Gmail SMTP all work). Set up credentials in n8n → Credentials → SMTP. For production, Resend.com gives you 3,000 free emails/month and excellent deliverability."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/invoices",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" },
+            { "name": "Prefer",        "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\":     \"{{ $('📊 Parse Assignment Result').item.json.client_id }}\",\n  \"order_id\":      \"{{ $('📊 Parse Assignment Result').item.json.supabase_order_id }}\",\n  \"amount\":        {{ $('📊 Parse Assignment Result').item.json.amount_inr }},\n  \"gst_amount\":    {{ ($('📊 Parse Assignment Result').item.json.amount_inr * 0.18).toFixed(2) }},\n  \"total_amount\":  {{ ($('📊 Parse Assignment Result').item.json.amount_inr * 1.18).toFixed(2) }},\n  \"status\":        \"paid\",\n  \"paid_at\":       \"{{ $('📊 Parse Assignment Result').item.json.captured_at }}\",\n  \"due_date\":      \"{{ $today.toISODate() }}\",\n  \"line_items\":    [{\"description\": \"Digital Marketing Service\", \"amount\": {{ $('📊 Parse Assignment Result').item.json.amount_inr }}}]\n}",
+        "options": {}
+      },
+      "id": "node-invoice-01",
+      "name": "🧾 Auto-Create Invoice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2100, 180],
+      "notes": "Creates an invoice record in Supabase automatically. Note the GST calculation — 18% GST is added on top of the base amount. The invoice_number is auto-generated by the database trigger (INV-2026-XXXXXX). The client will see this in their portal's Invoices tab immediately."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Order processed and assigned\",\n  \"order_id\": \"{{ $('📊 Parse Assignment Result').item.json.supabase_order_id }}\",\n  \"assigned_to\": \"{{ $('📊 Parse Assignment Result').item.json.assigned_intern }}\",\n  \"delivery_due\": \"{{ $('📊 Parse Assignment Result').item.json.delivery_due }}\"\n}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "node-respond-01",
+      "name": "✅ Return Success to Razorpay",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2340, 300],
+      "notes": "Returns HTTP 200 to Razorpay. This is critical — if you don't respond within 5 seconds, Razorpay will retry the webhook up to 8 times, potentially creating duplicate orders. The response contains the assignment summary for your own debugging."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\":     \"{{ $('📊 Parse Assignment Result').item.json.client_id }}\",\n  \"type\":        \"invoice_ready\",\n  \"title\":       \"Your invoice is ready 🧾\",\n  \"body\":        \"Invoice for your order has been generated. Download it from the Invoices tab.\",\n  \"icon\":        \"🧾\",\n  \"action_url\":  \"/portal/invoices\",\n  \"sent_via\":    [\"in_app\"],\n  \"metadata\":    {\"order_id\": \"{{ $('📊 Parse Assignment Result').item.json.supabase_order_id }}\"}\n}",
+        "options": {}
+      },
+      "id": "node-invoice-notif-01",
+      "name": "🔔 Invoice Ready Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2340, 160],
+      "notes": "Inserts an in-app notification row so the client's portal shows 'Your invoice is ready' in real time via Supabase Realtime. Since the notifications table has REPLICA IDENTITY FULL and is in the Realtime publication, this row insert pushes a WebSocket event to the client's browser instantly."
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 1 * *" }]
+        }
+      },
+      "id": "node-cron-renewal-01",
+      "name": "⏰ Monthly Renewal Check (1st of Month, 9AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [180, 800],
+      "notes": "Runs at 9:00 AM on the 1st of every month. Checks for monthly subscriptions due for renewal in the next 14 days and sends reminder WhatsApp messages. This is the subscription management arm of the workflow — completely separate from the order intake arm above."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/orders?select=id,order_number,client_id,service_id,amount_paid,next_billing_date,auto_renew,profiles!client_id(full_name,phone,business_name),services!service_id(title)&status=eq.delivered&auto_renew=eq.true&next_billing_date=lte.{{ $today.plus({days:14}).toISODate() }}&next_billing_date=gte.{{ $today.toISODate() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-fetch-renewals-01",
+      "name": "📋 Fetch Upcoming Renewals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 800],
+      "notes": "Queries Supabase for all active monthly subscriptions with next_billing_date within the next 14 days. Uses PostgREST's join syntax (profiles!client_id, services!service_id) to get client and service names in a single request — no separate lookups needed."
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-split-renewals-01",
+      "name": "🔄 Split Renewals (One per Iteration)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [660, 800],
+      "notes": "Splits the array of renewal-due orders so each one is processed individually in the loop below. This prevents rate limiting on the WhatsApp API and ensures each client gets a personalised message, not a batch."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $env.TWILIO_ACCOUNT_SID }}/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/x-www-form-urlencoded" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "whatsapp:{{ $env.TWILIO_WHATSAPP_FROM }}"
+            },
+            {
+              "name": "To",
+              "value": "=whatsapp:{{ $json.profiles.phone }}"
+            },
+            {
+              "name": "Body",
+              "value": "=🍉 *Watermelon Digital — Renewal Reminder*\n\nHi {{ $json.profiles.full_name }}!\n\nYour *{{ $json.services.title }}* plan renews on *{{ $json.next_billing_date }}*.\n\nAmount: ₹{{ Number($json.amount_paid).toLocaleString('en-IN') }}\n\nYour team has been delivering great results — we're looking forward to the next month with you! 🚀\n\nTo manage your subscription, visit your portal:\n{{ $env.APP_URL }}/portal\n\nReply STOP to cancel auto-renewal.\n\n*Team Watermelon* 🍉"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-renewal-whatsapp-01",
+      "name": "💬 WhatsApp Renewal Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 800],
+      "notes": "Sends a personalised renewal reminder 14 days before the billing date. The 'Reply STOP to cancel' line is both a legal requirement and good practice — it gives clients a clear opt-out path, which paradoxically reduces cancellations because clients feel in control."
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * 1" }]
+        }
+      },
+      "id": "node-cron-health-01",
+      "name": "📊 Weekly Health Score Refresh (Mon 8AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [180, 1080],
+      "notes": "Runs every Monday at 8AM. Finds all at-risk clients (health score < 75) and alerts the ops team. This is the churn prevention arm — your team lead gets a WhatsApp list of at-risk accounts every Monday morning so they can proactively reach out."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/client_health?select=*,profiles!client_id(full_name,business_name,phone)&at_risk=eq.true&order=score.asc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-fetch-atrisk-01",
+      "name": "⚠️ Fetch At-Risk Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [420, 1080],
+      "notes": "Fetches all clients with at_risk=true from the client_health view, ordered by score ascending (worst first). Joins with profiles to get the business name and phone number for the alert message."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ──────────────────────────────────────────────────────\n// STEP: Build the at-risk client summary for the ops team\n//\n// Formats all at-risk clients into a single WhatsApp message.\n// If there are no at-risk clients, we skip sending.\n// ──────────────────────────────────────────────────────\n\nconst clients = $input.all().map(item => item.json);\n\nif (clients.length === 0) {\n  return [{ json: { skip: true, message: 'No at-risk clients this week. All green! 🟢' } }];\n}\n\nconst lines = clients.map((c, i) =>\n  `${i + 1}. *${c.profiles.business_name}* — Score: ${c.score}%`\n).join('\\n');\n\nconst message = `🍉 *Watermelon Ops — Weekly At-Risk Report*\n\n⚠️ ${clients.length} client${clients.length > 1 ? 's' : ''} need attention this week:\\n\\n${lines}\\n\\nPlease proactively reach out to these accounts before the week ends.\\n\\n📊 View all: ${process.env.APP_URL}/ops/clients`;\n\nreturn [{ json: { skip: false, message, client_count: clients.length } }];"
+      },
+      "id": "node-build-health-alert-01",
+      "name": "📝 Build Health Alert Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 1080],
+      "notes": "Aggregates all at-risk clients into a single WhatsApp message. If no clients are at risk, sets skip=true and the next IF node will stop the workflow here without sending anything — preventing unnecessary WhatsApp messages on good weeks."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "node-check-skip-01",
+      "name": "🔀 Skip if No At-Risk Clients",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 1080]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $env.TWILIO_ACCOUNT_SID }}/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/x-www-form-urlencoded" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "From", "value": "whatsapp:{{ $env.TWILIO_WHATSAPP_FROM }}" },
+            { "name": "To",   "value": "whatsapp:{{ $env.OPS_TEAM_PHONE }}" },
+            { "name": "Body", "value": "={{ $json.message }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-health-alert-send-01",
+      "name": "⚠️ Send At-Risk Alert to Ops",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1140, 1080],
+      "notes": "Sends the consolidated at-risk report to your ops team WhatsApp. Every Monday morning your team lead wakes up to either silence (all good) or a prioritised list of clients to call that day."
+    }
+  ],
+
+  "connections": {
+    "🛒 Razorpay Payment Webhook": {
+      "main": [[{ "node": "✅ Verify Payment Event", "type": "main", "index": 0 }]]
+    },
+    "✅ Verify Payment Event": {
+      "main": [
+        [{ "node": "🔍 Extract Payment Data",       "type": "main", "index": 0 }],
+        [{ "node": "🔇 Ignore Non-Payment Events",  "type": "main", "index": 0 }]
+      ]
+    },
+    "🔍 Extract Payment Data": {
+      "main": [[{ "node": "💾 Mark Order as PAID in Supabase", "type": "main", "index": 0 }]]
+    },
+    "💾 Mark Order as PAID in Supabase": {
+      "main": [[{ "node": "🤖 Call AI Assignment Function", "type": "main", "index": 0 }]]
+    },
+    "🤖 Call AI Assignment Function": {
+      "main": [[{ "node": "📊 Parse Assignment Result", "type": "main", "index": 0 }]]
+    },
+    "📊 Parse Assignment Result": {
+      "main": [[
+        { "node": "💬 WhatsApp to Client",   "type": "main", "index": 0 },
+        { "node": "📣 WhatsApp to Ops Team", "type": "main", "index": 0 },
+        { "node": "✉️ Build Email HTML",      "type": "main", "index": 0 },
+        { "node": "🧾 Auto-Create Invoice",   "type": "main", "index": 0 }
+      ]]
+    },
+    "💬 WhatsApp to Client": {
+      "main": [[{ "node": "📝 Log WhatsApp in Supabase", "type": "main", "index": 0 }]]
+    },
+    "📝 Log WhatsApp in Supabase": {
+      "main": [[{ "node": "✅ Return Success to Razorpay", "type": "main", "index": 0 }]]
+    },
+    "✉️ Build Email HTML": {
+      "main": [[{ "node": "📧 Send Confirmation Email", "type": "main", "index": 0 }]]
+    },
+    "📧 Send Confirmation Email": {
+      "main": [[{ "node": "✅ Return Success to Razorpay", "type": "main", "index": 0 }]]
+    },
+    "🧾 Auto-Create Invoice": {
+      "main": [[{ "node": "🔔 Invoice Ready Notification", "type": "main", "index": 0 }]]
+    },
+    "🔔 Invoice Ready Notification": {
+      "main": [[{ "node": "✅ Return Success to Razorpay", "type": "main", "index": 0 }]]
+    },
+    "⏰ Monthly Renewal Check (1st of Month, 9AM)": {
+      "main": [[{ "node": "📋 Fetch Upcoming Renewals", "type": "main", "index": 0 }]]
+    },
+    "📋 Fetch Upcoming Renewals": {
+      "main": [[{ "node": "🔄 Split Renewals (One per Iteration)", "type": "main", "index": 0 }]]
+    },
+    "🔄 Split Renewals (One per Iteration)": {
+      "main": [[{ "node": "💬 WhatsApp Renewal Reminder", "type": "main", "index": 0 }]]
+    },
+    "📊 Weekly Health Score Refresh (Mon 8AM)": {
+      "main": [[{ "node": "⚠️ Fetch At-Risk Clients", "type": "main", "index": 0 }]]
+    },
+    "⚠️ Fetch At-Risk Clients": {
+      "main": [[{ "node": "📝 Build Health Alert Message", "type": "main", "index": 0 }]]
+    },
+    "📝 Build Health Alert Message": {
+      "main": [[{ "node": "🔀 Skip if No At-Risk Clients", "type": "main", "index": 0 }]]
+    },
+    "🔀 Skip if No At-Risk Clients": {
+      "main": [
+        [{ "node": "⚠️ Send At-Risk Alert to Ops", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "executionTimeout": 30,
+    "timezone": "Asia/Kolkata"
+  },
+
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "watermelon-automation-v1"
+  },
+
+  "__readme__": {
+    "environment_variables_required": [
+      "SUPABASE_URL              — Your project URL from Supabase Settings > API",
+      "SUPABASE_SERVICE_KEY      — Service role key (NOT anon key) from Settings > API",
+      "TWILIO_ACCOUNT_SID        — From Twilio Console dashboard",
+      "TWILIO_AUTH_TOKEN         — From Twilio Console dashboard (used as HTTP Basic password)",
+      "TWILIO_WHATSAPP_FROM      — Your Twilio WhatsApp sender, e.g. +14155238886",
+      "OPS_TEAM_PHONE            — Your team's WhatsApp number, e.g. +919876500000",
+      "APP_URL                   — Your deployed app URL, e.g. https://watermelon.in"
+    ],
+    "import_instructions": [
+      "1. Open your n8n instance (self-hosted on Hostinger VPS)",
+      "2. Click the ≡ menu → Import from File",
+      "3. Upload this JSON file",
+      "4. Go to Settings → Environment Variables and add all variables above",
+      "5. Add Twilio credentials: n8n Credentials → HTTP Basic Auth (username=AccountSID, password=AuthToken)",
+      "6. Configure SMTP credentials for the email node (recommend Resend.com)",
+      "7. Copy the Webhook node URL and paste it in Razorpay Dashboard → Webhooks",
+      "8. Subscribe to the event: payment.captured",
+      "9. Click Activate on the workflow — it is now live"
+    ],
+    "three_workflows_in_one": [
+      "ARM 1 — Order Intake (webhook-triggered): Razorpay payment → Extract data → Mark paid → AI assign → WhatsApp client → WhatsApp ops → Email → Invoice → Notification",
+      "ARM 2 — Renewal Reminders (cron, 1st of month 9AM): Fetch upcoming renewals → Split → WhatsApp reminder per client",
+      "ARM 3 — Health Alerts (cron, every Monday 8AM): Fetch at-risk clients → Build alert → WhatsApp ops team"
+    ]
+  }
+}
