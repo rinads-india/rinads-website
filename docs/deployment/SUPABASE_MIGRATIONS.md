@@ -14,6 +14,28 @@ After core migrations, review [`supabase/migrations/20260824100000_rinads_servic
 
 Verify: `service_orders`, `service_pods`, `service_partners`, `assign_service_order()`, RINPO audit tables.
 
+## Migration history repair
+
+If foundation SQL was applied manually in the Supabase SQL Editor (without `db push`), repair history before the next push:
+
+```bash
+pnpm dlx supabase migration repair --status applied 20260824100000
+pnpm dlx supabase migration list
+```
+
+Then push remaining migrations: `bash scripts/supabase/link-and-push.sh`
+
+## Edge Functions (Services automation)
+
+Deploy after secrets are set in Supabase (`RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`):
+
+```bash
+pnpm dlx supabase functions deploy payment-webhook notify-whatsapp morning-digest health-check
+```
+
+Razorpay dashboard: point `payment.captured` to  
+`https://zznigagovilnffyzcrlj.supabase.co/functions/v1/payment-webhook`
+
 ## Prerequisites
 
 - Supabase project for **staging** (not production until verified)

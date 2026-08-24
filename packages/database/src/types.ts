@@ -97,6 +97,44 @@ export type TenantProvisioningJob = {
   completed_at: string | null;
 };
 
+export type Service = {
+  id: string;
+  organization_id: string | null;
+  pod_id: string | null;
+  slug: string;
+  name: string;
+  description: string;
+  pillar: "build" | "grow" | "automate" | "transform";
+  pricing_model: string;
+  base_price: number | null;
+  currency: string;
+  estimated_delivery_days: number | null;
+  is_active: boolean;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceOrder = {
+  id: string;
+  organization_id: string;
+  service_id: string;
+  order_number: string;
+  amount: number;
+  currency: string;
+  status: string;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  scope: Json;
+  requirements: Json;
+  due_date: string | null;
+  paid_at: string | null;
+  delivered_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 /** Minimal Database typing for CORE + platform tables (expand via supabase gen types). */
 export type Database = {
   public: {
@@ -150,6 +188,22 @@ export type Database = {
         Update: Partial<TenantProvisioningJob>;
         Relationships: [];
       };
+      services: {
+        Row: Service;
+        Insert: Partial<Service> & { slug: string; name: string; pillar: Service["pillar"] };
+        Update: Partial<Service>;
+        Relationships: [];
+      };
+      service_orders: {
+        Row: ServiceOrder;
+        Insert: Partial<ServiceOrder> & {
+          organization_id: string;
+          service_id: string;
+          amount: number;
+        };
+        Update: Partial<ServiceOrder>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -164,6 +218,10 @@ export type Database = {
       set_organization_status: {
         Args: { p_org_id: string; p_status: string };
         Returns: Organization;
+      };
+      get_public_service_order_status: {
+        Args: { p_order_id: string };
+        Returns: Json;
       };
     };
     Enums: Record<string, never>;

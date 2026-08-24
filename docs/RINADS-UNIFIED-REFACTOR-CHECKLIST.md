@@ -19,6 +19,7 @@ Monorepo uses **`organization_id`** as tenant boundary ([ADR-005](./decisions/AD
 - [ ] Create organization on signup (app flow)
 - [ ] Resolve active organization in every authenticated request
 - [x] Add organization_id to service-domain tables (foundation migration)
+- [x] `assign_service_order()` verified on staging (assigned + 1 task)
 - [ ] Replace any client_id-only policies with tenant-aware policies
 
 ## P1 — Services domain
@@ -26,15 +27,17 @@ Monorepo uses **`organization_id`** as tenant boundary ([ADR-005](./decisions/AD
 - [ ] Consolidate marketplace, order journey, creative studio, client portal, ops dashboard into monorepo apps
 - [x] `service_orders` / `service_tasks` / `service_deliverables` / `service_earnings` schema (foundation migration)
 - [x] `assign_service_order()` RPC (deterministic assignment — not RINPO)
-- [ ] Port UI from uploaded JSX prototypes
+- [x] Minimal Services UI: catalog, detail, checkout stub, `/track/[orderId]`
+- [ ] Port full UI from uploaded JSX prototypes (P2)
 
 ## P1 — Automation
 
 - [x] Edge Function scaffolds: payment-webhook, notify-whatsapp, morning-digest, health-check
-- [ ] Razorpay webhook idempotency (`payment_webhook_events`)
-- [ ] Payment → order state transition (wired)
-- [ ] Assignment transaction (wired)
-- [ ] Twilio notification (wired)
+- [x] Edge Functions deployed to rinads-platform staging
+- [x] Razorpay webhook idempotency (`payment_webhook_events`) — schema + payment-webhook handler
+- [x] Payment → order state transition (payment-webhook wired)
+- [x] Assignment transaction (`assign_service_order` RPC)
+- [ ] Twilio notification (wired — stub deployed)
 - [ ] Invoice creation trigger
 - [ ] In-app notification
 - [ ] Renewal cron
