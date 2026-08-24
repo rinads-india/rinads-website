@@ -113,6 +113,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://zznigagovilnffyzcrlj.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
+# Services checkout (Vercel — server secret never NEXT_PUBLIC_)
+NEXT_PUBLIC_RAZORPAY_KEY_ID=<rzp_test_...>
+RAZORPAY_KEY_SECRET=<secret>
+# Supabase Edge Function secret (payment-webhook):
+RAZORPAY_WEBHOOK_SECRET=<webhook-secret>
+
 # CMS cache revalidation (after platform-admin CMS is used)
 CMS_REVALIDATE_SECRET=<random-string>
 WEBSITE_REVALIDATE_URL=https://<your-domain>/api/revalidate
@@ -125,9 +131,21 @@ Keep `NEXT_PUBLIC_AUTH_PROVIDER=demo` until migrations succeed and signup is tes
 ## 4. Smoke test
 
 1. Website signup → profile row in `profiles`
-2. Onboarding → org created → `tenant_provisioning_jobs` row
+2. Onboarding → org created → `tenant_provisioning_jobs` row → `rinads_active_org` cookie set on completion
 3. `/os?welcome=1` loads Business OS
 4. platform-admin (port 3004) → Website CMS pages load (uses same Supabase project)
+
+### Services checkout E2E (staging)
+
+1. Sign in → complete onboarding if no org
+2. Open `/services` → pick a catalog service → **Continue to checkout**
+3. Razorpay test mode payment completes → redirect to `/track/[orderId]`
+4. Razorpay dashboard webhook: `https://zznigagovilnffyzcrlj.supabase.co/functions/v1/payment-webhook` (event: `payment.captured`)
+5. Verify in Supabase:
+   - `service_orders.status` → `paid` or `assigned`
+   - `service_tasks` row when partner available
+   - `payment_webhook_events` idempotency row
+6. Track page shows progress beyond `pending` (polls while webhook processes)
 
 ## 5. Optional: regenerate TypeScript types
 

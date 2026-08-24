@@ -16,8 +16,8 @@ Source: 50-file audit + v5.1 canonicalization. Track progress here.
 Monorepo uses **`organization_id`** as tenant boundary ([ADR-005](./decisions/ADR-005-multi-tenancy.md)). Legacy docs saying `business_id` map to `organization_id`.
 
 - [x] Organizations + organization_members (Phase 1 migration)
-- [ ] Create organization on signup (app flow)
-- [ ] Resolve active organization in every authenticated request
+- [ ] Create organization on signup (app flow) — onboarding exists; post-auth routes to `/onboarding/create-organization`
+- [x] Resolve active organization in every authenticated request — `rinads_active_org` cookie + auto-set for single membership
 - [x] Add organization_id to service-domain tables (foundation migration)
 - [x] `assign_service_order()` verified on staging (assigned + 1 task)
 - [ ] Replace any client_id-only policies with tenant-aware policies
@@ -27,7 +27,7 @@ Monorepo uses **`organization_id`** as tenant boundary ([ADR-005](./decisions/AD
 - [ ] Consolidate marketplace, order journey, creative studio, client portal, ops dashboard into monorepo apps
 - [x] `service_orders` / `service_tasks` / `service_deliverables` / `service_earnings` schema (foundation migration)
 - [x] `assign_service_order()` RPC (deterministic assignment — not RINPO)
-- [x] Minimal Services UI: catalog, detail, checkout stub, `/track/[orderId]`
+- [x] Minimal Services UI: catalog, detail, checkout, `/track/[orderId]` (Razorpay Standard Checkout)
 - [ ] Port full UI from uploaded JSX prototypes (P2)
 
 ## P1 — Automation

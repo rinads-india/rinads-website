@@ -5,6 +5,7 @@ import {
   verifyRazorpayWebhookSignature,
   mapRazorpaySubscriptionStatus,
   getRazorpayConfigFromEnv,
+  rupeesToPaise,
 } from "../src/providers/razorpay";
 import { checkUsageLimit, recordOrderPlaced, currentPeriodStart } from "../src/usage";
 import { mirrorSubscriptionToOrg } from "../src/subscriptions";
@@ -29,6 +30,11 @@ describe("Razorpay provider", () => {
     delete process.env.RAZORPAY_KEY_ID;
     assert.equal(getRazorpayConfigFromEnv(), null);
     if (prev) process.env.RAZORPAY_KEY_ID = prev;
+  });
+
+  it("converts rupees to paise", () => {
+    assert.equal(rupeesToPaise(4999), 499900);
+    assert.equal(rupeesToPaise(10.5), 1050);
   });
 });
 

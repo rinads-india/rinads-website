@@ -16,6 +16,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@rinads/auth": "workspace:*",
+    "@rinads/billing": "workspace:*",
     "@rinads/brand": "workspace:*",
     "@rinads/database": "workspace:*",
     "@rinads/permissions": "workspace:*",

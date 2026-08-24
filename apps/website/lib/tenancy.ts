@@ -3,11 +3,14 @@ import { resolveTenancyFromSupabase, type TenancySupabaseClient } from "@rinads/
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { getSupabasePublicConfig } from "@/lib/supabase/env";
 import type { TenancyContext } from "@rinads/tenancy";
+import { ensureActiveOrganizationCookieAction } from "@/lib/org-context";
 
 export async function resolveWebsiteTenancy(): Promise<TenancyContext | null> {
   const { url, anonKey } = getSupabasePublicConfig();
   if (!url || !anonKey) return null;
   if (process.env.NEXT_PUBLIC_AUTH_PROVIDER !== "supabase") return null;
+
+  await ensureActiveOrganizationCookieAction();
 
   const cookieStore = await cookies();
   const activeOrg = cookieStore.get("rinads_active_org")?.value;

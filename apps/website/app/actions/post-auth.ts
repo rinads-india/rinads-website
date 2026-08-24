@@ -4,6 +4,7 @@ import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
 import { ONBOARDING_PATH, OS_PATH } from "@/lib/post-auth-destination";
+import { ensureActiveOrganizationCookieAction } from "@/lib/org-context";
 
 export async function resolvePostAuthDestinationAction(): Promise<string> {
   if (!isSupabaseMode()) {
@@ -25,6 +26,8 @@ export async function resolvePostAuthDestinationAction(): Promise<string> {
     if (!memberships.length) {
       return ONBOARDING_PATH;
     }
+
+    await ensureActiveOrganizationCookieAction();
 
     return OS_PATH;
   } catch {
