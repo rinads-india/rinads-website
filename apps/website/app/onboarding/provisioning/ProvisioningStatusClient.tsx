@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getProvisioningJobStatusAction } from "@/app/onboarding/actions/onboarding";
-import { setActiveOrganizationAction } from "@/app/actions/organization-context";
+import { setActiveOrganizationAction } from "@/lib/org-context";
 
 export function ProvisioningStatusClient() {
   const searchParams = useSearchParams();
