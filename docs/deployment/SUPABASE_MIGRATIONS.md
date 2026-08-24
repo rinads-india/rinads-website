@@ -8,6 +8,12 @@ See **[RINADS_PLATFORM_STAGING.md](./RINADS_PLATFORM_STAGING.md)** for the live 
 - Ref: `zznigagovilnffyzcrlj`
 - Push: `bash scripts/supabase/link-and-push.sh` (requires `SUPABASE_ACCESS_TOKEN`)
 
+## RINADS Services foundation (v5.1)
+
+After core migrations, review [`supabase/migrations/20260824100000_rinads_services_foundation.sql`](../../supabase/migrations/20260824100000_rinads_services_foundation.sql) and [SERVICES-MIGRATION.md](../architecture/SERVICES-MIGRATION.md).
+
+Verify: `service_orders`, `service_pods`, `service_partners`, `assign_service_order()`, RINPO audit tables.
+
 ## Prerequisites
 
 - Supabase project for **staging** (not production until verified)
