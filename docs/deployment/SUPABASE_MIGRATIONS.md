@@ -15,7 +15,7 @@ See **[RINADS_PLATFORM_STAGING.md](./RINADS_PLATFORM_STAGING.md)** for the live 
 
 ## Steps
 
-1. Review [`supabase/migrations/20260814223650_core_identity.sql`](../../supabase/migrations/20260814223650_core_identity.sql)
+1. Review [`supabase/migrations/20260814100001_core_identity.sql`](../../supabase/migrations/20260814100001_core_identity.sql)
 2. Link CLI: `pnpm dlx supabase link --project-ref <ref>`
 3. Push: `pnpm dlx supabase db push`
 4. Verify in Table Editor: `profiles`, `organizations`, `organization_members`, `roles`, `permissions`, `audit_logs`, `feature_flags`

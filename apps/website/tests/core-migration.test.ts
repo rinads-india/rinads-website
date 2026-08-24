@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 describe("core_identity migration", () => {
   const sql = readFileSync(
-    join(process.cwd(), "../../supabase/migrations/20260814223650_core_identity.sql"),
+    join(process.cwd(), "../../supabase/migrations/20260814100001_core_identity.sql"),
     "utf8"
   );
 

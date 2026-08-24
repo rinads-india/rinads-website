@@ -11,7 +11,7 @@ pnpm dlx supabase link --project-ref <project-ref>
 pnpm dlx supabase db push
 ```
 
-Or use the Supabase SQL editor to run `migrations/20260814223650_core_identity.sql` in a controlled review.
+Or use the Supabase SQL editor to run `migrations/20260814100001_core_identity.sql` in a controlled review.
 
 ## Enable website Supabase Auth
 
