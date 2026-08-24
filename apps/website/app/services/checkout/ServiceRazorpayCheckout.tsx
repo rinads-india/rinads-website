@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createRazorpayCheckoutSessionAction } from "../actions";
@@ -10,12 +10,6 @@ type Props = {
   orderNumber: string;
   serviceName: string;
   amountLabel: string;
-};
-
-type RazorpayHandlerResponse = {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
 };
 
 type RazorpayInstance = {
@@ -90,7 +84,7 @@ export function ServiceRazorpayCheckout({
           service_order_id: session.orderId,
         },
         theme: { color: "#9f4bc7" },
-        handler: (_response: RazorpayHandlerResponse) => {
+        handler: () => {
           router.push(`/track/${encodeURIComponent(orderId)}`);
           router.refresh();
         },
@@ -114,12 +108,6 @@ export function ServiceRazorpayCheckout({
       setLoading(false);
     }
   }, [orderId, router, serviceName]);
-
-  useEffect(() => {
-    void startCheckout();
-    // Auto-open Razorpay once when the checkout page loads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="mt-8 space-y-4">
