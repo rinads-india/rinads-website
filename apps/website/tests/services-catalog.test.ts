@@ -1,10 +1,11 @@
-import { describe, expect, it } from "vitest";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import { ORDER_STATUS_PROGRESS } from "@/lib/services/types";
 
 describe("services catalog", () => {
   it("maps order statuses to progress percentages", () => {
-    expect(ORDER_STATUS_PROGRESS.delivered).toBe(100);
-    expect(ORDER_STATUS_PROGRESS.assigned).toBe(25);
-    expect(ORDER_STATUS_PROGRESS.pending).toBe(5);
+    assert.equal(ORDER_STATUS_PROGRESS.delivered, 100);
+    assert.equal(ORDER_STATUS_PROGRESS.assigned, 25);
+    assert.equal(ORDER_STATUS_PROGRESS.pending, 5);
   });
 });

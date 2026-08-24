@@ -3,7 +3,14 @@ import type { PublicOrderStatus } from "./types";
 
 export async function getPublicOrderStatus(orderId: string): Promise<PublicOrderStatus | null> {
   const supabase = await createWebsiteServerClient();
-  const { data, error } = await supabase.rpc("get_public_service_order_status", {
+  const { data, error } = await (
+    supabase as unknown as {
+      rpc: (
+        fn: string,
+        args: { p_order_id: string }
+      ) => Promise<{ data: unknown; error: { message: string } | null }>;
+    }
+  ).rpc("get_public_service_order_status", {
     p_order_id: orderId,
   });
 
@@ -35,8 +42,18 @@ export async function createServiceOrder(input: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in required" };
 
-  const { data, error } = await supabase
-    .from("service_orders")
+  const { data, error } = await (
+    supabase.from("service_orders") as unknown as {
+      insert: (row: Record<string, unknown>) => {
+        select: (cols: string) => {
+          single: () => Promise<{
+            data: { id: string; order_number: string } | null;
+            error: { message: string } | null;
+          }>;
+        };
+      };
+    }
+  )
     .insert({
       organization_id: input.organizationId,
       service_id: input.serviceId,
