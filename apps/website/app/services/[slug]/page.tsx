@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getPlatformServiceBySlug } from "@/lib/services/catalog";
 import { formatServicePrice } from "@/lib/services/types";
 import { ServiceCheckoutButton } from "./ServiceCheckoutButton";
+import { createWebsiteServerClient } from "@/lib/supabase/server";
+import { isSupabaseMode } from "@/lib/supabase/env";
+import { resolveWebsiteTenancy } from "@/lib/tenancy";
+import { ONBOARDING_PATH } from "@/lib/post-auth-destination";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,6 +23,20 @@ export default async function ServiceDetailPage({ params }: Props) {
   const { slug } = await params;
   const service = await getPlatformServiceBySlug(slug);
   if (!service) notFound();
+
+  if (isSupabaseMode()) {
+    const supabase = await createWebsiteServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      redirect(`/signup?next=${encodeURIComponent(`/services/${slug}`)}`);
+    }
+    const tenancy = await resolveWebsiteTenancy();
+    if (!tenancy) {
+      redirect(`${ONBOARDING_PATH}?next=${encodeURIComponent(`/services/${slug}`)}`);
+    }
+  }
 
   return (
     <main className="min-h-[100dvh] bg-rinads-primary-darkest px-6 pb-24 pt-32 text-white md:px-12">

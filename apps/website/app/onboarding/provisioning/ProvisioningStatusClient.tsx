@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getProvisioningJobStatusAction } from "@/app/onboarding/actions/onboarding";
+import { setActiveOrganizationAction } from "@/lib/org-context";
 
 export function ProvisioningStatusClient() {
   const searchParams = useSearchParams();
@@ -14,6 +15,7 @@ export function ProvisioningStatusClient() {
     : "/os?welcome=1";
   const [status, setStatus] = useState("pending");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [orgCookieSet, setOrgCookieSet] = useState(false);
 
   useEffect(() => {
     if (!orgId) return;
@@ -32,6 +34,13 @@ export function ProvisioningStatusClient() {
       cancelled = true;
     };
   }, [orgId]);
+
+  useEffect(() => {
+    if (!orgId || status !== "completed" || orgCookieSet) return;
+    void setActiveOrganizationAction(orgId).then((result) => {
+      if (result.ok) setOrgCookieSet(true);
+    });
+  }, [orgId, status, orgCookieSet]);
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-12">

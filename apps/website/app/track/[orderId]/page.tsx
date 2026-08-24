@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicOrderStatus } from "@/lib/services/orders";
+import { TrackOrderStatusClient } from "./TrackOrderStatusClient";
 
 export const metadata: Metadata = {
   title: "Track order | RINADS Services",
@@ -30,20 +31,7 @@ export default async function TrackOrderPage({ params }: Props) {
             <p className="text-xs text-white/50">Service</p>
             <p className="text-lg">{order.serviceName}</p>
           </div>
-          <div>
-            <p className="text-xs text-white/50">Status</p>
-            <p className="capitalize">{order.status.replace(/_/g, " ")}</p>
-          </div>
-          <div>
-            <p className="mb-2 text-xs text-white/50">Progress</p>
-            <div className="h-2 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-rinads-primary transition-all"
-                style={{ width: `${order.progressPct}%` }}
-              />
-            </div>
-            <p className="mt-1 text-sm text-white/50">{order.progressPct}%</p>
-          </div>
+          <TrackOrderStatusClient initialOrder={order} />
           {order.dueDate ? (
             <div>
               <p className="text-xs text-white/50">Expected delivery</p>
