@@ -1,8 +1,8 @@
 # rinads-platform (staging)
-# Project URL: https://zznigagovlhfyzcrjl.supabase.co
-# Link: pnpm dlx supabase link --project-ref zznigagovlhfyzcrjl
+# Project URL: https://zznigagovilnffyzcrlj.supabase.co
+# Link: pnpm dlx supabase link --project-ref zznigagovilnffyzcrlj
 
-project_id = "zznigagovlhfyzcrjl"
+project_id = "zznigagovilnffyzcrlj"
 
 [api]
 enabled = true
