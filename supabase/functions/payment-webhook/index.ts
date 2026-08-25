@@ -87,20 +87,36 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (assignResult?.assigned && orderRow) {
+      const notifyHeaders = {
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+      };
+
+      // Client confirmation
       await fetch(`${functionsUrl}/notify-whatsapp`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${serviceKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: notifyHeaders,
         body: JSON.stringify({
           organization_id: orderRow.organization_id,
           order_id: orderId,
           recipient: "client",
           template: "order_confirmation",
-          message_body: `RINADS — Order ${orderRow.order_number} confirmed and assigned.`,
+          message_body: `✅ RINADS — Order ${orderRow.order_number} confirmed!\n\nYour service has been assigned to our team. We'll keep you updated on progress.\n\nTrack: rinadsone.in/track/${orderId.slice(0, 8)}`,
         }),
       }).catch((e) => console.error("notify-whatsapp client", e));
+
+      // Partner/intern task assignment
+      await fetch(`${functionsUrl}/notify-whatsapp`, {
+        method: "POST",
+        headers: notifyHeaders,
+        body: JSON.stringify({
+          organization_id: orderRow.organization_id,
+          order_id: orderId,
+          recipient: "intern",
+          template: "task_assigned",
+          message_body: `🔔 RINADS — New task assigned!\n\nOrder: ${orderRow.order_number}\n\nPlease acknowledge and begin work. Reply for support.`,
+        }),
+      }).catch((e) => console.error("notify-whatsapp intern", e));
     }
 
     return new Response(
