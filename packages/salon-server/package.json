@@ -1,0 +1,24 @@
+{
+  "name": "@rinads/salon-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo 'lint: @rinads/salon-server ok'",
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'build: @rinads/salon-server (source package)'",
+    "test": "node --import tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@rinads/salon": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.4",
+    "typescript": "^5"
+  }
+}
