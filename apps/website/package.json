@@ -25,6 +25,8 @@
     "@rinads/cms": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
     "@rinads/operations-server": "workspace:*",
+    "@rinads/salon": "workspace:*",
+    "@rinads/salon-server": "workspace:*",
     "@rinads/tenancy": "workspace:*",
     "@rinads/ui": "workspace:*",
     "@supabase/ssr": "^0.6.1",

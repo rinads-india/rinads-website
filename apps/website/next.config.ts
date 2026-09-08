@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
     "@rinads/permissions",
     "@rinads/database",
     "@rinads/ui",
+    "@rinads/salon",
+    "@rinads/salon-server",
   ],
   images: {
     remotePatterns: [

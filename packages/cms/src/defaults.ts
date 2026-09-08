@@ -242,6 +242,12 @@ export const DEFAULT_SEO: SiteSeo[] = [
     "Salon appointments, clients, and growth on RINADS.",
   ),
   seo(
+    "seo_solutions_salon_book",
+    "/solutions/salon/book",
+    "Book an Appointment | RINADS Salon OS",
+    "Book a salon appointment online — pick a service, a time, and confirm in seconds.",
+  ),
+  seo(
     "seo_solutions_healthcare",
     "/solutions/healthcare",
     "Healthcare OS | RINADS Solutions",
