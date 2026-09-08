@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { findRedirectForPath, listRedirects } from "@rinads/cms";
-import { assertProductionEnvContract } from "@rinads/auth";
+import { checkProductionEnvContract, renderProductionEnvContractUnavailablePage } from "@rinads/auth";
 import { getWebsiteCmsClient } from "@/lib/cms-client";
 
 type CookieToSet = {
@@ -22,8 +22,23 @@ async function resolveRedirect(pathname: string) {
  */
 export async function middleware(request: NextRequest) {
   // Fail closed on every request if a production deploy is misconfigured
-  // with demo auth / demo data. See docs/deployment/POLICY.md.
-  assertProductionEnvContract();
+  // with demo auth / demo data. See docs/deployment/POLICY.md. This must
+  // never throw here — an unguarded throw crashes the whole middleware
+  // invocation (MIDDLEWARE_INVOCATION_FAILED) instead of returning a
+  // controlled response. This is the exact class of outage that took down
+  // production: see docs/deployment/POLICY.md for the incident runbook.
+  const envContract = checkProductionEnvContract();
+  if (!envContract.ok) {
+    console.error(`[production-env-contract] ${envContract.message}`);
+    return new NextResponse(renderProductionEnvContractUnavailablePage(), {
+      status: 503,
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+        "retry-after": "60",
+      },
+    });
+  }
 
   const redirect = await resolveRedirect(request.nextUrl.pathname);
   if (redirect) {
@@ -67,6 +82,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
