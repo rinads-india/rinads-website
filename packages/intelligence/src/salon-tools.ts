@@ -14,20 +14,26 @@
  * per-org permission row (system-scope roles).
  */
 import { isPrivilegedRoleKey } from "@rinads/permissions";
-import type { Result } from "@rinads/salon";
+import type { CampaignChannel, CampaignType, Result, SegmentCriteria } from "@rinads/salon";
 import {
   getBusinessSummary,
+  getCampaignPerformance,
   getCustomerCommunicationPreferences,
   getEmptySlots,
+  getGrowthOpportunities,
+  getMessageFailuresSummary,
   getPendingPaymentsSummary,
+  getRetentionSummary,
   getRevenueSummary,
   getServicePerformance,
   getStaffUtilization,
   getTodayAppointments,
   RinpoActionsRepository,
+  SalonCampaignsRepository,
   SalonNotificationService,
   SalonRepository,
   type RinpoActionRecord,
+  type SalonSupabaseClient,
 } from "@rinads/salon-server";
 import { getRinpoTool } from "./registry";
 import type { RinpoToolInput, RinpoToolResult } from "./types";
@@ -44,6 +50,9 @@ export type SalonRinpoDeps = {
   repo: SalonRepository;
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
+  campaigns: SalonCampaignsRepository;
+  /** Raw client, needed only by the growth-intelligence functions that query `notification_outbox` directly (see `getMessageFailuresSummary`/`getGrowthOpportunities`). */
+  client: SalonSupabaseClient;
 };
 
 function hasSalonPermission(ctx: SalonRinpoContext, permission: string | undefined): boolean {
@@ -61,6 +70,29 @@ function argNum(input: RinpoToolInput, key: string, fallback?: number): number |
   if (raw === undefined || raw === null || raw === "") return fallback;
   const n = Number(raw);
   return Number.isFinite(n) ? n : fallback;
+}
+
+/**
+ * `RinpoToolInput.args` is a flat `Record<string, string | number>` (no
+ * nested objects), so `SegmentCriteria` is built from individual top-level
+ * args rather than a single JSON blob — consistent with how e.g.
+ * `create_appointment`'s `serviceIds` is a flat comma-separated string.
+ */
+function buildCriteriaFromArgs(input: RinpoToolInput): SegmentCriteria {
+  const criteria: SegmentCriteria = {};
+  const lastVisitBeforeDays = argNum(input, "lastVisitBeforeDays");
+  if (lastVisitBeforeDays !== undefined) criteria.lastVisitBeforeDays = lastVisitBeforeDays;
+  const minVisits = argNum(input, "minVisits");
+  if (minVisits !== undefined) criteria.minVisits = minVisits;
+  const minLifetimeSpend = argNum(input, "minLifetimeSpend");
+  if (minLifetimeSpend !== undefined) criteria.minLifetimeSpend = minLifetimeSpend;
+  const maxLifetimeSpend = argNum(input, "maxLifetimeSpend");
+  if (maxLifetimeSpend !== undefined) criteria.maxLifetimeSpend = maxLifetimeSpend;
+  if (input.args.preferredServiceId) criteria.preferredServiceId = arg(input, "preferredServiceId");
+  if (input.args.preferredStaffId) criteria.preferredStaffId = arg(input, "preferredStaffId");
+  if (input.args.branchId) criteria.branchId = arg(input, "branchId");
+  if (input.args.communicationOptIn !== undefined) criteria.communicationOptIn = String(input.args.communicationOptIn) === "true";
+  return criteria;
 }
 
 async function auditWrite(
@@ -191,6 +223,49 @@ export async function executeSalonRinpoTool(
     }
 
     // -----------------------------------------------------------------
+    // Growth READ tools (R GLOW Phase E, Slice 1)
+    // -----------------------------------------------------------------
+    case "get_customer_segments": {
+      const result = await deps.campaigns.listSegments(ctx.organizationId);
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      return { tool: input.tool, ok: true, message: `${result.data.length} segment(s).`, data: result.data };
+    }
+    case "preview_segment": {
+      const campaignId = input.args.campaignId ? arg(input, "campaignId") : undefined;
+      const result = campaignId
+        ? await deps.campaigns.previewAudience(ctx.organizationId, campaignId)
+        : await deps.campaigns.previewCriteria(ctx.organizationId, buildCriteriaFromArgs(input));
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      return {
+        tool: input.tool,
+        ok: true,
+        message: `${result.data.eligible.length} eligible, ${result.data.excluded.length} excluded.`,
+        data: result.data,
+      };
+    }
+    case "get_campaign_performance": {
+      const result = await getCampaignPerformance(deps.campaigns, ctx.organizationId, argNum(input, "limit", 10));
+      return { tool: input.tool, ok: true, message: `${result.length} campaign(s).`, data: result };
+    }
+    case "get_message_failures": {
+      const result = await getMessageFailuresSummary(deps.client, ctx.organizationId);
+      return {
+        tool: input.tool,
+        ok: true,
+        message: `${result.failedCount} failed, ${result.deadLetterCount} dead-lettered, ${result.notConfiguredCount} not configured.`,
+        data: result,
+      };
+    }
+    case "get_retention_summary": {
+      const result = await getRetentionSummary(deps.repo, ctx.organizationId);
+      return { tool: input.tool, ok: true, message: `Repeat-visit rate: ${result.repeatRatePct}%.`, data: result };
+    }
+    case "get_growth_opportunities": {
+      const result = await getGrowthOpportunities(deps.repo, deps.campaigns, deps.client, ctx.organizationId);
+      return { tool: input.tool, ok: true, message: `${result.length} growth signal(s) ranked.`, data: result };
+    }
+
+    // -----------------------------------------------------------------
     // WRITE/EXECUTE tools — immediate execution + audit trail
     // -----------------------------------------------------------------
     case "create_appointment": {
@@ -317,6 +392,76 @@ export async function executeSalonRinpoTool(
       await auditWrite(deps, ctx, "rinpo.create_reactivation_campaign", "salon_customer", ctx.organizationId, { queued, skipped });
       return { tool: input.tool, ok: true, message: `Queued ${queued} reactivation message(s), skipped ${skipped}.`, data: { queued, skipped } };
     }
+
+    // -----------------------------------------------------------------
+    // Growth WRITE tools (R GLOW Phase E, Slice 1) — drafting only, never
+    // sends anything. approve_campaign/send_campaign are separate
+    // SENSITIVE, approval-required tools below.
+    // -----------------------------------------------------------------
+    case "create_segment": {
+      const name = arg(input, "name");
+      if (!name) return { tool: input.tool, ok: false, message: "name is required." };
+      const result = await deps.campaigns.createSegment(ctx.organizationId, {
+        name,
+        criteria: buildCriteriaFromArgs(input),
+        createdBy: ctx.userId,
+      });
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      await auditWrite(deps, ctx, "rinpo.create_segment", "salon_segment", result.data.id, { name });
+      return { tool: input.tool, ok: true, message: `Segment "${result.data.name}" saved.`, data: result.data };
+    }
+    case "create_campaign_draft": {
+      const name = arg(input, "name");
+      const messageBody = arg(input, "messageBody");
+      if (!name || !messageBody) return { tool: input.tool, ok: false, message: "name and messageBody are required." };
+      const result = await deps.campaigns.createCampaignDraft(ctx.organizationId, {
+        name,
+        messageBody,
+        segmentId: input.args.segmentId ? arg(input, "segmentId") : undefined,
+        criteria: buildCriteriaFromArgs(input),
+        campaignType: input.args.campaignType ? (arg(input, "campaignType") as CampaignType) : undefined,
+        channel: input.args.channel ? (arg(input, "channel") as CampaignChannel) : undefined,
+        templateKey: input.args.templateKey ? arg(input, "templateKey") : undefined,
+        scheduledAt: input.args.scheduledAt ? arg(input, "scheduledAt") : undefined,
+        createdBy: ctx.userId,
+      });
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      await auditWrite(deps, ctx, "rinpo.create_campaign_draft", "salon_campaign", result.data.id, { name });
+      return {
+        tool: input.tool,
+        ok: true,
+        message: `Campaign "${result.data.name}" drafted (${result.data.status}). Preview the audience, then approve it to send.`,
+        data: result.data,
+      };
+    }
+    case "create_reactivation_draft": {
+      const daysInactive = argNum(input, "daysInactive", 60) ?? 60;
+      const name = input.args.name ? arg(input, "name") : `Reactivation — ${daysInactive}+ days inactive`;
+      const messageBody = input.args.messageBody
+        ? arg(input, "messageBody")
+        : "We miss you! Come back and enjoy 20% off your next visit.";
+      const criteria: SegmentCriteria = { lastVisitBeforeDays: daysInactive };
+      const minLifetimeSpend = argNum(input, "minLifetimeSpend");
+      if (minLifetimeSpend !== undefined) criteria.minLifetimeSpend = minLifetimeSpend;
+
+      const result = await deps.campaigns.createCampaignDraft(ctx.organizationId, {
+        name,
+        messageBody,
+        criteria,
+        campaignType: "reactivation",
+        templateKey: "salon.campaign.reactivation",
+        createdBy: ctx.userId,
+      });
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      await auditWrite(deps, ctx, "rinpo.create_reactivation_draft", "salon_campaign", result.data.id, { daysInactive });
+      return {
+        tool: input.tool,
+        ok: true,
+        message: `Reactivation draft "${result.data.name}" created (${result.data.status}). Preview the audience, then approve it to send.`,
+        data: result.data,
+      };
+    }
+
     case "create_staff_task": {
       const body = arg(input, "body");
       if (!body) return { tool: input.tool, ok: false, message: "body is required." };
@@ -439,6 +584,70 @@ export async function resolveSalonRinpoAction(
       }
       await deps.actions.markExecuted(actionId, { refundId, status: "approved" });
       return { tool: "resolve_rinpo_action", ok: true, message: "Refund approved — process it from the POS refunds list." };
+    }
+    // -------------------------------------------------------------
+    // Growth actions (R GLOW Phase E, Slice 1) — approving here is what
+    // actually applies the campaign-state transition; there is no
+    // separate domain-level pending state the way initiate_refund has.
+    // The real enforcement of "approval requires org.manage" is RLS on
+    // `salon_campaigns`/`salon_campaign_recipients` (see the migration's
+    // dual-UPDATE-policy note) — this resolver runs with the approving
+    // user's own RLS-scoped client, so a caller without org.manage simply
+    // gets a db_error here, exactly like modify_pricing/modify_discount
+    // above never re-check permissions in application code.
+    // -------------------------------------------------------------
+    case "approve_campaign": {
+      const campaignId = String(action.input.campaignId ?? "");
+      const campaignResult = await deps.campaigns.getCampaign(campaignId);
+      if (!campaignResult.ok) {
+        await deps.actions.markFailed(actionId, campaignResult.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: campaignResult.error.message };
+      }
+      const result = await deps.campaigns.approveCampaign(campaignId, campaignResult.data.status, ctx.userId);
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, { campaignId });
+      return { tool: "resolve_rinpo_action", ok: true, message: "Campaign approved — it can now be sent." };
+    }
+    case "send_campaign":
+    case "send_reactivation_batch": {
+      const campaignId = String(action.input.campaignId ?? "");
+      const campaignResult = await deps.campaigns.getCampaign(campaignId);
+      if (!campaignResult.ok) {
+        await deps.actions.markFailed(actionId, campaignResult.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: campaignResult.error.message };
+      }
+      const result = await deps.campaigns.sendCampaign(
+        campaignResult.data.organizationId,
+        campaignId,
+        campaignResult.data.status
+      );
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, { campaignId, queued: result.data.queued, skipped: result.data.skipped });
+      return {
+        tool: "resolve_rinpo_action",
+        ok: true,
+        message: `Campaign sending — queued ${result.data.queued}, skipped ${result.data.skipped}.`,
+      };
+    }
+    case "retry_failed_message": {
+      const notificationOutboxId = String(action.input.notificationOutboxId ?? "");
+      if (!notificationOutboxId) {
+        await deps.actions.markFailed(actionId, "No notificationOutboxId to retry.");
+        return { tool: "resolve_rinpo_action", ok: false, message: "No notificationOutboxId to retry." };
+      }
+      const result = await deps.notifications.retryMessage(notificationOutboxId);
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, { notificationOutboxId });
+      return { tool: "resolve_rinpo_action", ok: true, message: "Message queued for retry." };
     }
     default:
       await deps.actions.markFailed(actionId, `Unknown action type: ${action.actionType}`);

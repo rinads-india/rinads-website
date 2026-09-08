@@ -85,6 +85,39 @@ export class SalonNotificationService {
 
     return ok({ skipped: false, outboxId: String((existing as { id: unknown }).id) });
   }
+
+  /**
+   * Single-message retry (R GLOW Phase E, Slice 1) — resets a
+   * `failed`/`dead_letter`/`not_configured` outbox row back to `pending`
+   * with `next_attempt_at` cleared so `processSalonNotificationOutbox`
+   * picks it up on its next pass. Refuses to "retry" a message that isn't
+   * actually stuck (e.g. already `sent`/`delivered`), since that would be
+   * indistinguishable from silently re-sending a message that already
+   * went out. Bulk retry across many messages is deferred to Phase E.2
+   * (see the plan's deferred-scope note) — this is intentionally scoped
+   * to one message at a time.
+   */
+  async retryMessage(outboxId: string): Promise<Result<true>> {
+    const { data: existing, error: selectError } = await this.client
+      .from("notification_outbox")
+      .select("status")
+      .eq("id", outboxId)
+      .maybeSingle();
+    if (selectError) return fail("db_error", selectError.message);
+    if (!existing) return fail("not_found", "Message not found.");
+
+    const status = String((existing as { status: unknown }).status);
+    if (!["failed", "dead_letter", "not_configured"].includes(status)) {
+      return fail("invalid_transition", `Cannot retry a message in "${status}" status.`);
+    }
+
+    const { error } = await this.client
+      .from("notification_outbox")
+      .update({ status: "pending", last_error: null, next_attempt_at: null })
+      .eq("id", outboxId);
+    if (error) return fail("db_error", error.message);
+    return ok(true);
+  }
 }
 
 /**

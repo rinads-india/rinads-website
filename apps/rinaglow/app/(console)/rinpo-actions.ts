@@ -14,14 +14,17 @@ function revalidateConsole() {
   revalidatePath("/calendar");
   revalidatePath("/pos");
   revalidatePath("/clients");
+  revalidatePath("/growth");
+  revalidatePath("/campaigns");
 }
 
 export async function runRinpoCommandAction(
   text: string,
-  lastAttentionItems: AttentionItem[] | undefined
+  lastAttentionItems: AttentionItem[] | undefined,
+  lastCampaignDraftId?: string
 ): Promise<RinpoCommandOutcome> {
   const tenancy = await requireTenancy();
-  const result = await runRinpoCommand(tenancy, text, { lastAttentionItems });
+  const result = await runRinpoCommand(tenancy, text, { lastAttentionItems, lastCampaignDraftId });
   revalidateConsole();
   return result;
 }

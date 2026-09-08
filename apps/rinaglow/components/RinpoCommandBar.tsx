@@ -71,6 +71,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   const [text, setText] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [lastAttentionItems, setLastAttentionItems] = useState<AttentionItem[] | undefined>(undefined);
+  const [lastCampaignDraftId, setLastCampaignDraftId] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -80,7 +81,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
     setText("");
     setHistory((h) => [...h, { role: "user", text: command }]);
     startTransition(async () => {
-      const outcome: RinpoCommandOutcome = await runRinpoCommandAction(command, lastAttentionItems);
+      const outcome: RinpoCommandOutcome = await runRinpoCommandAction(command, lastAttentionItems, lastCampaignDraftId);
       if (outcome.kind === "clarify") {
         setHistory((h) => [...h, { role: "rinpo", kind: "clarify", question: outcome.question }]);
         return;
@@ -90,6 +91,15 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
       if (summaryResult?.ok && summaryResult.data && typeof summaryResult.data === "object") {
         const items = (summaryResult.data as { attentionItems?: AttentionItem[] }).attentionItems;
         if (items) setLastAttentionItems(items);
+      }
+      // "Preview the audience" / "approve it" / "send it" resolve against
+      // whichever campaign was most recently drafted in this session.
+      const draftResult = outcome.results.find(
+        (r) => r.tool === "create_campaign_draft" || r.tool === "create_reactivation_draft"
+      );
+      if (draftResult?.ok && draftResult.data && typeof draftResult.data === "object") {
+        const id = (draftResult.data as { id?: string }).id;
+        if (id) setLastCampaignDraftId(id);
       }
     });
   }
