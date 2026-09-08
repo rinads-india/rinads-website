@@ -1,4 +1,5 @@
 import { Card, EmptyState } from "@rinads/ui";
+import Link from "next/link";
 import { getSalonRepository } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 
@@ -42,7 +43,11 @@ export default async function ClientsPage() {
             <tbody>
               {customers.map((c) => (
                 <tr key={c.id}>
-                  <td className="font-medium text-foreground">{c.name ?? "—"}</td>
+                  <td className="font-medium text-foreground">
+                    <Link href={`/clients/${c.id}`} className="text-rinads-primary underline">
+                      {c.name ?? c.phone}
+                    </Link>
+                  </td>
                   <td>{c.phone}</td>
                   <td>{c.email ?? "—"}</td>
                   <td>{c.marketingConsent ? "Yes" : "No"}</td>

@@ -1,4 +1,5 @@
 import { Card, EmptyState } from "@rinads/ui";
+import { WorkingHoursEditor } from "@/components/WorkingHoursEditor";
 import { getSalonRepository } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { NewStaffForm } from "./NewStaffForm";
@@ -49,6 +50,7 @@ export default async function StaffPage() {
                 <th>Branch</th>
                 <th>Specialties</th>
                 <th>Status</th>
+                <th>Hours</th>
               </tr>
             </thead>
             <tbody>
@@ -58,6 +60,14 @@ export default async function StaffPage() {
                   <td>{s.branchId ? branchesById.get(s.branchId)?.name ?? "—" : "Unassigned"}</td>
                   <td>{s.specialties.join(", ") || "—"}</td>
                   <td>{s.isActive ? "Active" : "Inactive"}</td>
+                  <td>
+                    <details>
+                      <summary className="cursor-pointer text-rinads-primary">Edit hours</summary>
+                      <div className="mt-2">
+                        <WorkingHoursEditor kind="staff" entityId={s.id} initialHours={s.workingHours} />
+                      </div>
+                    </details>
+                  </td>
                 </tr>
               ))}
             </tbody>
