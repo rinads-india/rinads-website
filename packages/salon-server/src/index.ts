@@ -4,3 +4,6 @@ export * from "./repository";
 export * from "./intelligence";
 export * from "./notifications";
 export * from "./rinpo-actions";
+export * from "./segmentation";
+export * from "./campaigns-repository";
+export * from "./notification-delivery";

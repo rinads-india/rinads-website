@@ -11,10 +11,13 @@ import {
   generateDaySlots,
   intersectWeeklyHours,
   type AttentionItem,
+  type CampaignStatus,
   type SalonAppointment,
   type SalonBranch,
   type SalonStaff,
 } from "@rinads/salon";
+import type { SalonCampaignsRepository } from "./campaigns-repository";
+import type { SalonRow, SalonSupabaseClient } from "./client";
 import type { SalonRepository } from "./repository";
 
 function startOfDayUtc(date: Date): Date {
@@ -248,4 +251,122 @@ export async function getBusinessSummary(
   ]);
 
   return { todayAppointments, pendingPayments, reactivationCandidateCount, unconfirmedBookingCount, attentionItems };
+}
+
+// ---------------------------------------------------------------------------
+// Growth intelligence (R GLOW Phase E, Slice 1) — retention, campaign
+// performance, message failures, and a growth-opportunity ranking. Every
+// function here is the same "thin, honest aggregation" contract as the
+// rest of this file: no data means an empty/zero result, never a
+// fabricated number.
+// ---------------------------------------------------------------------------
+
+export type RetentionSummary = {
+  /** Customers with at least one non-cancelled visit ever. */
+  totalCustomersWithVisits: number;
+  /** Of those, customers with 2+ non-cancelled visits. */
+  repeatCustomers: number;
+  repeatRatePct: number;
+};
+
+export async function getRetentionSummary(repo: SalonRepository, organizationId: string): Promise<RetentionSummary> {
+  const appointmentsResult = await repo.listAppointments(organizationId);
+  const appointments = appointmentsResult.ok ? appointmentsResult.data.filter((a) => a.status !== "cancelled") : [];
+
+  const visitsByCustomer = new Map<string, number>();
+  for (const appt of appointments) {
+    visitsByCustomer.set(appt.customerId, (visitsByCustomer.get(appt.customerId) ?? 0) + 1);
+  }
+
+  const totalCustomersWithVisits = visitsByCustomer.size;
+  const repeatCustomers = [...visitsByCustomer.values()].filter((count) => count >= 2).length;
+  const repeatRatePct = totalCustomersWithVisits > 0 ? Math.round((repeatCustomers / totalCustomersWithVisits) * 100) : 0;
+
+  return { totalCustomersWithVisits, repeatCustomers, repeatRatePct };
+}
+
+export type CampaignPerformanceSummary = {
+  campaignId: string;
+  name: string;
+  status: CampaignStatus;
+  estimatedAudience: number;
+  attemptedCount: number;
+  sentCount: number;
+  deliveredCount: number;
+  failedCount: number;
+  convertedCount: number;
+  conversionRatePct: number;
+};
+
+export async function getCampaignPerformance(
+  campaignsRepo: SalonCampaignsRepository,
+  organizationId: string,
+  limit = 10
+): Promise<CampaignPerformanceSummary[]> {
+  const result = await campaignsRepo.listCampaigns(organizationId);
+  if (!result.ok) return [];
+  return result.data.slice(0, limit).map((c) => ({
+    campaignId: c.id,
+    name: c.name,
+    status: c.status,
+    estimatedAudience: c.estimatedAudience,
+    attemptedCount: c.attemptedCount,
+    sentCount: c.sentCount,
+    deliveredCount: c.deliveredCount,
+    failedCount: c.failedCount,
+    convertedCount: c.convertedCount,
+    conversionRatePct: c.attemptedCount > 0 ? Math.round((c.convertedCount / c.attemptedCount) * 100) : 0,
+  }));
+}
+
+export type MessageFailuresSummary = {
+  failedCount: number;
+  deadLetterCount: number;
+  notConfiguredCount: number;
+};
+
+export async function getMessageFailuresSummary(client: SalonSupabaseClient, organizationId: string): Promise<MessageFailuresSummary> {
+  const { data, error } = await client
+    .from("notification_outbox")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .in("status", ["failed", "dead_letter", "not_configured"]);
+  if (error || !data) return { failedCount: 0, deadLetterCount: 0, notConfiguredCount: 0 };
+  const rows = data as SalonRow[];
+  return {
+    failedCount: rows.filter((r) => r.status === "failed").length,
+    deadLetterCount: rows.filter((r) => r.status === "dead_letter").length,
+    notConfiguredCount: rows.filter((r) => r.status === "not_configured").length,
+  };
+}
+
+/**
+ * The growth-specific counterpart to `getBusinessSummary`'s attention
+ * ranking — same `computeAttentionItems` implementation, new signal kinds
+ * (`message_failures`, `pending_campaign_approvals`, `low_repeat_rate`).
+ */
+export async function getGrowthOpportunities(
+  repo: SalonRepository,
+  campaignsRepo: SalonCampaignsRepository,
+  client: SalonSupabaseClient,
+  organizationId: string
+): Promise<AttentionItem[]> {
+  const [retention, failures, draftCampaignsResult] = await Promise.all([
+    getRetentionSummary(repo, organizationId),
+    getMessageFailuresSummary(client, organizationId),
+    campaignsRepo.listCampaigns(organizationId, { status: "draft" }),
+  ]);
+
+  const pendingApprovals = draftCampaignsResult.ok ? draftCampaignsResult.data.length : 0;
+  const nonReturningPct = retention.totalCustomersWithVisits > 0 ? 100 - retention.repeatRatePct : 0;
+
+  return computeAttentionItems([
+    { kind: "message_failures", count: failures.failedCount + failures.deadLetterCount },
+    { kind: "pending_campaign_approvals", count: pendingApprovals },
+    {
+      kind: "low_repeat_rate",
+      count: nonReturningPct,
+      detail: { repeatRatePct: retention.repeatRatePct, totalCustomersWithVisits: retention.totalCustomersWithVisits },
+    },
+  ]);
 }

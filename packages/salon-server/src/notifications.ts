@@ -27,7 +27,9 @@ export type SalonNotificationEvent =
   | "payment.received"
   | "invoice.ready"
   | "review.request_due"
-  | "customer.reactivation_due";
+  | "customer.reactivation_due"
+  /** A campaign message to one recipient (custom or reactivation) — see `campaigns-repository.ts`'s `sendCampaign`. */
+  | "campaign.message";
 
 export type EnqueueNotificationInput = {
   organizationId: string;
@@ -38,6 +40,8 @@ export type EnqueueNotificationInput = {
   payload: Record<string, unknown>;
   /** Caller-supplied, deterministic per logical event (e.g. `booking.created:${appointmentId}`) — dedups retries. */
   idempotencyKey: string;
+  /** Links the resulting outbox row back to its `salon_campaign_recipients` row, so delivery-state triggers can keep campaign aggregates in sync. */
+  campaignRecipientId?: string;
 };
 
 export type EnqueueNotificationResult = { skipped: true; reason: string } | { skipped: false; outboxId: string };
@@ -64,6 +68,7 @@ export class SalonNotificationService {
         payload: input.payload,
         idempotency_key: input.idempotencyKey,
         status: "pending",
+        campaign_recipient_id: input.campaignRecipientId ?? null,
       },
       { onConflict: "organization_id,idempotency_key", ignoreDuplicates: true }
     );

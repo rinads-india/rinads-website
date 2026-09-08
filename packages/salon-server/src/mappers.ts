@@ -1,24 +1,32 @@
 import type {
   AppointmentStatus,
+  CampaignChannel,
+  CampaignStatus,
+  CampaignType,
   NoteEntityType,
   NoteStatus,
   NoteVisibility,
   PaymentMethod,
   PaymentStatus,
   PreferredChannel,
+  RecipientStatus,
   RefundStatus,
   SaleStatus,
   SalonAppointment,
   SalonAppointmentService,
   SalonBranch,
+  SalonCampaign,
+  SalonCampaignRecipient,
   SalonCustomer,
   SalonNote,
   SalonPayment,
   SalonRefund,
   SalonSale,
   SalonSaleLine,
+  SalonSegment,
   SalonService,
   SalonStaff,
+  SegmentCriteria,
   WeeklyHours,
 } from "@rinads/salon";
 import type { SalonRow } from "./client";
@@ -217,6 +225,61 @@ export function mapNoteRow(row: SalonRow): SalonNote {
     assignedTo: optStr(row, "assigned_to"),
     dueAt: optStr(row, "due_at"),
     createdBy: optStr(row, "created_by"),
+    createdAt: optStr(row, "created_at"),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapSegmentRow(row: SalonRow): SalonSegment {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    name: str(row, "name"),
+    criteria: (row.criteria as SegmentCriteria) ?? {},
+    createdBy: optStr(row, "created_by"),
+    createdAt: optStr(row, "created_at"),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapCampaignRow(row: SalonRow): SalonCampaign {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    name: str(row, "name"),
+    segmentId: optStr(row, "segment_id"),
+    criteria: (row.criteria as SegmentCriteria) ?? {},
+    campaignType: str(row, "campaign_type") as CampaignType,
+    channel: str(row, "channel") as CampaignChannel,
+    templateKey: str(row, "template_key"),
+    messageBody: str(row, "message_body"),
+    status: str(row, "status") as CampaignStatus,
+    scheduledAt: optStr(row, "scheduled_at"),
+    createdBy: optStr(row, "created_by"),
+    approvedBy: optStr(row, "approved_by"),
+    approvedAt: optStr(row, "approved_at"),
+    estimatedAudience: Number(row.estimated_audience ?? 0),
+    attemptedCount: Number(row.attempted_count ?? 0),
+    sentCount: Number(row.sent_count ?? 0),
+    deliveredCount: Number(row.delivered_count ?? 0),
+    failedCount: Number(row.failed_count ?? 0),
+    convertedCount: Number(row.converted_count ?? 0),
+    createdAt: optStr(row, "created_at"),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapCampaignRecipientRow(row: SalonRow): SalonCampaignRecipient {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    campaignId: str(row, "campaign_id"),
+    customerId: str(row, "customer_id"),
+    notificationOutboxId: optStr(row, "notification_outbox_id"),
+    status: str(row, "status") as RecipientStatus,
+    skipReason: optStr(row, "skip_reason"),
+    convertedAt: optStr(row, "converted_at"),
+    convertedAppointmentId: optStr(row, "converted_appointment_id"),
     createdAt: optStr(row, "created_at"),
     updatedAt: optStr(row, "updated_at"),
   };
