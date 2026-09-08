@@ -53,7 +53,7 @@ export function Hero() {
         <nav className="relative z-10 flex items-center justify-end px-6 pt-16 md:px-10 md:pt-20">
           <div className="anim-stagger flex items-center gap-3" style={{ animationDelay: "0.2s" }}>
             <Link
-              href="/grow"
+              href="/platform/marketing-os"
               className="btn-cut-border hidden px-5 py-2.5 text-sm text-white hover:bg-white/10 md:block"
             >
               <span>RINADS Grow</span>

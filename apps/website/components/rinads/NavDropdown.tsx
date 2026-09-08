@@ -48,7 +48,16 @@ export function NavDropdown({ group, linkClassName = islandLinkClass }: NavDropd
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[60] min-w-[12rem] -translate-x-1/2 rounded-2xl border border-[var(--island-border)] bg-[var(--island-bg)] p-2 shadow-[var(--island-shadow)]">
+        <div className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[60] max-h-[70vh] min-w-[14rem] -translate-x-1/2 overflow-y-auto rounded-2xl border border-[var(--island-border)] bg-[var(--island-bg)] p-2 shadow-[var(--island-shadow)]">
+          {group.href ? (
+            <Link
+              href={group.href}
+              className={`${linkClassName} mb-1 border-b border-black/5 pb-2 text-rinads-primary`}
+              onClick={() => setOpen(false)}
+            >
+              Overview
+            </Link>
+          ) : null}
           {group.items.map((item) =>
             item.href.startsWith("/") && !item.href.includes("#") ? (
               <Link

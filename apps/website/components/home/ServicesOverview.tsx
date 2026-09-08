@@ -4,7 +4,7 @@ import type { LucideIcon } from "lucide-react";
 
 const PILLARS: { icon: LucideIcon; title: string; subtitle: string; href: string }[] = [
   { icon: Code2, title: "Build", subtitle: "Custom Software", href: "/services#build" },
-  { icon: Megaphone, title: "Grow", subtitle: "Growth Marketing", href: "/grow" },
+  { icon: Megaphone, title: "Grow", subtitle: "Growth Marketing", href: "/platform/marketing-os" },
   { icon: Bot, title: "Automate", subtitle: "AI & Workflow Automation", href: "/services#automate" },
   { icon: Layers, title: "Transform", subtitle: "Business Systems", href: "/services" },
 ];

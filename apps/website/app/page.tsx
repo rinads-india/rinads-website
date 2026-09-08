@@ -8,7 +8,23 @@ export async function generateMetadata() {
 
 export default async function HomePage() {
   const seo = await getCachedSeoByPath("/");
-  const jsonLd = [getOrganizationJsonLd(), getWebPageJsonLd("/", seo)];
+  const jsonLd = [
+    getOrganizationJsonLd(),
+    getWebPageJsonLd("/", seo),
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "RINADS",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description:
+        "The AI Operating Platform for Business — run, build, grow, learn, and automate with RINPO.",
+      offers: {
+        "@type": "Offer",
+        url: "https://www.rinads.com/signup",
+      },
+    },
+  ];
 
   return (
     <>

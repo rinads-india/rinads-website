@@ -14,7 +14,7 @@ const CARDS: Array<ServiceCardContent & { bg: string; accent: string; icon: Luci
     bg: "bg-[#1a1224]",
     accent: "from-rinads-primary/40",
     icon: Megaphone,
-    href: "/grow",
+    href: "/platform/marketing-os",
   },
   {
     title: "Custom Software Development",

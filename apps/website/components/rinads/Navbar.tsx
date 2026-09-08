@@ -11,19 +11,21 @@ import { NavDropdown } from "./NavDropdown";
 import { ThemeToggle } from "./ThemeToggle";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { useAuth } from "@/contexts/AuthContext";
-import { NAV_GROUPS } from "@/lib/product-ia";
+import { CTAS, NAV_GROUPS } from "@/lib/product-ia";
 
 const islandLinkClass =
-  "rounded-full text-xs font-semibold uppercase tracking-[0.3em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary";
+  "rounded-full text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:text-xs xl:tracking-[0.28em]";
 
 function MobileMenuOverlay({
   open,
   onClose,
   isAuthenticated,
+  onTalkToRinpo,
 }: {
   open: boolean;
   onClose: () => void;
   isAuthenticated: boolean;
+  onTalkToRinpo: () => void;
 }) {
   return (
     <AnimatePresence>
@@ -91,30 +93,42 @@ function MobileMenuOverlay({
             )}
           </div>
 
-          {!isAuthenticated && (
-            <motion.div
-              className="flex w-full max-w-xs flex-col gap-3"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: NAV_GROUPS.length * 0.08, duration: 0.4 }}
+          <motion.div
+            className="flex w-full max-w-xs flex-col gap-3"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: NAV_GROUPS.length * 0.08, duration: 0.4 }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                onTalkToRinpo();
+                onClose();
+              }}
+              className="flex h-12 items-center justify-center rounded-full bg-rinads-primary text-base font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <Link
-                href="/signup"
-                onClick={onClose}
-                className="flex h-12 items-center justify-center rounded-full bg-rinads-primary text-base font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                Get Started
-              </Link>
-              <Link
-                href="/signup?mode=login"
-                onClick={onClose}
-                className="flex h-12 items-center justify-center rounded-full border border-white/25 text-base font-semibold text-white transition-colors hover:border-rinads-primary hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                Log in
-              </Link>
-            </motion.div>
-          )}
+              {CTAS.primary.label}
+            </button>
+            {!isAuthenticated && (
+              <>
+                <Link
+                  href={CTAS.secondary.href}
+                  onClick={onClose}
+                  className="flex h-12 items-center justify-center rounded-full border border-white/25 text-base font-semibold text-white transition-colors hover:border-rinads-primary hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {CTAS.secondary.label}
+                </Link>
+                <Link
+                  href="/signup?mode=login"
+                  onClick={onClose}
+                  className="flex h-12 items-center justify-center rounded-full text-base font-semibold text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  Log in
+                </Link>
+              </>
+            )}
+          </motion.div>
 
           <ThemeToggle className="mt-2 h-12 w-12" />
         </motion.div>
@@ -128,6 +142,7 @@ export function Navbar() {
     dismissGuide,
     navMenuOpen: open,
     setNavMenuOpen: setOpen,
+    openPhoneScreen,
   } = useRinpo();
   const { user, logout, isAuthenticated } = useAuth();
   const mounted = useSyncExternalStore(
@@ -158,6 +173,7 @@ export function Navbar() {
   };
 
   const closeMenu = () => setOpen(false);
+  const talkToRinpo = () => openPhoneScreen("chat");
 
   return (
     <>
@@ -174,7 +190,7 @@ export function Navbar() {
           <Logo className="h-6 sm:h-7 md:h-8" priority />
         </Link>
 
-        <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex xl:gap-4">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-2">
           {NAV_GROUPS.map((group) => (
             <NavDropdown key={group.label} group={group} linkClassName={islandLinkClass} />
           ))}
@@ -186,12 +202,19 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={talkToRinpo}
+            className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:flex sm:h-11 sm:px-5"
+          >
+            {CTAS.primary.label}
+          </button>
           {!isAuthenticated && (
             <Link
-              href="/signup"
-              className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:flex sm:h-11 sm:px-5"
+              href={CTAS.secondary.href}
+              className="hidden h-10 shrink-0 items-center justify-center rounded-full border border-black/10 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--island-foreground)] transition-colors hover:border-rinads-primary/40 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11 sm:px-4"
             >
-              Get Started
+              {CTAS.secondary.label}
             </Link>
           )}
           {isAuthenticated ? (
@@ -212,7 +235,7 @@ export function Navbar() {
             <Link
               href="/signup?mode=login"
               data-rinpo-guide="account"
-              className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full bg-rinads-primary px-3 text-sm font-semibold text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:h-11 sm:gap-2 sm:px-5"
+              className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:h-11 sm:gap-2 sm:px-3"
             >
               <UserRound size={18} aria-hidden />
               <span className="hidden sm:inline">Log in</span>
@@ -240,6 +263,7 @@ export function Navbar() {
               open={open}
               onClose={closeMenu}
               isAuthenticated={isAuthenticated}
+              onTalkToRinpo={talkToRinpo}
             />,
             document.body
           )

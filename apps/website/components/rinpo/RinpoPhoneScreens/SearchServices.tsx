@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 
 const SERVICES = [
-  { id: "digital", name: "Digital Marketing", desc: "SEO, Social Media, Performance Ads", href: "/grow" },
+  { id: "digital", name: "Digital Marketing", desc: "SEO, Social Media, Performance Ads", href: "/platform/marketing-os" },
   { id: "software", name: "Custom Software", desc: "Web Apps, Mobile Apps, ERP Systems" },
   { id: "ai", name: "AI Automation", desc: "Chatbots, Workflow Automation, AI Tools" },
 ];

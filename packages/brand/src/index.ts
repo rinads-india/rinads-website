@@ -3,5 +3,5 @@ export { typography } from "./typography";
 
 export const brand = {
   name: "RINADS",
-  tagline: "Business simplified",
+  tagline: "The AI Operating Platform for Business.",
 } as const;

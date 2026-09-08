@@ -113,7 +113,7 @@ export function getOsCards(role: LoginRole = "client"): OsCardItem[] {
       title: "RINADS Grow",
       subtitle: "Marketing hub — SEO, paid media, social packages",
       meta: "New",
-      href: "/grow",
+      href: "/platform/marketing-os",
       tone: "green",
       size: "md",
     },

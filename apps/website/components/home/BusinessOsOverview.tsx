@@ -55,7 +55,7 @@ export function BusinessOsOverview() {
         </div>
 
         <Link
-          href="/business-os"
+          href="/platform/business-os"
           className="mt-10 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
         >
           Explore Business OS
