@@ -41,6 +41,24 @@ function createMockClient(): SalonSupabaseClient & { tables: Map<string, SalonRo
       };
     },
     rpc: async (fn: string, args: Record<string, unknown>) => {
+      if (fn === "get_public_salon_organization") {
+        return { data: [{ organization_id: "org_salon_test", name: "R GLOW", slug: "r-glow" }], error: null };
+      }
+      if (fn === "get_public_salon_branches") {
+        const rows = (tables.get("salon_branches") ?? []).filter((r) => r.organization_id === args.p_organization_id);
+        return { data: rows, error: null };
+      }
+      if (fn === "get_public_salon_services") {
+        const rows = (tables.get("salon_services") ?? []).filter((r) => r.organization_id === args.p_organization_id);
+        return { data: rows, error: null };
+      }
+      if (fn === "get_public_salon_staff") {
+        const rows = (tables.get("salon_staff") ?? []).filter((r) => r.organization_id === args.p_organization_id);
+        return { data: rows, error: null };
+      }
+      if (fn === "get_public_salon_staff_for_service") {
+        return { data: [], error: null };
+      }
       if (fn === "get_public_salon_busy_slots") {
         const rows = (tables.get("salon_appointments") ?? []).filter(
           (r) => r.staff_id === args.p_staff_id && r.organization_id === args.p_organization_id
@@ -137,6 +155,34 @@ describe("SalonRepository", () => {
     });
     assert.ok(result.ok);
     if (result.ok) assert.ok(result.data.appointmentId);
+  });
+
+  it("resolves the public org, branches, services, and staff for the booking widget", async () => {
+    const client = createMockClient();
+    const repo = new SalonRepository(client);
+    await repo.createBranch(orgId, { name: "Branch A" });
+    await repo.createService(orgId, { name: "Haircut", durationMin: 30, price: 300 });
+    await repo.createStaff(orgId, { displayName: "Asha" });
+
+    const org = await repo.getPublicOrganizationBySlug("r-glow");
+    assert.ok(org.ok);
+    if (org.ok) assert.equal(org.data.slug, "r-glow");
+
+    const branches = await repo.getPublicBranches(orgId);
+    assert.ok(branches.ok);
+    if (branches.ok) assert.equal(branches.data.length, 1);
+
+    const services = await repo.getPublicServices(orgId);
+    assert.ok(services.ok);
+    if (services.ok) assert.equal(services.data.length, 1);
+
+    const staff = await repo.getPublicStaff(orgId);
+    assert.ok(staff.ok);
+    if (staff.ok) assert.equal(staff.data.length, 1);
+
+    const eligibleStaffIds = await repo.getPublicStaffIdsForService("svc_1");
+    assert.ok(eligibleStaffIds.ok);
+    if (eligibleStaffIds.ok) assert.equal(eligibleStaffIds.data.length, 0);
   });
 
   it("reads busy slots via the public RPC", async () => {

@@ -13,7 +13,7 @@ import {
   type SalonStaff,
   type WeeklyHours,
 } from "@rinads/salon";
-import type { SalonSupabaseClient } from "./client";
+import type { SalonRow, SalonSupabaseClient } from "./client";
 import {
   mapAppointmentRow,
   mapAppointmentServiceRow,
@@ -22,6 +22,12 @@ import {
   mapServiceRow,
   mapStaffRow,
 } from "./mappers";
+
+export type PublicSalonOrganization = {
+  organizationId: string;
+  name: string;
+  slug: string;
+};
 
 export type CreateBranchInput = {
   name: string;
@@ -262,6 +268,56 @@ export class SalonRepository {
     const { error } = await this.client.from("salon_appointments").update({ status: toStatus }).eq("id", appointmentId);
     if (error) return fail("db_error", error.message);
     return ok(true);
+  }
+
+  /** Anonymous org lookup by public slug, scoped server-side to published salon-os tenants. */
+  async getPublicOrganizationBySlug(slug: string): Promise<Result<PublicSalonOrganization>> {
+    const { data, error } = await this.client.rpc("get_public_salon_organization", { p_slug: slug });
+    if (error) return fail("db_error", error.message);
+    const rows = (data as Array<{ organization_id: string; name: string; slug: string }> | null) ?? [];
+    const row = rows[0];
+    if (!row) return fail("not_found", "No salon found for this link.");
+    return ok({ organizationId: row.organization_id, name: row.name, slug: row.slug });
+  }
+
+  /** Anonymous branch listing — calls `get_public_salon_branches`, never reads the table directly. */
+  async getPublicBranches(organizationId: string): Promise<Result<SalonBranch[]>> {
+    const { data, error } = await this.client.rpc("get_public_salon_branches", { p_organization_id: organizationId });
+    if (error) return fail("db_error", error.message);
+    const rows = (data as SalonRow[] | null) ?? [];
+    return ok(rows.map(mapBranchRow));
+  }
+
+  /** Anonymous service menu — calls `get_public_salon_services`, never reads the table directly. */
+  async getPublicServices(organizationId: string): Promise<Result<SalonService[]>> {
+    const { data, error } = await this.client.rpc("get_public_salon_services", { p_organization_id: organizationId });
+    if (error) return fail("db_error", error.message);
+    const rows = (data as SalonRow[] | null) ?? [];
+    return ok(rows.map(mapServiceRow));
+  }
+
+  /** Anonymous staff directory — calls `get_public_salon_staff`, never reads the table directly. */
+  async getPublicStaff(organizationId: string, branchId?: string): Promise<Result<SalonStaff[]>> {
+    const { data, error } = await this.client.rpc("get_public_salon_staff", {
+      p_organization_id: organizationId,
+      p_branch_id: branchId ?? null,
+    });
+    if (error) return fail("db_error", error.message);
+    const rows = (data as SalonRow[] | null) ?? [];
+    return ok(rows.map(mapStaffRow));
+  }
+
+  /**
+   * Staff eligible for a service. An empty mapping means "no explicit
+   * restriction configured" — callers should treat that as "any active
+   * staff at the branch is eligible", matching how `salon_service_staff`
+   * is optional at booking-setup time.
+   */
+  async getPublicStaffIdsForService(serviceId: string): Promise<Result<string[]>> {
+    const { data, error } = await this.client.rpc("get_public_salon_staff_for_service", { p_service_id: serviceId });
+    if (error) return fail("db_error", error.message);
+    const rows = (data as Array<{ staff_id: string }> | null) ?? [];
+    return ok(rows.map((r) => r.staff_id));
   }
 
   /** Anonymous availability lookup — calls `get_public_salon_busy_slots`, never reads the table directly. */
