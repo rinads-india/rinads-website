@@ -10,7 +10,10 @@ export {
   resolveAuthConfig,
   isSupabaseAuthReady,
   assertProductionEnvContract,
+  checkProductionEnvContract,
+  renderProductionEnvContractUnavailablePage,
   ProductionEnvContractError,
+  type ProductionEnvContractResult,
 } from "./config";
 export { mapSupabaseUser, mapSupabaseSession } from "./mappers";
 export {

@@ -1,6 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { assertProductionEnvContract } from "@rinads/auth";
+import { checkProductionEnvContract, renderProductionEnvContractUnavailablePage } from "@rinads/auth";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -9,8 +9,22 @@ const TENANT_SLUG_HEADER = "x-rinads-storefront-slug";
 
 export async function middleware(request: NextRequest) {
   // Fail closed on every request if a production deploy is misconfigured
-  // with demo auth / demo data. See docs/deployment/POLICY.md.
-  assertProductionEnvContract();
+  // with demo auth / demo data. See docs/deployment/POLICY.md. This must
+  // never throw here — an unguarded throw crashes the whole middleware
+  // invocation (MIDDLEWARE_INVOCATION_FAILED) instead of returning a
+  // controlled response.
+  const envContract = checkProductionEnvContract();
+  if (!envContract.ok) {
+    console.error(`[production-env-contract] ${envContract.message}`);
+    return new NextResponse(renderProductionEnvContractUnavailablePage(), {
+      status: 503,
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+        "retry-after": "60",
+      },
+    });
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -80,5 +94,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

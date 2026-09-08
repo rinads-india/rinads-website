@@ -4,6 +4,7 @@ import {
   isSupabaseAuthReady,
   resolveAuthConfig,
   assertProductionEnvContract,
+  checkProductionEnvContract,
   ProductionEnvContractError,
 } from "./config";
 import { mapSupabaseUser } from "./mappers";
@@ -63,6 +64,46 @@ describe("assertProductionEnvContract", () => {
         NEXT_PUBLIC_AUTH_PROVIDER: "supabase",
         USE_DEMO_STORE: "0",
       })
+    );
+  });
+});
+
+describe("checkProductionEnvContract", () => {
+  it("never throws, and reports ok outside VERCEL_ENV=production", () => {
+    assert.deepEqual(
+      checkProductionEnvContract({ VERCEL_ENV: "preview", NEXT_PUBLIC_AUTH_PROVIDER: "demo" }),
+      { ok: true }
+    );
+    assert.deepEqual(checkProductionEnvContract({ USE_DEMO_STORE: "1" }), { ok: true });
+  });
+
+  it("reports ok:false with a message when demo auth provider is set in production", () => {
+    const result = checkProductionEnvContract({
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_AUTH_PROVIDER: "demo",
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.message, /NEXT_PUBLIC_AUTH_PROVIDER must be "supabase"/);
+  });
+
+  it("reports ok:false with a message when USE_DEMO_STORE=1 in production", () => {
+    const result = checkProductionEnvContract({
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_AUTH_PROVIDER: "supabase",
+      USE_DEMO_STORE: "1",
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.message, /USE_DEMO_STORE=1 is forbidden/);
+  });
+
+  it("reports ok:true when production is correctly configured", () => {
+    assert.deepEqual(
+      checkProductionEnvContract({
+        VERCEL_ENV: "production",
+        NEXT_PUBLIC_AUTH_PROVIDER: "supabase",
+        USE_DEMO_STORE: "0",
+      }),
+      { ok: true }
     );
   });
 });
