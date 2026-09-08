@@ -11,7 +11,7 @@ export type OnboardingModuleId = (typeof ONBOARDING_MODULES)[number]["id"];
 
 export const BUSINESS_TYPES = [
   { id: "agency", label: "Agency", templateKey: "generic-retail" },
-  { id: "salon", label: "Salon", templateKey: "generic-retail" },
+  { id: "salon", label: "Salon", templateKey: "salon-os" },
   { id: "retail", label: "Retail", templateKey: "generic-retail" },
   { id: "professional-services", label: "Professional Services", templateKey: "generic-retail" },
   { id: "construction", label: "Construction", templateKey: "ambady-nursery" },

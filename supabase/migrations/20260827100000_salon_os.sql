@@ -464,3 +464,16 @@ $$;
 
 REVOKE ALL ON FUNCTION public.get_public_salon_busy_slots(UUID, UUID, TIMESTAMPTZ, TIMESTAMPTZ) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_public_salon_busy_slots(UUID, UUID, TIMESTAMPTZ, TIMESTAMPTZ) TO anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Vertical marketplace: publish the salon-os template so onboarding can
+-- provision real salon organizations against it (see
+-- 20260817100000_phase12_marketplace_billing_domains.sql for the table).
+-- ---------------------------------------------------------------------------
+
+INSERT INTO vertical_templates (key, name, description, category, version, seed_module, is_published) VALUES
+  ('salon-os', 'Salon OS', 'Branches, services, staff, and appointment booking for salons and service businesses.', 'salon', '1.0.0', '{"modules":["salon"]}', true)
+ON CONFLICT (key) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  is_published = EXCLUDED.is_published;

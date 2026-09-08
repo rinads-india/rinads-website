@@ -39,7 +39,7 @@ export const VERTICALS: VerticalContent[] = [
     summary:
       "Booking, clients, services, and marketing — vertical configuration on the RINADS core.",
     capabilities: ["Appointments", "Clients", "Services menu", "Loyalty", "Campaigns"],
-    status: "coming",
+    status: "available",
   },
   {
     slug: "healthcare",
