@@ -28,3 +28,15 @@ export function canTransitionAppointmentStatus(from: AppointmentStatus, to: Appo
 export function isTerminalAppointmentStatus(status: AppointmentStatus): boolean {
   return TRANSITIONS[status].length === 0;
 }
+
+/**
+ * Reschedule (changing starts_at/ends_at) is only allowed while an
+ * appointment hasn't started yet — once the customer has checked in the
+ * clock has already started, so a time change no longer makes sense (use
+ * cancel + rebook instead).
+ */
+const RESCHEDULABLE_STATUSES: ReadonlySet<AppointmentStatus> = new Set(["pending", "confirmed"]);
+
+export function canRescheduleAppointment(status: AppointmentStatus): boolean {
+  return RESCHEDULABLE_STATUSES.has(status);
+}
