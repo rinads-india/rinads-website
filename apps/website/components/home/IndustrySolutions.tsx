@@ -67,7 +67,7 @@ export function IndustrySolutions() {
         </div>
 
         <Link
-          href="/business-os"
+          href="/platform/business-os"
           className="mt-10 inline-block text-sm font-semibold text-rinads-primary hover:underline"
         >
           Start with Business OS →

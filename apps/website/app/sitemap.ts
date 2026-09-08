@@ -1,14 +1,28 @@
 import type { MetadataRoute } from "next";
 import { getCachedPublishedPaths } from "@/lib/cms";
+import { OS_SLUGS } from "@/lib/content/platform-os";
+import { ACADEMY_PROGRAMS } from "@/lib/content/academy";
+import { VERTICALS } from "@/lib/content/verticals";
+import { SERVICE_LINES } from "@/lib/content/services";
 
 const STATIC_PATHS = [
-  "/business-os",
-  "/rinpo-intelligence",
-  "/cloud",
+  "/",
+  "/platform",
+  ...OS_SLUGS.map((slug) => `/platform/${slug}`),
+  "/rinpo",
+  "/rinpo/intelligence",
+  "/rinpo/story",
+  "/rinpo/voice",
+  "/rinpo/phone",
+  "/academy",
+  ...ACADEMY_PROGRAMS.map((p) => `/academy/${p.slug}`),
+  "/solutions",
+  ...VERTICALS.map((v) => `/solutions/${v.slug}`),
   "/services",
-  "/grow",
+  ...SERVICE_LINES.map((s) => `/services/${s.slug}`),
+  "/resources",
+  "/company",
   "/projects",
-  "/rinpo-story",
   "/contact",
   "/story-concept",
 ];
@@ -30,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return Array.from(merged.entries()).map(([path, lastModified]) => ({
     url: `${siteUrl}${path === "/" ? "" : path}`,
     lastModified,
-    changeFrequency: path === "" || path === "/" ? "weekly" : "weekly",
-    priority: path === "" || path === "/" ? 1 : 0.7,
+    changeFrequency: path === "/" ? "weekly" : "weekly",
+    priority: path === "/" ? 1 : path.startsWith("/platform") || path === "/rinpo" ? 0.9 : 0.7,
   }));
 }

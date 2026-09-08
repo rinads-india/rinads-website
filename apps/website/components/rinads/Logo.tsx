@@ -18,7 +18,7 @@ export function Logo({
   return (
     <Image
       src={LOGO_SRC}
-      alt="Rinads — Business simplified"
+      alt="RINADS — The AI Operating Platform for Business"
       width={LOGO_W}
       height={LOGO_H}
       priority={priority}

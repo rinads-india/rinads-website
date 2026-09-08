@@ -96,9 +96,65 @@ export async function POST(request: NextRequest) {
       } else {
         reply =
           "I'm connected to your **Business OS** workspace. Ask about leads, projects, invoices, campaigns, or what needs attention.";
-        links = [{ label: "Business OS", href: "/business-os" }];
+        links = [{ label: "Business OS", href: "/platform/business-os" }];
         intent = "osDefault";
       }
+    } else if (
+      lower.includes("what's happening") ||
+      lower.includes("whats happening") ||
+      lower.includes("happening today")
+    ) {
+      reply =
+        "Across RINADS I can surface today's attention across **Business OS** — customers, work, money, growth, and automation. " +
+        "Start with RINADS to connect your workspace, or explore the platform architecture.";
+      links = [
+        { label: "Business OS", href: "/platform/business-os" },
+        { label: "Talk to RINPO", href: "/rinpo" },
+      ];
+      intent = "heroToday";
+    } else if (lower.includes("build my website") || lower.includes("build a software") || lower.includes("software product")) {
+      reply =
+        "Use **Build OS** for discovery → PRD → architecture → ship, or engage **RINADS Software Services**. " +
+        "I can help you start a project brief.";
+      links = [
+        { label: "Build OS", href: "/platform/build-os" },
+        { label: "Software Services", href: "/services/software" },
+        { label: "Start a project", href: "/projects" },
+      ];
+      intent = "heroBuild";
+    } else if (lower.includes("launch my campaign") || lower.includes("find my best leads")) {
+      reply =
+        "**Marketing OS** orchestrates content, campaigns, Meta, Google, SEO, WhatsApp, email, analytics, and CRM. " +
+        "Growth services can launch packages you manage inside the platform.";
+      links = [
+        { label: "Marketing OS", href: "/platform/marketing-os" },
+        { label: "Marketing Services", href: "/services/marketing" },
+      ];
+      intent = "heroMarketing";
+    } else if (lower.includes("track my orders") || lower.includes("logistics manager")) {
+      reply =
+        "**Logistics OS** is the provider-neutral control tower for orders, shipments, couriers, 3PL, tracking, returns, and exceptions.";
+      links = [
+        { label: "Logistics OS", href: "/platform/logistics-os" },
+        { label: "Commerce OS", href: "/platform/commerce-os" },
+      ];
+      intent = "heroLogistics";
+    } else if (lower.includes("ai film") || lower.includes("create an ai")) {
+      reply =
+        "**Creative OS** covers AI image, video, film, product studio, brand OS, story and script studios — with Academy paths in AI Filmmaking.";
+      links = [
+        { label: "Creative OS", href: "/platform/creative-os" },
+        { label: "AI Filmmaking Academy", href: "/academy/filmmaking" },
+      ];
+      intent = "heroCreative";
+    } else if (lower.includes("train my team") || lower.includes("train my people")) {
+      reply =
+        "**Academy** is a Real Experience Academy: LEARN → PRACTICE → WORK → SHIP → MEASURE → IMPROVE → CERTIFY — with me as tutor.";
+      links = [
+        { label: "Academy", href: "/academy" },
+        { label: "Academy OS", href: "/platform/academy-os" },
+      ];
+      intent = "heroAcademy";
     } else if (
       lower.includes("custom software") ||
       (lower.includes("custom") && (lower.includes("software") || lower.includes("app") || lower.includes("development")))
@@ -122,9 +178,9 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "Our **Digital Marketing** services include SEO, Social Media, and Performance Ads. " +
-        "Explore **RINADS Grow** to browse packages and launch campaigns.";
+        "Explore **Marketing OS** to run growth as an operating system.";
       links = [
-        { label: "RINADS Grow", href: "/grow" },
+        { label: "Marketing OS", href: "/platform/marketing-os" },
         { label: "Contact Us", href: "/contact" },
       ];
       intent = "digitalMarketing";
@@ -141,7 +197,7 @@ export async function POST(request: NextRequest) {
         "Less paperwork, more clarity. We help you automate operations so you can focus on growth.";
       links = [
         { label: "Explore Services", href: "/services" },
-        { label: "RINADS Cloud", href: "/cloud" },
+        { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
       ];
       intent = "aiAutomation";
     }
@@ -154,9 +210,8 @@ export async function POST(request: NextRequest) {
       lower.includes("സേവന")
     ) {
       reply =
-        "RINADS offers three core services: **Digital Marketing** (SEO, Social Media, Performance Ads), " +
-        "**Custom Software** (Web Apps, Mobile Apps, ERP Systems), and **AI Automation** (Chatbots, Workflow, AI Tools). " +
-        "What would you like to know more about?";
+        "RINADS Services help you **Build, Grow, Automate, Create, Transform, and Train** — " +
+        "on top of the AI Operating Platform. What would you like to know more about?";
       links = [
         { label: "Full Services", href: "/services" },
         { label: "Home", href: "/" },
@@ -207,8 +262,8 @@ export async function POST(request: NextRequest) {
         "**RINADS Cloud** connects your business applications, data, integrations and services. " +
         "Business OS runs on top — open your workspace to get started.";
       links = [
-        { label: "RINADS Cloud", href: "/cloud" },
-        { label: "Business OS", href: "/business-os" },
+        { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
+        { label: "Business OS", href: "/platform/business-os" },
       ];
       intent = "cloud";
     }
@@ -226,7 +281,7 @@ export async function POST(request: NextRequest) {
       reply =
         "RINADS is a **Business Technology Platform**. **Business OS** runs your business — CRM, projects, finance, marketing and automation. **RINPO Intelligence** helps you understand what to do next.";
       links = [
-        { label: "Business OS", href: "/business-os" },
+        { label: "Business OS", href: "/platform/business-os" },
         { label: "Home", href: "/" },
       ];
       intent = "home";
@@ -274,16 +329,17 @@ export async function POST(request: NextRequest) {
       lower.includes("വണക്കം")
     ) {
       reply =
-        "Hi! I'm RINPO, your RINADS intelligence layer. Ask me about Business OS, what needs attention, or explore our services.";
+        "Hi! I'm RINPO — the persistent AI interface for RINADS, the AI Operating Platform for Business. Ask me to run, build, grow, automate, or train.";
       links = [
-        { label: "Business OS", href: "/business-os" },
+        { label: "Platform", href: "/platform" },
+        { label: "Business OS", href: "/platform/business-os" },
         { label: "Services", href: "/services" },
       ];
       intent = "greetings";
     }
     // Thanks (incl. Malayalam: നന്ദി)
     else if (lower.includes("thank") || lower.includes("നന്ദി") || lower.includes("ധന്യവാദം")) {
-      reply = "You're welcome! Business simplified. Anything else I can help with?";
+      reply = "You're welcome. One intelligent platform — powered by RINPO. Anything else?";
       links = [];
       intent = "thanks";
     }
@@ -327,7 +383,7 @@ export async function POST(request: NextRequest) {
       reply =
         "I can help with **Business OS**, **RINPO Intelligence**, **Services**, or **RINADS Cloud**. What would you like to explore?";
       links = [
-        { label: "Business OS", href: "/business-os" },
+        { label: "Business OS", href: "/platform/business-os" },
         { label: "Services", href: "/services" },
         { label: "Home", href: "/" },
       ];
@@ -348,7 +404,7 @@ export async function POST(request: NextRequest) {
           reply:
             "ഞങ്ങളുടെ **ഡിജിറ്റൽ മാർക്കറ്റിംഗ്** സേവനങ്ങളിൽ SEO, സോഷ്യൽ മീഡിയ, പെർഫോർമൻസ് വിജ്ഞാപനങ്ങൾ ഉൾപ്പെടുന്നു. **RINADS Grow**-ൽ പാക്കേജുകൾ കാണുക.",
           links: [
-            { label: "RINADS Grow", href: "/grow" },
+            { label: "Marketing OS", href: "/platform/marketing-os" },
             { label: "ബന്ധപ്പെടുക", href: "/contact" },
           ],
         },
@@ -357,7 +413,7 @@ export async function POST(request: NextRequest) {
             "RINADS-ൽ **AI ഓട്ടോമേഷൻ** ചാറ്റ്ബോട്ടുകൾ, വർക്ക്ഫ്ലോ ഓട്ടോമേഷൻ, AI ടൂളുകൾ ഉൾപ്പെടുന്നു. കുറഞ്ഞ പേപ്പർവർക്ക്, കൂടുതൽ വ്യക്തത.",
           links: [
             { label: "സേവനങ്ങൾ", href: "/services" },
-            { label: "RINADS Cloud", href: "/cloud" },
+            { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
           ],
         },
         services: {

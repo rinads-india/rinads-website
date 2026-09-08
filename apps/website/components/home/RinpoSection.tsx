@@ -28,7 +28,7 @@ export function RinpoSection() {
             identify what needs attention and recommend what to do next.
           </p>
           <Link
-            href="/rinpo-intelligence"
+            href="/rinpo"
             className="mt-8 inline-block text-sm font-semibold text-rinads-primary hover:underline"
           >
             Learn about RINPO Intelligence →

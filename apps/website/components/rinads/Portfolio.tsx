@@ -10,7 +10,7 @@ const SOLUTIONS = [
     category: "Platform",
     description: "One operating system for customers, work, finance, growth and automation.",
     image: "/assets/rinads-promo.png",
-    href: "/business-os",
+    href: "/platform/business-os",
   },
   {
     name: "RINPO Intelligence",
@@ -18,14 +18,14 @@ const SOLUTIONS = [
     description: "Understand what's happening and know what to do next.",
     image: "/assets/rinpo-avatar.png",
     objectPosition: "object-top",
-    href: "/rinpo-intelligence",
+    href: "/rinpo",
   },
   {
     name: "Growth Marketing",
     category: "Services",
     description: "SEO, social, and performance ads that compound results.",
     image: "/assets/rinads-brand-kit.png",
-    href: "/grow",
+    href: "/platform/marketing-os",
   },
   {
     name: "Custom Software",
@@ -39,7 +39,7 @@ const SOLUTIONS = [
     category: "Platform",
     description: "Connected data, integrations, and ecosystem behind RINADS.",
     image: "/assets/rinads-brand-board.png",
-    href: "/cloud",
+    href: "/platform/rinads-cloud",
   },
 ];
 

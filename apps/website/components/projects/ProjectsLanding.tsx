@@ -291,7 +291,7 @@ function ContactForm({
                 return (
                   <Link
                     key={service}
-                    href="/grow"
+                    href="/platform/marketing-os"
                     className="rounded-lg border border-rinads-primary/40 bg-rinads-primary/5 px-3 py-2 text-xs font-medium text-rinads-primary transition-all hover:border-rinads-primary hover:bg-rinads-primary/10"
                   >
                     {service}
