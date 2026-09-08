@@ -15,7 +15,7 @@ export function RinpoIntelligenceClient() {
       <PageHero
         eyebrow="RINPO · Intelligence"
         headline="RINPO connects you to the brain."
-        summary="RINPO is the interface to RINADS Intelligence — graphs, memory, decisions, recommendations, and agent runtime."
+        summary="RINPO is the interface to RINADS Intelligence — the layer that understands your business and helps you decide what to do next."
         primaryHref="/platform/rinads-intelligence"
         primaryLabel="RINADS Intelligence"
         secondaryHref="/rinpo"
@@ -24,7 +24,7 @@ export function RinpoIntelligenceClient() {
       <section className="px-6 pb-16 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <IntelligencePanel
-            title="Intelligence capabilities"
+            title="What RINADS Intelligence does"
             description="How understanding becomes action across the operating platform."
             items={[...INTELLIGENCE_CAPABILITIES]}
           />

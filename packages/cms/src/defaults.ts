@@ -15,7 +15,7 @@ export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
   },
   {
     title: "AI & Automation",
-    description: "Assistants, agents, and workflows powered by RINPO Runtime.",
+    description: "Assistants, agents, and workflows powered by RINPO.",
     details: ["AI Assistants", "Workflows", "Voice Agents"],
     href: "/services/ai",
   },

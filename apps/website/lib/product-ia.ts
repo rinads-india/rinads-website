@@ -19,11 +19,14 @@ export const POSITIONING = {
   equation: "RUN · BUILD · GROW · LEARN · AUTOMATE",
 } as const;
 
+/**
+ * Public-facing architecture, intentionally collapsed. RINPO's runtime and
+ * RINADS Intelligence internals are founder/staff-only concepts — the
+ * public site describes what RINPO does, not how it is built underneath.
+ */
 export const ARCHITECTURE_LAYERS = [
   { id: "experience", label: "RINADS Experience", description: "The front door to the platform." },
-  { id: "rinpo", label: "RINPO", description: "Persistent AI interface." },
-  { id: "runtime", label: "RINPO Runtime", description: "Agentic execution layer." },
-  { id: "intelligence", label: "RINADS Intelligence", description: "Data, decisions, and action." },
+  { id: "rinpo", label: "RINPO", description: "Your AI interface — understands your business and gets things done." },
   {
     id: "os",
     label: "Operating Systems",
@@ -212,7 +215,7 @@ export const BRAND_EQUATION = {
   build: "Build OS",
   grow: "Marketing OS + Services",
   learn: "Academy OS",
-  automate: "Automation OS + RINPO Runtime",
+  automate: "Automation OS, orchestrated by RINPO",
 } as const;
 
 export const HERO_COMMANDS = [

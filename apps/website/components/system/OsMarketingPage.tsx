@@ -29,7 +29,7 @@ export function OsMarketingPage({ content }: { content: OsPageContent }) {
         <div className="mx-auto max-w-7xl">
           <h2 className="text-2xl font-bold text-foreground">Where it sits in the stack</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Every OS runs through RINPO, RINPO Runtime, and RINADS Intelligence — on RINADS Cloud.
+            Every OS is operated through RINPO, running on RINADS Cloud.
           </p>
           <div className="mt-8">
             <WorkflowDiagram compact />
