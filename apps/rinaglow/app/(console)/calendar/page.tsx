@@ -1,10 +1,12 @@
 import { Badge, Card, EmptyState } from "@rinads/ui";
-import type { AppointmentStatus } from "@rinads/salon";
+import { canRescheduleAppointment, type AppointmentStatus } from "@rinads/salon";
 import Link from "next/link";
 import { getSalonRepository } from "@/lib/salon";
 import { oneDayAgoIso } from "@/lib/time";
 import { requireTenancy } from "@/lib/tenancy";
 import { AppointmentActions } from "./AppointmentActions";
+import { AppointmentNotes } from "./AppointmentNotes";
+import { AppointmentReschedule } from "./AppointmentReschedule";
 
 export const metadata = { title: "Calendar — R GLOW Console" };
 
@@ -26,6 +28,32 @@ function formatDateTime(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatDayHeading(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long" });
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}
+
+function dayKey(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+/** Groups a flat, already-sorted appointment list into day buckets — a lightweight day/week calendar view without a full grid widget. */
+function groupByDay<T extends { startsAt: string }>(items: T[]): { key: string; heading: string; items: T[] }[] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const key = dayKey(item.startsAt);
+    const bucket = groups.get(key) ?? [];
+    bucket.push(item);
+    groups.set(key, bucket);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, groupItems]) => ({ key, heading: formatDayHeading(groupItems[0].startsAt), items: groupItems }));
 }
 
 export default async function CalendarPage({
@@ -52,6 +80,15 @@ export default async function CalendarPage({
   const customersById = new Map((customersResult.ok ? customersResult.data : []).map((c) => [c.id, c]));
   const branchesById = new Map(branches.map((b) => [b.id, b]));
   const appointments = appointmentsResult.ok ? appointmentsResult.data : [];
+
+  const notesByAppointment = new Map(
+    await Promise.all(
+      appointments.map(async (a) => {
+        const result = await repo.listNotes("appointment", a.id);
+        return [a.id, result.ok ? result.data : []] as const;
+      })
+    )
+  );
 
   return (
     <div className="space-y-6">
@@ -97,27 +134,44 @@ export default async function CalendarPage({
           description="New bookings from your public booking page will appear here."
         />
       ) : (
-        <div className="space-y-3">
-          {appointments.map((appt) => {
-            const staff = staffById.get(appt.staffId);
-            const customer = customersById.get(appt.customerId);
-            const appointmentBranch = branchesById.get(appt.branchId);
-            return (
-              <Card key={appt.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-foreground">{formatDateTime(appt.startsAt)}</span>
-                    <Badge className={STATUS_TONE[appt.status]}>{appt.status.replace("_", " ")}</Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {customer?.name ?? customer?.phone ?? "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
-                    {branches.length > 1 && appointmentBranch ? ` · ${appointmentBranch.name}` : ""}
-                  </p>
-                </div>
-                <AppointmentActions appointmentId={appt.id} status={appt.status} />
-              </Card>
-            );
-          })}
+        <div className="space-y-6">
+          {groupByDay(appointments).map((day) => (
+            <div key={day.key}>
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{day.heading}</h3>
+              <div className="space-y-3">
+                {day.items.map((appt) => {
+                  const staff = staffById.get(appt.staffId);
+                  const customer = customersById.get(appt.customerId);
+                  const appointmentBranch = branchesById.get(appt.branchId);
+                  return (
+                    <Card key={appt.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">{formatTime(appt.startsAt)}</span>
+                          <Badge className={STATUS_TONE[appt.status]}>{appt.status.replace("_", " ")}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {customer?.name ?? customer?.phone ?? "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
+                          {branches.length > 1 && appointmentBranch ? ` · ${appointmentBranch.name}` : ""}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(appt.startsAt)}</p>
+                      </div>
+                      <div className="flex flex-col items-start gap-2 sm:items-end">
+                        <AppointmentActions appointmentId={appt.id} status={appt.status} />
+                        <AppointmentReschedule
+                          appointmentId={appt.id}
+                          status={appt.status}
+                          startsAt={appt.startsAt}
+                          canReschedule={canRescheduleAppointment(appt.status)}
+                        />
+                        <AppointmentNotes appointmentId={appt.id} notes={notesByAppointment.get(appt.id) ?? []} />
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

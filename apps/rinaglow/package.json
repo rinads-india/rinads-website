@@ -13,6 +13,7 @@
   "dependencies": {
     "@rinads/auth": "workspace:*",
     "@rinads/database": "workspace:*",
+    "@rinads/intelligence": "workspace:*",
     "@rinads/permissions": "workspace:*",
     "@rinads/salon": "workspace:*",
     "@rinads/salon-server": "workspace:*",

@@ -15,7 +15,8 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@rinads/salon": "workspace:*"
+    "@rinads/salon": "workspace:*",
+    "@rinads/runtime": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.4",

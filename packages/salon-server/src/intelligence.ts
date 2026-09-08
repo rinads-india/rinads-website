@@ -1,0 +1,251 @@
+/**
+ * Reusable salon intelligence signal functions (Part F). Both the
+ * `apps/rinaglow` `/dashboard` route and RINPO's READ tools call these same
+ * functions — "what needs attention" is one implementation, not two. Every
+ * function here is a thin, honest aggregation over `SalonRepository`
+ * results; if there is no data for a signal it returns an empty/zero
+ * result rather than fabricating one.
+ */
+import {
+  computeAttentionItems,
+  generateDaySlots,
+  intersectWeeklyHours,
+  type AttentionItem,
+  type SalonAppointment,
+  type SalonBranch,
+  type SalonStaff,
+} from "@rinads/salon";
+import type { SalonRepository } from "./repository";
+
+function startOfDayUtc(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function isSameUtcDay(a: Date, b: Date): boolean {
+  return startOfDayUtc(a).getTime() === startOfDayUtc(b).getTime();
+}
+
+export type TodayAppointmentsResult = {
+  date: string;
+  total: number;
+  byStatus: Record<string, number>;
+  appointments: SalonAppointment[];
+};
+
+export async function getTodayAppointments(
+  repo: SalonRepository,
+  organizationId: string,
+  branchId?: string,
+  now: Date = new Date()
+): Promise<TodayAppointmentsResult> {
+  const result = await repo.listAppointments(organizationId, { branchId });
+  const appointments = result.ok ? result.data.filter((a) => isSameUtcDay(new Date(a.startsAt), now)) : [];
+  const byStatus: Record<string, number> = {};
+  for (const appt of appointments) byStatus[appt.status] = (byStatus[appt.status] ?? 0) + 1;
+  return { date: startOfDayUtc(now).toISOString().slice(0, 10), total: appointments.length, byStatus, appointments };
+}
+
+export type StaffUtilization = {
+  staffId: string;
+  staffName: string;
+  bookedMinutes: number;
+  availableMinutes: number;
+  utilizationPct: number;
+};
+
+/** Utilization for a single UTC calendar day, per staff member at the given branch(es). */
+export async function getStaffUtilization(
+  repo: SalonRepository,
+  organizationId: string,
+  day: Date = new Date()
+): Promise<StaffUtilization[]> {
+  const [staffResult, branchesResult, appointmentsResult] = await Promise.all([
+    repo.listStaff(organizationId),
+    repo.listBranches(organizationId),
+    repo.listAppointments(organizationId),
+  ]);
+  if (!staffResult.ok || !branchesResult.ok || !appointmentsResult.ok) return [];
+
+  const branchesById = new Map(branchesResult.data.map((b) => [b.id, b]));
+  const dayStart = startOfDayUtc(day);
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  return staffResult.data
+    .filter((s) => s.isActive)
+    .map((staff) => {
+      const bookedMinutes = appointmentsResult.data
+        .filter(
+          (a) =>
+            a.staffId === staff.id &&
+            a.status !== "cancelled" &&
+            a.status !== "no_show" &&
+            new Date(a.startsAt).getTime() < dayEnd.getTime() &&
+            new Date(a.endsAt).getTime() > dayStart.getTime()
+        )
+        .reduce((sum, a) => sum + (new Date(a.endsAt).getTime() - new Date(a.startsAt).getTime()) / 60_000, 0);
+
+      const branch = staff.branchId ? branchesById.get(staff.branchId) : undefined;
+      const effectiveHours = branch ? intersectWeeklyHours(branch.workingHours, staff.workingHours) : staff.workingHours;
+      const dayKey = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][dayStart.getUTCDay()] as keyof typeof effectiveHours;
+      const hours = effectiveHours[dayKey];
+      const availableMinutes = hours
+        ? (Number(hours.close.split(":")[0]) * 60 + Number(hours.close.split(":")[1]) - (Number(hours.open.split(":")[0]) * 60 + Number(hours.open.split(":")[1])))
+        : 0;
+
+      return {
+        staffId: staff.id,
+        staffName: staff.displayName,
+        bookedMinutes: Math.round(bookedMinutes),
+        availableMinutes,
+        utilizationPct: availableMinutes > 0 ? Math.round((bookedMinutes / availableMinutes) * 100) : 0,
+      };
+    });
+}
+
+export type EmptySlotsResult = { staffId: string; staffName: string; slots: { start: string; end: string }[] };
+
+/**
+ * Reuses `generateDaySlots` per staff member for a given day/branch, using
+ * a nominal 30-minute probe duration (empty-slot discovery, not a specific
+ * service booking) — consistent with how the public booking widget derives
+ * candidate times.
+ */
+export async function getEmptySlots(
+  repo: SalonRepository,
+  organizationId: string,
+  branchId: string,
+  day: Date = new Date(),
+  probeDurationMin = 30
+): Promise<EmptySlotsResult[]> {
+  const [staffResult, branchesResult, appointmentsResult] = await Promise.all([
+    repo.listStaff(organizationId),
+    repo.listBranches(organizationId),
+    repo.listAppointments(organizationId, { branchId }),
+  ]);
+  if (!staffResult.ok || !branchesResult.ok || !appointmentsResult.ok) return [];
+
+  const branch = branchesResult.data.find((b: SalonBranch) => b.id === branchId);
+  if (!branch) return [];
+
+  const dayStart = startOfDayUtc(day);
+  const results: EmptySlotsResult[] = [];
+  for (const staff of staffResult.data.filter((s: SalonStaff) => s.isActive && s.branchId === branchId)) {
+    const busy = appointmentsResult.data
+      .filter((a) => a.staffId === staff.id && a.status !== "cancelled" && a.status !== "no_show")
+      .map((a) => ({ start: a.startsAt, end: a.endsAt }));
+    const slots = generateDaySlots({
+      dayStartUtc: dayStart,
+      workingHours: branch.workingHours,
+      staffWorkingHours: staff.workingHours,
+      serviceDurationMin: probeDurationMin,
+      stepMin: 30,
+      busy,
+      now: new Date(),
+    });
+    results.push({ staffId: staff.id, staffName: staff.displayName, slots });
+  }
+  return results;
+}
+
+export type RevenueSummary = { from: string; to: string; totalRevenue: number; saleCount: number; currency: string };
+
+export async function getRevenueSummary(
+  repo: SalonRepository,
+  organizationId: string,
+  from: Date,
+  to: Date
+): Promise<RevenueSummary> {
+  const result = await repo.listSales(organizationId, { status: "paid" });
+  const sales = result.ok
+    ? result.data.filter((s) => {
+        const createdAt = s.updatedAt ?? s.createdAt;
+        if (!createdAt) return false;
+        const ms = new Date(createdAt).getTime();
+        return ms >= from.getTime() && ms <= to.getTime();
+      })
+    : [];
+  return {
+    from: from.toISOString(),
+    to: to.toISOString(),
+    totalRevenue: sales.reduce((sum, s) => sum + s.total, 0),
+    saleCount: sales.length,
+    currency: sales[0]?.currency ?? "INR",
+  };
+}
+
+export type ServicePerformance = { serviceId: string; bookingCount: number };
+
+export async function getServicePerformance(repo: SalonRepository, organizationId: string): Promise<ServicePerformance[]> {
+  const result = await repo.listAllAppointmentServices(organizationId);
+  if (!result.ok) return [];
+  const counts = new Map<string, number>();
+  for (const svc of result.data) counts.set(svc.serviceId, (counts.get(svc.serviceId) ?? 0) + 1);
+  return [...counts.entries()].map(([serviceId, bookingCount]) => ({ serviceId, bookingCount })).sort((a, b) => b.bookingCount - a.bookingCount);
+}
+
+export type PendingPaymentsSummary = { count: number; totalOutstanding: number; currency: string };
+
+export async function getPendingPaymentsSummary(repo: SalonRepository, organizationId: string): Promise<PendingPaymentsSummary> {
+  const result = await repo.listPendingPayments(organizationId);
+  const sales = result.ok ? result.data : [];
+  return {
+    count: sales.length,
+    totalOutstanding: sales.reduce((sum, s) => sum + s.total, 0),
+    currency: sales[0]?.currency ?? "INR",
+  };
+}
+
+export async function getCustomerCommunicationPreferences(
+  repo: SalonRepository,
+  customerId: string
+): Promise<{ preferredChannel: string; optedOut: boolean } | null> {
+  const result = await repo.getCustomer(customerId);
+  if (!result.ok) return null;
+  return { preferredChannel: result.data.preferredChannel, optedOut: Boolean(result.data.optedOutAt) };
+}
+
+export type BusinessSummary = {
+  todayAppointments: TodayAppointmentsResult;
+  pendingPayments: PendingPaymentsSummary;
+  reactivationCandidateCount: number;
+  unconfirmedBookingCount: number;
+  attentionItems: AttentionItem[];
+};
+
+/**
+ * The single "what needs attention now?" implementation, consumed by both
+ * `/dashboard` and RINPO's `get_salon_business_summary` tool.
+ */
+export async function getBusinessSummary(
+  repo: SalonRepository,
+  organizationId: string,
+  reactivationDaysInactive = 45
+): Promise<BusinessSummary> {
+  const [todayAppointments, pendingPayments, reactivationResult, emptySlotsToday] = await Promise.all([
+    getTodayAppointments(repo, organizationId),
+    getPendingPaymentsSummary(repo, organizationId),
+    repo.getReactivationCandidates(organizationId, reactivationDaysInactive),
+    (async () => {
+      const branches = await repo.listBranches(organizationId);
+      if (!branches.ok || !branches.data.length) return 0;
+      let total = 0;
+      for (const branch of branches.data) {
+        const slots = await getEmptySlots(repo, organizationId, branch.id);
+        total += slots.reduce((sum, s) => sum + s.slots.length, 0);
+      }
+      return total;
+    })(),
+  ]);
+
+  const unconfirmedBookingCount = todayAppointments.byStatus.pending ?? 0;
+  const reactivationCandidateCount = reactivationResult.ok ? reactivationResult.data.length : 0;
+
+  const attentionItems = computeAttentionItems([
+    { kind: "pending_payments", count: pendingPayments.count },
+    { kind: "unconfirmed_bookings", count: unconfirmedBookingCount },
+    { kind: "reactivation_candidates", count: reactivationCandidateCount },
+    { kind: "empty_slots_today", count: emptySlotsToday },
+  ]);
+
+  return { todayAppointments, pendingPayments, reactivationCandidateCount, unconfirmedBookingCount, attentionItems };
+}

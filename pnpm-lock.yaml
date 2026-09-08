@@ -251,6 +251,9 @@ importers:
       '@rinads/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@rinads/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/intelligence
       '@rinads/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
@@ -603,6 +606,12 @@ importers:
       '@rinads/permissions':
         specifier: workspace:*
         version: link:../permissions
+      '@rinads/salon':
+        specifier: workspace:*
+        version: link:../salon
+      '@rinads/salon-server':
+        specifier: workspace:*
+        version: link:../salon-server
     devDependencies:
       '@rinads/commerce-server':
         specifier: workspace:*
@@ -713,6 +722,9 @@ importers:
 
   packages/salon-server:
     dependencies:
+      '@rinads/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@rinads/salon':
         specifier: workspace:*
         version: link:../salon

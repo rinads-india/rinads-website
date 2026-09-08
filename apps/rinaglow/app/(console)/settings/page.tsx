@@ -1,4 +1,5 @@
 import { Card, EmptyState } from "@rinads/ui";
+import { WorkingHoursEditor } from "@/components/WorkingHoursEditor";
 import { getSalonRepository } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { NewBranchForm } from "./NewBranchForm";
@@ -39,6 +40,7 @@ export default async function SettingsPage() {
                 <th>Phone</th>
                 <th>Timezone</th>
                 <th>Status</th>
+                <th>Hours</th>
               </tr>
             </thead>
             <tbody>
@@ -49,6 +51,14 @@ export default async function SettingsPage() {
                   <td>{b.phone ?? "—"}</td>
                   <td>{b.timezone}</td>
                   <td>{b.isActive ? "Active" : "Inactive"}</td>
+                  <td>
+                    <details>
+                      <summary className="cursor-pointer text-rinads-primary">Edit hours</summary>
+                      <div className="mt-2">
+                        <WorkingHoursEditor kind="branch" entityId={b.id} initialHours={b.workingHours} />
+                      </div>
+                    </details>
+                  </td>
                 </tr>
               ))}
             </tbody>

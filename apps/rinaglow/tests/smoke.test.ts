@@ -39,7 +39,7 @@ function createMockClient(): SalonSupabaseClient & { tables: Map<string, SalonRo
       };
     },
     rpc: async () => ({ data: null, error: { message: "not used in this smoke test" } }),
-  };
+  } as unknown as SalonSupabaseClient & { tables: Map<string, SalonRow[]> };
 }
 
 describe("apps/rinaglow salon integration smoke test", () => {
