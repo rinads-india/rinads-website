@@ -6,10 +6,9 @@ import { createServiceOrderAction } from "../actions";
 
 type Props = {
   serviceId: string;
-  amount: number;
 };
 
-export function ServiceCheckoutButton({ serviceId, amount }: Props) {
+export function ServiceCheckoutButton({ serviceId }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +21,7 @@ export function ServiceCheckoutButton({ serviceId, amount }: Props) {
         onClick={() => {
           setError(null);
           startTransition(async () => {
-            const result = await createServiceOrderAction(serviceId, amount || 0);
+            const result = await createServiceOrderAction(serviceId);
             if (!result.ok) {
               setError(result.error);
               return;

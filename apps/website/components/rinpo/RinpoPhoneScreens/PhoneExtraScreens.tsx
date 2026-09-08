@@ -119,7 +119,7 @@ export function NotificationsScreen() {
     {
       id: "3",
       title: "System Status: All Systems Operational",
-      desc: "Cloud servers in Mumbai & Singapore operating at 99.99% uptime.",
+      desc: "Product preview only — not a live infrastructure status feed or uptime SLA.",
       time: "1d ago",
       unread: false,
     },

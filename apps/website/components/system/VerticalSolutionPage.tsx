@@ -37,6 +37,11 @@ export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }
       <ModuleGrid title="Capabilities" modules={vertical.capabilities.map((c) => ({ name: c }))} />
       <section className="px-6 pb-8 md:px-12 lg:px-20">
         <div className="mx-auto flex max-w-7xl flex-wrap gap-4">
+          {vertical.slug === "salon" && vertical.status === "available" ? (
+            <Link href="/solutions/salon/book" className="text-sm font-semibold text-rinads-primary hover:underline">
+              Try the booking page →
+            </Link>
+          ) : null}
           <Link href="/platform/business-os" className="text-sm font-semibold text-rinads-primary hover:underline">
             Business OS →
           </Link>

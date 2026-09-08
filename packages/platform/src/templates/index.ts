@@ -3,7 +3,7 @@ import type { OperationsStore } from "@rinads/operations";
 import { createAmbadySeedStore, createGenericRetailSeedStore } from "@rinads/commerce-server";
 import { createAmbadyOperationsSeed, createGenericRetailOperationsSeed } from "@rinads/operations-server";
 
-export type VerticalTemplateKey = "ambady-nursery" | "generic-retail";
+export type VerticalTemplateKey = "ambady-nursery" | "generic-retail" | "salon-os";
 
 export type TenantSeedBundle = {
   commerce: CommerceStore;
@@ -29,6 +29,12 @@ export const VERTICAL_TEMPLATES: Record<VerticalTemplateKey, Omit<VerticalTempla
     name: "Generic Retail",
     description: "Minimal catalog, single location, basic shipping for general retail.",
     category: "retail",
+    isPublished: true,
+  },
+  "salon-os": {
+    name: "Salon OS",
+    description: "Branches, services, staff, and appointment booking for salons and service businesses.",
+    category: "salon",
     isPublished: true,
   },
 };
@@ -135,7 +141,12 @@ function remapOperationsStore(store: OperationsStore, organizationId: string): O
 }
 
 function seedForTemplate(templateKey: VerticalTemplateKey, organizationId: string): TenantSeedBundle {
-  if (templateKey === "generic-retail") {
+  // Salon OS is a service business, not a product catalog: its operational
+  // data (branches, services, staff, appointments) lives in the dedicated
+  // salon_* tables (see supabase/migrations/20260827100000_salon_os.sql),
+  // set up interactively by the owner in apps/rinaglow. The commerce/
+  // operations bundle here only needs to be a safe, empty starting point.
+  if (templateKey === "generic-retail" || templateKey === "salon-os") {
     return {
       commerce: remapCommerceStore(createGenericRetailSeedStore(organizationId), organizationId),
       operations: remapOperationsStore(createGenericRetailOperationsSeed(organizationId), organizationId),

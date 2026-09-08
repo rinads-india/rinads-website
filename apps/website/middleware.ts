@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { findRedirectForPath, listRedirects } from "@rinads/cms";
+import { assertProductionEnvContract } from "@rinads/auth";
 import { getWebsiteCmsClient } from "@/lib/cms-client";
 
 type CookieToSet = {
@@ -20,6 +21,10 @@ async function resolveRedirect(pathname: string) {
  * Applies CMS redirects when configured.
  */
 export async function middleware(request: NextRequest) {
+  // Fail closed on every request if a production deploy is misconfigured
+  // with demo auth / demo data. See docs/deployment/POLICY.md.
+  assertProductionEnvContract();
+
   const redirect = await resolveRedirect(request.nextUrl.pathname);
   if (redirect) {
     const destination = redirect.toPath.startsWith("http")

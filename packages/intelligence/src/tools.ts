@@ -15,9 +15,22 @@ import type {
   AuditService,
   OperationsContext,
 } from "@rinads/operations";
+import { isPrivilegedRoleKey } from "@rinads/permissions";
 import type { RinpoRouteContext, RinpoToolInput, RinpoToolResult } from "./types";
 import { RINPO_HARD_LIMITS } from "./types";
 import { getRinpoTool, isRegisteredRinpoTool } from "./registry";
+
+/**
+ * Roles allowed to invoke owner-only RINPO tools (operational actions on the
+ * business, not customer self-service). Kept narrow and explicit rather than
+ * "anything not a customer" — extend deliberately as new roles need access.
+ */
+const OWNER_TOOL_ROLE_KEYS = new Set(["founder", "super_admin", "admin", "manager"]);
+
+function isOwnerToolCaller(roleKey: string | undefined): boolean {
+  if (!roleKey) return false;
+  return isPrivilegedRoleKey(roleKey) || OWNER_TOOL_ROLE_KEYS.has(roleKey);
+}
 
 export type RinpoServices = {
   catalog: CatalogService;
@@ -63,7 +76,10 @@ function toOps(ctx: CommerceContext): OperationsContext {
     userId: ctx.userId,
     customerId: ctx.customerId,
     requestId: ctx.requestId,
-    roleKey: "founder",
+    // Pass through the real caller role. Never coerce to a privileged role —
+    // downstream operations services (e.g. purchase-order approval) make
+    // authorization decisions based on this value.
+    roleKey: ctx.roleKey,
   };
 }
 
@@ -80,6 +96,12 @@ export function executeRinpoTool(
   const def = getRinpoTool(input.tool);
   if (def?.ownerOnly && !ops) {
     return { tool: input.tool, ok: false, message: "Operations services unavailable." };
+  }
+  if (def?.ownerOnly && !isOwnerToolCaller(ctx.roleKey)) {
+    return { tool: input.tool, ok: false, message: "This tool requires an owner or manager role." };
+  }
+  if (def?.requiredPermission === "org.manage" && !isOwnerToolCaller(ctx.roleKey)) {
+    return { tool: input.tool, ok: false, message: "Insufficient permissions for this tool." };
   }
 
   switch (input.tool) {
