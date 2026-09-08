@@ -66,6 +66,28 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "issue_receipt_or_invoice", category: "WRITE", description: "Finalize a sale into an invoice/receipt", vertical: "salon", requiredPermission: "salon.pos.manage" },
 
   // ---------------------------------------------------------------------
+  // Growth READ tools (R GLOW Phase E, Slice 1) — segmentation, campaign
+  // performance, and growth-intelligence signals. Same org.read gate as
+  // the rest of the salon READ tools.
+  // ---------------------------------------------------------------------
+  { key: "get_customer_segments", category: "READ", description: "List saved audience segments", vertical: "salon", requiredPermission: "org.read" },
+  { key: "preview_segment", category: "READ", description: "Preview who matches a segment/campaign's criteria, including exclusions", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_campaign_performance", category: "READ", description: "Sent/delivered/failed/converted counts per campaign", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_message_failures", category: "READ", description: "Count of failed, dead-lettered, and not-configured outbound messages", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_retention_summary", category: "READ", description: "Repeat-visit rate across all customers", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_growth_opportunities", category: "READ", description: "Ranked growth signals: message failures, pending campaign approvals, low repeat rate", vertical: "salon", requiredPermission: "org.read" },
+
+  // ---------------------------------------------------------------------
+  // Growth WRITE tools — drafting only, never sends anything. Gated by
+  // salon.campaigns.manage (admin/manager only — see the migration's
+  // permission note, bulk messaging is more sensitive than front-desk
+  // POS ops).
+  // ---------------------------------------------------------------------
+  { key: "create_segment", category: "WRITE", description: "Save a reusable audience segment", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
+  { key: "create_campaign_draft", category: "WRITE", description: "Draft a campaign against a segment or ad-hoc criteria (does not send)", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
+  { key: "create_reactivation_draft", category: "WRITE", description: "Draft a reactivation campaign for customers inactive N+ days (does not send)", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
+
+  // ---------------------------------------------------------------------
   // Salon SENSITIVE tools
   // ---------------------------------------------------------------------
   { key: "record_payment", category: "SENSITIVE", description: "Record a cash/UPI/card/Razorpay payment against a sale", vertical: "salon", requiredPermission: "salon.pos.manage", requiresApproval: false },
@@ -77,6 +99,20 @@ const REGISTRY: RinpoToolDefinition[] = [
   // the approver (an admin with org.manage) always satisfies.
   { key: "modify_pricing", category: "SENSITIVE", description: "Change a service's price", vertical: "salon", requiredPermission: "salon.pos.manage", requiresApproval: true },
   { key: "modify_discount", category: "SENSITIVE", description: "Apply a discount to a sale line", vertical: "salon", requiredPermission: "salon.pos.manage", requiresApproval: true },
+
+  // ---------------------------------------------------------------------
+  // Growth SENSITIVE tools — requesting only needs salon.campaigns.manage
+  // (a manager can ask RINPO to approve/send/retry); the actual DB write
+  // on resolution is still gated by RLS (org.manage for
+  // salon_campaigns_update_approve / salon_campaign_recipients, exactly
+  // like modify_pricing/modify_discount above never re-check permissions
+  // in application code — the approver's own RLS-enforced client is the
+  // real gate).
+  // ---------------------------------------------------------------------
+  { key: "approve_campaign", category: "SENSITIVE", description: "Approve a drafted campaign so it can be sent", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
+  { key: "send_campaign", category: "SENSITIVE", description: "Send an approved campaign (re-validates the audience first)", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
+  { key: "send_reactivation_batch", category: "SENSITIVE", description: "Send an approved reactivation campaign", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
+  { key: "retry_failed_message", category: "SENSITIVE", description: "Retry a single failed/dead-lettered outbound message", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
 ];
 
 export function listRinpoTools(filter?: { ownerOnly?: boolean; customerFacing?: boolean; vertical?: "salon" }): RinpoToolDefinition[] {

@@ -1,4 +1,10 @@
-import { RinpoActionsRepository, SalonNotificationService, SalonRepository, type SalonSupabaseClient } from "@rinads/salon-server";
+import {
+  RinpoActionsRepository,
+  SalonCampaignsRepository,
+  SalonNotificationService,
+  SalonRepository,
+  type SalonSupabaseClient,
+} from "@rinads/salon-server";
 import "server-only";
 import { createRinaglowServerClient } from "./supabase/server";
 
@@ -11,15 +17,22 @@ export type SalonDeps = {
   repo: SalonRepository;
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
+  campaigns: SalonCampaignsRepository;
+  /** Raw client, needed by growth-intelligence functions that query `notification_outbox` directly. */
+  client: SalonSupabaseClient;
 };
 
-/** One Supabase client shared across the repository, RINPO actions, and notification enqueueing for a single request. */
+/** One Supabase client shared across the repository, RINPO actions, campaigns, and notification enqueueing for a single request. */
 export async function getSalonDeps(): Promise<SalonDeps> {
   const client = await createRinaglowServerClient();
   const typedClient = client as unknown as SalonSupabaseClient;
+  const repo = new SalonRepository(typedClient);
+  const notifications = new SalonNotificationService(typedClient);
   return {
-    repo: new SalonRepository(typedClient),
+    repo,
     actions: new RinpoActionsRepository(typedClient),
-    notifications: new SalonNotificationService(typedClient),
+    notifications,
+    campaigns: new SalonCampaignsRepository(typedClient, repo, notifications),
+    client: typedClient,
   };
 }

@@ -38,6 +38,12 @@ const ATTENTION_FOLLOW_UP: Record<AttentionSignalKind, (ctx: RinpoNluContext) =>
   reactivation_candidates: () => ({ tool: "create_reactivation_campaign", args: {} }),
   empty_slots_today: (ctx) => ({ tool: "get_empty_slots", args: { branchId: ctx.defaultBranchId } }),
   low_staff_utilization: () => ({ tool: "get_staff_utilization", args: {} }),
+  // Growth signals (R GLOW Phase E, Slice 1) — all resolve to READ tools,
+  // same "never guess at an unsafe action" posture as the rest of this
+  // map (a campaign send always needs its own explicit approval step).
+  message_failures: () => ({ tool: "get_message_failures", args: {} }),
+  pending_campaign_approvals: () => ({ tool: "get_campaign_performance", args: {} }),
+  low_repeat_rate: () => ({ tool: "get_retention_summary", args: {} }),
 };
 
 const ORDINAL_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
@@ -103,9 +109,62 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
       return calls("Pulling customer history.", { tool: "get_customer_history", args: { customerId } });
     }
 
-    if (/(haven'?t booked|inactive|reactivation|going quiet)/i.test(lower)) {
-      const daysInactive = extractNumber(lower, /last\s+(\d+)\s*days?/i, 45);
+    // "Create a reactivation campaign for high-value customers inactive
+    // for 60 days" — checked *before* the plain "haven't returned" READ
+    // pattern below, since it also contains "inactive". Drafts only —
+    // never sends (see create_reactivation_draft's own approve/send gate).
+    if (/create (a |an )?reactivation (campaign|draft)/i.test(lower)) {
+      const daysInactive = extractNumber(lower, /(\d+)\+?\s*days?/i, 60);
+      const highValue = /high[- ]value/i.test(lower);
+      const args: Record<string, string | number> = { daysInactive };
+      // "high-value" is a relative term with no fixed definition in the
+      // domain model — 3000 (INR) is a deliberately documented heuristic
+      // floor for "worth a special reactivation push", not a real business
+      // rule; a manager can always refine the draft's criteria afterwards.
+      if (highValue) args.minLifetimeSpend = 3000;
+      return calls(
+        `Drafting a reactivation campaign for customers inactive ${daysInactive}+ days${highValue ? " (high-value)" : ""}. Preview the audience before sending.`,
+        { tool: "create_reactivation_draft", args }
+      );
+    }
+
+    if (/(haven'?t (booked|returned|visited)|inactive|reactivation|going quiet)/i.test(lower)) {
+      const daysInactive = extractNumber(lower, /last\s+(\d+)\s*days?/i, extractNumber(lower, /(\d+)\+?\s*days?/i, 45));
       return calls(`Checking customers inactive for ${daysInactive}+ days.`, { tool: "get_reactivation_candidates", args: { daysInactive } });
+    }
+
+    // -----------------------------------------------------------------
+    // Growth: segmentation, campaigns, delivery, growth intelligence
+    // (R GLOW Phase E, Slice 1).
+    // -----------------------------------------------------------------
+    if (/preview (the )?audience/i.test(lower)) {
+      const campaignId = extractUuid(text) ?? context.lastCampaignDraftId;
+      if (!campaignId) return clarify("Which campaign? Draft one first, or give me its ID.");
+      return calls("Previewing the campaign audience.", { tool: "preview_segment", args: { campaignId } });
+    }
+
+    if (/approve (the |this )?campaign\b|^approve it\b/i.test(lower)) {
+      const campaignId = extractUuid(text) ?? context.lastCampaignDraftId;
+      if (!campaignId) return clarify("Which campaign should I approve? Give me its ID.");
+      return calls("Requesting campaign approval (will need an admin sign-off).", { tool: "approve_campaign", args: { campaignId } });
+    }
+
+    if (/^send it\b/i.test(lower) || /\bsend (the |this )?campaign\b/i.test(lower)) {
+      const campaignId = extractUuid(text) ?? context.lastCampaignDraftId;
+      if (!campaignId) return clarify("Which campaign should I send? Draft one first, or give me its ID.");
+      return calls("Requesting to send the campaign (will need an admin sign-off).", { tool: "send_campaign", args: { campaignId } });
+    }
+
+    if (/how did.*campaign.*perform|campaign performance/i.test(lower)) {
+      return calls("Checking campaign performance.", { tool: "get_campaign_performance", args: {} });
+    }
+
+    if (/(which )?messages? failed|failed messages?/i.test(lower)) {
+      return calls("Checking failed messages.", { tool: "get_message_failures", args: {} });
+    }
+
+    if (/growth opportunit/i.test(lower)) {
+      return calls("Checking growth opportunities.", { tool: "get_growth_opportunities", args: {} });
     }
 
     if (/revenue/i.test(lower)) {

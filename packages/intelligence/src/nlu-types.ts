@@ -17,6 +17,8 @@ export type RinpoNluContext = {
   selectedSaleId?: string;
   selectedCustomerId?: string;
   selectedServiceId?: string;
+  /** The most recently drafted campaign this session, so "preview the audience" / "send it" resolve without repeating the ID. */
+  lastCampaignDraftId?: string;
 };
 
 export type RinpoParsedIntent =

@@ -307,3 +307,108 @@ export type CustomerProfile = {
   preferredStaffId?: string;
   preferredServiceId?: string;
 };
+
+// ---------------------------------------------------------------------------
+// Segmentation + campaigns (R GLOW Phase E, Slice 1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Every field is optional and independently AND-ed together by
+ * `matchesSegment` — an unset criterion never excludes anyone. Distances
+ * (`lastVisitBeforeDays`) and thresholds are evaluated against the
+ * server-computed aggregates in `CustomerSpendSummary`/`CustomerProfile`,
+ * never a second, separately-maintained copy of the same numbers.
+ */
+export type SegmentCriteria = {
+  /** Last visit at least this many days ago (inactivity threshold). Customers with no visit at all never match this. */
+  lastVisitBeforeDays?: number;
+  minVisits?: number;
+  minLifetimeSpend?: number;
+  maxLifetimeSpend?: number;
+  preferredServiceId?: string;
+  preferredStaffId?: string;
+  branchId?: string;
+  /** Defaults to true: campaigns should never message a customer who opted out unless explicitly overridden (never recommended). */
+  communicationOptIn?: boolean;
+};
+
+export type SalonSegment = {
+  id: string;
+  organizationId: string;
+  name: string;
+  criteria: SegmentCriteria;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CampaignType = "custom" | "reactivation";
+
+export type CampaignStatus =
+  | "draft"
+  | "approved"
+  | "sending"
+  | "completed"
+  | "partially_failed"
+  | "failed"
+  | "cancelled";
+
+export const CAMPAIGN_STATUSES: CampaignStatus[] = [
+  "draft",
+  "approved",
+  "sending",
+  "completed",
+  "partially_failed",
+  "failed",
+  "cancelled",
+];
+
+export type CampaignChannel = "whatsapp" | "sms" | "email";
+
+export type SalonCampaign = {
+  id: string;
+  organizationId: string;
+  name: string;
+  segmentId?: string;
+  criteria: SegmentCriteria;
+  campaignType: CampaignType;
+  channel: CampaignChannel;
+  templateKey: string;
+  messageBody: string;
+  status: CampaignStatus;
+  scheduledAt?: string;
+  createdBy?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  estimatedAudience: number;
+  attemptedCount: number;
+  sentCount: number;
+  deliveredCount: number;
+  failedCount: number;
+  convertedCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type RecipientStatus = "pending" | "sent" | "delivered" | "failed" | "skipped" | "converted";
+
+/** Mirrors salon_campaign_recipients' pending -> sent/delivered/failed/skipped -> converted lifecycle. */
+const CAMPAIGN_RECIPIENT_TERMINAL: ReadonlySet<RecipientStatus> = new Set(["skipped", "converted"]);
+
+export function isTerminalRecipientStatus(status: RecipientStatus): boolean {
+  return CAMPAIGN_RECIPIENT_TERMINAL.has(status) || status === "failed";
+}
+
+export type SalonCampaignRecipient = {
+  id: string;
+  organizationId: string;
+  campaignId: string;
+  customerId: string;
+  notificationOutboxId?: string;
+  status: RecipientStatus;
+  skipReason?: string;
+  convertedAt?: string;
+  convertedAppointmentId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};

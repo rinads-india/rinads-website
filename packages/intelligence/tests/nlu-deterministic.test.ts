@@ -243,3 +243,105 @@ describe("DeterministicRinpoNluAdapter — text extraction", () => {
     assert.equal(intent.calls[0].args.reason, "the customer called in sick");
   });
 });
+
+describe("DeterministicRinpoNluAdapter — growth: segmentation, campaigns, growth intelligence (R GLOW Phase E, Slice 1)", () => {
+  it('"which customers haven\'t returned in 90 days" resolves get_reactivation_candidates with daysInactive:90', () => {
+    const intent = adapter.parse("Which customers haven't returned in 90 days?", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "get_reactivation_candidates");
+    assert.equal(intent.calls[0].args.daysInactive, 90);
+  });
+
+  it('"create a reactivation campaign for high-value customers inactive for 60 days" drafts, never sends', () => {
+    const intent = adapter.parse("Create a reactivation campaign for high-value customers inactive for 60 days", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls.length, 1);
+    assert.equal(intent.calls[0].tool, "create_reactivation_draft");
+    assert.equal(intent.calls[0].args.daysInactive, 60);
+    assert.equal(intent.calls[0].args.minLifetimeSpend, 3000);
+  });
+
+  it('"create a reactivation campaign" without "high-value" omits minLifetimeSpend and defaults daysInactive to 60', () => {
+    const intent = adapter.parse("Create a reactivation campaign", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "create_reactivation_draft");
+    assert.equal(intent.calls[0].args.daysInactive, 60);
+    assert.equal(intent.calls[0].args.minLifetimeSpend, undefined);
+  });
+
+  it('"preview the audience" resolves against lastCampaignDraftId', () => {
+    const intent = adapter.parse("Preview the audience", { ...baseCtx, lastCampaignDraftId: "camp_1" });
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "preview_segment");
+    assert.equal(intent.calls[0].args.campaignId, "camp_1");
+  });
+
+  it('"preview the audience" clarifies when there is no drafted campaign to preview', () => {
+    const intent = adapter.parse("Preview the audience", baseCtx);
+    assert.equal(intent.kind, "clarify");
+  });
+
+  it('"approve the campaign" resolves approve_campaign against lastCampaignDraftId', () => {
+    const intent = adapter.parse("Approve the campaign", { ...baseCtx, lastCampaignDraftId: "camp_1" });
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "approve_campaign");
+    assert.equal(intent.calls[0].args.campaignId, "camp_1");
+  });
+
+  it('"send it" resolves send_campaign against lastCampaignDraftId', () => {
+    const intent = adapter.parse("Send it", { ...baseCtx, lastCampaignDraftId: "camp_1" });
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "send_campaign");
+    assert.equal(intent.calls[0].args.campaignId, "camp_1");
+  });
+
+  it('"send it" clarifies when there is no drafted campaign to send', () => {
+    const intent = adapter.parse("Send it", baseCtx);
+    assert.equal(intent.kind, "clarify");
+  });
+
+  it('"how did last week\'s campaign perform" resolves get_campaign_performance', () => {
+    const intent = adapter.parse("How did last week's campaign perform?", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "get_campaign_performance");
+  });
+
+  it('"which messages failed today" resolves get_message_failures', () => {
+    const intent = adapter.parse("Which messages failed today?", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "get_message_failures");
+  });
+
+  it('"what growth opportunities need attention" resolves get_growth_opportunities', () => {
+    const intent = adapter.parse("What growth opportunities need attention?", baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "get_growth_opportunities");
+  });
+
+  it('"do the first N" resolves the new growth attention-signal kinds to safe READ follow-ups', () => {
+    const ctx: RinpoNluContext = {
+      ...baseCtx,
+      lastAttentionItems: [
+        attentionItem("message_failures", "Message delivery failures"),
+        attentionItem("pending_campaign_approvals", "Campaigns awaiting approval"),
+        attentionItem("low_repeat_rate", "Low repeat visit rate"),
+      ],
+    };
+    const intent = adapter.parse("do all of them", ctx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls.length, 3);
+    assert.equal(intent.calls[0].tool, "get_message_failures");
+    assert.equal(intent.calls[1].tool, "get_campaign_performance");
+    assert.equal(intent.calls[2].tool, "get_retention_summary");
+  });
+});

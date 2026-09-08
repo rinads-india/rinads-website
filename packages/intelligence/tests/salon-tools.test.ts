@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { SalonRepository, RinpoActionsRepository, SalonNotificationService } from "@rinads/salon-server";
+import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository } from "@rinads/salon-server";
 import { createSalonMockClient } from "./mock-salon-client";
 import { executeSalonRinpoTool, resolveSalonRinpoAction, type SalonRinpoContext, type SalonRinpoDeps } from "../src/salon-tools";
 
@@ -11,7 +11,8 @@ function makeDeps() {
   const repo = new SalonRepository(client);
   const actions = new RinpoActionsRepository(client);
   const notifications = new SalonNotificationService(client);
-  return { deps: { repo, actions, notifications } as SalonRinpoDeps, client };
+  const campaigns = new SalonCampaignsRepository(client, repo, notifications);
+  return { deps: { repo, actions, notifications, campaigns, client } as SalonRinpoDeps, client };
 }
 
 function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = {}): SalonRinpoContext {
@@ -24,6 +25,23 @@ async function seedBasics(repo: SalonRepository) {
   const service = await repo.createService(ORG_ID, { name: "Haircut", durationMin: 30, price: 500 });
   if (!branch.ok || !staff.ok || !service.ok) throw new Error("seed failed");
   return { branch: branch.data, staff: staff.data, service: service.data };
+}
+
+async function seedCustomerWithOneVisit(repo: SalonRepository, phone: string, amount: number) {
+  const branch = await repo.createBranch(ORG_ID, { name: "Indiranagar" });
+  if (!branch.ok) throw new Error("branch seed failed");
+  const customer = await repo.upsertCustomerByPhone(ORG_ID, { phone });
+  if (!customer.ok) throw new Error("customer seed failed");
+  const sale = await repo.createSale(ORG_ID, { branchId: branch.data.id, customerId: customer.data.id });
+  if (!sale.ok) throw new Error("sale seed failed");
+  await repo.addSaleLine(ORG_ID, sale.data.id, { description: "Service", unitPrice: amount });
+  await repo.finalizeSale(ORG_ID, sale.data.id);
+  await repo.recordPayment(ORG_ID, sale.data.id, {
+    method: "cash",
+    amount,
+    idempotencyKey: `seed-payment-${customer.data.id}`,
+  });
+  return customer.data;
 }
 
 describe("executeSalonRinpoTool — permission gating", () => {
@@ -304,5 +322,214 @@ describe("resolveSalonRinpoAction", () => {
     const lines = await deps.repo.listSaleLines(sale.data.id);
     assert.ok(lines.ok);
     if (lines.ok) assert.equal(lines.data[0].discountAmount, 75);
+  });
+});
+
+describe("executeSalonRinpoTool — growth READ/WRITE tools (R GLOW Phase E, Slice 1)", () => {
+  it("denies create_segment for a caller without salon.campaigns.manage", async () => {
+    const { deps } = makeDeps();
+    const result = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "create_segment",
+      args: { name: "All visitors", minVisits: 1 },
+    });
+    assert.equal(result.ok, false);
+    assert.match(result.message, /Insufficient permissions/);
+  });
+
+  it("create_segment saves criteria built from flat args", async () => {
+    const { deps } = makeDeps();
+    await seedCustomerWithOneVisit(deps.repo, "9000000201", 500);
+
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_segment",
+      args: { name: "All visitors", minVisits: 1 },
+    });
+    assert.equal(result.ok, true);
+
+    const segments = await deps.campaigns.listSegments(ORG_ID);
+    assert.ok(segments.ok);
+    if (segments.ok) {
+      assert.equal(segments.data.length, 1);
+      assert.deepEqual(segments.data[0].criteria, { minVisits: 1 });
+    }
+  });
+
+  it("create_campaign_draft drafts a campaign without sending anything", async () => {
+    const { deps } = makeDeps();
+    await seedCustomerWithOneVisit(deps.repo, "9000000202", 500);
+
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_campaign_draft",
+      args: { name: "Spring offer", messageBody: "20% off this week!", minVisits: 1 },
+    });
+    assert.equal(result.ok, true);
+    const data = result.data as { id: string; status: string };
+    assert.equal(data.status, "draft");
+
+    const campaigns = await deps.campaigns.listCampaigns(ORG_ID);
+    assert.ok(campaigns.ok);
+    if (campaigns.ok) assert.equal(campaigns.data.length, 1);
+  });
+
+  it("create_reactivation_draft builds a lastVisitBeforeDays criteria and marks the campaign type reactivation", async () => {
+    const { deps } = makeDeps();
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_reactivation_draft",
+      args: { daysInactive: 60 },
+    });
+    assert.equal(result.ok, true);
+    const data = result.data as { id: string; criteria: { lastVisitBeforeDays: number } };
+    assert.equal(data.criteria.lastVisitBeforeDays, 60);
+
+    const campaign = await deps.campaigns.getCampaign(data.id);
+    assert.ok(campaign.ok);
+    if (campaign.ok) assert.equal(campaign.data.campaignType, "reactivation");
+  });
+
+  it("preview_segment against a draft campaign returns eligible/excluded counts", async () => {
+    const { deps } = makeDeps();
+    await seedCustomerWithOneVisit(deps.repo, "9000000203", 500);
+    await seedCustomerWithOneVisit(deps.repo, "9000000204", 5000);
+
+    const draft = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_campaign_draft",
+      args: { name: "High spenders", messageBody: "Thanks for your loyalty!", minLifetimeSpend: 1000 },
+    });
+    const campaignId = (draft.data as { id: string }).id;
+
+    const preview = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "preview_segment",
+      args: { campaignId },
+    });
+    assert.equal(preview.ok, true);
+    const data = preview.data as { eligible: unknown[]; excluded: unknown[] };
+    assert.equal(data.eligible.length, 1);
+    assert.equal(data.excluded.length, 1);
+  });
+
+  it("get_customer_segments, get_campaign_performance, get_message_failures, get_retention_summary, and get_growth_opportunities all return honest empty results with no data", async () => {
+    const { deps } = makeDeps();
+    const ctx = ctxWith(["org.read"]);
+
+    const segments = await executeSalonRinpoTool(deps, ctx, { tool: "get_customer_segments", args: {} });
+    assert.equal(segments.ok, true);
+    assert.deepEqual(segments.data, []);
+
+    const performance = await executeSalonRinpoTool(deps, ctx, { tool: "get_campaign_performance", args: {} });
+    assert.equal(performance.ok, true);
+    assert.deepEqual(performance.data, []);
+
+    const failures = await executeSalonRinpoTool(deps, ctx, { tool: "get_message_failures", args: {} });
+    assert.equal(failures.ok, true);
+    assert.deepEqual(failures.data, { failedCount: 0, deadLetterCount: 0, notConfiguredCount: 0 });
+
+    const retention = await executeSalonRinpoTool(deps, ctx, { tool: "get_retention_summary", args: {} });
+    assert.equal(retention.ok, true);
+    assert.deepEqual(retention.data, { totalCustomersWithVisits: 0, repeatCustomers: 0, repeatRatePct: 0 });
+
+    const opportunities = await executeSalonRinpoTool(deps, ctx, { tool: "get_growth_opportunities", args: {} });
+    assert.equal(opportunities.ok, true);
+    assert.deepEqual(opportunities.data, []);
+  });
+});
+
+describe("executeSalonRinpoTool — growth SENSITIVE tools require approval", () => {
+  async function draftAndApproveCampaign(deps: SalonRinpoDeps) {
+    await seedCustomerWithOneVisit(deps.repo, "9000000301", 500);
+    const draft = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_campaign_draft",
+      args: { name: "Loyalty push", messageBody: "Thanks for visiting!", minVisits: 1 },
+    });
+    const campaignId = (draft.data as { id: string }).id;
+
+    const approveRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "approve_campaign",
+      args: { campaignId },
+    });
+    const approveActionId = (approveRequest.data as { actionId: string }).actionId;
+    await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), approveActionId, "approve");
+    return campaignId;
+  }
+
+  it("approve_campaign creates a pending action and does not change campaign status until approved", async () => {
+    const { deps } = makeDeps();
+    await seedCustomerWithOneVisit(deps.repo, "9000000302", 500);
+    const draft = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "create_campaign_draft",
+      args: { name: "Weekend offer", messageBody: "Book this weekend!", minVisits: 1 },
+    });
+    const campaignId = (draft.data as { id: string }).id;
+
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "approve_campaign",
+      args: { campaignId },
+    });
+    assert.equal(result.ok, true);
+    const data = result.data as { actionId: string; status: string };
+    assert.equal(data.status, "pending_approval");
+
+    const campaign = await deps.campaigns.getCampaign(campaignId);
+    assert.ok(campaign.ok);
+    if (campaign.ok) assert.equal(campaign.data.status, "draft");
+
+    const resolved = await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), data.actionId, "approve");
+    assert.equal(resolved.ok, true);
+
+    const afterApproval = await deps.campaigns.getCampaign(campaignId);
+    assert.ok(afterApproval.ok);
+    if (afterApproval.ok) assert.equal(afterApproval.data.status, "approved");
+  });
+
+  it("send_campaign requires approval, then queues eligible recipients once resolved", async () => {
+    const { deps } = makeDeps();
+    const campaignId = await draftAndApproveCampaign(deps);
+
+    const sendRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "send_campaign",
+      args: { campaignId },
+    });
+    assert.equal(sendRequest.ok, true);
+    const sendActionId = (sendRequest.data as { actionId: string }).actionId;
+
+    const campaignBeforeResolve = await deps.campaigns.getCampaign(campaignId);
+    assert.ok(campaignBeforeResolve.ok);
+    if (campaignBeforeResolve.ok) assert.equal(campaignBeforeResolve.data.status, "approved");
+
+    const resolved = await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), sendActionId, "approve");
+    assert.equal(resolved.ok, true);
+
+    const recipients = await deps.campaigns.listRecipients(campaignId);
+    assert.ok(recipients.ok);
+    if (recipients.ok) assert.equal(recipients.data.length, 1);
+  });
+
+  it("retry_failed_message requires approval, then resets a dead-lettered message to pending", async () => {
+    const { deps, client } = makeDeps();
+    const customer = await seedCustomerWithOneVisit(deps.repo, "9000000303", 500);
+    const enqueueResult = await deps.notifications.enqueue({
+      organizationId: ORG_ID,
+      event: "customer.reactivation_due",
+      recipientPhone: customer.phone,
+      preferredChannel: customer.preferredChannel,
+      payload: {},
+      idempotencyKey: "retry-test-1",
+    });
+    assert.ok(enqueueResult.ok);
+    if (!enqueueResult.ok || enqueueResult.data.skipped) return;
+    const outboxId = enqueueResult.data.outboxId;
+    await client.from("notification_outbox").update({ status: "dead_letter", last_error: "boom" }).eq("id", outboxId);
+
+    const retryRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.campaigns.manage"]), {
+      tool: "retry_failed_message",
+      args: { notificationOutboxId: outboxId },
+    });
+    assert.equal(retryRequest.ok, true);
+    const actionId = (retryRequest.data as { actionId: string }).actionId;
+
+    const resolved = await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), actionId, "approve");
+    assert.equal(resolved.ok, true);
+
+    const { data } = await client.from("notification_outbox").select("*").eq("id", outboxId).maybeSingle();
+    assert.equal((data as { status: string } | null)?.status, "pending");
   });
 });

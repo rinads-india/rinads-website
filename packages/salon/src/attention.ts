@@ -16,7 +16,10 @@ export type AttentionSignalKind =
   | "pending_payments"
   | "reactivation_candidates"
   | "unconfirmed_bookings"
-  | "low_staff_utilization";
+  | "low_staff_utilization"
+  | "message_failures"
+  | "pending_campaign_approvals"
+  | "low_repeat_rate";
 
 export type AttentionSignalInput = {
   kind: AttentionSignalKind;
@@ -91,6 +94,30 @@ const SIGNAL_META: Record<AttentionSignalKind, SignalMeta> = {
     describe: (n) => `${n} staff member${n === 1 ? "" : "s"} have low booking utilization this week.`,
     impact: 45,
     urgency: 25,
+    confidence: 0.6,
+    reversible: true,
+  },
+  message_failures: {
+    title: "Message delivery failures",
+    describe: (n) => `${n} outbound message${n === 1 ? "" : "s"} failed to deliver.`,
+    impact: 50,
+    urgency: 60,
+    confidence: 0.9,
+    reversible: true,
+  },
+  pending_campaign_approvals: {
+    title: "Campaigns awaiting approval",
+    describe: (n) => `${n} campaign${n === 1 ? "" : "s"} are drafted and waiting for an admin to approve.`,
+    impact: 55,
+    urgency: 40,
+    confidence: 0.9,
+    reversible: true,
+  },
+  low_repeat_rate: {
+    title: "Low repeat visit rate",
+    describe: (n) => `${n}% of customers haven't returned for a second visit — consider a reactivation campaign.`,
+    impact: 65,
+    urgency: 20,
     confidence: 0.6,
     reversible: true,
   },
