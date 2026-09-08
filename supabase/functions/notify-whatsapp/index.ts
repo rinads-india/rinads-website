@@ -1,17 +1,26 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-/** Server-side WhatsApp dispatch + whatsapp_log audit. Twilio credentials server-only. */
+/**
+ * Server-side WhatsApp dispatch + whatsapp_log audit. Twilio credentials server-only.
+ *
+ * Internal-only function: it must only ever be called by other trusted
+ * server code (e.g. payment-webhook) using the service-role key, never by a
+ * public client. Reject any request that doesn't present that key.
+ */
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
   }
 
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (authHeader !== `Bearer ${serviceRoleKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
     const { organization_id, order_id, recipient, template, message_body } = await req.json();
 

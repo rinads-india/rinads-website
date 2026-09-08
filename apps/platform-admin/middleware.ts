@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { assertProductionEnvContract } from "@rinads/auth";
 
 type CookieToSet = {
   name: string;
@@ -8,6 +9,10 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
+  // Fail closed on every request if a production deploy is misconfigured
+  // with demo auth / demo data. See docs/deployment/POLICY.md.
+  assertProductionEnvContract();
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const provider = process.env.NEXT_PUBLIC_AUTH_PROVIDER;

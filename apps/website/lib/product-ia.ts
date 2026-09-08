@@ -197,6 +197,12 @@ export const FOOTER_COMPANY: NavLink[] = [
   { label: "Business OS App", href: "/os" },
 ];
 
+export const FOOTER_LEGAL: NavLink[] = [
+  { label: "Privacy Policy", href: "/company/privacy" },
+  { label: "Terms of Service", href: "/company/terms" },
+  { label: "Cookie Policy", href: "/company/cookies" },
+];
+
 /** @deprecated Prefer FOOTER_PLATFORM */
 export const FOOTER_PRODUCTS = FOOTER_PLATFORM;
 

@@ -22,13 +22,17 @@ serve(async (req) => {
     const webhookSecret =
       Deno.env.get("RAZORPAY_WEBHOOK_SECRET") ?? Deno.env.get("RINADS_RAZORPAY_SECRET") ?? "";
 
-    if (webhookSecret) {
-      const valid = await verifyRazorpayWebhookSignatureAsync(body, signature, webhookSecret);
-      if (!valid) {
-        return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 401 });
-      }
-    } else {
-      console.warn("payment-webhook: RAZORPAY_WEBHOOK_SECRET not set — skipping signature verify");
+    // Fail closed: a missing secret must never be treated as "verification not
+    // required". Without a configured secret we cannot trust this payload at
+    // all, so reject rather than silently marking orders as paid.
+    if (!webhookSecret) {
+      console.error("payment-webhook: RAZORPAY_WEBHOOK_SECRET not configured — refusing to process");
+      return new Response(JSON.stringify({ error: "Webhook not configured" }), { status: 500 });
+    }
+
+    const valid = await verifyRazorpayWebhookSignatureAsync(body, signature, webhookSecret);
+    if (!valid) {
+      return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 401 });
     }
 
     const payload = JSON.parse(body);

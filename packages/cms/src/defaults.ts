@@ -329,6 +329,24 @@ export const DEFAULT_SEO: SiteSeo[] = [
     robotsIndex: false,
     robotsFollow: false,
   }),
+  seo(
+    "seo_company_privacy",
+    "/company/privacy",
+    "Privacy Policy | RINADS",
+    "How RINADS collects, uses, and protects information across the platform.",
+  ),
+  seo(
+    "seo_company_terms",
+    "/company/terms",
+    "Terms of Service | RINADS",
+    "The terms that govern use of the RINADS platform and RINPO.",
+  ),
+  seo(
+    "seo_company_cookies",
+    "/company/cookies",
+    "Cookie Policy | RINADS",
+    "How RINADS uses cookies and similar technologies.",
+  ),
   // Legacy path SEO retained for historical CMS lookups
   seo(
     "seo_grow",

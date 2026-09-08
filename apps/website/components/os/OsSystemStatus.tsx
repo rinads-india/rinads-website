@@ -6,11 +6,16 @@ const METRICS = [
   { label: "Uptime", value: 99.9 },
 ] as const;
 
+/**
+ * Illustrative product-preview metrics only — NOT a live SLA, monitoring
+ * feed, or uptime guarantee. Do not wire this to real infrastructure status
+ * without an explicit, reviewed SLA commitment.
+ */
 export function OsSystemStatus() {
   return (
     <aside className="os-glass-dark rounded-3xl p-4 text-white shadow-sm lg:w-72">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-        System Status
+        System Status <span className="text-white/40">(illustrative)</span>
       </p>
 
       <div className="mt-4 space-y-3">

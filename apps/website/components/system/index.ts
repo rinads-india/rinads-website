@@ -21,3 +21,4 @@ export { OsMarketingPage } from "./OsMarketingPage";
 export { AcademyProgramPage } from "./AcademyProgramPage";
 export { ServiceLinePage } from "./ServiceLinePage";
 export { VerticalSolutionPage } from "./VerticalSolutionPage";
+export { LegalPage, type LegalSection } from "./LegalPage";
