@@ -1,9 +1,14 @@
 "use client";
 
 import { generateDaySlots, type SalonBranch, type SalonService, type SalonStaff, type TimeRange } from "@rinads/salon";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { localMidnightUtc } from "@/lib/salon-booking-tz";
-import { createBookingAction, getBusySlotsAction, type CreateBookingResult } from "./actions";
+import { createBookingAction, getBusySlotsAction, getEligibleStaffAction, type CreateBookingResult } from "./actions";
+
+function generateIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `booking-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 type Props = {
   organizationId: string;
@@ -54,14 +59,26 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CreateBookingResult | null>(null);
 
+  const [eligibleStaffIds, setEligibleStaffIds] = useState<string[] | null>(null);
+  const idempotencyKeyRef = useRef(generateIdempotencyKey());
+
   const branch = branches.find((b) => b.id === branchId);
-  const branchStaff = useMemo(() => staff.filter((s) => !s.branchId || s.branchId === branchId), [staff, branchId]);
+  const branchStaff = useMemo(() => {
+    const atBranch = staff.filter((s) => !s.branchId || s.branchId === branchId);
+    if (eligibleStaffIds === null) return atBranch;
+    return atBranch.filter((s) => eligibleStaffIds.includes(s.id));
+  }, [staff, branchId, eligibleStaffIds]);
   const staffId = useMemo(() => {
     if (selectedStaffId && branchStaff.some((s) => s.id === selectedStaffId)) return selectedStaffId;
     return branchStaff[0]?.id ?? "";
   }, [selectedStaffId, branchStaff]);
+  const selectedStaff = branchStaff.find((s) => s.id === staffId);
   const totalDurationMin = useMemo(
     () => services.filter((s) => serviceIds.includes(s.id)).reduce((sum, s) => sum + s.durationMin, 0),
+    [services, serviceIds]
+  );
+  const totalBufferMin = useMemo(
+    () => services.filter((s) => serviceIds.includes(s.id)).reduce((sum, s) => sum + s.bufferMin, 0),
     [services, serviceIds]
   );
   const totalPrice = useMemo(
@@ -69,6 +86,25 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
     [services, serviceIds]
   );
   const currency = services[0]?.currency ?? "INR";
+
+  // Which staff can perform every selected service — re-checked whenever
+  // the service selection changes so an ineligible stylist is never shown
+  // (or silently swapped out from under the customer mid-selection).
+  useEffect(() => {
+    let cancelled = false;
+    async function loadEligibility() {
+      if (!serviceIds.length) {
+        setEligibleStaffIds(null);
+        return;
+      }
+      const res = await getEligibleStaffAction(serviceIds);
+      if (!cancelled && res.ok) setEligibleStaffIds(res.staffIds);
+    }
+    void loadEligibility();
+    return () => {
+      cancelled = true;
+    };
+  }, [serviceIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +131,9 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
         const generated = generateDaySlots({
           dayStartUtc,
           workingHours: branch.workingHours,
+          staffWorkingHours: selectedStaff?.workingHours,
           serviceDurationMin: totalDurationMin,
+          bufferMin: totalBufferMin,
           stepMin: 15,
           busy: res.busy,
           now: new Date(),
@@ -112,7 +150,7 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
     return () => {
       cancelled = true;
     };
-  }, [organizationId, staffId, branch, date, totalDurationMin]);
+  }, [organizationId, staffId, branch, date, totalDurationMin, totalBufferMin, selectedStaff]);
 
   function toggleService(id: string) {
     setServiceIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
@@ -130,9 +168,14 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
       customerPhone: phone,
       customerName: name,
       customerEmail: email,
+      idempotencyKey: idempotencyKeyRef.current,
     });
     setSubmitting(false);
     setResult(res);
+    // A fresh key is only needed if the customer goes on to submit a
+    // different booking later in the same session — a failed/retried
+    // submit of *this* booking should keep replaying safely.
+    if (res.ok) idempotencyKeyRef.current = generateIdempotencyKey();
   }
 
   if (result?.ok) {
@@ -152,7 +195,7 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
           </span>
           .
         </p>
-        <p className="mt-4 text-xs text-white/50">Reference: {result.appointmentId}</p>
+        <p className="mt-4 text-xs text-white/50">Booking reference: {result.bookingNumber ?? result.appointmentId}</p>
       </div>
     );
   }
