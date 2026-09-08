@@ -9,6 +9,8 @@ Templates parameterize Ambady seed data for new tenants.
 | Key | Name |
 |-----|------|
 | `ambady-nursery` | Ambady Nursery & Garden |
+| `generic-retail` | Generic Retail |
+| `salon-os` | Salon OS — branches, services, staff, and appointment booking (`@rinads/salon`, `@rinads/salon-server`, `apps/rinaglow`). The commerce/operations seed bundle is an empty starting point; real operational data lives in the `salon_*` tables, set up interactively by the owner. |
 
 ## Seed bundle
 

@@ -243,6 +243,70 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  apps/rinaglow:
+    dependencies:
+      '@rinads/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@rinads/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@rinads/permissions':
+        specifier: workspace:*
+        version: link:../../packages/permissions
+      '@rinads/salon':
+        specifier: workspace:*
+        version: link:../../packages/salon
+      '@rinads/salon-server':
+        specifier: workspace:*
+        version: link:../../packages/salon-server
+      '@rinads/tenancy':
+        specifier: workspace:*
+        version: link:../../packages/tenancy
+      '@rinads/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.6.1
+        version: 0.6.1(@supabase/supabase-js@2.112.3)
+      next:
+        specifier: 16.1.6
+        version: 16.1.6(@babel/core@7.29.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.3.3
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.4(@types/react@19.2.18)
+      eslint:
+        specifier: ^9
+        version: 9.39.5(jiti@2.7.0)
+      eslint-config-next:
+        specifier: 16.1.6
+        version: 16.1.6(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^4
+        version: 4.3.3
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   apps/storefront:
     dependencies:
       '@rinads/auth':
