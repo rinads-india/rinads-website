@@ -17,7 +17,9 @@
   "dependencies": {
     "@rinads/commerce": "workspace:*",
     "@rinads/operations": "workspace:*",
-    "@rinads/permissions": "workspace:*"
+    "@rinads/permissions": "workspace:*",
+    "@rinads/salon": "workspace:*",
+    "@rinads/salon-server": "workspace:*"
   },
   "devDependencies": {
     "@rinads/commerce-server": "workspace:*",
