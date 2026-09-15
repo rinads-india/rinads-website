@@ -10,9 +10,9 @@ type RINPOAvatarProps = {
 };
 
 const SRC = {
-  head: "/assets/rinpo-head.png",
-  avatar: "/assets/rinpo-avatar.png",
-  full: "/assets/rinpo-full-body.png",
+  head: "/assets/rinpo-full-body-transparent-v2.png",
+  avatar: "/assets/rinpo-full-body-transparent-v2.png",
+  full: "/assets/rinpo-full-body-transparent-v2.png",
 } as const;
 
 export function RINPOAvatar({

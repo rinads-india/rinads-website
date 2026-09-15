@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
 import { Float, useTexture } from "@react-three/drei";
 
-const RINPO_IMAGE = "/assets/rinpo-floating.png";
+const RINPO_IMAGE = "/assets/rinpo-full-body-transparent-v2.png";
 
 function Rinpo3DModel() {
   const texture = useTexture(RINPO_IMAGE);

@@ -60,7 +60,7 @@ export function HomeHero() {
         </div>
 
         <div className="mt-12 flex items-center gap-3 opacity-60">
-          <Image src="/assets/rinpo-head.png" alt="" width={40} height={40} className="rounded-full" aria-hidden />
+          <Image src="/assets/rinpo-full-body-transparent-v2.png" alt="" width={40} height={40} className="rounded-full" aria-hidden />
           <p className="text-sm text-white/70">Interactive RINPO interface — ask, command, operate.</p>
         </div>
       </div>

@@ -148,7 +148,7 @@ export function StoryNarrative() {
         </p>
         <div className="relative mx-auto mt-10 w-full max-w-md">
           <Image
-            src="/assets/rinpo-full-body.png"
+            src="/assets/rinpo-full-body-transparent-v2.png"
             alt="RINPO avatar birth moment"
             width={1024}
             height={1372}

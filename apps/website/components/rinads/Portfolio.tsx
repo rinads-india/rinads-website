@@ -16,7 +16,7 @@ const SOLUTIONS = [
     name: "RINPO Intelligence",
     category: "Intelligence",
     description: "Understand what's happening and know what to do next.",
-    image: "/assets/rinpo-avatar.png",
+    image: "/assets/rinpo-full-body-transparent-v2.png",
     objectPosition: "object-top",
     href: "/rinpo",
   },

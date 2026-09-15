@@ -26,7 +26,7 @@ export function RINPOOrb({ className, size = "md", priority = false }: RINPOOrbP
       )}
     >
       <Image
-        src="/assets/rinpo-head.png"
+        src="/assets/rinpo-full-body-transparent-v2.png"
         alt="RINPO"
         fill
         sizes="112px"
