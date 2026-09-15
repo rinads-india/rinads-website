@@ -5,7 +5,7 @@ import { Poppins } from "next/font/google";
 
 const RINPO_FULL_BODY = "/assets/rinpo-full-body.png";
 const RINPO_FULL_BODY_WIDTH = 1024;
-const RINPO_FULL_BODY_HEIGHT = 1536;
+const RINPO_FULL_BODY_HEIGHT = 1372;
 
 const poppins = Poppins({
   subsets: ["latin"],

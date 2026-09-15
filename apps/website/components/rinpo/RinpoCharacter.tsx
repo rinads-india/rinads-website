@@ -297,8 +297,8 @@ function RinpoIntroView({
 }
 
 /** Approximate widget footprint used to compute the "emerge from the O" travel path. */
-const WIDGET_WIDTH_PX = 132;
-const WIDGET_HEIGHT_PX = 168;
+const WIDGET_WIDTH_PX = 128;
+const WIDGET_HEIGHT_PX = 172;
 const REST_RIGHT_PX = 16;
 const REST_BOTTOM_PX = 24;
 
@@ -453,8 +453,8 @@ function RinpoFloatingWidget({
           <Image
             src={RINPO_AVATAR}
             alt="RINPO, the RINADS assistant"
-            width={471}
-            height={1334}
+            width={1024}
+            height={1372}
             priority={false}
             className="h-full w-full object-contain drop-shadow-[0_0_32px_rgba(159,75,199,0.55)]"
           />
