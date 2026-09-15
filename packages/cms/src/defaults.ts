@@ -15,7 +15,7 @@ export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
   },
   {
     title: "AI & Automation",
-    description: "Assistants, agents, and workflows powered by RINPO Runtime.",
+    description: "Assistants, agents, and workflows powered by RINPO.",
     details: ["AI Assistants", "Workflows", "Voice Agents"],
     href: "/services/ai",
   },
@@ -242,6 +242,12 @@ export const DEFAULT_SEO: SiteSeo[] = [
     "Salon appointments, clients, and growth on RINADS.",
   ),
   seo(
+    "seo_solutions_salon_book",
+    "/solutions/salon/book",
+    "Book an Appointment | RINADS Salon OS",
+    "Book a salon appointment online — pick a service, a time, and confirm in seconds.",
+  ),
+  seo(
     "seo_solutions_healthcare",
     "/solutions/healthcare",
     "Healthcare OS | RINADS Solutions",
@@ -329,6 +335,24 @@ export const DEFAULT_SEO: SiteSeo[] = [
     robotsIndex: false,
     robotsFollow: false,
   }),
+  seo(
+    "seo_company_privacy",
+    "/company/privacy",
+    "Privacy Policy | RINADS",
+    "How RINADS collects, uses, and protects information across the platform.",
+  ),
+  seo(
+    "seo_company_terms",
+    "/company/terms",
+    "Terms of Service | RINADS",
+    "The terms that govern use of the RINADS platform and RINPO.",
+  ),
+  seo(
+    "seo_company_cookies",
+    "/company/cookies",
+    "Cookie Policy | RINADS",
+    "How RINADS uses cookies and similar technologies.",
+  ),
   // Legacy path SEO retained for historical CMS lookups
   seo(
     "seo_grow",

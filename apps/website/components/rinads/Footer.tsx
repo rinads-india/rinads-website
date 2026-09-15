@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
-import { FOOTER_COMPANY, FOOTER_PLATFORM } from "@/lib/product-ia";
+import { FOOTER_COMPANY, FOOTER_LEGAL, FOOTER_PLATFORM } from "@/lib/product-ia";
 
 const FOOTER_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260503_104800_bc43ae09-f494-43e3-97d7-2f8c1692cfd7.mp4";
@@ -169,9 +169,19 @@ export function Footer() {
           </div>
 
           <div className="footer-bottom">
-            <p className="footer-copyright">
-              © {new Date().getFullYear()} RINADS®. All rights reserved.
-            </p>
+            <div>
+              <p className="footer-copyright">
+                © {new Date().getFullYear()} RINADS®. All rights reserved.
+              </p>
+              <nav aria-label="Legal" className="footer-legal-nav">
+                {FOOTER_LEGAL.map((link, i) => (
+                  <span key={link.href}>
+                    {i > 0 ? <span aria-hidden> · </span> : null}
+                    <Link href={link.href}>{link.label}</Link>
+                  </span>
+                ))}
+              </nav>
+            </div>
 
             <div className="footer-cta-mini">
               <h4>

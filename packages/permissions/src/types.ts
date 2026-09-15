@@ -39,6 +39,9 @@ export type PermissionKey =
   | "returns.manage"
   | "refund.approve"
   | "tasks.manage"
+  | "salon.pos.manage"
+  | "salon.pricing.override"
+  | "salon.campaigns.manage"
   | (string & {});
 
 export type Permission = {

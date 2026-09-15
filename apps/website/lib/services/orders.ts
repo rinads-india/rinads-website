@@ -40,10 +40,52 @@ export async function getPublicOrderStatus(orderId: string): Promise<PublicOrder
   };
 }
 
+/**
+ * Loads the authoritative price for a service from the database.
+ * NEVER trust a client-supplied amount for payment-relevant flows —
+ * the client only ever selects which service to buy, never the price.
+ */
+async function getServicePriceForOrder(
+  serviceId: string,
+  organizationId: string
+): Promise<{ basePrice: number; currency: string } | { error: string }> {
+  const supabase = await createWebsiteServerClient();
+  const { data, error } = await (
+    supabase.from("services") as unknown as {
+      select: (cols: string) => {
+        eq: (col: string, val: string) => {
+          single: () => Promise<{
+            data: {
+              organization_id: string | null;
+              base_price: number | null;
+              currency: string;
+              pricing_model: string;
+              is_active: boolean;
+            } | null;
+            error: { message: string } | null;
+          }>;
+        };
+      };
+    }
+  )
+    .select("organization_id, base_price, currency, pricing_model, is_active")
+    .eq("id", serviceId)
+    .single();
+
+  if (error || !data) return { error: "Service not found" };
+  if (!data.is_active) return { error: "This service is not currently available." };
+  if (data.organization_id !== null && data.organization_id !== organizationId) {
+    return { error: "Service not found" };
+  }
+  if (data.pricing_model !== "fixed" || data.base_price === null) {
+    return { error: "This service requires a custom quote. Contact us to proceed." };
+  }
+  return { basePrice: Number(data.base_price), currency: data.currency };
+}
+
 export async function createServiceOrder(input: {
   organizationId: string;
   serviceId: string;
-  amount: number;
   requirements?: Record<string, unknown>;
 }): Promise<{ orderId: string; orderNumber: string } | { error: string }> {
   const supabase = await createWebsiteServerClient();
@@ -51,6 +93,9 @@ export async function createServiceOrder(input: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in required" };
+
+  const price = await getServicePriceForOrder(input.serviceId, input.organizationId);
+  if ("error" in price) return { error: price.error };
 
   const { data, error } = await (
     supabase.from("service_orders") as unknown as {
@@ -67,7 +112,8 @@ export async function createServiceOrder(input: {
     .insert({
       organization_id: input.organizationId,
       service_id: input.serviceId,
-      amount: input.amount,
+      amount: price.basePrice,
+      currency: price.currency,
       status: "pending",
       requirements: input.requirements ?? {},
       created_by: user.id,

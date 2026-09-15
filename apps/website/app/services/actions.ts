@@ -14,16 +14,17 @@ import {
 } from "@/lib/services/orders";
 import { resolveWebsiteTenancy } from "@/lib/tenancy";
 
-export async function createServiceOrderAction(serviceId: string, amount: number) {
+export async function createServiceOrderAction(serviceId: string) {
   const tenancy = await resolveWebsiteTenancy();
   if (!tenancy) {
     return { ok: false as const, error: "Sign in and complete onboarding to order services." };
   }
 
+  // Price is always resolved server-side from the services table inside
+  // createServiceOrder — never trust a client-supplied amount here.
   const result = await createServiceOrder({
     organizationId: tenancy.organizationId,
     serviceId,
-    amount,
   });
 
   if ("error" in result) {

@@ -6,7 +6,15 @@ export type {
   SignInWithPasswordInput,
   SignUpInput,
 } from "./types";
-export { resolveAuthConfig, isSupabaseAuthReady } from "./config";
+export {
+  resolveAuthConfig,
+  isSupabaseAuthReady,
+  assertProductionEnvContract,
+  checkProductionEnvContract,
+  renderProductionEnvContractUnavailablePage,
+  ProductionEnvContractError,
+  type ProductionEnvContractResult,
+} from "./config";
 export { mapSupabaseUser, mapSupabaseSession } from "./mappers";
 export {
   signInWithPassword,

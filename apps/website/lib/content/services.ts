@@ -25,7 +25,7 @@ export const SERVICE_LINES: ServiceLine[] = [
     verb: "Automate",
     headline: "AI systems that operate your business.",
     summary:
-      "Assistants, agents, and intelligence layers wired into RINPO Runtime and RINADS Intelligence — with human approval.",
+      "Assistants, agents, and intelligence built on RINPO — with human approval on every meaningful action.",
     offerings: ["AI assistants", "Agent workflows", "Knowledge systems", "Voice & phone agents", "Tool integrations"],
   },
   {
@@ -81,20 +81,19 @@ export const RINPO_ROLES = [
 
 export const RINPO_CHANNELS = ["Web", "Mobile", "Chat", "Voice", "WhatsApp", "Phone", "3D"] as const;
 
+/**
+ * Outcome-level only. RINADS Intelligence's internal architecture (graphs,
+ * gateway, decision/recommendation engines, agent runtime, tool routing) is
+ * a founder/staff concept, not public marketing content — see docs/ for the
+ * internal reference.
+ */
 export const INTELLIGENCE_CAPABILITIES = [
-  { name: "Business Graph", description: "Entities and relationships across the business." },
-  { name: "Event Graph", description: "What happened, when, and why it matters." },
-  { name: "AI Gateway", description: "Controlled access to models and tools." },
-  { name: "Memory", description: "Persistent context for people, orgs, and work." },
-  { name: "Analytics", description: "Measure performance across the OS suite." },
-  { name: "Decision Engine", description: "Turn signals into clear decisions." },
-  { name: "Recommendation Engine", description: "Suggest the next best action." },
-  { name: "Automation", description: "Connect insight to workflow." },
-  { name: "Workflow", description: "Multi-step business processes." },
-  { name: "Permissions", description: "Who can see and do what." },
-  { name: "Audit", description: "Traceable intelligence and action." },
-  { name: "Agent Runtime", description: "Execute agentic work safely." },
-  { name: "Tool Router", description: "Route requests to the right capability." },
+  { name: "Understands your business", description: "Connects customers, work, money, and activity in one place." },
+  { name: "Remembers what matters", description: "Keeps context for people, orders, and ongoing work." },
+  { name: "Recommends the next best action", description: "Turns signals into clear, useful suggestions." },
+  { name: "Connects insight to action", description: "Moves from understanding to workflow, automatically." },
+  { name: "Respects who can see and do what", description: "Every action honors your organization's permissions." },
+  { name: "Keeps a full audit trail", description: "Every AI-assisted action is traceable." },
 ] as const;
 
 export const CLOUD_CAPABILITIES = [

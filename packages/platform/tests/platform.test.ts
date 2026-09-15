@@ -17,6 +17,12 @@ describe("Vertical templates", () => {
     assert.equal(bundle.operations.locations.length, 1);
   });
 
+  it("seeds salon-os template with an empty, safe starting bundle", () => {
+    const bundle = seedTenantBundle("org_salon", "salon-os");
+    assert.equal(bundle.commerce.orders.length, 0);
+    assert.ok(bundle.operations.locations.length >= 1);
+  });
+
   it("defines ambady slug constant", () => {
     assert.equal(AMBADY_TENANT_SLUG, "ambady");
   });

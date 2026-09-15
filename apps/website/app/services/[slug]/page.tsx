@@ -63,7 +63,7 @@ export default async function ServiceDetailPage({ params }: Props) {
           ) : null}
         </div>
         <div className="mt-10 flex flex-wrap gap-4">
-          <ServiceCheckoutButton serviceId={service.id} amount={service.basePrice ?? 0} />
+          <ServiceCheckoutButton serviceId={service.id} />
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold hover:border-rinads-primary"

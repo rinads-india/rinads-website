@@ -8,8 +8,8 @@ import {
 } from "@/components/system";
 
 const LINKS = [
-  { label: "Platform architecture", href: "/platform", description: "Experience → RINPO → Runtime → Intelligence → OS → Services → Cloud." },
-  { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "Business graph, memory, decisions, agents, and audit." },
+  { label: "Platform architecture", href: "/platform", description: "Experience → RINPO → Operating Systems → Services → Cloud." },
+  { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "How RINADS understands your business and recommends what to do next." },
   { label: "RINADS Cloud", href: "/platform/rinads-cloud", description: "Data, AI, APIs, integrations, security, infrastructure." },
   { label: "RINPO", href: "/rinpo", description: "The persistent AI interface for business." },
   { label: "Academy", href: "/academy", description: "Real Experience Academy model and programs." },

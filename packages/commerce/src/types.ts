@@ -184,6 +184,8 @@ export type CommerceContext = {
   userId?: string;
   customerId?: string;
   requestId?: string;
+  /** Real caller role, if known. Never assume/coerce a privileged role when absent. */
+  roleKey?: string;
 };
 
 export type SearchSort =
