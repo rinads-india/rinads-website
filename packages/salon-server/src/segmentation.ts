@@ -7,8 +7,9 @@
  * so preview-time and send-time evaluation are always the exact same
  * check, never two implementations that could silently drift apart.
  */
-import { matchesSegment, ok, type Result, type SalonCustomer, type SegmentCriteria, type SegmentMatchInput } from "@rinads/salon";
+import { matchesSegment, ok, resolveLoyaltyTier, type Result, type SalonCustomer, type SegmentCriteria, type SegmentMatchInput } from "@rinads/salon";
 import type { SalonRepository } from "./repository";
+import type { SalonLoyaltyRepository } from "./loyalty-repository";
 
 export type SegmentEvaluationResult = {
   eligible: SalonCustomer[];
@@ -18,7 +19,8 @@ export type SegmentEvaluationResult = {
 export async function evaluateSegment(
   repo: SalonRepository,
   organizationId: string,
-  criteria: SegmentCriteria
+  criteria: SegmentCriteria,
+  loyalty?: SalonLoyaltyRepository
 ): Promise<Result<SegmentEvaluationResult>> {
   const customersResult = await repo.listCustomers(organizationId);
   if (!customersResult.ok) return customersResult;
@@ -30,6 +32,8 @@ export async function evaluateSegment(
 
   const eligible: SalonCustomer[] = [];
   const excluded: Array<{ customer: SalonCustomer; reason: string }> = [];
+  const needsLoyalty = criteria.minLoyaltyBalance !== undefined || criteria.loyaltyTier !== undefined;
+  const loyaltyProgram = needsLoyalty && loyalty ? await loyalty.getProgram(organizationId) : undefined;
 
   for (const customer of customersResult.data) {
     let input: SegmentMatchInput;
@@ -64,6 +68,17 @@ export async function evaluateSegment(
         optedOutAt: customer.optedOutAt,
         preferredChannel: customer.preferredChannel,
       };
+    }
+
+    if (needsLoyalty && loyalty) {
+      const [account, balance] = await Promise.all([
+        loyalty.getAccount(organizationId, customer.id),
+        loyalty.getBalance(organizationId, customer.id),
+      ]);
+      input.loyaltyBalance = balance.ok ? balance.data : 0;
+      input.loyaltyTier = account.ok && loyaltyProgram?.ok
+        ? resolveLoyaltyTier(account.data.lifetimeEarnedPoints, loyaltyProgram.data.tiers).name
+        : "Member";
     }
 
     const match = matchesSegment(input, criteria);
