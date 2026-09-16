@@ -16,6 +16,21 @@ curl -X POST https://<rinaglow-host>/api/automations/process \
 
 The endpoint derives the organization from the authenticated session, rejects cross-origin calls, and clamps `limit` to 1–100. It scans completed visits, no-shows, and pending bookings, then enqueues only due work. Safe retries are expected: `(organization_id, idempotency_key)` is unique for both automation runs and notification outbox rows.
 
+For the Slice 3 scheduler integration, configure the same server-only
+`RINADS_REVIEWS_AUTOMATION_TOKEN` in R GLOW and the communications worker.
+The worker sends a bearer token plus its explicit tenant allowlist:
+
+```bash
+curl -X POST https://<rinaglow-host>/api/automations/process \
+  -H 'content-type: application/json' \
+  -H 'authorization: Bearer <RINADS_REVIEWS_AUTOMATION_TOKEN>' \
+  --data '{"organizationIds":["<organization-uuid>"],"limit":50}'
+```
+
+Credentialed calls use a server-only service-role client, cap the allowlist at
+50 organizations, and reject an empty allowlist. Never expose this token or
+the service-role key to a browser.
+
 Default timing:
 
 - Review request: two hours after completion.

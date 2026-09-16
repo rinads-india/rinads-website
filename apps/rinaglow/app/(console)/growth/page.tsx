@@ -1,4 +1,4 @@
-import { getCampaignPerformance, getGrowthOpportunities, getMessageFailuresSummary, getRetentionSummary } from "@rinads/salon-server";
+import { getCampaignPerformance, getGrowthOpportunities, getLoyaltyLiabilitySummary, getMessageFailuresSummary, getRetentionSummary } from "@rinads/salon-server";
 import { Badge, Card, EmptyState } from "@rinads/ui";
 import Link from "next/link";
 import { getSalonDeps } from "@/lib/salon";
@@ -20,13 +20,14 @@ const CAMPAIGN_STATUS_TONE: Record<string, string> = {
 
 export default async function GrowthPage() {
   const tenancy = await requireTenancy();
-  const { repo, campaigns, client, automations } = await getSalonDeps();
+  const { repo, campaigns, loyalty, client, automations } = await getSalonDeps();
 
-  const [retention, failures, campaignPerformance, opportunities, reviews, recovery] = await Promise.all([
+  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, reviews, recovery] = await Promise.all([
     getRetentionSummary(repo, tenancy.organizationId),
     getMessageFailuresSummary(client, tenancy.organizationId),
     getCampaignPerformance(campaigns, tenancy.organizationId, 5),
     getGrowthOpportunities(repo, campaigns, client, tenancy.organizationId),
+    getLoyaltyLiabilitySummary(loyalty, tenancy.organizationId),
     automations.automation.getReviewSummary(tenancy.organizationId),
     automations.automation.getRecoverySummary(tenancy.organizationId),
   ]);
@@ -46,7 +47,7 @@ export default async function GrowthPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Repeat rate</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{retention.repeatRatePct}%</p>
@@ -67,6 +68,11 @@ export default async function GrowthPage() {
           <p className="text-xs text-muted-foreground">
             {recovery.ok ? `${recovery.data.queued} queued · ${recovery.data.skipped} skipped` : "Unavailable"}
           </p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Loyalty liability</p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{loyaltyLiability.currency} {loyaltyLiability.currencyLiability.toLocaleString("en-IN")}</p>
+          <Link href="/loyalty" className="text-xs text-rinads-primary underline">{loyaltyLiability.outstandingPoints} points outstanding →</Link>
         </Card>
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Message failures</p>

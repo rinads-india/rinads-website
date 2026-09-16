@@ -5,3 +5,4 @@ export * from "./attention";
 export * from "./campaign-state-machine";
 export * from "./segmentation";
 export * from "./automation";
+export * from "./loyalty";

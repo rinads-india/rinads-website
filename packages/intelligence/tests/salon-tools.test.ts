@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository } from "@rinads/salon-server";
+import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository, SalonLoyaltyRepository } from "@rinads/salon-server";
 import { createSalonMockClient } from "./mock-salon-client";
 import { executeSalonRinpoTool, resolveSalonRinpoAction, type SalonRinpoContext, type SalonRinpoDeps } from "../src/salon-tools";
 
@@ -11,8 +11,9 @@ function makeDeps() {
   const repo = new SalonRepository(client);
   const actions = new RinpoActionsRepository(client);
   const notifications = new SalonNotificationService(client);
-  const campaigns = new SalonCampaignsRepository(client, repo, notifications);
-  return { deps: { repo, actions, notifications, campaigns, client } as SalonRinpoDeps, client };
+  const loyalty = new SalonLoyaltyRepository(client);
+  const campaigns = new SalonCampaignsRepository(client, repo, notifications, loyalty);
+  return { deps: { repo, actions, notifications, campaigns, loyalty, client } as SalonRinpoDeps, client };
 }
 
 function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = {}): SalonRinpoContext {

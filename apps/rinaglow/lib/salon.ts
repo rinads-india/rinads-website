@@ -4,6 +4,7 @@ import {
   SalonAutomationService,
   SalonNotificationService,
   SalonRepository,
+  SalonLoyaltyRepository,
   type SalonSupabaseClient,
 } from "@rinads/salon-server";
 import "server-only";
@@ -20,6 +21,7 @@ export type SalonDeps = {
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
   automations: SalonAutomationService;
+  loyalty: SalonLoyaltyRepository;
   /** Raw client, needed by growth-intelligence functions that query `notification_outbox` directly. */
   client: SalonSupabaseClient;
 };
@@ -30,6 +32,7 @@ export async function getSalonDeps(): Promise<SalonDeps> {
   const typedClient = client as unknown as SalonSupabaseClient;
   const repo = new SalonRepository(typedClient);
   const notifications = new SalonNotificationService(typedClient);
+  const loyalty = new SalonLoyaltyRepository(typedClient);
   const publicBaseUrl =
     process.env.NEXT_PUBLIC_RINAGLOW_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -39,7 +42,7 @@ export async function getSalonDeps(): Promise<SalonDeps> {
     repo,
     actions: new RinpoActionsRepository(typedClient),
     notifications,
-    campaigns: new SalonCampaignsRepository(typedClient, repo, notifications),
+    campaigns: new SalonCampaignsRepository(typedClient, repo, notifications, loyalty),
     automations: new SalonAutomationService(
       typedClient,
       repo,
@@ -47,6 +50,7 @@ export async function getSalonDeps(): Promise<SalonDeps> {
       undefined,
       { publicBaseUrl }
     ),
+    loyalty,
     client: typedClient,
   };
 }

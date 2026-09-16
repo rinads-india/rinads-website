@@ -21,6 +21,7 @@ import {
   getCustomerCommunicationPreferences,
   getEmptySlots,
   getGrowthOpportunities,
+  getLoyaltyLiabilitySummary,
   getMessageFailuresSummary,
   getPendingPaymentsSummary,
   getRetentionSummary,
@@ -33,6 +34,7 @@ import {
   SalonAutomationService,
   SalonNotificationService,
   SalonRepository,
+  SalonLoyaltyRepository,
   type RinpoActionRecord,
   type SalonSupabaseClient,
 } from "@rinads/salon-server";
@@ -52,6 +54,7 @@ export type SalonRinpoDeps = {
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
+  loyalty: SalonLoyaltyRepository;
   /** Raw client, needed only by the growth-intelligence functions that query `notification_outbox` directly (see `getMessageFailuresSummary`/`getGrowthOpportunities`). */
   client: SalonSupabaseClient;
   automations?: SalonAutomationService;
@@ -93,6 +96,9 @@ function buildCriteriaFromArgs(input: RinpoToolInput): SegmentCriteria {
   if (input.args.preferredServiceId) criteria.preferredServiceId = arg(input, "preferredServiceId");
   if (input.args.preferredStaffId) criteria.preferredStaffId = arg(input, "preferredStaffId");
   if (input.args.branchId) criteria.branchId = arg(input, "branchId");
+  const minLoyaltyBalance = argNum(input, "minLoyaltyBalance");
+  if (minLoyaltyBalance !== undefined) criteria.minLoyaltyBalance = minLoyaltyBalance;
+  if (input.args.loyaltyTier) criteria.loyaltyTier = arg(input, "loyaltyTier");
   if (input.args.communicationOptIn !== undefined) criteria.communicationOptIn = String(input.args.communicationOptIn) === "true";
   return criteria;
 }
@@ -285,6 +291,23 @@ export async function executeSalonRinpoTool(
       return result.ok
         ? { tool: input.tool, ok: true, message: `${result.data.converted} recovery conversion(s).`, data: result.data }
         : { tool: input.tool, ok: false, message: result.error.message };
+    }
+    case "get_loyalty_summary": {
+      const result = await getLoyaltyLiabilitySummary(deps.loyalty, ctx.organizationId);
+      return { tool: input.tool, ok: true, message: `${result.outstandingPoints} loyalty point(s) outstanding.`, data: result };
+    }
+    case "get_customer_loyalty_history": {
+      const customerId = arg(input, "customerId");
+      if (!customerId) return { tool: input.tool, ok: false, message: "customerId is required." };
+      const [account, balance] = await Promise.all([
+        deps.loyalty.getAccount(ctx.organizationId, customerId),
+        deps.loyalty.getBalance(ctx.organizationId, customerId),
+      ]);
+      if (!account.ok) return { tool: input.tool, ok: false, message: account.error.message };
+      if (!balance.ok) return { tool: input.tool, ok: false, message: balance.error.message };
+      const ledger = await deps.loyalty.listLedger(ctx.organizationId, account.data.id);
+      if (!ledger.ok) return { tool: input.tool, ok: false, message: ledger.error.message };
+      return { tool: input.tool, ok: true, message: `Loyalty balance: ${balance.data} point(s).`, data: { account: account.data, balance: balance.data, ledger: ledger.data } };
     }
 
     // -----------------------------------------------------------------
@@ -686,6 +709,32 @@ export async function resolveSalonRinpoAction(
       }
       await deps.actions.markExecuted(actionId, { notificationOutboxId });
       return { tool: "resolve_rinpo_action", ok: true, message: "Message queued for retry." };
+    }
+    case "redeem_loyalty_points": {
+      const customerId = String(action.input.customerId ?? "");
+      const saleId = String(action.input.saleId ?? "");
+      const points = Number(action.input.points ?? 0);
+      const idempotencyKey = String(action.input.idempotencyKey ?? `rinpo-loyalty-redeem:${action.id}`);
+      const result = await deps.loyalty.redeem(ctx.organizationId, customerId, points, saleId || undefined, idempotencyKey);
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, { redemptionId: result.data.id, points, saleId });
+      return { tool: "resolve_rinpo_action", ok: true, message: `${points} loyalty point(s) redeemed.` };
+    }
+    case "adjust_loyalty_ledger": {
+      const customerId = String(action.input.customerId ?? "");
+      const points = Number(action.input.points ?? 0);
+      const reason = String(action.input.reason ?? "");
+      const idempotencyKey = String(action.input.idempotencyKey ?? `rinpo-loyalty-adjust:${action.id}`);
+      const result = await deps.loyalty.adjust(ctx.organizationId, customerId, points, reason, idempotencyKey);
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, { ledgerEntryId: result.data.id, customerId, points });
+      return { tool: "resolve_rinpo_action", ok: true, message: "Loyalty adjustment posted." };
     }
     default:
       await deps.actions.markFailed(actionId, `Unknown action type: ${action.actionType}`);

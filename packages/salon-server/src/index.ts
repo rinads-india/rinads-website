@@ -8,3 +8,4 @@ export * from "./segmentation";
 export * from "./campaigns-repository";
 export * from "./notification-delivery";
 export * from "./automation";
+export * from "./loyalty-repository";

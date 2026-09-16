@@ -8,6 +8,21 @@ const adapter = new DeterministicRinpoNluAdapter();
 
 const baseCtx: RinpoNluContext = { organizationId: "org_1" };
 
+describe("DeterministicRinpoNluAdapter — loyalty", () => {
+  it("resolves loyalty summary and redemption intents", () => {
+    const summary = adapter.parse("show loyalty liability", baseCtx);
+    assert.equal(summary.kind, "tool_calls");
+    if (summary.kind === "tool_calls") assert.equal(summary.calls[0].tool, "get_loyalty_summary");
+    const redeem = adapter.parse("redeem 50 loyalty points", {
+      ...baseCtx,
+      selectedCustomerId: "11111111-1111-4111-8111-111111111111",
+      selectedSaleId: "22222222-2222-4222-8222-222222222222",
+    });
+    assert.equal(redeem.kind, "tool_calls");
+    if (redeem.kind === "tool_calls") assert.equal(redeem.calls[0].tool, "redeem_loyalty_points");
+  });
+});
+
 function attentionItem(kind: AttentionItem["kind"], title: string): AttentionItem {
   return {
     kind,

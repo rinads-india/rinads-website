@@ -82,6 +82,23 @@ export async function requestRefundAction(_prevState: FormActionState, formData:
   return undefined;
 }
 
+export async function redeemLoyaltyAction(_prevState: FormActionState, formData: FormData): Promise<FormActionState> {
+  const tenancy = await requireTenancy();
+  const { loyalty } = await getSalonDeps();
+  const saleId = String(formData.get("saleId") ?? "");
+  const customerId = String(formData.get("customerId") ?? "");
+  const points = Number(formData.get("points") ?? 0);
+  if (!saleId || !customerId || !Number.isInteger(points) || points <= 0) return { error: "Enter a positive whole-point amount." };
+  const result = await loyalty.redeem(
+    tenancy.organizationId, customerId, points, saleId, randomIdempotencyKey(`pos-loyalty-${saleId}`)
+  );
+  revalidatePath("/pos");
+  revalidatePath(`/clients/${customerId}`);
+  revalidatePath("/loyalty");
+  if (!result.ok) return { error: result.error.message };
+  return undefined;
+}
+
 export async function resolveRefundAction(
   refundId: string,
   currentStatus: "pending" | "approved" | "processed" | "rejected",
