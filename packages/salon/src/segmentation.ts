@@ -8,6 +8,8 @@ export type SegmentMatchInput = {
   preferredStaffId?: string;
   preferredServiceId?: string;
   branchId?: string;
+  loyaltyBalance?: number;
+  loyaltyTier?: string;
   optedOutAt?: string;
   preferredChannel: PreferredChannel;
 };
@@ -65,6 +67,14 @@ export function matchesSegment(input: SegmentMatchInput, criteria: SegmentCriter
 
   if (criteria.branchId !== undefined && input.branchId !== criteria.branchId) {
     return { matches: false, excludeReason: "Customer's branch doesn't match." };
+  }
+
+  if (criteria.minLoyaltyBalance !== undefined && (input.loyaltyBalance ?? 0) < criteria.minLoyaltyBalance) {
+    return { matches: false, excludeReason: "Customer's loyalty balance is below the required minimum." };
+  }
+
+  if (criteria.loyaltyTier !== undefined && input.loyaltyTier !== criteria.loyaltyTier) {
+    return { matches: false, excludeReason: "Customer's loyalty tier doesn't match." };
   }
 
   return { matches: true };

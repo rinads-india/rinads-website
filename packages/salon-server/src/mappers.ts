@@ -24,6 +24,10 @@ import type {
   SalonSale,
   SalonSaleLine,
   SalonSegment,
+  SalonLoyaltyAccount,
+  SalonLoyaltyLedgerEntry,
+  SalonLoyaltyProgram,
+  SalonLoyaltyRedemption,
   SalonService,
   SalonStaff,
   SegmentCriteria,
@@ -33,6 +37,44 @@ import type { SalonRow } from "./client";
 
 function str(row: SalonRow, key: string): string {
   return String(row[key]);
+}
+
+export function mapLoyaltyProgramRow(row: SalonRow): SalonLoyaltyProgram {
+  return {
+    id: str(row, "id"), organizationId: str(row, "organization_id"), name: str(row, "name"),
+    isActive: Boolean(row.is_active), currency: str(row, "currency"),
+    earnCurrencyUnits: Number(row.earn_currency_units), earnPoints: Number(row.earn_points),
+    pointsPerCurrencyUnit: Number(row.points_per_currency_unit),
+    tiers: Array.isArray(row.tiers) ? row.tiers as SalonLoyaltyProgram["tiers"] : [],
+    createdAt: optStr(row, "created_at"), updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapLoyaltyAccountRow(row: SalonRow): SalonLoyaltyAccount {
+  return {
+    id: str(row, "id"), organizationId: str(row, "organization_id"), programId: str(row, "program_id"),
+    customerId: str(row, "customer_id"), lifetimeEarnedPoints: Number(row.lifetime_earned_points ?? 0),
+    createdAt: optStr(row, "created_at"), updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapLoyaltyLedgerRow(row: SalonRow): SalonLoyaltyLedgerEntry {
+  return {
+    id: str(row, "id"), organizationId: str(row, "organization_id"), accountId: str(row, "account_id"),
+    entryType: str(row, "entry_type") as SalonLoyaltyLedgerEntry["entryType"], points: Number(row.points),
+    saleId: optStr(row, "sale_id"), refundId: optStr(row, "refund_id"), redemptionId: optStr(row, "redemption_id"),
+    reason: optStr(row, "reason"), idempotencyKey: str(row, "idempotency_key"),
+    createdBy: optStr(row, "created_by"), createdAt: optStr(row, "created_at"),
+  };
+}
+
+export function mapLoyaltyRedemptionRow(row: SalonRow): SalonLoyaltyRedemption {
+  return {
+    id: str(row, "id"), organizationId: str(row, "organization_id"), accountId: str(row, "account_id"),
+    saleId: optStr(row, "sale_id"), points: Number(row.points), currencyValue: Number(row.currency_value),
+    status: str(row, "status") as SalonLoyaltyRedemption["status"], idempotencyKey: str(row, "idempotency_key"),
+    createdBy: optStr(row, "created_by"), createdAt: optStr(row, "created_at"),
+  };
 }
 
 function optStr(row: SalonRow, key: string): string | undefined {
