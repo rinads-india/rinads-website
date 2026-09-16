@@ -18,6 +18,7 @@ import type {
   SalonCampaign,
   SalonCampaignRecipient,
   SalonCustomer,
+  SalonFeedback,
   SalonNote,
   SalonPayment,
   SalonRefund,
@@ -267,6 +268,21 @@ export function mapNoteRow(row: SalonRow): SalonNote {
     assignedTo: optStr(row, "assigned_to"),
     dueAt: optStr(row, "due_at"),
     createdBy: optStr(row, "created_by"),
+    createdAt: optStr(row, "created_at"),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapFeedbackRow(row: SalonRow): SalonFeedback {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    reviewRequestId: str(row, "review_request_id"),
+    appointmentId: str(row, "appointment_id"),
+    customerId: str(row, "customer_id"),
+    rating: Number(row.rating),
+    comment: optStr(row, "comment"),
+    status: str(row, "status") as SalonFeedback["status"],
     createdAt: optStr(row, "created_at"),
     updatedAt: optStr(row, "updated_at"),
   };

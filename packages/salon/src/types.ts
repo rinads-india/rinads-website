@@ -287,6 +287,19 @@ export type SalonNote = {
   updatedAt?: string;
 };
 
+export type SalonFeedback = {
+  id: string;
+  organizationId: string;
+  reviewRequestId: string;
+  appointmentId: string;
+  customerId: string;
+  rating: number;
+  comment?: string;
+  status: "received" | "escalated" | "resolved";
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Customer relationship layer (Part C)
 // ---------------------------------------------------------------------------
