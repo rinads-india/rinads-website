@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository } from "@rinads/salon-server";
+import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository, SalonCommunicationsRepository } from "@rinads/salon-server";
 import { createSalonMockClient } from "./mock-salon-client";
 import { executeSalonRinpoTool, resolveSalonRinpoAction, type SalonRinpoContext, type SalonRinpoDeps } from "../src/salon-tools";
 
@@ -12,7 +12,8 @@ function makeDeps() {
   const actions = new RinpoActionsRepository(client);
   const notifications = new SalonNotificationService(client);
   const campaigns = new SalonCampaignsRepository(client, repo, notifications);
-  return { deps: { repo, actions, notifications, campaigns, client } as SalonRinpoDeps, client };
+  const communications = new SalonCommunicationsRepository(client);
+  return { deps: { repo, actions, notifications, campaigns, communications, client } as SalonRinpoDeps, client };
 }
 
 function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = {}): SalonRinpoContext {
@@ -531,5 +532,39 @@ describe("executeSalonRinpoTool — growth SENSITIVE tools require approval", ()
 
     const { data } = await client.from("notification_outbox").select("*").eq("id", outboxId).maybeSingle();
     assert.equal((data as { status: string } | null)?.status, "pending");
+  });
+
+  it("retry_failed_message_batch previews and waits for approval before bounded execution", async () => {
+    const { deps, client } = makeDeps();
+    const campaignId = "campaign_bulk_retry";
+    const { data: recipients } = await client.from("salon_campaign_recipients").insert({
+      organization_id: ORG_ID,
+      campaign_id: campaignId,
+      customer_id: "customer_bulk",
+      status: "failed",
+    });
+    const { data: outbox } = await client.from("notification_outbox").insert({
+      organization_id: ORG_ID,
+      channel: "whatsapp",
+      template_key: "salon.campaign.message",
+      recipient: "+919000009999",
+      payload: {},
+      idempotency_key: "bulk-retry",
+      campaign_recipient_id: recipients![0].id,
+      status: "dead_letter",
+      attempts: 5,
+    });
+
+    const requested = await executeSalonRinpoTool(deps, ctxWith(["salon.communications.retry"]), {
+      tool: "retry_failed_message_batch",
+      args: { campaignId, limit: 10 },
+    });
+    assert.equal(requested.ok, true);
+    assert.equal(client.tables.get("notification_outbox")![0].status, "dead_letter");
+
+    const actionId = (requested.data as { actionId: string }).actionId;
+    const resolved = await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), actionId, "approve");
+    assert.equal(resolved.ok, true);
+    assert.equal(client.tables.get("notification_outbox")!.find((row) => row.id === outbox![0].id)?.status, "pending");
   });
 });

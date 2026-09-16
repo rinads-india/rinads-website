@@ -59,7 +59,8 @@ export type RinpoToolName =
   | "approve_campaign"
   | "send_campaign"
   | "send_reactivation_batch"
-  | "retry_failed_message";
+  | "retry_failed_message"
+  | "retry_failed_message_batch";
 
 export type RinpoToolInput = {
   tool: RinpoToolName | (string & {});

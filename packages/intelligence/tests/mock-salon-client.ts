@@ -200,6 +200,23 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
     from(table: string) {
       return builder(table) as unknown as ReturnType<SalonSupabaseClient["from"]>;
     },
-    rpc: async () => ({ data: null, error: { message: "rpc not stubbed in this mock" } }),
+    rpc: async (fn, args = {}) => {
+      if (fn === "retry_salon_notification_outbox") {
+        const recipientIds = new Set(
+          getTable("salon_campaign_recipients")
+            .filter((row) => !args.p_campaign_id || row.campaign_id === args.p_campaign_id)
+            .map((row) => row.id)
+        );
+        const rows = getTable("notification_outbox").filter((row) =>
+          row.organization_id === args.p_organization_id &&
+          (!args.p_notification_outbox_id || row.id === args.p_notification_outbox_id) &&
+          (!args.p_campaign_id || recipientIds.has(row.campaign_recipient_id)) &&
+          ["failed", "dead_letter", "not_configured"].includes(String(row.status))
+        ).slice(0, Number(args.p_limit ?? 50));
+        rows.forEach((row) => Object.assign(row, { status: "pending", attempts: 0, last_error: null, next_attempt_at: null }));
+        return { data: { rows, count: rows.length, has_more: false, limit: 1 }, error: null };
+      }
+      return { data: null, error: { message: `rpc ${fn} not stubbed in this mock` } };
+    },
   } as unknown as SalonSupabaseClient & { tables: Map<string, SalonRow[]> };
 }
