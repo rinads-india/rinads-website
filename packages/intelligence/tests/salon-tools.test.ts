@@ -117,7 +117,7 @@ describe("executeSalonRinpoTool — permission gating", () => {
         staffId: staff.id,
         customerPhone: "9876543210",
         serviceIds: service.id,
-        startsAt: "2026-09-10T10:00:00.000Z",
+        startsAt: "2099-09-10T10:00:00.000Z",
       },
     });
     assert.equal(result.ok, true);
@@ -263,7 +263,7 @@ describe("executeSalonRinpoTool — create_appointment (WRITE)", () => {
         customerPhone: "9998887777",
         customerName: "Neha",
         serviceIds: service.id,
-        startsAt: "2026-09-11T10:00:00.000Z",
+        startsAt: "2099-09-11T10:00:00.000Z",
       },
     });
     assert.equal(result.ok, true);
