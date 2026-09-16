@@ -3,8 +3,11 @@
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
-import { ONBOARDING_PATH, OS_PATH } from "@/lib/post-auth-destination";
+import { OS_PATH } from "@/lib/post-auth-destination";
 import { ensureActiveOrganizationCookieAction } from "@/lib/org-context";
+import { cookies } from "next/headers";
+import { ACTIVE_ORG_COOKIE } from "@rinads/tenancy";
+import { resolveDestinationForMemberships } from "@/lib/tenant-destination-server";
 
 export async function resolvePostAuthDestinationAction(): Promise<string> {
   if (!isSupabaseMode()) {
@@ -23,13 +26,13 @@ export async function resolvePostAuthDestinationAction(): Promise<string> {
       userData.user.id
     );
 
-    if (!memberships.length) {
-      return ONBOARDING_PATH;
-    }
-
     await ensureActiveOrganizationCookieAction();
-
-    return OS_PATH;
+    const activeOrgCookie = (await cookies()).get(ACTIVE_ORG_COOKIE)?.value;
+    return resolveDestinationForMemberships(
+      supabase as unknown as TenancySupabaseClient,
+      memberships,
+      activeOrgCookie
+    );
   } catch {
     return OS_PATH;
   }

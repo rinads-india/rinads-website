@@ -1,21 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { getProvisioningJobStatusAction } from "@/app/onboarding/actions/onboarding";
-import { setActiveOrganizationAction } from "@/lib/org-context";
+import {
+  finalizeProvisioningDestinationAction,
+  getProvisioningJobStatusAction,
+} from "@/app/onboarding/actions/onboarding";
 
 export function ProvisioningStatusClient() {
   const searchParams = useSearchParams();
   const orgId = searchParams.get("orgId") ?? "";
   const modules = searchParams.get("modules") ?? "";
-  const welcomeHref = modules
+  const defaultWelcomeHref = modules
     ? `/os?welcome=1&modules=${encodeURIComponent(modules.split(",")[0] ?? "customers")}`
     : "/os?welcome=1";
   const [status, setStatus] = useState("pending");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const [orgCookieSet, setOrgCookieSet] = useState(false);
+  const [destination, setDestination] = useState<string>();
+  const finalizationStarted = useRef(false);
+  const opensRinaglow = Boolean(destination && !destination.startsWith("/os"));
 
   useEffect(() => {
     if (!orgId) return;
@@ -36,11 +40,13 @@ export function ProvisioningStatusClient() {
   }, [orgId]);
 
   useEffect(() => {
-    if (!orgId || status !== "completed" || orgCookieSet) return;
-    void setActiveOrganizationAction(orgId).then((result) => {
-      if (result.ok) setOrgCookieSet(true);
+    if (!orgId || status !== "completed" || finalizationStarted.current) return;
+    finalizationStarted.current = true;
+    void finalizeProvisioningDestinationAction(orgId).then((result) => {
+      if (result.ok) setDestination(result.destination);
+      else setErrorMessage(result.error);
     });
-  }, [orgId, status, orgCookieSet]);
+  }, [orgId, status]);
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-12">
@@ -57,8 +63,8 @@ export function ProvisioningStatusClient() {
           </p>
         )}
         {status === "completed" && (
-          <Link href={welcomeHref} className="mt-4 inline-block text-sm font-semibold text-[#9f4bc7]">
-            Open Business OS
+          <Link href={destination ?? defaultWelcomeHref} className="mt-4 inline-block text-sm font-semibold text-[#9f4bc7]">
+            {opensRinaglow ? "Open R GLOW" : "Open Business OS"}
           </Link>
         )}
       </div>

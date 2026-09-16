@@ -6,7 +6,10 @@ export function readActiveOrgIdFromCookie(cookieValue?: string): string | undefi
   return v || undefined;
 }
 
-export function activeOrgCookieOptions(orgId: string) {
+export function activeOrgCookieOptions(
+  orgId: string,
+  scope?: { domain?: string; secure?: boolean }
+) {
   return {
     name: ACTIVE_ORG_COOKIE,
     value: orgId,
@@ -14,6 +17,8 @@ export function activeOrgCookieOptions(orgId: string) {
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
+    ...(scope?.domain ? { domain: scope.domain } : {}),
+    ...(scope?.secure !== undefined ? { secure: scope.secure } : {}),
   };
 }
 

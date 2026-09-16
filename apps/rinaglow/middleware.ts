@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { checkProductionEnvContract, renderProductionEnvContractUnavailablePage } from "@rinads/auth";
 import { isRinaglowPublicPath } from "./lib/public-paths";
+import { sharedAuthCookieOptions } from "@rinads/database";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -38,6 +39,10 @@ export async function middleware(request: NextRequest) {
 
   let response = NextResponse.next({ request: { headers: request.headers } });
   const supabase = createServerClient(url, anonKey, {
+    cookieOptions: sharedAuthCookieOptions({
+      cookieDomain: process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN,
+      production: process.env.VERCEL_ENV === "production",
+    }),
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet: CookieToSet[]) => {

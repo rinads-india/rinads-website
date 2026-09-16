@@ -9,6 +9,28 @@ import {
 } from "@rinads/tenancy";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
+import { websiteAuthCookieOptions } from "@/lib/auth-cookie-config";
+
+function scopedActiveOrgCookieOptions(organizationId: string) {
+  const authScope = websiteAuthCookieOptions();
+  return activeOrgCookieOptions(organizationId, {
+    domain: authScope?.domain,
+    secure: authScope?.secure,
+  });
+}
+
+async function writeActiveOrganizationCookie(organizationId: string) {
+  const cookieStore = await cookies();
+  const opts = scopedActiveOrgCookieOptions(organizationId);
+  cookieStore.set(opts.name, opts.value, {
+    httpOnly: opts.httpOnly,
+    sameSite: opts.sameSite,
+    path: opts.path,
+    maxAge: opts.maxAge,
+    domain: opts.domain,
+    secure: opts.secure,
+  });
+}
 
 export async function setActiveOrganizationAction(
   organizationId: string
@@ -41,14 +63,7 @@ export async function setActiveOrganizationAction(
       return { ok: false, error: "You are not a member of this organization" };
     }
 
-    const cookieStore = await cookies();
-    const opts = activeOrgCookieOptions(orgId);
-    cookieStore.set(opts.name, opts.value, {
-      httpOnly: opts.httpOnly,
-      sameSite: opts.sameSite,
-      path: opts.path,
-      maxAge: opts.maxAge,
-    });
+    await writeActiveOrganizationCookie(orgId);
 
     return { ok: true };
   } catch (e) {
@@ -63,10 +78,6 @@ export async function ensureActiveOrganizationCookieAction(): Promise<
   if (!isSupabaseMode()) return { ok: false };
 
   try {
-    const cookieStore = await cookies();
-    const existing = cookieStore.get(ACTIVE_ORG_COOKIE)?.value?.trim();
-    if (existing) return { ok: true, organizationId: existing, set: false };
-
     const supabase = await createWebsiteServerClient();
     const {
       data: { user },
@@ -79,16 +90,18 @@ export async function ensureActiveOrganizationCookieAction(): Promise<
       user.id
     );
     const activeMemberships = memberships.filter((m) => m.organizationStatus === "active");
+    const cookieStore = await cookies();
+    const existing = cookieStore.get(ACTIVE_ORG_COOKIE)?.value?.trim();
+    if (
+      existing &&
+      activeMemberships.some((membership) => membership.organizationId === existing)
+    ) {
+      return { ok: true, organizationId: existing, set: false };
+    }
     if (activeMemberships.length !== 1) return { ok: true, set: false };
 
     const orgId = activeMemberships[0]!.organizationId;
-    const opts = activeOrgCookieOptions(orgId);
-    cookieStore.set(opts.name, opts.value, {
-      httpOnly: opts.httpOnly,
-      sameSite: opts.sameSite,
-      path: opts.path,
-      maxAge: opts.maxAge,
-    });
+    await writeActiveOrganizationCookie(orgId);
 
     return { ok: true, organizationId: orgId, set: true };
   } catch {

@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { Database, DatabaseConfig } from "./types";
 import { isDatabaseConfigured } from "./types";
+import type { SupabaseCookieOptions } from "./browser";
 
 export type CookieStore = {
   getAll: () => { name: string; value: string }[];
@@ -16,7 +17,8 @@ export type CookieStore = {
  */
 export function createServerSupabaseClient(
   config: Partial<DatabaseConfig>,
-  cookieStore: CookieStore
+  cookieStore: CookieStore,
+  cookieOptions?: SupabaseCookieOptions
 ) {
   if (!isDatabaseConfigured(config)) {
     throw new Error(
@@ -25,6 +27,7 @@ export function createServerSupabaseClient(
   }
 
   return createServerClient<Database>(config.url, config.anonKey, {
+    cookieOptions,
     cookies: {
       getAll() {
         return cookieStore.getAll();

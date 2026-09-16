@@ -1,16 +1,11 @@
 "use server";
 
-import { provisionTenantViaRpc, buildAuditInsert, seedTenantBundle, type VerticalTemplateKey } from "@rinads/platform";
+import { provisionTenantViaRpc, buildAuditInsert, seedTenantBundle, parseVerticalTemplateKey } from "@rinads/platform";
 import { createPlatformServerClient, createPlatformServiceClient } from "@/lib/supabase/server";
 import { requirePlatformTenancy } from "@/lib/tenancy";
 import { isDemoMode } from "@/lib/supabase/env";
 import { seedOrgCommerceStore } from "@rinads/commerce-server";
 import { createSupabaseOperationsRepository } from "@rinads/operations-server";
-
-function asTemplateKey(key: string): VerticalTemplateKey {
-  if (key === "generic-retail" || key === "ambady-nursery") return key;
-  throw new Error(`Unknown template: ${key}`);
-}
 
 export async function provisionTenantAction(input: {
   name: string;
@@ -20,7 +15,7 @@ export async function provisionTenantAction(input: {
 }): Promise<{ ok: true; organizationId: string } | { ok: false; error: string }> {
   try {
     await requirePlatformTenancy();
-    const templateKey = asTemplateKey(input.templateKey);
+    const templateKey = parseVerticalTemplateKey(input.templateKey);
 
     if (isDemoMode()) {
       const orgId = `org_${input.slug.replace(/-/g, "_")}`;

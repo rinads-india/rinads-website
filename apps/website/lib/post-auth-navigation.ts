@@ -15,5 +15,9 @@ export async function navigateAfterAuth(
   }
 
   const destination = await resolvePostAuthDestinationAction();
+  if (destination.startsWith("https://") || destination.startsWith("http://")) {
+    window.location.assign(destination);
+    return;
+  }
   router.push(destination);
 }

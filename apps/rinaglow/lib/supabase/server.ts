@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from "@rinads/database";
 import { cookies } from "next/headers";
 import "server-only";
 import { supabaseConfig } from "./env";
+import { rinaglowAuthCookieOptions } from "./cookies";
 
 /**
  * apps/rinaglow is Supabase-auth-only — there is no demo-mode fallback here
@@ -12,14 +13,18 @@ import { supabaseConfig } from "./env";
  */
 export async function createRinaglowServerClient() {
   const cookieStore = await cookies();
-  return createServerSupabaseClient(supabaseConfig(), {
-    getAll: () => cookieStore.getAll(),
-    setAll: (cookiesToSet) => {
-      try {
-        cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-      } catch {
-        // Called from a Server Component — middleware refreshes the session.
-      }
+  return createServerSupabaseClient(
+    supabaseConfig(),
+    {
+      getAll: () => cookieStore.getAll(),
+      setAll: (cookiesToSet) => {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        } catch {
+          // Called from a Server Component — middleware refreshes the session.
+        }
+      },
     },
-  });
+    rinaglowAuthCookieOptions()
+  );
 }

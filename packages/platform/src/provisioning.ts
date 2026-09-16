@@ -1,4 +1,8 @@
-import { seedTenantBundle, type VerticalTemplateKey } from "./templates/index";
+import {
+  parseVerticalTemplateKey,
+  seedTenantBundle,
+  type VerticalTemplateKey,
+} from "./templates/index";
 import type { ProvisionTenantInput, ProvisionTenantResult } from "./types";
 
 export type TenantStoreRegistry = {
@@ -16,8 +20,10 @@ export function provisionTenantInMemory(
     return { ok: false, error: "Name and slug are required." };
   }
 
-  const templateKey = (input.templateKey ?? "ambady-nursery") as VerticalTemplateKey;
   try {
+    const templateKey = parseVerticalTemplateKey(
+      input.templateKey ?? "ambady-nursery"
+    );
     seedTenantBundle(input.organizationId, templateKey);
     registry.register(input.organizationId, templateKey);
     return { ok: true, organizationId: input.organizationId, slug };
@@ -36,10 +42,19 @@ export async function provisionTenantViaRpc(
   input: ProvisionTenantInput
 ): Promise<ProvisionTenantResult> {
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  let templateKey: VerticalTemplateKey;
+  try {
+    templateKey = parseVerticalTemplateKey(input.templateKey ?? "ambady-nursery");
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Unknown template.",
+    };
+  }
   const { data, error } = await rpc({
     p_name: input.name.trim(),
     p_slug: slug,
-    p_template_key: input.templateKey ?? "ambady-nursery",
+    p_template_key: templateKey,
     p_plan_key: input.planKey ?? "starter",
   });
 

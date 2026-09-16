@@ -2,9 +2,12 @@
 
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
-import { provisionTenantViaRpc, seedTenantBundle, AMBADY_TENANT_SLUG, loadPublishedTemplates, type VerticalTemplateKey } from "@rinads/platform";
+import { provisionTenantViaRpc, seedTenantBundle, AMBADY_TENANT_SLUG, loadPublishedTemplates, parseVerticalTemplateKey } from "@rinads/platform";
 import { seedOrgCommerceStore } from "@rinads/commerce-server";
 import { createSupabaseOperationsRepository } from "@rinads/operations-server";
+import { loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
+import { resolveDestinationForMemberships } from "@/lib/tenant-destination-server";
+import { setActiveOrganizationAction } from "@/lib/org-context";
 
 export async function listOnboardingTemplatesAction(): Promise<
   { ok: true; templates: { key: string; name: string; description: string }[] } | { ok: false; error: string }
@@ -39,7 +42,12 @@ export async function provisionOrganizationAction(input: {
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
   if (!name || !slug) return { ok: false, error: "Name and slug are required." };
 
-  const templateKey = (input.templateKey === "generic-retail" ? "generic-retail" : "ambady-nursery") as VerticalTemplateKey;
+  let templateKey;
+  try {
+    templateKey = parseVerticalTemplateKey(input.templateKey);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Unknown template" };
+  }
   const selectedModules = input.selectedModules ?? [];
   const businessType = input.businessType ?? "other";
 
@@ -96,6 +104,50 @@ export async function provisionOrganizationAction(input: {
     return { ok: true, organizationId: result.organizationId };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
+  }
+}
+
+export async function finalizeProvisioningDestinationAction(
+  organizationId: string
+): Promise<{ ok: true; destination: string } | { ok: false; error: string }> {
+  if (!isSupabaseMode()) {
+    return { ok: true, destination: "/os" };
+  }
+  try {
+    const supabase = await createWebsiteServerClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error || !user) return { ok: false, error: "Not authenticated" };
+
+    const memberships = await loadMemberships(
+      supabase as unknown as TenancySupabaseClient,
+      user.id
+    );
+    const isActiveMember = memberships.some(
+      (membership) =>
+        membership.organizationId === organizationId &&
+        membership.organizationStatus === "active"
+    );
+    if (!isActiveMember) {
+      return { ok: false, error: "You are not an active member of this organization" };
+    }
+
+    const cookieResult = await setActiveOrganizationAction(organizationId);
+    if (!cookieResult.ok) return cookieResult;
+
+    const destination = await resolveDestinationForMemberships(
+      supabase as unknown as TenancySupabaseClient,
+      memberships,
+      organizationId
+    );
+    return { ok: true, destination };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
   }
 }
 
