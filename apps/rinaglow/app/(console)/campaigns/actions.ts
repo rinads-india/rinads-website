@@ -4,6 +4,7 @@ import type { CampaignChannel, CampaignStatus, CampaignType, SegmentCriteria } f
 import { revalidatePath } from "next/cache";
 import { getSalonDeps } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
+import { isPrivilegedRoleKey } from "@rinads/permissions";
 
 export type FormActionState = { error?: string } | undefined;
 
@@ -100,10 +101,30 @@ export async function cancelCampaignAction(
 }
 
 export async function retryMessageAction(campaignId: string, outboxId: string): Promise<{ ok: boolean; error?: string }> {
-  await requireTenancy();
-  const { notifications } = await getSalonDeps();
-  const result = await notifications.retryMessage(outboxId);
+  const tenancy = await requireTenancy();
+  if (!isPrivilegedRoleKey(tenancy.roleKey ?? "") && !tenancy.permissions.includes("salon.communications.retry")) {
+    return { ok: false, error: "Insufficient permissions." };
+  }
+  const { communications } = await getSalonDeps();
+  const result = await communications.retryOne(tenancy.organizationId, outboxId);
   revalidatePath(`/campaigns/${campaignId}`);
+  revalidatePath("/communications");
+  revalidatePath("/growth");
   if (!result.ok) return { ok: false, error: result.error.message };
-  return { ok: true };
+  return result.data.count === 1 ? { ok: true } : { ok: false, error: "Message is no longer retryable." };
+}
+
+export async function retryCampaignMessagesAction(campaignId: string): Promise<{ ok: boolean; error?: string; count?: number; hasMore?: boolean }> {
+  const tenancy = await requireTenancy();
+  if (!isPrivilegedRoleKey(tenancy.roleKey ?? "") && !tenancy.permissions.includes("salon.communications.retry")) {
+    return { ok: false, error: "Insufficient permissions." };
+  }
+  const { communications } = await getSalonDeps();
+  const result = await communications.retryCampaign(tenancy.organizationId, campaignId, 50);
+  revalidatePath(`/campaigns/${campaignId}`);
+  revalidatePath("/campaigns");
+  revalidatePath("/communications");
+  revalidatePath("/growth");
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, count: result.data.count, hasMore: result.data.hasMore };
 }

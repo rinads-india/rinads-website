@@ -23,7 +23,11 @@ export async function POST(request: Request) {
   if (isWorker) {
     const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const organizationIds = [...new Set(body.organizationIds ?? [])].slice(0, 50);
+    const organizationIds = [...new Set(
+      (Array.isArray(body.organizationIds) ? body.organizationIds : [])
+        .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+        .map((value) => value.trim())
+    )].slice(0, 50);
     if (!url || !serviceRoleKey) {
       return NextResponse.json({ error: "Worker database credentials are not configured." }, { status: 503 });
     }

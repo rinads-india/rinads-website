@@ -118,6 +118,7 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "send_campaign", category: "SENSITIVE", description: "Send an approved campaign (re-validates the audience first)", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
   { key: "send_reactivation_batch", category: "SENSITIVE", description: "Send an approved reactivation campaign", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
   { key: "retry_failed_message", category: "SENSITIVE", description: "Retry a single failed/dead-lettered outbound message", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
+  { key: "retry_failed_message_batch", category: "SENSITIVE", description: "Retry a bounded batch of failed campaign messages", vertical: "salon", requiredPermission: "salon.communications.retry", requiresApproval: true },
   { key: "redeem_loyalty_points", category: "SENSITIVE", description: "Redeem loyalty points against a checkout", vertical: "salon", requiredPermission: "salon.loyalty.redeem", requiresApproval: true },
   { key: "adjust_loyalty_ledger", category: "SENSITIVE", description: "Post a controlled manual loyalty adjustment", vertical: "salon", requiredPermission: "salon.loyalty.adjust", requiresApproval: true },
 ];

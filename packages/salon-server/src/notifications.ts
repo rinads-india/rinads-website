@@ -5,17 +5,16 @@
  * `notification_outbox` table (no new outbox table) with a template key
  * and idempotency key, respecting `salon_customers.preferred_channel` /
  * `opted_out_at`. Delivery is intentionally left in an observable
- * `pending` state here — actual transport is the existing `notify-whatsapp`
- * edge function (service-role authenticated, unchanged), whose own Twilio
- * send is still a documented `// TODO: Twilio` in that function. This
- * service does not fake a "sent" status; wiring a cron/job runner that
- * calls `deliverViaWhatsAppEdgeFunction` below with real service-role
- * credentials is left to a future pass (see Phase E notes in the
- * completion report) — apps/rinaglow itself never holds a service-role key.
+ * `pending` state here. The disabled-by-default communications worker
+ * claims due rows atomically and sends WhatsApp messages through the
+ * service-role-authenticated `notify-whatsapp` edge function. This service
+ * never fakes a "sent" status, and browser code never receives a
+ * service-role key.
  */
 import { fail, ok, type PreferredChannel, type Result } from "@rinads/salon";
 import type { NotificationAdapter, NotificationAdapterResult } from "@rinads/runtime";
 import type { SalonSupabaseClient } from "./client";
+import { validateWhatsAppBody } from "./notification-delivery";
 
 export type SalonNotificationEvent =
   | "booking.created"
@@ -60,6 +59,10 @@ export class SalonNotificationService {
     }
 
     const channel = input.preferredChannel === "email" ? "email" : input.preferredChannel === "sms" ? "sms" : "whatsapp";
+    if (channel === "whatsapp" && typeof input.payload.messageBody === "string") {
+      const validation = validateWhatsAppBody(input.payload.messageBody);
+      if (!validation.ok) return fail("invalid_input", validation.error);
+    }
 
     const { error } = await this.client.from("notification_outbox").upsert(
       {
@@ -95,29 +98,20 @@ export class SalonNotificationService {
    * picks it up on its next pass. Refuses to "retry" a message that isn't
    * actually stuck (e.g. already `sent`/`delivered`), since that would be
    * indistinguishable from silently re-sending a message that already
-   * went out. Bulk retry across many messages is deferred to Phase E.2
-   * (see the plan's deferred-scope note) — this is intentionally scoped
-   * to one message at a time.
+   * went out. The permission-checked Phase E.2 RPC performs the mutation;
+   * authenticated callers no longer have direct UPDATE access.
    */
-  async retryMessage(outboxId: string): Promise<Result<true>> {
-    const { data: existing, error: selectError } = await this.client
-      .from("notification_outbox")
-      .select("status")
-      .eq("id", outboxId)
-      .maybeSingle();
-    if (selectError) return fail("db_error", selectError.message);
-    if (!existing) return fail("not_found", "Message not found.");
-
-    const status = String((existing as { status: unknown }).status);
-    if (!["failed", "dead_letter", "not_configured"].includes(status)) {
-      return fail("invalid_transition", `Cannot retry a message in "${status}" status.`);
-    }
-
-    const { error } = await this.client
-      .from("notification_outbox")
-      .update({ status: "pending", last_error: null, next_attempt_at: null })
-      .eq("id", outboxId);
+  async retryMessage(organizationId: string, outboxId: string): Promise<Result<true>> {
+    const { data, error } = await this.client.rpc("retry_salon_notification_outbox", {
+      p_organization_id: organizationId,
+      p_notification_outbox_id: outboxId,
+      p_campaign_id: null,
+      p_limit: 1,
+    });
     if (error) return fail("db_error", error.message);
+    if (Number((data as { count?: unknown } | null)?.count ?? 0) !== 1) {
+      return fail("conflict", "Message was not retried; it may have been claimed by another operator.");
+    }
     return ok(true);
   }
 }
@@ -127,8 +121,6 @@ export class SalonNotificationService {
  * function and only ever reports success on a genuine 2xx response. Never
  * invoked automatically from a request path — it requires a service-role
  * bearer token, which no browser/user-session context should ever hold.
- * A future job runner (see Phase E) can pass this to
- * `packages/runtime`'s `processOutbox()` alongside the other adapters.
  */
 export function createSalonWhatsAppEdgeAdapter(config: {
   supabaseUrl: string;
@@ -137,6 +129,9 @@ export function createSalonWhatsAppEdgeAdapter(config: {
   return {
     channel: "whatsapp",
     async send(input): Promise<NotificationAdapterResult> {
+      const messageBody = String(input.payload.messageBody ?? input.templateKey);
+      const validation = validateWhatsAppBody(messageBody);
+      if (!validation.ok) return { ok: false, error: validation.error };
       try {
         const response = await fetch(`${config.supabaseUrl}/functions/v1/notify-whatsapp`, {
           method: "POST",
@@ -147,16 +142,22 @@ export function createSalonWhatsAppEdgeAdapter(config: {
           body: JSON.stringify({
             recipient: input.recipient,
             template: input.templateKey,
-            message_body: String(input.payload.messageBody ?? input.templateKey),
+            message_body: messageBody,
             organization_id: input.payload.organizationId,
             order_id: input.payload.orderId,
           }),
         });
-        if (!response.ok) {
-          const text = await response.text().catch(() => response.statusText);
-          return { ok: false, error: `notify-whatsapp responded ${response.status}: ${text}` };
+        const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+        if (!response.ok || json.status === "failed") {
+          const detail = typeof json.error === "string" ? json.error : response.statusText;
+          return { ok: false, error: `notify-whatsapp responded ${response.status}: ${detail}` };
         }
-        return { ok: true };
+        if (json.status === "not_configured") {
+          return { ok: false, error: "Twilio credentials are not configured." };
+        }
+        return json.status === "sent"
+          ? { ok: true }
+          : { ok: false, error: "notify-whatsapp returned an unexpected response." };
       } catch (error) {
         return { ok: false, error: error instanceof Error ? error.message : "Unknown delivery error" };
       }

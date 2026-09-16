@@ -1,6 +1,14 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { SalonRepository, RinpoActionsRepository, SalonNotificationService, SalonCampaignsRepository, SalonLoyaltyRepository } from "@rinads/salon-server";
+import {
+  SalonRepository,
+  RinpoActionsRepository,
+  SalonNotificationService,
+  SalonCampaignsRepository,
+  SalonAutomationService,
+  SalonCommunicationsRepository,
+  SalonLoyaltyRepository,
+} from "@rinads/salon-server";
 import { createSalonMockClient } from "./mock-salon-client";
 import { executeSalonRinpoTool, resolveSalonRinpoAction, type SalonRinpoContext, type SalonRinpoDeps } from "../src/salon-tools";
 
@@ -13,7 +21,9 @@ function makeDeps() {
   const notifications = new SalonNotificationService(client);
   const loyalty = new SalonLoyaltyRepository(client);
   const campaigns = new SalonCampaignsRepository(client, repo, notifications, loyalty);
-  return { deps: { repo, actions, notifications, campaigns, loyalty, client } as SalonRinpoDeps, client };
+  const automations = new SalonAutomationService(client, repo, notifications);
+  const communications = new SalonCommunicationsRepository(client);
+  return { deps: { repo, actions, notifications, campaigns, automations, communications, loyalty, client } as SalonRinpoDeps, client };
 }
 
 function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = {}): SalonRinpoContext {
@@ -43,6 +53,38 @@ async function seedCustomerWithOneVisit(repo: SalonRepository, phone: string, am
     idempotencyKey: `seed-payment-${customer.data.id}`,
   });
   return customer.data;
+}
+
+function seedLoyalty(client: ReturnType<typeof createSalonMockClient>) {
+  const customerId = "customer_loyalty";
+  const accountId = "loyalty_account_1";
+  client.tables.set("salon_loyalty_programs", [{
+    id: "loyalty_program_1",
+    organization_id: ORG_ID,
+    name: "R GLOW Rewards",
+    is_active: true,
+    currency: "INR",
+    earn_currency_units: 100,
+    earn_points: 1,
+    points_per_currency_unit: 10,
+    tiers: [{ name: "Member", minimumPoints: 0 }],
+  }]);
+  client.tables.set("salon_loyalty_accounts", [{
+    id: accountId,
+    organization_id: ORG_ID,
+    program_id: "loyalty_program_1",
+    customer_id: customerId,
+    lifetime_earned_points: 120,
+  }]);
+  client.tables.set("salon_loyalty_ledger_entries", [{
+    id: "loyalty_ledger_1",
+    organization_id: ORG_ID,
+    account_id: accountId,
+    entry_type: "earn",
+    points: 120,
+    idempotency_key: "loyalty-seed-1",
+  }]);
+  return { customerId, accountId };
 }
 
 describe("executeSalonRinpoTool — permission gating", () => {
@@ -116,6 +158,68 @@ describe("executeSalonRinpoTool — review automation", () => {
     });
     assert.equal(review.ok, true);
     assert.equal(recovery.ok, true);
+  });
+});
+
+describe("executeSalonRinpoTool — loyalty", () => {
+  it("returns the organization liability and a customer's ledger history", async () => {
+    const { deps, client } = makeDeps();
+    const { customerId, accountId } = seedLoyalty(client);
+    const summary = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.view"]), {
+      tool: "get_loyalty_summary",
+      args: {},
+    });
+    assert.equal(summary.ok, true);
+    assert.deepEqual(summary.data, {
+      enrolledCustomers: 1,
+      outstandingPoints: 120,
+      currencyLiability: 12,
+      currency: "INR",
+    });
+
+    const history = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.view"]), {
+      tool: "get_customer_loyalty_history",
+      args: { customerId },
+    });
+    assert.equal(history.ok, true);
+    const historyData = history.data as { account: { id: string }; balance: number; ledger: unknown[] };
+    assert.equal(historyData.account.id, accountId);
+    assert.equal(historyData.balance, 120);
+    assert.equal(historyData.ledger.length, 1);
+  });
+
+  it("redeems and adjusts points only after approval resolution", async () => {
+    const { deps, client } = makeDeps();
+    const { customerId } = seedLoyalty(client);
+
+    const redemptionRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.redeem"]), {
+      tool: "redeem_loyalty_points",
+      args: { customerId, saleId: "sale_loyalty", points: 20 },
+    });
+    assert.equal(redemptionRequest.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_redemptions")?.length ?? 0, 0);
+    const redemption = await resolveSalonRinpoAction(
+      deps,
+      ctxWith(["org.manage"], { userId: "admin_1" }),
+      (redemptionRequest.data as { actionId: string }).actionId,
+      "approve"
+    );
+    assert.equal(redemption.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_redemptions")?.length, 1);
+
+    const adjustmentRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.adjust"]), {
+      tool: "adjust_loyalty_ledger",
+      args: { customerId, points: -5, reason: "Correction" },
+    });
+    assert.equal(adjustmentRequest.ok, true);
+    const adjustment = await resolveSalonRinpoAction(
+      deps,
+      ctxWith(["org.manage"], { userId: "admin_1" }),
+      (adjustmentRequest.data as { actionId: string }).actionId,
+      "approve"
+    );
+    assert.equal(adjustment.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_ledger_entries")?.length, 2);
   });
 });
 
@@ -562,5 +666,39 @@ describe("executeSalonRinpoTool — growth SENSITIVE tools require approval", ()
 
     const { data } = await client.from("notification_outbox").select("*").eq("id", outboxId).maybeSingle();
     assert.equal((data as { status: string } | null)?.status, "pending");
+  });
+
+  it("retry_failed_message_batch previews and waits for approval before bounded execution", async () => {
+    const { deps, client } = makeDeps();
+    const campaignId = "campaign_bulk_retry";
+    const { data: recipients } = await client.from("salon_campaign_recipients").insert({
+      organization_id: ORG_ID,
+      campaign_id: campaignId,
+      customer_id: "customer_bulk",
+      status: "failed",
+    });
+    const { data: outbox } = await client.from("notification_outbox").insert({
+      organization_id: ORG_ID,
+      channel: "whatsapp",
+      template_key: "salon.campaign.message",
+      recipient: "+919000009999",
+      payload: {},
+      idempotency_key: "bulk-retry",
+      campaign_recipient_id: recipients![0].id,
+      status: "dead_letter",
+      attempts: 5,
+    });
+
+    const requested = await executeSalonRinpoTool(deps, ctxWith(["salon.communications.retry"]), {
+      tool: "retry_failed_message_batch",
+      args: { campaignId, limit: 10 },
+    });
+    assert.equal(requested.ok, true);
+    assert.equal(client.tables.get("notification_outbox")![0].status, "dead_letter");
+
+    const actionId = (requested.data as { actionId: string }).actionId;
+    const resolved = await resolveSalonRinpoAction(deps, ctxWith(["org.manage"], { userId: "admin_1" }), actionId, "approve");
+    assert.equal(resolved.ok, true);
+    assert.equal(client.tables.get("notification_outbox")!.find((row) => row.id === outbox![0].id)?.status, "pending");
   });
 });

@@ -20,9 +20,9 @@ const CAMPAIGN_STATUS_TONE: Record<string, string> = {
 
 export default async function GrowthPage() {
   const tenancy = await requireTenancy();
-  const { repo, campaigns, loyalty, client, automations } = await getSalonDeps();
+  const { repo, campaigns, loyalty, client, automations, communications } = await getSalonDeps();
 
-  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, reviews, recovery] = await Promise.all([
+  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, reviews, recovery, funnelResult] = await Promise.all([
     getRetentionSummary(repo, tenancy.organizationId),
     getMessageFailuresSummary(client, tenancy.organizationId),
     getCampaignPerformance(campaigns, tenancy.organizationId, 5),
@@ -30,7 +30,9 @@ export default async function GrowthPage() {
     getLoyaltyLiabilitySummary(loyalty, tenancy.organizationId),
     automations.automation.getReviewSummary(tenancy.organizationId),
     automations.automation.getRecoverySummary(tenancy.organizationId),
+    communications.funnel(tenancy.organizationId),
   ]);
+  const funnel = funnelResult.ok ? funnelResult.data : null;
 
   return (
     <div className="space-y-6">
@@ -46,6 +48,15 @@ export default async function GrowthPage() {
           </p>
         </div>
       </div>
+
+      {funnel ? (
+        <div className="grid gap-4 sm:grid-cols-4">
+          <Card><p className="text-xs uppercase text-muted-foreground">Outbox total</p><p className="mt-1 text-2xl font-semibold">{funnel.total}</p></Card>
+          <Card><p className="text-xs uppercase text-muted-foreground">Delivered / read</p><p className="mt-1 text-2xl font-semibold">{funnel.delivered + funnel.read}</p><p className="text-xs text-muted-foreground">{funnel.deliveryRatePct}%</p></Card>
+          <Card><p className="text-xs uppercase text-muted-foreground">Failure rate</p><p className="mt-1 text-2xl font-semibold">{funnel.failureRatePct}%</p><p className="text-xs text-muted-foreground">{funnel.failed + funnel.deadLetter} failed</p></Card>
+          <Card><p className="text-xs uppercase text-muted-foreground">Configuration blocks</p><p className="mt-1 text-2xl font-semibold">{funnel.notConfigured}</p><Link href="/communications?status=not_configured" className="text-xs text-rinads-primary underline">Inspect →</Link></Card>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <Card>

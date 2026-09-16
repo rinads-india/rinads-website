@@ -2,16 +2,20 @@
 
 import type { CampaignStatus } from "@rinads/salon";
 import { useState, useTransition } from "react";
-import { approveCampaignAction, cancelCampaignAction, sendCampaignAction } from "../actions";
+import { approveCampaignAction, cancelCampaignAction, retryCampaignMessagesAction, sendCampaignAction } from "../actions";
 
 export function CampaignActions({
   campaignId,
   status,
   canApproveOrSend,
+  canRetry,
+  failedCount,
 }: {
   campaignId: string;
   status: CampaignStatus;
   canApproveOrSend: boolean;
+  canRetry: boolean;
+  failedCount: number;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +49,16 @@ export function CampaignActions({
     });
   }
 
+  function retryFailed() {
+    setError(null);
+    setMessage(null);
+    startTransition(async () => {
+      const res = await retryCampaignMessagesAction(campaignId);
+      if (!res.ok) setError(res.error ?? "Could not retry failed messages.");
+      else setMessage(`Queued ${res.count ?? 0} message(s) for retry${res.hasMore ? "; more remain" : ""}.`);
+    });
+  }
+
   return (
     <div className="flex flex-col items-end gap-1.5">
       <div className="flex gap-2">
@@ -66,6 +80,11 @@ export function CampaignActions({
             className="rounded-lg border border-danger/40 px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-50"
           >
             Cancel
+          </button>
+        ) : null}
+        {canRetry && failedCount > 0 ? (
+          <button type="button" disabled={isPending} onClick={retryFailed} className="btn-primary text-xs">
+            Retry failed
           </button>
         ) : null}
       </div>

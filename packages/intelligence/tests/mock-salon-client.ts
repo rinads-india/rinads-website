@@ -200,6 +200,72 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
     from(table: string) {
       return builder(table) as unknown as ReturnType<SalonSupabaseClient["from"]>;
     },
-    rpc: async () => ({ data: null, error: { message: "rpc not stubbed in this mock" } }),
+    rpc: async (fn, args = {}) => {
+      if (fn === "salon_loyalty_balance") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        const balance = account
+          ? getTable("salon_loyalty_ledger_entries")
+              .filter((row) => row.organization_id === args.p_organization_id && row.account_id === account.id)
+              .reduce((sum, row) => sum + Number(row.points ?? 0), 0)
+          : 0;
+        return { data: balance, error: null };
+      }
+      if (fn === "salon_loyalty_redeem") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        if (!account) return { data: null, error: { message: "Loyalty account not found." } };
+        const row = {
+          id: `salon_loyalty_redemptions_${++seq}`,
+          organization_id: args.p_organization_id,
+          account_id: account.id,
+          sale_id: args.p_sale_id,
+          points: args.p_points,
+          currency_value: Number(args.p_points ?? 0) / 10,
+          status: "processed",
+          idempotency_key: args.p_idempotency_key,
+        };
+        getTable("salon_loyalty_redemptions").push(row);
+        return { data: row, error: null };
+      }
+      if (fn === "salon_loyalty_adjust") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        if (!account) return { data: null, error: { message: "Loyalty account not found." } };
+        const row = {
+          id: `salon_loyalty_ledger_entries_${++seq}`,
+          organization_id: args.p_organization_id,
+          account_id: account.id,
+          entry_type: "adjust",
+          points: args.p_points,
+          reason: args.p_reason,
+          idempotency_key: args.p_idempotency_key,
+        };
+        getTable("salon_loyalty_ledger_entries").push(row);
+        return { data: row, error: null };
+      }
+      if (fn === "retry_salon_notification_outbox") {
+        const recipientIds = new Set(
+          getTable("salon_campaign_recipients")
+            .filter((row) => !args.p_campaign_id || row.campaign_id === args.p_campaign_id)
+            .map((row) => row.id)
+        );
+        const rows = getTable("notification_outbox").filter((row) =>
+          row.organization_id === args.p_organization_id &&
+          (!args.p_notification_outbox_id || row.id === args.p_notification_outbox_id) &&
+          (!args.p_campaign_id || recipientIds.has(row.campaign_recipient_id)) &&
+          ["failed", "dead_letter", "not_configured"].includes(String(row.status))
+        ).slice(0, Number(args.p_limit ?? 50));
+        rows.forEach((row) => Object.assign(row, { status: "pending", attempts: 0, last_error: null, next_attempt_at: null }));
+        return { data: { rows, count: rows.length, has_more: false, limit: 1 }, error: null };
+      }
+      return { data: null, error: { message: `rpc ${fn} not stubbed in this mock` } };
+    },
   } as unknown as SalonSupabaseClient & { tables: Map<string, SalonRow[]> };
 }

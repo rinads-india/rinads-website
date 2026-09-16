@@ -16,6 +16,15 @@
  */
 import type { SalonRow, SalonSupabaseClient } from "./client";
 
+export const WHATSAPP_BODY_MAX_CHARS = 1600;
+
+export function validateWhatsAppBody(body: string): { ok: true } | { ok: false; error: string } {
+  if (body.length > WHATSAPP_BODY_MAX_CHARS) {
+    return { ok: false, error: `WhatsApp message body must be ${WHATSAPP_BODY_MAX_CHARS} characters or fewer.` };
+  }
+  return { ok: true };
+}
+
 export type TwilioSendResult =
   | { status: "sent"; providerMessageId: string }
   | { status: "not_configured" }
@@ -28,6 +37,9 @@ export type SalonNotificationAdapter = {
 export function createTwilioWhatsAppAdapter(config: { supabaseUrl: string; serviceRoleKey: string }): SalonNotificationAdapter {
   return {
     async send(input): Promise<TwilioSendResult> {
+      const messageBody = String(input.payload.messageBody ?? input.templateKey);
+      const validation = validateWhatsAppBody(messageBody);
+      if (!validation.ok) return { status: "failed", error: validation.error };
       try {
         const response = await fetch(`${config.supabaseUrl}/functions/v1/notify-whatsapp`, {
           method: "POST",
@@ -38,7 +50,7 @@ export function createTwilioWhatsAppAdapter(config: { supabaseUrl: string; servi
           body: JSON.stringify({
             recipient: input.recipient,
             template: input.templateKey,
-            message_body: String(input.payload.messageBody ?? input.templateKey),
+            message_body: messageBody,
             organization_id: input.payload.organizationId,
             campaign_recipient_id: input.payload.campaignRecipientId,
           }),
@@ -137,6 +149,13 @@ export type ProcessOutboxOptions = {
   /** How long before re-checking a `not_configured` row — much longer than the failure backoff since this is a config problem, not a transient one. */
   notConfiguredRecheckMs?: number;
   now?: Date;
+  /** Atomic claim batch, hard-capped at 100 even when misconfigured. */
+  batchSize?: number;
+  /** Delay between provider calls. Useful for respecting account throughput. */
+  throughputDelayMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+  /** Test seam; production uses the service-role-only atomic claim RPC. */
+  claim?: (limit: number) => Promise<SalonRow[]>;
 };
 
 export type ProcessOutboxSummary = {
@@ -157,23 +176,23 @@ export async function processSalonNotificationOutbox(
   const capBackoffMs = options.capBackoffMs ?? 30 * 60 * 1000;
   const notConfiguredRecheckMs = options.notConfiguredRecheckMs ?? 15 * 60 * 1000;
   const now = options.now ?? new Date();
+  const batchSize = Math.min(100, Math.max(1, Math.floor(options.batchSize ?? 25)));
+  const throughputDelayMs = Math.max(0, Math.floor(options.throughputDelayMs ?? 0));
+  const sleep = options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
 
   const summary: ProcessOutboxSummary = { processed: 0, sent: 0, notConfigured: 0, failed: 0, deadLetter: 0 };
 
-  const { data, error } = await client
-    .from("notification_outbox")
-    .select("*")
-    .in("status", ["pending", "failed", "not_configured"])
-    .eq("channel", "whatsapp");
-  if (error || !data) return summary;
+  let eligible: SalonRow[];
+  if (options.claim) {
+    eligible = await options.claim(batchSize);
+  } else {
+    const { data, error } = await client.rpc("claim_due_salon_notification_outbox", { p_limit: batchSize });
+    if (error || !Array.isArray(data)) return summary;
+    eligible = data as SalonRow[];
+  }
 
-  const eligible = (data as SalonRow[]).filter((row) => {
-    const nextAttemptAt = row.next_attempt_at as string | null | undefined;
-    if (!nextAttemptAt) return true;
-    return new Date(nextAttemptAt).getTime() <= now.getTime();
-  });
-
-  for (const row of eligible) {
+  for (let index = 0; index < eligible.length; index++) {
+    const row = eligible[index];
     const id = String(row.id);
     const attempts = Number(row.attempts ?? 0);
 
@@ -184,6 +203,7 @@ export async function processSalonNotificationOutbox(
     });
 
     summary.processed++;
+    if (throughputDelayMs > 0 && index < eligible.length - 1) await sleep(throughputDelayMs);
 
     if (result.status === "sent") {
       await client
@@ -196,7 +216,8 @@ export async function processSalonNotificationOutbox(
           last_error: null,
           next_attempt_at: null,
         })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("status", "processing");
       summary.sent++;
       continue;
     }
@@ -210,7 +231,8 @@ export async function processSalonNotificationOutbox(
           last_error: "Twilio credentials are not configured.",
           next_attempt_at: new Date(now.getTime() + notConfiguredRecheckMs).toISOString(),
         })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("status", "processing");
       summary.notConfigured++;
       continue;
     }
@@ -220,7 +242,8 @@ export async function processSalonNotificationOutbox(
       await client
         .from("notification_outbox")
         .update({ status: "dead_letter", attempts: nextAttempts, last_error: result.error, next_attempt_at: null })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("status", "processing");
       summary.deadLetter++;
     } else {
       await client
@@ -231,7 +254,8 @@ export async function processSalonNotificationOutbox(
           last_error: result.error,
           next_attempt_at: new Date(now.getTime() + computeBackoffMs(nextAttempts, baseBackoffMs, capBackoffMs)).toISOString(),
         })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("status", "processing");
       summary.failed++;
     }
   }

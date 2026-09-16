@@ -32,6 +32,7 @@ import {
   RinpoActionsRepository,
   SalonCampaignsRepository,
   SalonAutomationService,
+  SalonCommunicationsRepository,
   SalonNotificationService,
   SalonRepository,
   SalonLoyaltyRepository,
@@ -54,10 +55,11 @@ export type SalonRinpoDeps = {
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
+  communications: SalonCommunicationsRepository;
   loyalty: SalonLoyaltyRepository;
   /** Raw client, needed only by the growth-intelligence functions that query `notification_outbox` directly (see `getMessageFailuresSummary`/`getGrowthOpportunities`). */
   client: SalonSupabaseClient;
-  automations?: SalonAutomationService;
+  automations: SalonAutomationService;
 };
 
 function hasSalonPermission(ctx: SalonRinpoContext, permission: string | undefined): boolean {
@@ -144,7 +146,16 @@ export async function executeSalonRinpoTool(
   }
 
   if (def.category === "SENSITIVE" && def.requiresApproval) {
-    const pending = await requestApproval(deps, ctx, input.tool, input.args as Record<string, unknown>, arg(input, "reason") || undefined);
+    let approvalInput = input.args as Record<string, unknown>;
+    if (input.tool === "retry_failed_message_batch") {
+      const campaignId = arg(input, "campaignId");
+      if (!campaignId) return { tool: input.tool, ok: false, message: "campaignId is required." };
+      const limit = Math.min(100, Math.max(1, argNum(input, "limit", 50) ?? 50));
+      const preview = await deps.communications.previewCampaignRetry(ctx.organizationId, campaignId, limit);
+      if (!preview.ok) return { tool: input.tool, ok: false, message: preview.error.message };
+      approvalInput = { ...approvalInput, campaignId, limit, previewCount: preview.data.selected, hasMore: preview.data.hasMore };
+    }
+    const pending = await requestApproval(deps, ctx, input.tool, approvalInput, arg(input, "reason") || undefined);
     if (!pending.ok) return { tool: input.tool, ok: false, message: pending.error.message };
 
     // initiate_refund also creates the domain-level pending refund row now
@@ -173,7 +184,7 @@ export async function executeSalonRinpoTool(
     };
   }
 
-  const automations = deps.automations ?? new SalonAutomationService(deps.client, deps.repo, deps.notifications);
+  const automations = deps.automations;
 
   switch (input.tool) {
     // -----------------------------------------------------------------
@@ -702,13 +713,33 @@ export async function resolveSalonRinpoAction(
         await deps.actions.markFailed(actionId, "No notificationOutboxId to retry.");
         return { tool: "resolve_rinpo_action", ok: false, message: "No notificationOutboxId to retry." };
       }
-      const result = await deps.notifications.retryMessage(notificationOutboxId);
+      const result = await deps.notifications.retryMessage(action.organizationId, notificationOutboxId);
       if (!result.ok) {
         await deps.actions.markFailed(actionId, result.error.message);
         return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
       }
       await deps.actions.markExecuted(actionId, { notificationOutboxId });
       return { tool: "resolve_rinpo_action", ok: true, message: "Message queued for retry." };
+    }
+    case "retry_failed_message_batch": {
+      const campaignId = String(action.input.campaignId ?? "");
+      const limit = Math.min(100, Math.max(1, Number(action.input.limit ?? 50)));
+      const result = await deps.communications.retryCampaign(action.organizationId, campaignId, limit);
+      if (!result.ok) {
+        await deps.actions.markFailed(actionId, result.error.message);
+        return { tool: "resolve_rinpo_action", ok: false, message: result.error.message };
+      }
+      await deps.actions.markExecuted(actionId, {
+        campaignId,
+        retried: result.data.count,
+        hasMore: result.data.hasMore,
+      });
+      return {
+        tool: "resolve_rinpo_action",
+        ok: true,
+        message: `Queued ${result.data.count} failed message(s) for retry${result.data.hasMore ? "; more remain" : ""}.`,
+        data: result.data,
+      };
     }
     case "redeem_loyalty_points": {
       const customerId = String(action.input.customerId ?? "");
