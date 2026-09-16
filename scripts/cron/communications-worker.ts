@@ -9,6 +9,7 @@ import {
   createTwilioWhatsAppAdapter,
   runSalonCommunicationsWorker,
   SalonCampaignsRepository,
+  SalonLoyaltyRepository,
   SalonNotificationService,
   SalonRepository,
   type SalonSupabaseClient,
@@ -38,7 +39,8 @@ async function main() {
   const client = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } }) as unknown as SalonSupabaseClient;
   const repo = new SalonRepository(client);
   const notifications = new SalonNotificationService(client);
-  const campaigns = new SalonCampaignsRepository(client, repo, notifications);
+  const loyalty = new SalonLoyaltyRepository(client);
+  const campaigns = new SalonCampaignsRepository(client, repo, notifications, loyalty);
   const result = await runSalonCommunicationsWorker(
     client,
     campaigns,
@@ -51,6 +53,7 @@ async function main() {
       maxScheduledCampaigns: Number(process.env.RINADS_COMMUNICATIONS_MAX_SCHEDULED_CAMPAIGNS ?? 2),
       reviewsAutomationUrl: process.env.RINADS_REVIEWS_AUTOMATION_URL,
       reviewsAutomationToken: process.env.RINADS_REVIEWS_AUTOMATION_TOKEN,
+      reviewsAutomationLimit: Number(process.env.RINADS_REVIEWS_AUTOMATION_LIMIT ?? 50),
     }
   );
   console.log(JSON.stringify({ ok: true, ...result }));

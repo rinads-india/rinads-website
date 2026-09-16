@@ -20,14 +20,16 @@ const CAMPAIGN_STATUS_TONE: Record<string, string> = {
 
 export default async function GrowthPage() {
   const tenancy = await requireTenancy();
-  const { repo, campaigns, loyalty, client, communications } = await getSalonDeps();
+  const { repo, campaigns, loyalty, client, automations, communications } = await getSalonDeps();
 
-  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, funnelResult] = await Promise.all([
+  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, reviews, recovery, funnelResult] = await Promise.all([
     getRetentionSummary(repo, tenancy.organizationId),
     getMessageFailuresSummary(client, tenancy.organizationId),
     getCampaignPerformance(campaigns, tenancy.organizationId, 5),
     getGrowthOpportunities(repo, campaigns, client, tenancy.organizationId),
     getLoyaltyLiabilitySummary(loyalty, tenancy.organizationId),
+    automations.automation.getReviewSummary(tenancy.organizationId),
+    automations.automation.getRecoverySummary(tenancy.organizationId),
     communications.funnel(tenancy.organizationId),
   ]);
   const funnel = funnelResult.ok ? funnelResult.data : null;
@@ -56,12 +58,26 @@ export default async function GrowthPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Repeat rate</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{retention.repeatRatePct}%</p>
           <p className="text-xs text-muted-foreground">
             {retention.repeatCustomers} of {retention.totalCustomersWithVisits} customers have visited 2+ times
+          </p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Review responses</p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{reviews.ok ? reviews.data.submitted : 0}</p>
+          <p className="text-xs text-muted-foreground">
+            {reviews.ok ? `${reviews.data.lowRating} manager follow-up · ${reviews.data.pending} pending` : "Unavailable"}
+          </p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Recovery conversions</p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{recovery.ok ? recovery.data.converted : 0}</p>
+          <p className="text-xs text-muted-foreground">
+            {recovery.ok ? `${recovery.data.queued} queued · ${recovery.data.skipped} skipped` : "Unavailable"}
           </p>
         </Card>
         <Card>

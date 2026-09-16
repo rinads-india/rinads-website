@@ -76,6 +76,8 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "get_message_failures", category: "READ", description: "Count of failed, dead-lettered, and not-configured outbound messages", vertical: "salon", requiredPermission: "org.read" },
   { key: "get_retention_summary", category: "READ", description: "Repeat-visit rate across all customers", vertical: "salon", requiredPermission: "org.read" },
   { key: "get_growth_opportunities", category: "READ", description: "Ranked growth signals: message failures, pending campaign approvals, low repeat rate", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_review_workflow_summary", category: "READ", description: "Review requests, submissions, and low-rating follow-ups", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_recovery_summary", category: "READ", description: "No-show and unconfirmed-booking recovery outcomes", vertical: "salon", requiredPermission: "org.read" },
   { key: "get_loyalty_summary", category: "READ", description: "Loyalty enrollment, outstanding points, and financial liability", vertical: "salon", requiredPermission: "salon.loyalty.view" },
   { key: "get_customer_loyalty_history", category: "READ", description: "A customer's loyalty balance, tier, and append-only ledger", vertical: "salon", requiredPermission: "salon.loyalty.view" },
 
@@ -88,6 +90,7 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "create_segment", category: "WRITE", description: "Save a reusable audience segment", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
   { key: "create_campaign_draft", category: "WRITE", description: "Draft a campaign against a segment or ad-hoc criteria (does not send)", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
   { key: "create_reactivation_draft", category: "WRITE", description: "Draft a reactivation campaign for customers inactive N+ days (does not send)", vertical: "salon", requiredPermission: "salon.campaigns.manage" },
+  { key: "schedule_review_request", category: "WRITE", description: "Schedule one completed appointment's review request (does not send directly)", vertical: "salon", requiredPermission: "salon.reviews.manage" },
 
   // ---------------------------------------------------------------------
   // Salon SENSITIVE tools

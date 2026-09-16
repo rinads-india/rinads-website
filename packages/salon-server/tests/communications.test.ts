@@ -163,6 +163,36 @@ describe("communications worker controls", () => {
     assert.equal(result.campaignsAdvanced, 1);
   });
 
+  it("sends the explicit tenant allowlist and bounded limit to review automation", async () => {
+    const client = createSalonMockClient();
+    const requests: Array<{ authorization: string | null; body: unknown }> = [];
+    const campaigns = { listCampaigns: async () => ({ ok: true, data: [] }) } as unknown as SalonCampaignsRepository;
+    const result = await runSalonCommunicationsWorker(
+      client,
+      campaigns,
+      { send: async () => ({ status: "sent", providerMessageId: "unused" }) },
+      {
+        enabled: true,
+        organizationIds: [ORG_ID, "org_communications_2"],
+        reviewsAutomationUrl: "https://example.test/api/automations/process",
+        reviewsAutomationToken: "worker-secret",
+        reviewsAutomationLimit: 500,
+        fetchImpl: async (_url, init) => {
+          requests.push({
+            authorization: new Headers(init?.headers).get("authorization"),
+            body: JSON.parse(String(init?.body)),
+          });
+          return new Response(null, { status: 200 });
+        },
+      }
+    );
+    assert.equal(result.reviewsAutomationTriggered, true);
+    assert.deepEqual(requests, [{
+      authorization: "Bearer worker-secret",
+      body: { organizationIds: [ORG_ID, "org_communications_2"], limit: 100 },
+    }]);
+  });
+
   it("applies a throughput delay only between claimed sends", async () => {
     const client = createSalonMockClient();
     await seedOutbox(client, "pending", "40");

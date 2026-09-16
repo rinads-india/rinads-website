@@ -15,6 +15,7 @@ export type CommunicationsWorkerOptions = {
   now?: Date;
   reviewsAutomationUrl?: string;
   reviewsAutomationToken?: string;
+  reviewsAutomationLimit?: number;
   fetchImpl?: typeof fetch;
 };
 
@@ -75,13 +76,17 @@ export async function runSalonCommunicationsWorker(
 
   let reviewsAutomationTriggered = false;
   if (options.reviewsAutomationUrl) {
+    const reviewsAutomationLimit = Math.min(100, Math.max(1, Math.floor(options.reviewsAutomationLimit ?? 50)));
     const response = await (options.fetchImpl ?? fetch)(options.reviewsAutomationUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(options.reviewsAutomationToken ? { Authorization: `Bearer ${options.reviewsAutomationToken}` } : {}),
       },
-      body: JSON.stringify({ source: "communications-worker", occurredAt: now.toISOString() }),
+      body: JSON.stringify({
+        organizationIds: options.organizationIds,
+        limit: reviewsAutomationLimit,
+      }),
     });
     reviewsAutomationTriggered = response.ok;
   }

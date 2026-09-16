@@ -13,9 +13,11 @@ function formatDateTime(iso: string): string {
 export default async function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const tenancy = await requireTenancy();
-  const { repo, loyalty } = await getSalonDeps();
-  const result = await repo.getCustomerProfile(tenancy.organizationId, id);
-  const [loyaltyAccount, loyaltyBalance] = await Promise.all([
+  const { repo, automations, loyalty } = await getSalonDeps();
+  const [result, reviews, recovery, loyaltyAccount, loyaltyBalance] = await Promise.all([
+    repo.getCustomerProfile(tenancy.organizationId, id),
+    automations.automation.getReviewSummary(tenancy.organizationId, id),
+    automations.automation.getRecoverySummary(tenancy.organizationId, id),
     loyalty.getAccount(tenancy.organizationId, id),
     loyalty.getBalance(tenancy.organizationId, id),
   ]);
@@ -71,6 +73,20 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           <p className="mt-1 text-sm font-medium text-foreground">{spend.lastVisitAt ? formatDateTime(spend.lastVisitAt) : "—"}</p>
         </Card>
       </div>
+
+      <Card>
+        <p className="section-title">Reviews &amp; recovery</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {reviews.ok
+            ? `${reviews.data.requested} review request(s) · ${reviews.data.submitted} response(s) · ${reviews.data.lowRating} manager follow-up(s)`
+            : "Review status unavailable"}
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {recovery.ok
+            ? `${recovery.data.queued} recovery message(s) queued · ${recovery.data.converted} converted`
+            : "Recovery status unavailable"}
+        </p>
+      </Card>
 
       <Card>
         <p className="section-title">Loyalty</p>

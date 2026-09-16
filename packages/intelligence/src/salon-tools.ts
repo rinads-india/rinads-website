@@ -31,6 +31,7 @@ import {
   getTodayAppointments,
   RinpoActionsRepository,
   SalonCampaignsRepository,
+  SalonAutomationService,
   SalonCommunicationsRepository,
   SalonNotificationService,
   SalonRepository,
@@ -58,6 +59,7 @@ export type SalonRinpoDeps = {
   loyalty: SalonLoyaltyRepository;
   /** Raw client, needed only by the growth-intelligence functions that query `notification_outbox` directly (see `getMessageFailuresSummary`/`getGrowthOpportunities`). */
   client: SalonSupabaseClient;
+  automations: SalonAutomationService;
 };
 
 function hasSalonPermission(ctx: SalonRinpoContext, permission: string | undefined): boolean {
@@ -182,6 +184,8 @@ export async function executeSalonRinpoTool(
     };
   }
 
+  const automations = deps.automations;
+
   switch (input.tool) {
     // -----------------------------------------------------------------
     // READ tools
@@ -280,6 +284,24 @@ export async function executeSalonRinpoTool(
     case "get_growth_opportunities": {
       const result = await getGrowthOpportunities(deps.repo, deps.campaigns, deps.client, ctx.organizationId);
       return { tool: input.tool, ok: true, message: `${result.length} growth signal(s) ranked.`, data: result };
+    }
+    case "get_review_workflow_summary": {
+      const result = await automations.automation.getReviewSummary(
+        ctx.organizationId,
+        input.args.customerId ? arg(input, "customerId") : undefined
+      );
+      return result.ok
+        ? { tool: input.tool, ok: true, message: `${result.data.submitted} review response(s) received.`, data: result.data }
+        : { tool: input.tool, ok: false, message: result.error.message };
+    }
+    case "get_recovery_summary": {
+      const result = await automations.automation.getRecoverySummary(
+        ctx.organizationId,
+        input.args.customerId ? arg(input, "customerId") : undefined
+      );
+      return result.ok
+        ? { tool: input.tool, ok: true, message: `${result.data.converted} recovery conversion(s).`, data: result.data }
+        : { tool: input.tool, ok: false, message: result.error.message };
     }
     case "get_loyalty_summary": {
       const result = await getLoyaltyLiabilitySummary(deps.loyalty, ctx.organizationId);
@@ -443,6 +465,22 @@ export async function executeSalonRinpoTool(
       if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
       await auditWrite(deps, ctx, "rinpo.create_segment", "salon_segment", result.data.id, { name });
       return { tool: input.tool, ok: true, message: `Segment "${result.data.name}" saved.`, data: result.data };
+    }
+    case "schedule_review_request": {
+      const appointmentId = arg(input, "appointmentId");
+      if (!appointmentId) return { tool: input.tool, ok: false, message: "appointmentId is required." };
+      const appointment = await deps.repo.getAppointment(appointmentId);
+      if (!appointment.ok || appointment.data.organizationId !== ctx.organizationId) {
+        return { tool: input.tool, ok: false, message: appointment.ok ? "Appointment is outside this organization." : appointment.error.message };
+      }
+      const result = await automations.scheduleReviewRequest(
+        ctx.organizationId,
+        appointment.data,
+        input.args.dueAt ? arg(input, "dueAt") : new Date().toISOString()
+      );
+      if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
+      await auditWrite(deps, ctx, "rinpo.schedule_review_request", "salon_automation_run", result.data.id, { appointmentId });
+      return { tool: input.tool, ok: true, message: "Review request scheduled for the automation worker.", data: result.data };
     }
     case "create_campaign_draft": {
       const name = arg(input, "name");

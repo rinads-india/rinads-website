@@ -201,6 +201,55 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
       return builder(table) as unknown as ReturnType<SalonSupabaseClient["from"]>;
     },
     rpc: async (fn, args = {}) => {
+      if (fn === "salon_loyalty_balance") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        const balance = account
+          ? getTable("salon_loyalty_ledger_entries")
+              .filter((row) => row.organization_id === args.p_organization_id && row.account_id === account.id)
+              .reduce((sum, row) => sum + Number(row.points ?? 0), 0)
+          : 0;
+        return { data: balance, error: null };
+      }
+      if (fn === "salon_loyalty_redeem") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        if (!account) return { data: null, error: { message: "Loyalty account not found." } };
+        const row = {
+          id: `salon_loyalty_redemptions_${++seq}`,
+          organization_id: args.p_organization_id,
+          account_id: account.id,
+          sale_id: args.p_sale_id,
+          points: args.p_points,
+          currency_value: Number(args.p_points ?? 0) / 10,
+          status: "processed",
+          idempotency_key: args.p_idempotency_key,
+        };
+        getTable("salon_loyalty_redemptions").push(row);
+        return { data: row, error: null };
+      }
+      if (fn === "salon_loyalty_adjust") {
+        const account = getTable("salon_loyalty_accounts").find((row) =>
+          row.organization_id === args.p_organization_id &&
+          row.customer_id === args.p_customer_id
+        );
+        if (!account) return { data: null, error: { message: "Loyalty account not found." } };
+        const row = {
+          id: `salon_loyalty_ledger_entries_${++seq}`,
+          organization_id: args.p_organization_id,
+          account_id: account.id,
+          entry_type: "adjust",
+          points: args.p_points,
+          reason: args.p_reason,
+          idempotency_key: args.p_idempotency_key,
+        };
+        getTable("salon_loyalty_ledger_entries").push(row);
+        return { data: row, error: null };
+      }
       if (fn === "retry_salon_notification_outbox") {
         const recipientIds = new Set(
           getTable("salon_campaign_recipients")

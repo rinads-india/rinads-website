@@ -16,7 +16,7 @@ Run `pnpm communications:worker` from a credentialed scheduler. Configure:
 
 The database atomically claims due rows with `FOR UPDATE SKIP LOCKED`. Only approved campaigns with a due `scheduled_at` are advanced; approved unscheduled campaigns are never automatically sent.
 
-Optionally set `RINADS_REVIEWS_AUTOMATION_URL` and `RINADS_REVIEWS_AUTOMATION_TOKEN` to trigger a separately configured reviews automation after a worker tick. Slice 3 does not depend on Slice 2 review files.
+Optionally set `RINADS_REVIEWS_AUTOMATION_URL`, `RINADS_REVIEWS_AUTOMATION_TOKEN`, and `RINADS_REVIEWS_AUTOMATION_LIMIT` (default 50, hard cap 100) to trigger review/recovery automation after a worker tick. The worker sends its explicit `RINADS_COMMUNICATIONS_ORGANIZATION_IDS` allowlist and bounded limit to the bearer-token-protected endpoint.
 
 ## Retry operations
 

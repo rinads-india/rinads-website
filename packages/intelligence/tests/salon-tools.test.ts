@@ -5,6 +5,7 @@ import {
   RinpoActionsRepository,
   SalonNotificationService,
   SalonCampaignsRepository,
+  SalonAutomationService,
   SalonCommunicationsRepository,
   SalonLoyaltyRepository,
 } from "@rinads/salon-server";
@@ -20,8 +21,9 @@ function makeDeps() {
   const notifications = new SalonNotificationService(client);
   const loyalty = new SalonLoyaltyRepository(client);
   const campaigns = new SalonCampaignsRepository(client, repo, notifications, loyalty);
+  const automations = new SalonAutomationService(client, repo, notifications);
   const communications = new SalonCommunicationsRepository(client);
-  return { deps: { repo, actions, notifications, campaigns, communications, loyalty, client } as SalonRinpoDeps, client };
+  return { deps: { repo, actions, notifications, campaigns, automations, communications, loyalty, client } as SalonRinpoDeps, client };
 }
 
 function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = {}): SalonRinpoContext {
@@ -51,6 +53,38 @@ async function seedCustomerWithOneVisit(repo: SalonRepository, phone: string, am
     idempotencyKey: `seed-payment-${customer.data.id}`,
   });
   return customer.data;
+}
+
+function seedLoyalty(client: ReturnType<typeof createSalonMockClient>) {
+  const customerId = "customer_loyalty";
+  const accountId = "loyalty_account_1";
+  client.tables.set("salon_loyalty_programs", [{
+    id: "loyalty_program_1",
+    organization_id: ORG_ID,
+    name: "R GLOW Rewards",
+    is_active: true,
+    currency: "INR",
+    earn_currency_units: 100,
+    earn_points: 1,
+    points_per_currency_unit: 10,
+    tiers: [{ name: "Member", minimumPoints: 0 }],
+  }]);
+  client.tables.set("salon_loyalty_accounts", [{
+    id: accountId,
+    organization_id: ORG_ID,
+    program_id: "loyalty_program_1",
+    customer_id: customerId,
+    lifetime_earned_points: 120,
+  }]);
+  client.tables.set("salon_loyalty_ledger_entries", [{
+    id: "loyalty_ledger_1",
+    organization_id: ORG_ID,
+    account_id: accountId,
+    entry_type: "earn",
+    points: 120,
+    idempotency_key: "loyalty-seed-1",
+  }]);
+  return { customerId, accountId };
 }
 
 describe("executeSalonRinpoTool — permission gating", () => {
@@ -94,6 +128,98 @@ describe("executeSalonRinpoTool — permission gating", () => {
       args: {},
     });
     assert.equal(result.ok, true);
+  });
+});
+
+describe("executeSalonRinpoTool — review automation", () => {
+  it("schedules one completed visit immediately without creating an approval", async () => {
+    const { deps, client } = makeDeps();
+    client.tables.set("salon_appointments", [{
+      id: "appointment-review", organization_id: ORG_ID, branch_id: "branch-1", staff_id: "staff-1",
+      customer_id: "customer-1", status: "completed",
+      starts_at: "2026-09-16T08:00:00.000Z", ends_at: "2026-09-16T09:00:00.000Z",
+    }]);
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.reviews.manage"]), {
+      tool: "schedule_review_request",
+      args: { appointmentId: "appointment-review" },
+    });
+    assert.equal(result.ok, true);
+    assert.equal(client.tables.get("salon_automation_runs")?.length, 1);
+    assert.equal(client.tables.get("rinpo_actions")?.length ?? 0, 0);
+  });
+
+  it("returns review and recovery summaries as READ tools", async () => {
+    const { deps } = makeDeps();
+    const review = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "get_review_workflow_summary", args: {},
+    });
+    const recovery = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "get_recovery_summary", args: {},
+    });
+    assert.equal(review.ok, true);
+    assert.equal(recovery.ok, true);
+  });
+});
+
+describe("executeSalonRinpoTool — loyalty", () => {
+  it("returns the organization liability and a customer's ledger history", async () => {
+    const { deps, client } = makeDeps();
+    const { customerId, accountId } = seedLoyalty(client);
+    const summary = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.view"]), {
+      tool: "get_loyalty_summary",
+      args: {},
+    });
+    assert.equal(summary.ok, true);
+    assert.deepEqual(summary.data, {
+      enrolledCustomers: 1,
+      outstandingPoints: 120,
+      currencyLiability: 12,
+      currency: "INR",
+    });
+
+    const history = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.view"]), {
+      tool: "get_customer_loyalty_history",
+      args: { customerId },
+    });
+    assert.equal(history.ok, true);
+    const historyData = history.data as { account: { id: string }; balance: number; ledger: unknown[] };
+    assert.equal(historyData.account.id, accountId);
+    assert.equal(historyData.balance, 120);
+    assert.equal(historyData.ledger.length, 1);
+  });
+
+  it("redeems and adjusts points only after approval resolution", async () => {
+    const { deps, client } = makeDeps();
+    const { customerId } = seedLoyalty(client);
+
+    const redemptionRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.redeem"]), {
+      tool: "redeem_loyalty_points",
+      args: { customerId, saleId: "sale_loyalty", points: 20 },
+    });
+    assert.equal(redemptionRequest.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_redemptions")?.length ?? 0, 0);
+    const redemption = await resolveSalonRinpoAction(
+      deps,
+      ctxWith(["org.manage"], { userId: "admin_1" }),
+      (redemptionRequest.data as { actionId: string }).actionId,
+      "approve"
+    );
+    assert.equal(redemption.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_redemptions")?.length, 1);
+
+    const adjustmentRequest = await executeSalonRinpoTool(deps, ctxWith(["salon.loyalty.adjust"]), {
+      tool: "adjust_loyalty_ledger",
+      args: { customerId, points: -5, reason: "Correction" },
+    });
+    assert.equal(adjustmentRequest.ok, true);
+    const adjustment = await resolveSalonRinpoAction(
+      deps,
+      ctxWith(["org.manage"], { userId: "admin_1" }),
+      (adjustmentRequest.data as { actionId: string }).actionId,
+      "approve"
+    );
+    assert.equal(adjustment.ok, true);
+    assert.equal(client.tables.get("salon_loyalty_ledger_entries")?.length, 2);
   });
 });
 

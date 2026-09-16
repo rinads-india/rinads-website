@@ -5,13 +5,11 @@
  * `notification_outbox` table (no new outbox table) with a template key
  * and idempotency key, respecting `salon_customers.preferred_channel` /
  * `opted_out_at`. Delivery is intentionally left in an observable
- * `pending` state here — actual transport is the existing `notify-whatsapp`
- * edge function (service-role authenticated, unchanged), whose own Twilio
- * send is still a documented `// TODO: Twilio` in that function. This
- * service does not fake a "sent" status; wiring a cron/job runner that
- * calls `deliverViaWhatsAppEdgeFunction` below with real service-role
- * credentials is left to a future pass (see Phase E notes in the
- * completion report) — apps/rinaglow itself never holds a service-role key.
+ * `pending` state here. The disabled-by-default communications worker
+ * claims due rows atomically and sends WhatsApp messages through the
+ * service-role-authenticated `notify-whatsapp` edge function. This service
+ * never fakes a "sent" status, and browser code never receives a
+ * service-role key.
  */
 import { fail, ok, type PreferredChannel, type Result } from "@rinads/salon";
 import type { NotificationAdapter, NotificationAdapterResult } from "@rinads/runtime";
@@ -29,6 +27,8 @@ export type SalonNotificationEvent =
   | "invoice.ready"
   | "review.request_due"
   | "customer.reactivation_due"
+  | "no_show.recovery_due"
+  | "unconfirmed_booking.recovery_due"
   /** A campaign message to one recipient (custom or reactivation) — see `campaigns-repository.ts`'s `sendCampaign`. */
   | "campaign.message";
 
@@ -121,8 +121,6 @@ export class SalonNotificationService {
  * function and only ever reports success on a genuine 2xx response. Never
  * invoked automatically from a request path — it requires a service-role
  * bearer token, which no browser/user-session context should ever hold.
- * A future job runner (see Phase E) can pass this to
- * `packages/runtime`'s `processOutbox()` alongside the other adapters.
  */
 export function createSalonWhatsAppEdgeAdapter(config: {
   supabaseUrl: string;

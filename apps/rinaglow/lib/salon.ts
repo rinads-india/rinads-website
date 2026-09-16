@@ -1,6 +1,7 @@
 import {
   RinpoActionsRepository,
   SalonCampaignsRepository,
+  SalonAutomationService,
   SalonCommunicationsRepository,
   SalonNotificationService,
   SalonRepository,
@@ -20,6 +21,7 @@ export type SalonDeps = {
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
+  automations: SalonAutomationService;
   communications: SalonCommunicationsRepository;
   loyalty: SalonLoyaltyRepository;
   /** Raw client, needed by growth-intelligence functions that query `notification_outbox` directly. */
@@ -33,11 +35,23 @@ export async function getSalonDeps(): Promise<SalonDeps> {
   const repo = new SalonRepository(typedClient);
   const notifications = new SalonNotificationService(typedClient);
   const loyalty = new SalonLoyaltyRepository(typedClient);
+  const publicBaseUrl =
+    process.env.NEXT_PUBLIC_RINAGLOW_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "");
   return {
     repo,
     actions: new RinpoActionsRepository(typedClient),
     notifications,
     campaigns: new SalonCampaignsRepository(typedClient, repo, notifications, loyalty),
+    automations: new SalonAutomationService(
+      typedClient,
+      repo,
+      notifications,
+      undefined,
+      { publicBaseUrl }
+    ),
     communications: new SalonCommunicationsRepository(typedClient),
     loyalty,
     client: typedClient,
