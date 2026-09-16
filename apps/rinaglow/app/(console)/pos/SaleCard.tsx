@@ -3,7 +3,7 @@
 import { Badge } from "@rinads/ui";
 import type { PaymentMethod, SaleWithLines } from "@rinads/salon";
 import { useActionState, useState, useTransition } from "react";
-import { addSaleLineAction, finalizeSaleAction, recordPaymentAction, requestRefundAction, type FormActionState } from "./actions";
+import { addSaleLineAction, finalizeSaleAction, recordPaymentAction, redeemLoyaltyAction, requestRefundAction, type FormActionState } from "./actions";
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-gray-200 text-gray-700",
@@ -20,16 +20,19 @@ export function SaleCard({
   sale,
   customerLabel,
   canOverridePricing,
+  loyaltyBalance = 0,
 }: {
   sale: SaleWithLines;
   customerLabel: string;
   canOverridePricing: boolean;
+  loyaltyBalance?: number;
 }) {
   const [isPending, startTransition] = useTransition();
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
   const [addLineState, addLineAction, addLinePending] = useActionState<FormActionState, FormData>(addSaleLineAction, undefined);
   const [paymentState, paymentAction, paymentPending] = useActionState<FormActionState, FormData>(recordPaymentAction, undefined);
   const [refundState, refundAction, refundPending] = useActionState<FormActionState, FormData>(requestRefundAction, undefined);
+  const [loyaltyState, loyaltyAction, loyaltyPending] = useActionState<FormActionState, FormData>(redeemLoyaltyAction, undefined);
 
   function handleFinalize() {
     setFinalizeError(null);
@@ -99,6 +102,19 @@ export function SaleCard({
       ) : null}
 
       {sale.status === "awaiting_payment" ? (
+        <>
+        {sale.customerId && loyaltyBalance > 0 ? (
+          <form action={loyaltyAction} className="mt-3 flex flex-wrap items-end gap-2 rounded-lg bg-surface-muted p-2">
+            <input type="hidden" name="saleId" value={sale.id} />
+            <input type="hidden" name="customerId" value={sale.customerId} />
+            <span className="text-xs text-muted-foreground">{loyaltyBalance} points available</span>
+            <input name="points" type="number" min="1" max={loyaltyBalance} step="1" className="field-input w-28" required />
+            <button type="submit" disabled={loyaltyPending} className="btn-primary text-xs">
+              {loyaltyPending ? "Redeeming…" : "Redeem points"}
+            </button>
+            {loyaltyState?.error ? <p className="w-full text-xs text-danger">{loyaltyState.error}</p> : null}
+          </form>
+        ) : null}
         <form action={paymentAction} className="mt-3 flex flex-wrap items-end gap-2">
           <input type="hidden" name="saleId" value={sale.id} />
           <select name="method" className="field-input w-28" defaultValue="cash">
@@ -121,6 +137,7 @@ export function SaleCard({
             {paymentPending ? "Recording…" : "Record payment"}
           </button>
         </form>
+        </>
       ) : null}
       {paymentState?.error ? <p className="mt-1 text-xs text-danger">{paymentState.error}</p> : null}
 

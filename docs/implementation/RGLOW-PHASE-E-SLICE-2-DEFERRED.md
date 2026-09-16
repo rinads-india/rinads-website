@@ -6,11 +6,10 @@ Slice 1 (this PR) delivers one complete, real loop end-to-end:
 
 Per the master prompt's own guidance ("prefer one real vertical slice over many superficial features"), the following areas of the Phase E master prompt are **intentionally deferred** to a follow-up Phase E.2 PR, rather than implemented shallowly alongside the slice above:
 
-## Loyalty ledger
-- `loyalty_programs`, `loyalty_accounts`, `loyalty_ledger_entries` tables.
-- Earning, redemption, refund reversal, expiry, and controlled manual adjustments.
-- Loyalty-liability growth-intelligence metric.
-- A dedicated `/loyalty` console page.
+## Loyalty ledger — completed in Phase E.2 Slice 1
+- Tenant-scoped program, account, append-only ledger, and redemption tables.
+- Idempotent paid-sale earning, processed-refund reversal, atomic redemption, and controlled manual adjustments.
+- Loyalty-liability growth-intelligence metric, customer/POS integrations, RINPO tools, and dedicated `/loyalty` console page.
 
 ## Review-request workflow
 - Post-visit review/feedback request automation.
@@ -27,7 +26,7 @@ Per the master prompt's own guidance ("prefer one real vertical slice over many 
 
 ## Console UI
 - Dedicated `/communications` page (a unified inbox/log view across all notification channels, independent of campaigns) is deferred — this slice's `/campaigns/[id]` detail page already shows per-recipient delivery status and the `/growth` page surfaces aggregate message-failure counts, which covers the sliced loop's operational needs.
-- `/loyalty` page (see above).
+- `/loyalty` page is now complete; `/communications` remains deferred.
 
 ## Verification limitation: real Twilio delivery
 

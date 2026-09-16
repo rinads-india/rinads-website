@@ -103,6 +103,16 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
       return calls("Checking staff utilization.", { tool: "get_staff_utilization", args: {} });
     }
 
+    if (/loyalty (summary|liability)|outstanding (loyalty )?points/i.test(lower)) {
+      return calls("Checking loyalty enrollment and liability.", { tool: "get_loyalty_summary", args: {} });
+    }
+
+    if (/(customer|client).*(loyalty|rewards).*(history|balance)|(loyalty|rewards).*(history|balance)/i.test(lower)) {
+      const customerId = extractUuid(text) ?? context.selectedCustomerId;
+      if (!customerId) return clarify("Which customer's loyalty history should I check?");
+      return calls("Pulling customer loyalty history.", { tool: "get_customer_loyalty_history", args: { customerId } });
+    }
+
     if (/(customer|client) history/i.test(lower)) {
       const customerId = extractUuid(text) ?? context.selectedCustomerId;
       if (!customerId) return clarify("Which customer? Select one or give me their ID.");
@@ -225,6 +235,28 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
         return clarify("Tell me the sale, the payment method, and the amount to record a payment.");
       }
       return calls("Recording payment.", { tool: "record_payment", args: { saleId, method, amount } });
+    }
+
+    if (/redeem.*(loyalty|reward).*points?|use.*points/i.test(lower)) {
+      const customerId = context.selectedCustomerId;
+      const saleId = extractUuid(text) ?? context.selectedSaleId;
+      const points = extractNumber(lower, /(\d+)\s*(?:loyalty |reward )?points?/i, NaN);
+      if (!customerId || !saleId || Number.isNaN(points)) {
+        return clarify("Select a customer and sale, then tell me how many points to redeem — this needs approval.");
+      }
+      return calls("Requesting loyalty redemption (will need approval).", { tool: "redeem_loyalty_points", args: { customerId, saleId, points } });
+    }
+
+    if (/adjust.*(loyalty|reward).*(ledger|points?)/i.test(lower)) {
+      const customerId = extractUuid(text) ?? context.selectedCustomerId;
+      const signed = lower.match(/(-?\d+)\s*points?/);
+      const reasonMatch = text.match(/because\s+(.+)$/i) ?? text.match(/reason[:\s]+(.+)$/i);
+      if (!customerId || !signed || !reasonMatch?.[1]) {
+        return clarify("Tell me the customer, signed points, and a reason — this needs approval.");
+      }
+      return calls("Requesting loyalty ledger adjustment (will need approval).", {
+        tool: "adjust_loyalty_ledger", args: { customerId, points: Number(signed[1]), reason: reasonMatch[1] },
+      });
     }
 
     if (/refund/i.test(lower)) {

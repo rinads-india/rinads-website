@@ -76,6 +76,8 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "get_message_failures", category: "READ", description: "Count of failed, dead-lettered, and not-configured outbound messages", vertical: "salon", requiredPermission: "org.read" },
   { key: "get_retention_summary", category: "READ", description: "Repeat-visit rate across all customers", vertical: "salon", requiredPermission: "org.read" },
   { key: "get_growth_opportunities", category: "READ", description: "Ranked growth signals: message failures, pending campaign approvals, low repeat rate", vertical: "salon", requiredPermission: "org.read" },
+  { key: "get_loyalty_summary", category: "READ", description: "Loyalty enrollment, outstanding points, and financial liability", vertical: "salon", requiredPermission: "salon.loyalty.view" },
+  { key: "get_customer_loyalty_history", category: "READ", description: "A customer's loyalty balance, tier, and append-only ledger", vertical: "salon", requiredPermission: "salon.loyalty.view" },
 
   // ---------------------------------------------------------------------
   // Growth WRITE tools — drafting only, never sends anything. Gated by
@@ -113,6 +115,8 @@ const REGISTRY: RinpoToolDefinition[] = [
   { key: "send_campaign", category: "SENSITIVE", description: "Send an approved campaign (re-validates the audience first)", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
   { key: "send_reactivation_batch", category: "SENSITIVE", description: "Send an approved reactivation campaign", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
   { key: "retry_failed_message", category: "SENSITIVE", description: "Retry a single failed/dead-lettered outbound message", vertical: "salon", requiredPermission: "salon.campaigns.manage", requiresApproval: true },
+  { key: "redeem_loyalty_points", category: "SENSITIVE", description: "Redeem loyalty points against a checkout", vertical: "salon", requiredPermission: "salon.loyalty.redeem", requiresApproval: true },
+  { key: "adjust_loyalty_ledger", category: "SENSITIVE", description: "Post a controlled manual loyalty adjustment", vertical: "salon", requiredPermission: "salon.loyalty.adjust", requiresApproval: true },
 ];
 
 export function listRinpoTools(filter?: { ownerOnly?: boolean; customerFacing?: boolean; vertical?: "salon" }): RinpoToolDefinition[] {

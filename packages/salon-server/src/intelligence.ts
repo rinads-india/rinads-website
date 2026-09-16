@@ -19,6 +19,8 @@ import {
 import type { SalonCampaignsRepository } from "./campaigns-repository";
 import type { SalonRow, SalonSupabaseClient } from "./client";
 import type { SalonRepository } from "./repository";
+import type { SalonLoyaltyRepository } from "./loyalty-repository";
+import { loyaltyLiability } from "@rinads/salon";
 
 function startOfDayUtc(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -369,4 +371,26 @@ export async function getGrowthOpportunities(
       detail: { repeatRatePct: retention.repeatRatePct, totalCustomersWithVisits: retention.totalCustomersWithVisits },
     },
   ]);
+}
+
+export type LoyaltyLiabilitySummary = {
+  enrolledCustomers: number;
+  outstandingPoints: number;
+  currencyLiability: number;
+  currency: string;
+};
+
+export async function getLoyaltyLiabilitySummary(
+  loyalty: SalonLoyaltyRepository,
+  organizationId: string
+): Promise<LoyaltyLiabilitySummary> {
+  const [program, accounts] = await Promise.all([loyalty.getProgram(organizationId), loyalty.listAccounts(organizationId)]);
+  if (!program.ok || !accounts.ok) return { enrolledCustomers: 0, outstandingPoints: 0, currencyLiability: 0, currency: "INR" };
+  const outstandingPoints = accounts.data.reduce((sum, item) => sum + Math.max(0, item.balance), 0);
+  return {
+    enrolledCustomers: accounts.data.length,
+    outstandingPoints,
+    currencyLiability: loyaltyLiability(outstandingPoints, program.data.pointsPerCurrencyUnit),
+    currency: program.data.currency,
+  };
 }

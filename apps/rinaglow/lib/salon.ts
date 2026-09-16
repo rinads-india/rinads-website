@@ -3,6 +3,7 @@ import {
   SalonCampaignsRepository,
   SalonNotificationService,
   SalonRepository,
+  SalonLoyaltyRepository,
   type SalonSupabaseClient,
 } from "@rinads/salon-server";
 import "server-only";
@@ -18,6 +19,7 @@ export type SalonDeps = {
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
+  loyalty: SalonLoyaltyRepository;
   /** Raw client, needed by growth-intelligence functions that query `notification_outbox` directly. */
   client: SalonSupabaseClient;
 };
@@ -28,11 +30,13 @@ export async function getSalonDeps(): Promise<SalonDeps> {
   const typedClient = client as unknown as SalonSupabaseClient;
   const repo = new SalonRepository(typedClient);
   const notifications = new SalonNotificationService(typedClient);
+  const loyalty = new SalonLoyaltyRepository(typedClient);
   return {
     repo,
     actions: new RinpoActionsRepository(typedClient),
     notifications,
-    campaigns: new SalonCampaignsRepository(typedClient, repo, notifications),
+    campaigns: new SalonCampaignsRepository(typedClient, repo, notifications, loyalty),
+    loyalty,
     client: typedClient,
   };
 }
