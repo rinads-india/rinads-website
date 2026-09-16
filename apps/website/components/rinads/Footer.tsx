@@ -129,7 +129,7 @@ export function Footer() {
           >
             <div className="lucky-cube">
               <Image
-                src="/assets/rinpo-head.png"
+                src="/assets/rinpo-full-body-transparent-v2.png"
                 alt=""
                 width={96}
                 height={96}

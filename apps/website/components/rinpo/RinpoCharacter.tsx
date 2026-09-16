@@ -10,8 +10,8 @@ import { RinpoGuideHint } from "./RinpoGuideArrow";
 import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const RINPO_AVATAR = "/assets/rinpo-avatar.png";
-const RINPO_INTRO_BG = "/assets/rinpo-intro-bg.png";
+const RINPO_AVATAR = "/assets/rinpo-full-body-transparent-v2.png";
+const RINPO_INTRO_BG = "/assets/rinpo-full-body-transparent-v2.png";
 
 function SpeechPanels({
   words,

@@ -29,7 +29,7 @@ import {
 } from "./RinpoPhoneScreens";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 
-const RINPO_HEAD = "/assets/rinpo-head.png";
+const RINPO_HEAD = "/assets/rinpo-full-body-transparent-v2.png";
 
 const BOTTOM_BAR_ITEMS: { id: PhoneScreenId; label: string; icon: typeof MessageSquare; badge?: string }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },

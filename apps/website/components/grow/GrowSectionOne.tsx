@@ -78,7 +78,7 @@ export function GrowSectionOne() {
             <div className="flex items-center gap-3">
               <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-white/15">
                 <Image
-                  src="/assets/rinpo-avatar.png"
+                  src="/assets/rinpo-full-body-transparent-v2.png"
                   alt="RINPO"
                   fill
                   className="object-cover"
