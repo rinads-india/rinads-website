@@ -46,6 +46,8 @@ export type RinpoToolName =
   | "get_message_failures"
   | "get_retention_summary"
   | "get_growth_opportunities"
+  | "get_loyalty_summary"
+  | "get_customer_loyalty_history"
   // Growth WRITE tools
   | "create_segment"
   | "create_campaign_draft"
@@ -60,7 +62,9 @@ export type RinpoToolName =
   | "send_campaign"
   | "send_reactivation_batch"
   | "retry_failed_message"
-  | "retry_failed_message_batch";
+  | "retry_failed_message_batch"
+  | "redeem_loyalty_points"
+  | "adjust_loyalty_ledger";
 
 export type RinpoToolInput = {
   tool: RinpoToolName | (string & {});

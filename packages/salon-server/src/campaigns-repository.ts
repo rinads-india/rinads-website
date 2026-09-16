@@ -30,6 +30,7 @@ import type { SalonNotificationService } from "./notifications";
 import type { SalonRepository } from "./repository";
 import { evaluateSegment, type SegmentEvaluationResult } from "./segmentation";
 import { validateWhatsAppBody } from "./notification-delivery";
+import type { SalonLoyaltyRepository } from "./loyalty-repository";
 
 export type CreateSegmentInput = {
   name: string;
@@ -57,7 +58,8 @@ export class SalonCampaignsRepository {
   constructor(
     private readonly client: SalonSupabaseClient,
     private readonly repo: SalonRepository,
-    private readonly notifications: SalonNotificationService
+    private readonly notifications: SalonNotificationService,
+    private readonly loyalty?: SalonLoyaltyRepository
   ) {}
 
   // -------------------------------------------------------------------
@@ -100,7 +102,7 @@ export class SalonCampaignsRepository {
 
   /** Preview against arbitrary (not-yet-saved) criteria — used before a segment or campaign is even created. */
   async previewCriteria(organizationId: string, criteria: SegmentCriteria): Promise<Result<SegmentEvaluationResult>> {
-    return evaluateSegment(this.repo, organizationId, criteria);
+    return evaluateSegment(this.repo, organizationId, criteria, this.loyalty);
   }
 
   // -------------------------------------------------------------------
@@ -165,7 +167,7 @@ export class SalonCampaignsRepository {
     const campaignResult = await this.getCampaign(campaignId);
     if (!campaignResult.ok) return campaignResult;
 
-    const evalResult = await evaluateSegment(this.repo, organizationId, campaignResult.data.criteria);
+    const evalResult = await evaluateSegment(this.repo, organizationId, campaignResult.data.criteria, this.loyalty);
     if (!evalResult.ok) return evalResult;
 
     await this.client
@@ -228,7 +230,7 @@ export class SalonCampaignsRepository {
     if (!campaignResult.ok) return campaignResult;
     const campaign = campaignResult.data;
 
-    const evalResult = await evaluateSegment(this.repo, organizationId, campaign.criteria);
+    const evalResult = await evaluateSegment(this.repo, organizationId, campaign.criteria, this.loyalty);
     if (!evalResult.ok) return evalResult;
 
     const { error: statusError } = await this.client.from("salon_campaigns").update({ status: "sending" }).eq("id", campaignId);

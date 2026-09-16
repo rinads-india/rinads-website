@@ -11,6 +11,7 @@ const links = [
   { href: "/staff", label: "Staff" },
   { href: "/clients", label: "Clients" },
   { href: "/growth", label: "Growth" },
+  { href: "/loyalty", label: "Loyalty" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/communications", label: "Communications" },
   { href: "/settings", label: "Settings" },

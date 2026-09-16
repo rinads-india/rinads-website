@@ -16,6 +16,8 @@ function revalidateConsole() {
   revalidatePath("/clients");
   revalidatePath("/growth");
   revalidatePath("/campaigns");
+  revalidatePath("/communications");
+  revalidatePath("/loyalty");
 }
 
 export async function runRinpoCommandAction(

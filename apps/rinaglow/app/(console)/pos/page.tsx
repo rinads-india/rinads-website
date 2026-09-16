@@ -1,6 +1,6 @@
 import { isPrivilegedRoleKey } from "@rinads/permissions";
 import { Card, EmptyState } from "@rinads/ui";
-import { getSalonRepository } from "@/lib/salon";
+import { getSalonDeps } from "@/lib/salon";
 import { oneDayAgoIso } from "@/lib/time";
 import { requireTenancy } from "@/lib/tenancy";
 import { RefundsQueue } from "./RefundsQueue";
@@ -11,7 +11,7 @@ export const metadata = { title: "POS — R GLOW Console" };
 
 export default async function PosPage() {
   const tenancy = await requireTenancy();
-  const repo = await getSalonRepository();
+  const { repo, loyalty } = await getSalonDeps();
   const canOverridePricing = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("salon.pricing.override");
   const canApproveRefunds = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("refund.approve");
 
@@ -40,6 +40,13 @@ export default async function PosPage() {
     ...(awaitingSalesResult.ok ? awaitingSalesResult.data : []),
   ].map((s) => s.id);
   const salesWithLines = await Promise.all(openSaleIds.map((id) => repo.getSale(id)));
+  const loyaltyBalances = new Map<string, number>();
+  for (const result of salesWithLines) {
+    if (result.ok && result.data.customerId && !loyaltyBalances.has(result.data.customerId)) {
+      const balance = await loyalty.getBalance(tenancy.organizationId, result.data.customerId);
+      loyaltyBalances.set(result.data.customerId, balance.ok ? balance.data : 0);
+    }
+  }
 
   const recentPaid = (paidSalesResult.ok ? paidSalesResult.data : []).slice(0, 10);
   const recentPaidWithLines = await Promise.all(recentPaid.map((s) => repo.getSale(s.id)));
@@ -83,6 +90,7 @@ export default async function PosPage() {
                     "Walk-in customer"
                   }
                   canOverridePricing={canOverridePricing}
+                  loyaltyBalance={result.data.customerId ? loyaltyBalances.get(result.data.customerId) : 0}
                 />
               ) : null
             )}

@@ -1,6 +1,6 @@
 import { Badge, Card, EmptyState } from "@rinads/ui";
 import Link from "next/link";
-import { getSalonRepository } from "@/lib/salon";
+import { getSalonDeps } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { AddCustomerNoteForm } from "./AddCustomerNoteForm";
 
@@ -13,8 +13,13 @@ function formatDateTime(iso: string): string {
 export default async function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const tenancy = await requireTenancy();
-  const repo = await getSalonRepository();
+  const { repo, loyalty } = await getSalonDeps();
   const result = await repo.getCustomerProfile(tenancy.organizationId, id);
+  const [loyaltyAccount, loyaltyBalance] = await Promise.all([
+    loyalty.getAccount(tenancy.organizationId, id),
+    loyalty.getBalance(tenancy.organizationId, id),
+  ]);
+  const loyaltyLedger = loyaltyAccount.ok ? await loyalty.listLedger(tenancy.organizationId, loyaltyAccount.data.id, 20) : undefined;
 
   if (!result.ok) {
     return (
@@ -66,6 +71,19 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           <p className="mt-1 text-sm font-medium text-foreground">{spend.lastVisitAt ? formatDateTime(spend.lastVisitAt) : "—"}</p>
         </Card>
       </div>
+
+      <Card>
+        <p className="section-title">Loyalty</p>
+        <p className="mt-2 text-2xl font-semibold">{loyaltyBalance?.ok ? loyaltyBalance.data : 0} points</p>
+        {loyaltyLedger?.ok && loyaltyLedger.data.length ? (
+          <ul className="mt-3 space-y-2">
+            {loyaltyLedger.data.map((entry) => <li key={entry.id} className="flex justify-between rounded-lg border border-rinads-primary/10 p-2 text-sm">
+              <span>{entry.reason ?? entry.entryType.replace("_", " ")}</span>
+              <span className={entry.points > 0 ? "text-emerald-700" : "text-danger"}>{entry.points > 0 ? "+" : ""}{entry.points}</span>
+            </li>)}
+          </ul>
+        ) : <p className="mt-2 text-sm text-muted-foreground">No loyalty activity yet.</p>}
+      </Card>
 
       <Card>
         <p className="section-title">Visit history</p>

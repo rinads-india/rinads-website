@@ -1,4 +1,4 @@
-import { getCampaignPerformance, getGrowthOpportunities, getMessageFailuresSummary, getRetentionSummary } from "@rinads/salon-server";
+import { getCampaignPerformance, getGrowthOpportunities, getLoyaltyLiabilitySummary, getMessageFailuresSummary, getRetentionSummary } from "@rinads/salon-server";
 import { Badge, Card, EmptyState } from "@rinads/ui";
 import Link from "next/link";
 import { getSalonDeps } from "@/lib/salon";
@@ -20,13 +20,14 @@ const CAMPAIGN_STATUS_TONE: Record<string, string> = {
 
 export default async function GrowthPage() {
   const tenancy = await requireTenancy();
-  const { repo, campaigns, client, communications } = await getSalonDeps();
+  const { repo, campaigns, loyalty, client, communications } = await getSalonDeps();
 
-  const [retention, failures, campaignPerformance, opportunities, funnelResult] = await Promise.all([
+  const [retention, failures, campaignPerformance, opportunities, loyaltyLiability, funnelResult] = await Promise.all([
     getRetentionSummary(repo, tenancy.organizationId),
     getMessageFailuresSummary(client, tenancy.organizationId),
     getCampaignPerformance(campaigns, tenancy.organizationId, 5),
     getGrowthOpportunities(repo, campaigns, client, tenancy.organizationId),
+    getLoyaltyLiabilitySummary(loyalty, tenancy.organizationId),
     communications.funnel(tenancy.organizationId),
   ]);
   const funnel = funnelResult.ok ? funnelResult.data : null;
@@ -55,13 +56,18 @@ export default async function GrowthPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Repeat rate</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{retention.repeatRatePct}%</p>
           <p className="text-xs text-muted-foreground">
             {retention.repeatCustomers} of {retention.totalCustomersWithVisits} customers have visited 2+ times
           </p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Loyalty liability</p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{loyaltyLiability.currency} {loyaltyLiability.currencyLiability.toLocaleString("en-IN")}</p>
+          <Link href="/loyalty" className="text-xs text-rinads-primary underline">{loyaltyLiability.outstandingPoints} points outstanding →</Link>
         </Card>
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Message failures</p>

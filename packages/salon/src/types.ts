@@ -309,6 +309,72 @@ export type CustomerProfile = {
 };
 
 // ---------------------------------------------------------------------------
+// Loyalty (R GLOW Phase E.2)
+// ---------------------------------------------------------------------------
+
+export type LoyaltyTier = { name: string; minimumPoints: number };
+
+export type SalonLoyaltyProgram = {
+  id: string;
+  organizationId: string;
+  name: string;
+  isActive: boolean;
+  currency: string;
+  earnCurrencyUnits: number;
+  earnPoints: number;
+  pointsPerCurrencyUnit: number;
+  tiers: LoyaltyTier[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type SalonLoyaltyAccount = {
+  id: string;
+  organizationId: string;
+  programId: string;
+  customerId: string;
+  lifetimeEarnedPoints: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type LoyaltyEntryType = "earn" | "redeem" | "refund_reversal" | "adjustment" | "redemption_reversal";
+
+export type SalonLoyaltyLedgerEntry = {
+  id: string;
+  organizationId: string;
+  accountId: string;
+  entryType: LoyaltyEntryType;
+  points: number;
+  saleId?: string;
+  refundId?: string;
+  redemptionId?: string;
+  reason?: string;
+  idempotencyKey: string;
+  createdBy?: string;
+  createdAt?: string;
+};
+
+export type SalonLoyaltyRedemption = {
+  id: string;
+  organizationId: string;
+  accountId: string;
+  saleId?: string;
+  points: number;
+  currencyValue: number;
+  status: "processed" | "reversed";
+  idempotencyKey: string;
+  createdBy?: string;
+  createdAt?: string;
+};
+
+export type LoyaltyAccountSummary = {
+  account: SalonLoyaltyAccount;
+  balance: number;
+  tier: LoyaltyTier;
+};
+
+// ---------------------------------------------------------------------------
 // Segmentation + campaigns (R GLOW Phase E, Slice 1)
 // ---------------------------------------------------------------------------
 
@@ -328,6 +394,8 @@ export type SegmentCriteria = {
   preferredServiceId?: string;
   preferredStaffId?: string;
   branchId?: string;
+  minLoyaltyBalance?: number;
+  loyaltyTier?: string;
   /** Defaults to true: campaigns should never message a customer who opted out unless explicitly overridden (never recommended). */
   communicationOptIn?: boolean;
 };
