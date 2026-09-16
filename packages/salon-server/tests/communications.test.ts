@@ -176,6 +176,33 @@ describe("communications worker controls", () => {
     assert.equal(result.processed, 2);
     assert.deepEqual(delays, [125]);
   });
+
+  it("passes the explicit tenant allowlist to the reviews automation endpoint", async () => {
+    const client = createSalonMockClient();
+    const campaigns = {
+      listCampaigns: async () => ({ ok: true, data: [] }),
+    } as unknown as SalonCampaignsRepository;
+    let requestBody: Record<string, unknown> = {};
+    const result = await runSalonCommunicationsWorker(
+      client,
+      campaigns,
+      { send: async () => ({ status: "sent", providerMessageId: "unused" }) },
+      {
+        enabled: true,
+        organizationIds: [ORG_ID],
+        batchSize: 12,
+        reviewsAutomationUrl: "https://glow.example/api/automations/process",
+        reviewsAutomationToken: "secret",
+        fetchImpl: async (_url, init) => {
+          requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+          return new Response(null, { status: 200 });
+        },
+      }
+    );
+    assert.equal(result.reviewsAutomationTriggered, true);
+    assert.deepEqual(requestBody.organizationIds, [ORG_ID]);
+    assert.equal(requestBody.limit, 12);
+  });
 });
 
 describe("WhatsApp message validation", () => {

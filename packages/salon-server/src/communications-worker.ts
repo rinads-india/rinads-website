@@ -81,7 +81,12 @@ export async function runSalonCommunicationsWorker(
         "Content-Type": "application/json",
         ...(options.reviewsAutomationToken ? { Authorization: `Bearer ${options.reviewsAutomationToken}` } : {}),
       },
-      body: JSON.stringify({ source: "communications-worker", occurredAt: now.toISOString() }),
+      body: JSON.stringify({
+        source: "communications-worker",
+        occurredAt: now.toISOString(),
+        organizationIds: options.organizationIds,
+        limit: Math.min(100, Math.max(1, Math.floor(options.batchSize ?? 25))),
+      }),
     });
     reviewsAutomationTriggered = response.ok;
   }
