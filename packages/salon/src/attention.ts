@@ -19,7 +19,9 @@ export type AttentionSignalKind =
   | "low_staff_utilization"
   | "message_failures"
   | "pending_campaign_approvals"
-  | "low_repeat_rate";
+  | "low_repeat_rate"
+  | "pending_review_recovery"
+  | "low_rating_feedback";
 
 export type AttentionSignalInput = {
   kind: AttentionSignalKind;
@@ -119,6 +121,22 @@ const SIGNAL_META: Record<AttentionSignalKind, SignalMeta> = {
     impact: 65,
     urgency: 20,
     confidence: 0.6,
+    reversible: true,
+  },
+  pending_review_recovery: {
+    title: "Review and recovery follow-ups",
+    describe: (n) => `${n} review or recovery workflow${n === 1 ? "" : "s"} need attention.`,
+    impact: 60,
+    urgency: 65,
+    confidence: 0.95,
+    reversible: true,
+  },
+  low_rating_feedback: {
+    title: "Low-rating feedback",
+    describe: (n) => `${n} customer feedback item${n === 1 ? "" : "s"} need a manager follow-up.`,
+    impact: 80,
+    urgency: 85,
+    confidence: 1,
     reversible: true,
   },
 };

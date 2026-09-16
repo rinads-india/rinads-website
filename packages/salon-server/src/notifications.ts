@@ -28,6 +28,8 @@ export type SalonNotificationEvent =
   | "invoice.ready"
   | "review.request_due"
   | "customer.reactivation_due"
+  | "no_show.recovery_due"
+  | "unconfirmed_booking.recovery_due"
   /** A campaign message to one recipient (custom or reactivation) — see `campaigns-repository.ts`'s `sendCampaign`. */
   | "campaign.message";
 
