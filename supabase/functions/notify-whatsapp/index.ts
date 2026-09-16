@@ -35,6 +35,13 @@ serve(async (req) => {
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
     const { organization_id, order_id, recipient, template, message_body } = await req.json();
+    const body = String(message_body ?? "");
+    if (body.length > 1600) {
+      return new Response(
+        JSON.stringify({ status: "failed", error: "WhatsApp message body must be 1600 characters or fewer." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const twilioSid = Deno.env.get("RINADS_TWILIO_SID");
     const twilioToken = Deno.env.get("RINADS_TWILIO_TOKEN");
@@ -63,7 +70,7 @@ serve(async (req) => {
     const form = new URLSearchParams();
     form.set("To", toAddress);
     form.set("From", fromAddress);
-    form.set("Body", String(message_body));
+    form.set("Body", body);
     form.set("StatusCallback", statusCallback);
 
     const twilioResponse = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {

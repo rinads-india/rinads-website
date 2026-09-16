@@ -7,3 +7,5 @@ export * from "./rinpo-actions";
 export * from "./segmentation";
 export * from "./campaigns-repository";
 export * from "./notification-delivery";
+export * from "./communications-repository";
+export * from "./communications-worker";

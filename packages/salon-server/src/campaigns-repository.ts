@@ -29,6 +29,7 @@ import { mapCampaignRecipientRow, mapCampaignRow, mapSegmentRow } from "./mapper
 import type { SalonNotificationService } from "./notifications";
 import type { SalonRepository } from "./repository";
 import { evaluateSegment, type SegmentEvaluationResult } from "./segmentation";
+import { validateWhatsAppBody } from "./notification-delivery";
 
 export type CreateSegmentInput = {
   name: string;
@@ -109,6 +110,10 @@ export class SalonCampaignsRepository {
   async createCampaignDraft(organizationId: string, input: CreateCampaignDraftInput): Promise<Result<SalonCampaign>> {
     if (!input.name.trim()) return fail("invalid_input", "Campaign name is required.");
     if (!input.messageBody.trim()) return fail("invalid_input", "Message body is required.");
+    if ((input.channel ?? "whatsapp") === "whatsapp") {
+      const validation = validateWhatsAppBody(input.messageBody.trim());
+      if (!validation.ok) return fail("invalid_input", validation.error);
+    }
     const { data, error } = await this.client
       .from("salon_campaigns")
       .insert({

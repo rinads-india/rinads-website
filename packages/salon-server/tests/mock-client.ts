@@ -201,6 +201,53 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
     from(table: string) {
       return builder(table) as unknown as ReturnType<SalonSupabaseClient["from"]>;
     },
-    rpc: async () => ({ data: null, error: { message: "rpc not stubbed in this mock" } }),
+    rpc: async (fn, args = {}) => {
+      if (fn === "claim_due_salon_notification_outbox") {
+        const now = Date.now();
+        const limit = Math.min(100, Math.max(1, Number(args.p_limit ?? 25)));
+        const rows = getTable("notification_outbox")
+          .filter((row) =>
+            row.channel === "whatsapp" &&
+            ["pending", "failed", "not_configured"].includes(String(row.status)) &&
+            (!row.next_attempt_at || new Date(String(row.next_attempt_at)).getTime() <= now)
+          )
+          .slice(0, limit);
+        rows.forEach((row) => Object.assign(row, { status: "processing", updated_at: new Date().toISOString() }));
+        return { data: rows.map((row) => ({ ...row })), error: null };
+      }
+      if (fn === "retry_salon_notification_outbox") {
+        const limit = Math.min(100, Math.max(1, Number(args.p_limit ?? 50)));
+        const campaignId = args.p_campaign_id;
+        const recipientIds = new Set(
+          getTable("salon_campaign_recipients")
+            .filter((row) => !campaignId || row.campaign_id === campaignId)
+            .map((row) => row.id)
+        );
+        const candidates = getTable("notification_outbox").filter((row) =>
+          row.organization_id === args.p_organization_id &&
+          ["failed", "dead_letter", "not_configured"].includes(String(row.status)) &&
+          (!args.p_notification_outbox_id || row.id === args.p_notification_outbox_id) &&
+          (!campaignId || recipientIds.has(row.campaign_recipient_id))
+        );
+        const selected = candidates.slice(0, limit);
+        selected.forEach((row) => {
+          Object.assign(row, {
+            status: "pending",
+            attempts: 0,
+            last_error: null,
+            next_attempt_at: null,
+            provider: null,
+            provider_message_id: null,
+          });
+          const recipient = getTable("salon_campaign_recipients").find((item) => item.id === row.campaign_recipient_id);
+          if (recipient && recipient.status !== "converted") recipient.status = "pending";
+        });
+        return {
+          data: { rows: selected.map((row) => ({ ...row })), count: selected.length, has_more: candidates.length > selected.length, limit },
+          error: null,
+        };
+      }
+      return { data: null, error: { message: `rpc ${fn} not stubbed in this mock` } };
+    },
   } as unknown as SalonSupabaseClient & { tables: Map<string, SalonRow[]> };
 }
