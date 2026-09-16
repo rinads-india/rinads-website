@@ -2,11 +2,12 @@ import { Badge, Card, EmptyState } from "@rinads/ui";
 import { canRescheduleAppointment, type AppointmentStatus } from "@rinads/salon";
 import Link from "next/link";
 import { getSalonRepository } from "@/lib/salon";
-import { oneDayAgoIso } from "@/lib/time";
+import { broadTodayRangeIso, isSameZonedCalendarDate } from "@/lib/time";
 import { requireTenancy } from "@/lib/tenancy";
 import { AppointmentActions } from "./AppointmentActions";
 import { AppointmentNotes } from "./AppointmentNotes";
 import { AppointmentReschedule } from "./AppointmentReschedule";
+import { NewAppointmentForm } from "./NewAppointmentForm";
 
 export const metadata = { title: "Calendar — R GLOW Console" };
 
@@ -59,19 +60,23 @@ function groupByDay<T extends { startsAt: string }>(items: T[]): { key: string; 
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ branch?: string }>;
+  searchParams: Promise<{ branch?: string; view?: string; appointment?: string }>;
 }) {
   const tenancy = await requireTenancy();
-  const { branch: branchFilter } = await searchParams;
+  const { branch: branchFilter, view } = await searchParams;
+  const calendarView = view === "upcoming" ? "upcoming" : "today";
+  const today = broadTodayRangeIso();
   const repo = await getSalonRepository();
 
-  const [branchesResult, staffResult, customersResult, appointmentsResult] = await Promise.all([
+  const [branchesResult, staffResult, servicesResult, customersResult, appointmentsResult] = await Promise.all([
     repo.listBranches(tenancy.organizationId),
     repo.listStaff(tenancy.organizationId),
+    repo.listServices(tenancy.organizationId),
     repo.listCustomers(tenancy.organizationId),
     repo.listAppointments(tenancy.organizationId, {
       branchId: branchFilter || undefined,
-      from: oneDayAgoIso(),
+      from: calendarView === "today" ? today.from : today.now,
+      to: calendarView === "today" ? today.to : undefined,
     }),
   ]);
 
@@ -79,7 +84,11 @@ export default async function CalendarPage({
   const staffById = new Map((staffResult.ok ? staffResult.data : []).map((s) => [s.id, s]));
   const customersById = new Map((customersResult.ok ? customersResult.data : []).map((c) => [c.id, c]));
   const branchesById = new Map(branches.map((b) => [b.id, b]));
-  const appointments = appointmentsResult.ok ? appointmentsResult.data : [];
+  const appointments = (appointmentsResult.ok ? appointmentsResult.data : []).filter((appointment) => {
+    if (calendarView !== "today") return true;
+    const branch = branchesById.get(appointment.branchId);
+    return branch ? isSameZonedCalendarDate(appointment.startsAt, today.now, branch.timezone) : false;
+  });
 
   const notesByAppointment = new Map(
     await Promise.all(
@@ -96,13 +105,14 @@ export default async function CalendarPage({
         <div>
           <h2 className="text-2xl font-semibold text-foreground">Calendar</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Upcoming appointments{branchFilter ? " for the selected branch" : " across every branch you can access"}.
+            {calendarView === "today" ? "Today's" : "Upcoming"} appointments
+            {branchFilter ? " for the selected branch" : " across every branch you can access"}.
           </p>
         </div>
         {branches.length > 1 ? (
           <div className="flex flex-wrap gap-1">
             <Link
-              href="/calendar"
+              href={`/calendar?view=${calendarView}`}
               className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
                 !branchFilter ? "bg-rinads-primary text-white" : "bg-surface-muted text-foreground"
               }`}
@@ -112,7 +122,7 @@ export default async function CalendarPage({
             {branches.map((b) => (
               <Link
                 key={b.id}
-                href={`/calendar?branch=${b.id}`}
+                href={`/calendar?view=${calendarView}&branch=${b.id}`}
                 className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
                   branchFilter === b.id ? "bg-rinads-primary text-white" : "bg-surface-muted text-foreground"
                 }`}
@@ -124,13 +134,28 @@ export default async function CalendarPage({
         ) : null}
       </div>
 
+      <div className="flex gap-2">
+        <Link href={`/calendar${branchFilter ? `?branch=${branchFilter}` : ""}`} className={calendarView === "today" ? "btn-primary" : "btn-secondary"}>
+          Today
+        </Link>
+        <Link href={`/calendar?view=upcoming${branchFilter ? `&branch=${branchFilter}` : ""}`} className={calendarView === "upcoming" ? "btn-primary" : "btn-secondary"}>
+          Upcoming
+        </Link>
+      </div>
+
+      <NewAppointmentForm
+        branches={branches.filter((branch) => branch.isActive)}
+        services={(servicesResult.ok ? servicesResult.data : []).filter((service) => service.isActive)}
+        staff={(staffResult.ok ? staffResult.data : []).filter((member) => member.isActive)}
+      />
+
       {!appointmentsResult.ok ? (
         <Card>
           <p className="text-sm text-danger">Could not load appointments: {appointmentsResult.error.message}</p>
         </Card>
       ) : appointments.length === 0 ? (
         <EmptyState
-          title="No upcoming appointments"
+          title={calendarView === "today" ? "No appointments today" : "No upcoming appointments"}
           description="New bookings from your public booking page will appear here."
         />
       ) : (
@@ -151,12 +176,19 @@ export default async function CalendarPage({
                           <Badge className={STATUS_TONE[appt.status]}>{appt.status.replace("_", " ")}</Badge>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {customer?.name ?? customer?.phone ?? "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
+                          {customer ? (
+                            <Link href={`/clients/${customer.id}`} className="text-rinads-primary underline">
+                              {customer.name ?? customer.phone}
+                            </Link>
+                          ) : "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
                           {branches.length > 1 && appointmentBranch ? ` · ${appointmentBranch.name}` : ""}
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(appt.startsAt)}</p>
                       </div>
                       <div className="flex flex-col items-start gap-2 sm:items-end">
+                        <Link href={`/calendar?view=${calendarView}&appointment=${appt.id}${branchFilter ? `&branch=${branchFilter}` : ""}`} className="text-xs text-rinads-primary underline">
+                          Use in RINPO
+                        </Link>
                         <AppointmentActions appointmentId={appt.id} status={appt.status} />
                         <AppointmentReschedule
                           appointmentId={appt.id}

@@ -1,10 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { checkProductionEnvContract, renderProductionEnvContractUnavailablePage } from "@rinads/auth";
+import { isRinaglowPublicPath } from "./lib/public-paths";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
-
-const PUBLIC_PATHS = ["/login"];
 
 export async function middleware(request: NextRequest) {
   // Fail closed on every request if a production deploy is misconfigured
@@ -29,7 +28,7 @@ export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const { pathname } = request.nextUrl;
-  const isPublicPath = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isPublicPath = isRinaglowPublicPath(pathname);
 
   if (!url || !anonKey) {
     // Not configured — let requests through; server components will show a

@@ -4,6 +4,7 @@ import {
   canTransitionRefundStatus,
   fail,
   ok,
+  validateBookingAvailability,
   type AppointmentStatus,
   type AppointmentWithServices,
   type BusyRange,
@@ -19,6 +20,7 @@ import {
   type SalonAppointmentService,
   type SalonBranch,
   type SalonCustomer,
+  type SalonFeedback,
   type SalonNote,
   type SalonPayment,
   type SalonRefund,
@@ -35,6 +37,7 @@ import {
   mapAppointmentServiceRow,
   mapBranchRow,
   mapCustomerRow,
+  mapFeedbackRow,
   mapNoteRow,
   mapPaymentRow,
   mapRefundRow,
@@ -85,6 +88,26 @@ export type CreateAppointmentInput = {
   endsAt: string;
   notes?: string;
   serviceIds: string[];
+  idempotencyKey?: string;
+  createdBy?: string;
+};
+
+export type CreateFrontDeskBookingInput = {
+  branchId: string;
+  staffId: string;
+  serviceIds: string[];
+  startsAt: string;
+  customerPhone: string;
+  customerName?: string;
+  notes?: string;
+  idempotencyKey: string;
+  createdBy?: string;
+};
+
+export type LowRatingFollowUp = {
+  feedback: SalonFeedback;
+  customer: SalonCustomer;
+  task?: SalonNote;
 };
 
 export type CreatePublicBookingInput = {
@@ -319,10 +342,13 @@ export class SalonRepository {
   ): Promise<Result<SalonCustomer>> {
     const phone = input.phone.trim();
     if (!phone) return fail("invalid_input", "Phone number is required.");
+    const row: SalonRow = { organization_id: organizationId, phone };
+    if (input.name?.trim()) row.name = input.name.trim();
+    if (input.email?.trim()) row.email = input.email.trim();
     const { data, error } = await this.client
       .from("salon_customers")
       .upsert(
-        { organization_id: organizationId, phone, name: input.name ?? null, email: input.email ?? null },
+        row,
         { onConflict: "organization_id,phone" }
       )
       .select("*")
@@ -390,6 +416,20 @@ export class SalonRepository {
     input: CreateAppointmentInput
   ): Promise<Result<SalonAppointment & { services: SalonAppointmentService[] }>> {
     if (!input.serviceIds.length) return fail("invalid_input", "At least one service is required.");
+    if (input.idempotencyKey) {
+      const existingResult = await this.client
+        .from("salon_appointments")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .eq("idempotency_key", input.idempotencyKey)
+        .maybeSingle();
+      if (existingResult.error) return fail("db_error", existingResult.error.message);
+      if (existingResult.data) {
+        const existing = mapAppointmentRow(existingResult.data);
+        const services = await this.listAppointmentServices(existing.id);
+        return ok({ ...existing, services: services.ok ? services.data : [] });
+      }
+    }
 
     const { data, error } = await this.client
       .from("salon_appointments")
@@ -402,10 +442,25 @@ export class SalonRepository {
         starts_at: input.startsAt,
         ends_at: input.endsAt,
         notes: input.notes ?? null,
+        idempotency_key: input.idempotencyKey ?? null,
+        created_by: input.createdBy ?? null,
       })
       .select("*")
       .single();
     if (error) {
+      if (input.idempotencyKey && /duplicate|unique/i.test(error.message)) {
+        const replay = await this.client
+          .from("salon_appointments")
+          .select("*")
+          .eq("organization_id", organizationId)
+          .eq("idempotency_key", input.idempotencyKey)
+          .maybeSingle();
+        if (replay.data) {
+          const existing = mapAppointmentRow(replay.data);
+          const existingServices = await this.listAppointmentServices(existing.id);
+          return ok({ ...existing, services: existingServices.ok ? existingServices.data : [] });
+        }
+      }
       const message = /exclusion|conflict/i.test(error.message)
         ? "This staff member already has an appointment overlapping this time."
         : error.message;
@@ -414,16 +469,19 @@ export class SalonRepository {
     if (!data) return fail("db_error", "No appointment returned after insert.");
 
     const appointment = mapAppointmentRow(data);
+    const serviceCatalog = await this.listServices(organizationId);
+    const serviceById = new Map((serviceCatalog.ok ? serviceCatalog.data : []).map((service) => [service.id, service]));
     const services: SalonAppointmentService[] = [];
     for (const serviceId of input.serviceIds) {
+      const service = serviceById.get(serviceId);
       const svcResult = await this.client
         .from("salon_appointment_services")
         .insert({
           organization_id: organizationId,
           appointment_id: appointment.id,
           service_id: serviceId,
-          price_at_booking: 0,
-          duration_min_at_booking: 0,
+          price_at_booking: service?.price ?? 0,
+          duration_min_at_booking: service?.durationMin ?? 0,
         })
         .select("*")
         .single();
@@ -432,6 +490,94 @@ export class SalonRepository {
     }
 
     return ok({ ...appointment, services });
+  }
+
+  /**
+   * Tenant-scoped phone/walk-in booking workflow. This is deliberately not
+   * the anonymous public RPC: it validates operator inputs against the
+   * authenticated repository, then uses createAppointment so the same DB
+   * exclusion constraint remains the final conflict guard.
+   */
+  async createFrontDeskBooking(
+    organizationId: string,
+    input: CreateFrontDeskBookingInput
+  ): Promise<Result<SalonAppointment & { services: SalonAppointmentService[] }>> {
+    const phone = input.customerPhone.trim();
+    if (!/^\+?[0-9]{8,15}$/.test(phone)) {
+      return fail("invalid_input", "Enter a valid phone number with 8 to 15 digits.");
+    }
+    if (!input.idempotencyKey.trim()) return fail("invalid_input", "A booking idempotency key is required.");
+    const serviceIds = [...new Set(input.serviceIds.filter(Boolean))];
+    if (!serviceIds.length) return fail("invalid_input", "At least one service is required.");
+
+    const existing = await this.client
+      .from("salon_appointments")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("idempotency_key", input.idempotencyKey)
+      .maybeSingle();
+    if (existing.error) return fail("db_error", existing.error.message);
+    if (existing.data) {
+      const appointment = mapAppointmentRow(existing.data);
+      const services = await this.listAppointmentServices(appointment.id);
+      return ok({ ...appointment, services: services.ok ? services.data : [] });
+    }
+
+    const [branches, staff, services, appointments] = await Promise.all([
+      this.listBranches(organizationId),
+      this.listStaff(organizationId),
+      this.listServices(organizationId),
+      this.listAppointments(organizationId, { staffId: input.staffId }),
+    ]);
+    if (!branches.ok) return branches;
+    if (!staff.ok) return staff;
+    if (!services.ok) return services;
+    if (!appointments.ok) return appointments;
+
+    const branch = branches.data.find((item) => item.id === input.branchId);
+    if (!branch?.isActive) return fail("invalid_input", "Choose an active branch in this organization.");
+    const member = staff.data.find((item) => item.id === input.staffId);
+    if (!member?.isActive || member.branchId !== branch.id) {
+      return fail("invalid_input", "Choose active staff assigned to this branch.");
+    }
+    const selected = services.data.filter((service) => serviceIds.includes(service.id));
+    if (selected.length !== serviceIds.length || selected.some((service) => !service.isActive)) {
+      return fail("invalid_input", "Choose only active services in this organization.");
+    }
+    const durationMin = selected.reduce((sum, service) => sum + service.durationMin, 0);
+    const bufferMin = selected.reduce((sum, service) => sum + service.bufferMin, 0);
+    const availabilityError = validateBookingAvailability({
+      startsAt: input.startsAt,
+      durationMin,
+      bufferMin,
+      timeZone: branch.timezone,
+      branchHours: branch.workingHours,
+      staffHours: member.workingHours,
+      now: new Date(),
+      busy: appointments.data
+        .filter((appointment) => appointment.status !== "cancelled" && appointment.status !== "no_show")
+        .map((appointment) => ({ start: appointment.startsAt, end: appointment.endsAt })),
+    });
+    if (availabilityError) return fail("unavailable", availabilityError);
+
+    const customer = await this.upsertCustomerByPhone(organizationId, {
+      phone,
+      name: input.customerName?.trim() || undefined,
+    });
+    if (!customer.ok) return customer;
+    const startsAt = new Date(input.startsAt);
+    const endsAt = new Date(startsAt.getTime() + (durationMin + bufferMin) * 60_000).toISOString();
+    return this.createAppointment(organizationId, {
+      branchId: branch.id,
+      staffId: member.id,
+      customerId: customer.data.id,
+      startsAt: startsAt.toISOString(),
+      endsAt,
+      notes: input.notes?.trim() || undefined,
+      serviceIds,
+      idempotencyKey: input.idempotencyKey,
+      createdBy: input.createdBy,
+    });
   }
 
   async updateAppointmentStatus(
@@ -531,6 +677,72 @@ export class SalonRepository {
   async updateNoteStatus(noteId: string, status: NoteStatus): Promise<Result<true>> {
     const { error } = await this.client.from("salon_notes").update({ status }).eq("id", noteId);
     if (error) return fail("db_error", error.message);
+    return ok(true);
+  }
+
+  async listLowRatingFollowUps(organizationId: string): Promise<Result<LowRatingFollowUp[]>> {
+    const { data, error } = await this.client
+      .from("salon_feedback")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .lte("rating", 3)
+      .neq("status", "resolved")
+      .order("created_at", { ascending: false });
+    if (error) return fail("db_error", error.message);
+    const feedback = (data ?? []).map(mapFeedbackRow);
+    const [customers, tasks] = await Promise.all([
+      this.listCustomers(organizationId),
+      this.listOpenStaffTasks(organizationId),
+    ]);
+    if (!customers.ok) return customers;
+    if (!tasks.ok) return tasks;
+    const customerById = new Map(customers.data.map((customer) => [customer.id, customer]));
+    const followUps: LowRatingFollowUp[] = [];
+    for (const item of feedback) {
+      const customer = customerById.get(item.customerId);
+      if (!customer) continue;
+      const task = tasks.data.find(
+        (note) => note.entityId === item.customerId && note.body.includes(`rated ${item.rating}/5`)
+      );
+      followUps.push({ feedback: item, customer, task });
+    }
+    return ok(followUps);
+  }
+
+  async resolveLowRatingFollowUp(
+    organizationId: string,
+    feedbackId: string
+  ): Promise<Result<true>> {
+    const current = await this.client
+      .from("salon_feedback")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("id", feedbackId)
+      .maybeSingle();
+    if (current.error) return fail("db_error", current.error.message);
+    if (!current.data) return fail("not_found", "Feedback was not found in this organization.");
+    const feedback = mapFeedbackRow(current.data);
+    if (feedback.rating > 3) return fail("invalid_input", "Only low-rating follow-ups can be resolved here.");
+    const { error } = await this.client
+      .from("salon_feedback")
+      .update({ status: "resolved" })
+      .eq("organization_id", organizationId)
+      .eq("id", feedbackId);
+    if (error) return fail("db_error", error.message);
+
+    const tasks = await this.listOpenStaffTasks(organizationId);
+    if (tasks.ok) {
+      const task = tasks.data.find(
+        (note) => note.entityId === feedback.customerId && note.body.includes(`rated ${feedback.rating}/5`)
+      );
+      if (task) {
+        await this.client
+          .from("salon_notes")
+          .update({ status: "done" })
+          .eq("organization_id", organizationId)
+          .eq("id", task.id);
+      }
+    }
     return ok(true);
   }
 

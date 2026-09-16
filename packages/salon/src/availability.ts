@@ -1,4 +1,4 @@
-import type { DayHours, TimeRange, WeeklyHours } from "./types";
+import type { DayHours, SalonBranch, SalonService, SalonStaff, TimeRange, WeeklyHours } from "./types";
 
 export type BusyRange = TimeRange;
 
@@ -127,4 +127,101 @@ export function generateDaySlots(input: GenerateDaySlotsInput): TimeRange[] {
 /** True if two [start, end) ranges overlap. Mirrors the DB EXCLUDE constraint semantics. */
 export function rangesOverlap(a: TimeRange, b: TimeRange): boolean {
   return new Date(a.start).getTime() < new Date(b.end).getTime() && new Date(a.end).getTime() > new Date(b.start).getTime();
+}
+
+export type BookingReadiness = {
+  ready: boolean;
+  activeBranch: boolean;
+  activeService: boolean;
+  activeStaff: boolean;
+};
+
+/** Truthful public-booking readiness: all three independently persisted prerequisites must exist. */
+export function getBookingReadiness(
+  branches: SalonBranch[],
+  services: SalonService[],
+  staff: SalonStaff[]
+): BookingReadiness {
+  const activeBranchIds = new Set(branches.filter((branch) => branch.isActive).map((branch) => branch.id));
+  const activeBranch = activeBranchIds.size > 0;
+  const activeService = services.some((service) => service.isActive);
+  const activeStaff = staff.some(
+    (member) => member.isActive && Boolean(member.branchId) && activeBranchIds.has(member.branchId!)
+  );
+  return { ready: activeBranch && activeService && activeStaff, activeBranch, activeService, activeStaff };
+}
+
+type ZonedParts = { weekday: DayKey; minutes: number; date: string };
+
+function zonedParts(iso: string, timeZone: string): ZonedParts | null {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+    acc[part.type] = part.value;
+    return acc;
+  }, {});
+  const weekday = parts.weekday?.slice(0, 3).toLowerCase() as DayKey;
+  if (!DAY_KEYS.includes(weekday)) return null;
+  return {
+    weekday,
+    minutes: Number(parts.hour) * 60 + Number(parts.minute),
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+  };
+}
+
+export type ValidateBookingAvailabilityInput = {
+  startsAt: string;
+  durationMin: number;
+  bufferMin?: number;
+  timeZone: string;
+  branchHours: WeeklyHours;
+  staffHours: WeeklyHours;
+  busy?: BusyRange[];
+  stepMin?: number;
+  now?: Date;
+};
+
+/**
+ * Server-side availability gate for operator-created bookings. It checks the
+ * branch-local wall clock, branch/staff hours, slot grid, buffers, and current
+ * busy ranges. The database exclusion constraint remains the final race guard.
+ */
+export function validateBookingAvailability(input: ValidateBookingAvailabilityInput): string | null {
+  const start = new Date(input.startsAt);
+  if (!Number.isFinite(start.getTime())) return "Choose a valid start time.";
+  if (input.now && start.getTime() < input.now.getTime()) return "Choose a future start time.";
+  if (input.durationMin <= 0) return "Selected services have no bookable duration.";
+  const localStart = zonedParts(input.startsAt, input.timeZone);
+  if (!localStart) return "Choose a valid start time.";
+  const hours = intersectDayHours(
+    input.branchHours[localStart.weekday] ?? null,
+    input.staffHours[localStart.weekday] ?? null
+  );
+  if (!hours) return "The branch or staff member is closed at that time.";
+  const step = input.stepMin ?? 15;
+  if (step <= 0 || localStart.minutes % step !== 0) return `Start time must be on a ${step}-minute interval.`;
+  const blockedMin = input.durationMin + Math.max(0, input.bufferMin ?? 0);
+  const closeMin = parseTimeToMinutes(hours.close);
+  if (localStart.minutes < parseTimeToMinutes(hours.open) || localStart.minutes + blockedMin > closeMin) {
+    return "The appointment and its buffer must fit within branch and staff hours.";
+  }
+  const blockedEnd = new Date(start.getTime() + blockedMin * 60_000);
+  const localEnd = zonedParts(blockedEnd.toISOString(), input.timeZone);
+  if (!localEnd || localEnd.date !== localStart.date) return "The appointment must finish on the selected local day.";
+  if ((input.busy ?? []).some((range) => rangesOverlap(
+    { start: input.startsAt, end: blockedEnd.toISOString() },
+    range
+  ))) {
+    return "This staff member already has an appointment overlapping this time.";
+  }
+  return null;
 }

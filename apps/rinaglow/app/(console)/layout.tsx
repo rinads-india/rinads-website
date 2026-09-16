@@ -2,6 +2,7 @@ import { isPrivilegedRoleKey } from "@rinads/permissions";
 import { RinaglowNav } from "@/components/RinaglowNav";
 import { RinpoCommandBar } from "@/components/RinpoCommandBar";
 import { requireTenancy } from "@/lib/tenancy";
+import { Suspense } from "react";
 
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const tenancy = await requireTenancy();
@@ -12,7 +13,9 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
     <>
       <RinaglowNav organizationName={membership?.organizationName} roleKey={tenancy.roleKey} />
       <main className="mx-auto max-w-6xl px-4 py-8 pb-32">{children}</main>
-      <RinpoCommandBar canApprove={canApprove} />
+      <Suspense fallback={null}>
+        <RinpoCommandBar canApprove={canApprove} />
+      </Suspense>
     </>
   );
 }

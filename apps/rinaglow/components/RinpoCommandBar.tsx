@@ -2,7 +2,9 @@
 
 import type { AttentionItem } from "@rinads/salon";
 import { useState, useTransition } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { resolveRinpoActionAction, runRinpoCommandAction, type RinpoCommandOutcome } from "@/app/(console)/rinpo-actions";
+import { getRinpoPageContext } from "@/lib/rinpo-page-context";
 
 type ToolResult = { tool: string; ok: boolean; message: string; data?: unknown };
 
@@ -68,12 +70,15 @@ function ResultCard({ result, canApprove }: { result: ToolResult; canApprove: bo
 }
 
 export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [text, setText] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [lastAttentionItems, setLastAttentionItems] = useState<AttentionItem[] | undefined>(undefined);
   const [lastCampaignDraftId, setLastCampaignDraftId] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const pageContext = getRinpoPageContext(pathname, searchParams);
 
   function handleSubmit() {
     const command = text.trim();
@@ -81,7 +86,12 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
     setText("");
     setHistory((h) => [...h, { role: "user", text: command }]);
     startTransition(async () => {
-      const outcome: RinpoCommandOutcome = await runRinpoCommandAction(command, lastAttentionItems, lastCampaignDraftId);
+      const outcome: RinpoCommandOutcome = await runRinpoCommandAction(
+        command,
+        lastAttentionItems,
+        lastCampaignDraftId,
+        pageContext
+      );
       if (outcome.kind === "clarify") {
         setHistory((h) => [...h, { role: "rinpo", kind: "clarify", question: outcome.question }]);
         return;

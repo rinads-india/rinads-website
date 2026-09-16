@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getSalonDeps } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { PendingActionsList } from "./PendingActionsList";
+import { LowRatingQueue } from "./LowRatingQueue";
 
 export const metadata = { title: "Dashboard — R GLOW Console" };
 
@@ -14,10 +15,12 @@ export default async function DashboardPage() {
   const tenancy = await requireTenancy();
   const { repo, actions } = await getSalonDeps();
   const canApprove = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("org.manage");
+  const canManageReviews = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("salon.reviews.manage");
 
-  const [summary, pendingActionsResult] = await Promise.all([
+  const [summary, pendingActionsResult, lowRatingResult] = await Promise.all([
     getBusinessSummary(repo, tenancy.organizationId),
     actions.listPending(tenancy.organizationId),
+    repo.listLowRatingFollowUps(tenancy.organizationId),
   ]);
 
   const pendingActions = pendingActionsResult.ok ? pendingActionsResult.data : [];
@@ -75,6 +78,12 @@ export default async function DashboardPage() {
           Ask RINPO (bottom of the screen) &ldquo;What needs attention?&rdquo; then &ldquo;Do the first three&rdquo; to act on this
           list directly.
         </p>
+      </Card>
+
+      <Card>
+        <p className="section-title">Low-rating follow-up</p>
+        <LowRatingQueue items={lowRatingResult.ok ? lowRatingResult.data : []} canManage={canManageReviews} />
+        {!lowRatingResult.ok ? <p className="mt-2 text-sm text-danger">{lowRatingResult.error.message}</p> : null}
       </Card>
 
       <Card>

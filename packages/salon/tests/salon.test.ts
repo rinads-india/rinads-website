@@ -12,7 +12,22 @@ import {
   intersectWeeklyHours,
   computeAttentionItems,
   DEFAULT_WEEKLY_HOURS,
+  getBookingReadiness,
 } from "../src/index";
+
+describe("Booking readiness", () => {
+  const branch = { id: "b", organizationId: "o", name: "Main", timezone: "Asia/Kolkata", workingHours: {}, isActive: true };
+  const service = { id: "s", organizationId: "o", name: "Cut", category: "general", durationMin: 30, bufferMin: 0, price: 100, currency: "INR", isActive: true };
+  const staff = { id: "u", organizationId: "o", branchId: "b", displayName: "Asha", specialties: [], workingHours: {}, isActive: true };
+
+  it("is ready only when active branch, service, and eligible staff all exist", () => {
+    assert.equal(getBookingReadiness([branch], [service], [staff]).ready, true);
+    assert.equal(getBookingReadiness([], [service], [staff]).ready, false);
+    assert.equal(getBookingReadiness([branch], [], [staff]).ready, false);
+    assert.equal(getBookingReadiness([branch], [service], [{ ...staff, isActive: false }]).ready, false);
+    assert.equal(getBookingReadiness([{ ...branch, isActive: false }], [service], [staff]).activeStaff, false);
+  });
+});
 
 describe("Appointment state machine", () => {
   it("allows the happy path lifecycle", () => {
