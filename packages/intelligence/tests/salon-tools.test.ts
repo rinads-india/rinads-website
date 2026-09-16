@@ -11,6 +11,7 @@ import {
 } from "@rinads/salon-server";
 import { createSalonMockClient } from "./mock-salon-client";
 import { executeSalonRinpoTool, resolveSalonRinpoAction, type SalonRinpoContext, type SalonRinpoDeps } from "../src/salon-tools";
+import { DEFAULT_WEEKLY_HOURS } from "@rinads/salon";
 
 const ORG_ID = "org_salon_1";
 
@@ -31,8 +32,9 @@ function ctxWith(permissions: string[], overrides: Partial<SalonRinpoContext> = 
 }
 
 async function seedBasics(repo: SalonRepository) {
-  const branch = await repo.createBranch(ORG_ID, { name: "MG Road" });
-  const staff = await repo.createStaff(ORG_ID, { displayName: "Asha" });
+  const branch = await repo.createBranch(ORG_ID, { name: "MG Road", workingHours: DEFAULT_WEEKLY_HOURS });
+  if (!branch.ok) throw new Error("branch seed failed");
+  const staff = await repo.createStaff(ORG_ID, { displayName: "Asha", branchId: branch.data.id, workingHours: DEFAULT_WEEKLY_HOURS });
   const service = await repo.createService(ORG_ID, { name: "Haircut", durationMin: 30, price: 500 });
   if (!branch.ok || !staff.ok || !service.ok) throw new Error("seed failed");
   return { branch: branch.data, staff: staff.data, service: service.data };

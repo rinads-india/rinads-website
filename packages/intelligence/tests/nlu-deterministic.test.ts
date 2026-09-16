@@ -128,6 +128,34 @@ describe("DeterministicRinpoNluAdapter — do the first N", () => {
 });
 
 describe("DeterministicRinpoNluAdapter — clarification branches", () => {
+  it("clarifies every missing input for appointment creation", () => {
+    const intent = adapter.parse("Create an appointment", baseCtx);
+    assert.equal(intent.kind, "clarify");
+    if (intent.kind === "clarify") {
+      assert.match(intent.question, /branch/);
+      assert.match(intent.question, /staff/);
+      assert.match(intent.question, /service/);
+      assert.match(intent.question, /start time/);
+      assert.match(intent.question, /customer/);
+    }
+  });
+
+  it("creates an appointment intent from page context plus explicit staff, service, and time", () => {
+    const intent = adapter.parse(
+      "Book appointment staff 22222222-2222-4222-8222-222222222222 service 33333333-3333-4333-8333-333333333333 at 2026-09-18T10:00:00Z",
+      {
+        ...baseCtx,
+        defaultBranchId: "11111111-1111-4111-8111-111111111111",
+        selectedCustomerId: "44444444-4444-4444-8444-444444444444",
+      }
+    );
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "create_appointment");
+    assert.equal(intent.calls[0].args.branchId, "11111111-1111-4111-8111-111111111111");
+    assert.equal(intent.calls[0].args.customerId, "44444444-4444-4444-8444-444444444444");
+  });
+
   it("asks which branch when checking empty slots without a default branch", () => {
     const intent = adapter.parse("Show me empty slots today", baseCtx);
     assert.equal(intent.kind, "clarify");

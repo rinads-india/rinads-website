@@ -23,6 +23,10 @@ function extractUuid(text: string): string | undefined {
   return text.match(UUID_RE)?.[0];
 }
 
+function extractLabeledUuid(text: string, label: string): string | undefined {
+  return text.match(new RegExp(`${label}(?:\\s+id)?[:\\s]+(${UUID_RE.source})`, "i"))?.[1];
+}
+
 /**
  * The single most-time-sensitive, safely-automatable next step per
  * attention-signal kind — used to resolve "do the first N" against the
@@ -93,6 +97,33 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
 
     if (/today'?s appointments|appointments today|what'?s on (the )?calendar today/i.test(lower)) {
       return calls("Pulling today's appointments.", { tool: "get_today_appointments", args: {} });
+    }
+
+    if (/\b(create|book|schedule|make)\b.*\bappointment\b/i.test(lower)) {
+      const branchId = extractLabeledUuid(text, "branch") ?? context.defaultBranchId;
+      const staffId = extractLabeledUuid(text, "staff");
+      const serviceId = extractLabeledUuid(text, "service");
+      const startsAt = text.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?/)?.[0];
+      const customerPhone = text.match(/(?:customer\s+)?phone[:\s]+(\+?[0-9]{8,15})/i)?.[1];
+      const customerId = context.selectedCustomerId;
+      const missing = [
+        !branchId && "branch",
+        !staffId && "staff",
+        !serviceId && "service",
+        !startsAt && "start time",
+        !customerPhone && !customerId && "customer",
+      ].filter(Boolean);
+      if (missing.length) return clarify(`I still need: ${missing.join(", ")}.`);
+      return calls("Creating the appointment after checking availability.", {
+        tool: "create_appointment",
+        args: {
+          branchId: branchId!,
+          staffId: staffId!,
+          serviceIds: serviceId!,
+          startsAt: startsAt!,
+          ...(customerPhone ? { customerPhone } : { customerId: customerId! }),
+        },
+      });
     }
 
     if (/empty slots?|open slots?|availability today/i.test(lower)) {

@@ -2,6 +2,7 @@
 
 import { Badge } from "@rinads/ui";
 import type { PaymentMethod, SaleWithLines } from "@rinads/salon";
+import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import { addSaleLineAction, finalizeSaleAction, recordPaymentAction, redeemLoyaltyAction, requestRefundAction, type FormActionState } from "./actions";
 
@@ -51,6 +52,7 @@ export function SaleCard({
             <Badge className={STATUS_TONE[sale.status] ?? "bg-gray-200 text-gray-700"}>{sale.status.replace("_", " ")}</Badge>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{customerLabel}</p>
+          <Link href={`/pos?sale=${sale.id}`} className="text-xs text-rinads-primary underline">Use in RINPO</Link>
         </div>
         <p className="text-sm font-semibold text-foreground">
           {sale.currency} {sale.total.toLocaleString("en-IN")}

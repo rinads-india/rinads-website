@@ -327,33 +327,34 @@ export async function executeSalonRinpoTool(
     case "create_appointment": {
       const branchId = arg(input, "branchId");
       const staffId = arg(input, "staffId");
-      const customerPhone = arg(input, "customerPhone");
+      let customerPhone = arg(input, "customerPhone");
+      let customerName = input.args.customerName ? arg(input, "customerName") : undefined;
+      const customerId = arg(input, "customerId");
       const serviceIds = String(input.args.serviceIds ?? "").split(",").map((s) => s.trim()).filter(Boolean);
       const startsAt = arg(input, "startsAt");
-      if (!branchId || !staffId || !customerPhone || !serviceIds.length || !startsAt) {
-        return { tool: input.tool, ok: false, message: "branchId, staffId, customerPhone, serviceIds, and startsAt are required." };
+      if (customerId && !customerPhone) {
+        const customer = await deps.repo.getCustomer(customerId);
+        if (!customer.ok || customer.data.organizationId !== ctx.organizationId) {
+          return { tool: input.tool, ok: false, message: "Customer was not found in this organization." };
+        }
+        customerPhone = customer.data.phone;
+        customerName = customer.data.name;
       }
-      const servicesResult = await deps.repo.listServices(ctx.organizationId);
-      if (!servicesResult.ok) return { tool: input.tool, ok: false, message: servicesResult.error.message };
-      const selected = servicesResult.data.filter((s) => serviceIds.includes(s.id));
-      const totalMin = selected.reduce((sum, s) => sum + s.durationMin + s.bufferMin, 0);
-      if (totalMin <= 0) return { tool: input.tool, ok: false, message: "Selected services are invalid." };
-      const endsAt = new Date(new Date(startsAt).getTime() + totalMin * 60_000).toISOString();
-
-      const customerResult = await deps.repo.upsertCustomerByPhone(ctx.organizationId, {
-        phone: customerPhone,
-        name: input.args.customerName ? arg(input, "customerName") : undefined,
-      });
-      if (!customerResult.ok) return { tool: input.tool, ok: false, message: customerResult.error.message };
-
-      const result = await deps.repo.createAppointment(ctx.organizationId, {
+      if (!branchId || !staffId || !customerPhone || !serviceIds.length || !startsAt) {
+        return { tool: input.tool, ok: false, message: "branchId, staffId, customer, serviceIds, and startsAt are required." };
+      }
+      const idempotencyKey = arg(input, "idempotencyKey")
+        || `rinpo:create_appointment:${branchId}:${staffId}:${serviceIds.join(",")}:${startsAt}:${customerPhone}`;
+      const result = await deps.repo.createFrontDeskBooking(ctx.organizationId, {
         branchId,
         staffId,
-        customerId: customerResult.data.id,
+        customerPhone,
+        customerName,
         startsAt,
-        endsAt,
         serviceIds,
         notes: input.args.notes ? arg(input, "notes") : undefined,
+        idempotencyKey,
+        createdBy: ctx.userId,
       });
       if (!result.ok) return { tool: input.tool, ok: false, message: result.error.message };
       await auditWrite(deps, ctx, "rinpo.create_appointment", "salon_appointment", result.data.id, { branchId, staffId });

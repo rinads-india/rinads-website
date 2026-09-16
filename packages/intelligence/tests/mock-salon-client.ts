@@ -72,7 +72,12 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
       if (op === "insert") {
         const inserted = payload.map((row) => {
           const now = new Date().toISOString();
-          const stored: SalonRow = { id: `${table}_${++seq}`, created_at: now, updated_at: now, ...row };
+          const defaults: SalonRow =
+            table === "salon_branches" ? { timezone: "Asia/Kolkata", working_hours: {}, is_active: true }
+            : table === "salon_services" ? { category: "general", buffer_min: 0, currency: "INR", is_active: true }
+            : table === "salon_staff" ? { specialties: [], working_hours: {}, is_active: true }
+            : {};
+          const stored: SalonRow = { id: `${table}_${++seq}`, created_at: now, updated_at: now, ...defaults, ...row };
           rows.push(stored);
           return stored;
         });
