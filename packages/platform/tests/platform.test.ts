@@ -1,9 +1,20 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { seedTenantBundle, AMBADY_TENANT_SLUG } from "../src/templates/index";
+import {
+  seedTenantBundle,
+  AMBADY_TENANT_SLUG,
+  parseVerticalTemplateKey,
+} from "../src/templates/index";
 import { planIncludesModule } from "../src/subscriptions";
 
 describe("Vertical templates", () => {
+  it("validates every supported onboarding template", () => {
+    for (const key of ["generic-retail", "ambady-nursery", "salon-os"]) {
+      assert.equal(parseVerticalTemplateKey(key), key);
+    }
+    assert.throws(() => parseVerticalTemplateKey("unknown"), /Unknown template/);
+  });
+
   it("seeds ambady-nursery for arbitrary org id", () => {
     const bundle = seedTenantBundle("org_new_tenant_001", "ambady-nursery");
     assert.equal(bundle.commerce.products[0]?.organizationId, "org_new_tenant_001");

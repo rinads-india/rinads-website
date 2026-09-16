@@ -12,13 +12,14 @@
     "lint": "echo 'lint: @rinads/database ok'",
     "typecheck": "tsc --noEmit",
     "build": "echo 'build: @rinads/database (source package)'",
-    "test": "echo 'no tests yet'"
+    "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8"
   },
   "devDependencies": {
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }

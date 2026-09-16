@@ -5,6 +5,17 @@ import { createAmbadyOperationsSeed, createGenericRetailOperationsSeed } from "@
 
 export type VerticalTemplateKey = "ambady-nursery" | "generic-retail" | "salon-os";
 
+export function isVerticalTemplateKey(value: string): value is VerticalTemplateKey {
+  return value === "ambady-nursery" || value === "generic-retail" || value === "salon-os";
+}
+
+export function parseVerticalTemplateKey(value: string): VerticalTemplateKey {
+  if (!isVerticalTemplateKey(value)) {
+    throw new Error(`Unknown template: ${value}`);
+  }
+  return value;
+}
+
 export type TenantSeedBundle = {
   commerce: CommerceStore;
   operations: OperationsStore;

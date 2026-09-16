@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDemoTenancyContext } from "../src/load";
 import { requireOrgActive, requirePermission } from "../src/context";
 import { planFeatureFlags } from "../src/feature-flags";
-import { readActiveOrgIdFromCookie } from "../src/org-switch";
+import { activeOrgCookieOptions, readActiveOrgIdFromCookie } from "../src/org-switch";
 
 describe("tenancy load helpers", () => {
   it("builds demo context with plan flags", () => {
@@ -27,6 +27,17 @@ describe("tenancy load helpers", () => {
   it("reads active org cookie", () => {
     assert.equal(readActiveOrgIdFromCookie(" org_abc "), "org_abc");
     assert.equal(readActiveOrgIdFromCookie(""), undefined);
+  });
+
+  it("keeps active-org HttpOnly while accepting an explicit shared scope", () => {
+    const options = activeOrgCookieOptions("org_abc", {
+      domain: ".rinads.com",
+      secure: true,
+    });
+    assert.equal(options.httpOnly, true);
+    assert.equal(options.domain, ".rinads.com");
+    assert.equal(options.secure, true);
+    assert.equal(activeOrgCookieOptions("org_local").domain, undefined);
   });
 
   it("maps plan to module flags", () => {

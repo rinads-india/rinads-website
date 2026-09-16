@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from "@rinads/database";
 import { cookies } from "next/headers";
 import { getSupabasePublicConfig } from "./env";
+import { websiteAuthCookieOptions } from "../auth-cookie-config";
 
 export async function createWebsiteServerClient() {
   const cookieStore = await cookies();
@@ -19,6 +20,7 @@ export async function createWebsiteServerClient() {
           // Server Component — session refresh handled in middleware
         }
       },
-    }
+    },
+    websiteAuthCookieOptions()
   );
 }

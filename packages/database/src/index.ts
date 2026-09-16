@@ -8,7 +8,12 @@ export type {
   AuditLog,
 } from "./types";
 export { isDatabaseConfigured } from "./types";
-export { createBrowserSupabaseClient } from "./browser";
+export {
+  createBrowserSupabaseClient,
+  isValidParentCookieDomain,
+  sharedAuthCookieOptions,
+  type SupabaseCookieOptions,
+} from "./browser";
 export {
   createServerSupabaseClient,
   createServiceRoleClient,
