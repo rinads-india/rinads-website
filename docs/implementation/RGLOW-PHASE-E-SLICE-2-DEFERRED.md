@@ -12,14 +12,13 @@ Per the master prompt's own guidance ("prefer one real vertical slice over many 
 - Loyalty-liability growth-intelligence metric.
 - A dedicated `/loyalty` console page.
 
-## Review-request workflow
-- Post-visit review/feedback request automation.
-- Escalation and reputation-workflow handling.
-- Review-related growth-intelligence metrics.
+## Review-request workflow — completed in Phase E.2 Slice 2
+- Post-visit review/feedback requests, low-rating manager escalation, and review growth metrics are implemented.
+- Public feedback uses one neutral destination for every rating; there is no sentiment gate.
 
 ## Reactivation workflow polish
 - This slice supports reactivation **campaigns** (via `campaignType: "reactivation"` and `create_reactivation_draft`/`send_reactivation_batch` RINPO tools), reusing the same segment/campaign machinery as custom campaigns.
-- Deferred: no-show recovery and unconfirmed-booking recovery as distinct triggered workflows (as opposed to operator-initiated segment criteria).
+- No-show recovery and unconfirmed-booking recovery as distinct triggered workflows are completed in Phase E.2 Slice 2.
 
 ## Bulk retry
 - `retry_failed_message` (single message) is implemented and exposed both as a RINPO SENSITIVE tool and a per-recipient "Retry" button on the campaign detail page.

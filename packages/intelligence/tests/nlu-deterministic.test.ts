@@ -39,6 +39,26 @@ describe("DeterministicRinpoNluAdapter — business summary", () => {
   });
 });
 
+describe("DeterministicRinpoNluAdapter — reviews and recovery", () => {
+  it("maps review scheduling to a single-customer WRITE tool", () => {
+    const appointmentId = "123e4567-e89b-12d3-a456-426614174000";
+    const intent = adapter.parse(`Schedule a review request for ${appointmentId}`, baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "schedule_review_request");
+    assert.equal(intent.calls[0].args.appointmentId, appointmentId);
+  });
+
+  it("maps workflow summaries to READ tools", () => {
+    const reviews = adapter.parse("Show review workflow summary", baseCtx);
+    const recovery = adapter.parse("Show recovery summary", baseCtx);
+    assert.equal(reviews.kind, "tool_calls");
+    assert.equal(recovery.kind, "tool_calls");
+    if (reviews.kind === "tool_calls") assert.equal(reviews.calls[0].tool, "get_review_workflow_summary");
+    if (recovery.kind === "tool_calls") assert.equal(recovery.calls[0].tool, "get_recovery_summary");
+  });
+});
+
 describe("DeterministicRinpoNluAdapter — do the first N", () => {
   const items = [
     attentionItem("pending_payments", "Pending payments"),

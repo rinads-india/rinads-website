@@ -46,10 +46,13 @@ export type RinpoToolName =
   | "get_message_failures"
   | "get_retention_summary"
   | "get_growth_opportunities"
+  | "get_review_workflow_summary"
+  | "get_recovery_summary"
   // Growth WRITE tools
   | "create_segment"
   | "create_campaign_draft"
   | "create_reactivation_draft"
+  | "schedule_review_request"
   // Salon SENSITIVE tools
   | "record_payment"
   | "initiate_refund"

@@ -88,6 +88,36 @@ describe("executeSalonRinpoTool — permission gating", () => {
   });
 });
 
+describe("executeSalonRinpoTool — review automation", () => {
+  it("schedules one completed visit immediately without creating an approval", async () => {
+    const { deps, client } = makeDeps();
+    client.tables.set("salon_appointments", [{
+      id: "appointment-review", organization_id: ORG_ID, branch_id: "branch-1", staff_id: "staff-1",
+      customer_id: "customer-1", status: "completed",
+      starts_at: "2026-09-16T08:00:00.000Z", ends_at: "2026-09-16T09:00:00.000Z",
+    }]);
+    const result = await executeSalonRinpoTool(deps, ctxWith(["salon.reviews.manage"]), {
+      tool: "schedule_review_request",
+      args: { appointmentId: "appointment-review" },
+    });
+    assert.equal(result.ok, true);
+    assert.equal(client.tables.get("salon_automation_runs")?.length, 1);
+    assert.equal(client.tables.get("rinpo_actions")?.length ?? 0, 0);
+  });
+
+  it("returns review and recovery summaries as READ tools", async () => {
+    const { deps } = makeDeps();
+    const review = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "get_review_workflow_summary", args: {},
+    });
+    const recovery = await executeSalonRinpoTool(deps, ctxWith(["org.read"]), {
+      tool: "get_recovery_summary", args: {},
+    });
+    assert.equal(review.ok, true);
+    assert.equal(recovery.ok, true);
+  });
+});
+
 describe("executeSalonRinpoTool — get_salon_business_summary (READ)", () => {
   it("returns a business summary with attention items derived from seeded data", async () => {
     const { deps } = makeDeps();

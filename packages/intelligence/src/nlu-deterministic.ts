@@ -44,6 +44,8 @@ const ATTENTION_FOLLOW_UP: Record<AttentionSignalKind, (ctx: RinpoNluContext) =>
   message_failures: () => ({ tool: "get_message_failures", args: {} }),
   pending_campaign_approvals: () => ({ tool: "get_campaign_performance", args: {} }),
   low_repeat_rate: () => ({ tool: "get_retention_summary", args: {} }),
+  pending_review_recovery: () => ({ tool: "get_recovery_summary", args: {} }),
+  low_rating_feedback: () => ({ tool: "get_review_workflow_summary", args: {} }),
 };
 
 const ORDINAL_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
@@ -165,6 +167,23 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
 
     if (/growth opportunit/i.test(lower)) {
       return calls("Checking growth opportunities.", { tool: "get_growth_opportunities", args: {} });
+    }
+
+    if (/review (workflow )?(summary|status)|feedback summary/i.test(lower)) {
+      return calls("Checking the review workflow.", { tool: "get_review_workflow_summary", args: {} });
+    }
+
+    if (/recovery (workflow )?(summary|status)|no[- ]show recovery/i.test(lower)) {
+      return calls("Checking triggered recovery.", { tool: "get_recovery_summary", args: {} });
+    }
+
+    if (/schedule (a )?review request|request (a )?review/i.test(lower)) {
+      const appointmentId = extractUuid(text) ?? context.selectedAppointmentId;
+      if (!appointmentId) return clarify("Which completed appointment should receive the review request?");
+      return calls("Scheduling a review request for this completed visit.", {
+        tool: "schedule_review_request",
+        args: { appointmentId },
+      });
     }
 
     if (/revenue/i.test(lower)) {
