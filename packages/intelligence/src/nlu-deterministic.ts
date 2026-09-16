@@ -169,6 +169,16 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
       return calls("Checking campaign performance.", { tool: "get_campaign_performance", args: {} });
     }
 
+    if (/(retry|requeue).*(failed|dead[- ]letter).*(messages?|batch|campaign)/i.test(lower)) {
+      const campaignId = extractUuid(text) ?? context.lastCampaignDraftId;
+      if (!campaignId) return clarify("Which campaign's failed messages should I retry? Give me its ID.");
+      const limit = Math.min(100, extractNumber(lower, /(?:first|limit)\s+(\d+)/i, 50));
+      return calls("Previewing a bounded failed-message retry. Execution will require approval.", {
+        tool: "retry_failed_message_batch",
+        args: { campaignId, limit },
+      });
+    }
+
     if (/(which )?messages? failed|failed messages?/i.test(lower)) {
       return calls("Checking failed messages.", { tool: "get_message_failures", args: {} });
     }

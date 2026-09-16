@@ -335,6 +335,20 @@ describe("DeterministicRinpoNluAdapter — growth: segmentation, campaigns, grow
     assert.equal(intent.calls[0].tool, "get_message_failures");
   });
 
+  it('"retry failed messages" resolves a bounded approval-gated campaign batch', () => {
+    const campaignId = "44444444-4444-4444-4444-444444444444";
+    const intent = adapter.parse(`Retry the first 20 failed messages in campaign ${campaignId}`, baseCtx);
+    assert.equal(intent.kind, "tool_calls");
+    if (intent.kind !== "tool_calls") return;
+    assert.equal(intent.calls[0].tool, "retry_failed_message_batch");
+    assert.equal(intent.calls[0].args.campaignId, campaignId);
+    assert.equal(intent.calls[0].args.limit, 20);
+  });
+
+  it("clarifies a bulk retry without a campaign", () => {
+    assert.equal(adapter.parse("Retry the failed message batch", baseCtx).kind, "clarify");
+  });
+
   it('"what growth opportunities need attention" resolves get_growth_opportunities', () => {
     const intent = adapter.parse("What growth opportunities need attention?", baseCtx);
     assert.equal(intent.kind, "tool_calls");

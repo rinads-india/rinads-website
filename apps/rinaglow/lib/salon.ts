@@ -1,6 +1,7 @@
 import {
   RinpoActionsRepository,
   SalonCampaignsRepository,
+  SalonCommunicationsRepository,
   SalonNotificationService,
   SalonRepository,
   SalonLoyaltyRepository,
@@ -19,6 +20,7 @@ export type SalonDeps = {
   actions: RinpoActionsRepository;
   notifications: SalonNotificationService;
   campaigns: SalonCampaignsRepository;
+  communications: SalonCommunicationsRepository;
   loyalty: SalonLoyaltyRepository;
   /** Raw client, needed by growth-intelligence functions that query `notification_outbox` directly. */
   client: SalonSupabaseClient;
@@ -36,6 +38,7 @@ export async function getSalonDeps(): Promise<SalonDeps> {
     actions: new RinpoActionsRepository(typedClient),
     notifications,
     campaigns: new SalonCampaignsRepository(typedClient, repo, notifications, loyalty),
+    communications: new SalonCommunicationsRepository(typedClient),
     loyalty,
     client: typedClient,
   };

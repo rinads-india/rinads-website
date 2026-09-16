@@ -62,6 +62,7 @@ export type RinpoToolName =
   | "send_campaign"
   | "send_reactivation_batch"
   | "retry_failed_message"
+  | "retry_failed_message_batch"
   | "redeem_loyalty_points"
   | "adjust_loyalty_ledger";
 

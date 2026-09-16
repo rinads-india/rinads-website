@@ -13,6 +13,27 @@ import { createSalonMockClient } from "./mock-client";
 const ORG_ID = "org_notify_test";
 
 describe("createTwilioWhatsAppAdapter", () => {
+  it("rejects an oversized body before calling the provider edge function", async () => {
+    const originalFetch = global.fetch;
+    let called = false;
+    global.fetch = mock.fn(async () => {
+      called = true;
+      return new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    try {
+      const adapter = createTwilioWhatsAppAdapter({ supabaseUrl: "https://example.supabase.co", serviceRoleKey: "svc-key" });
+      const result = await adapter.send({
+        recipient: "+919000000001",
+        templateKey: "salon.campaign.message",
+        payload: { messageBody: "x".repeat(1601) },
+      });
+      assert.equal(result.status, "failed");
+      assert.equal(called, false);
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
   it("reports a real provider message id on a genuine 2xx response", async () => {
     const originalFetch = global.fetch;
     global.fetch = mock.fn(async () =>

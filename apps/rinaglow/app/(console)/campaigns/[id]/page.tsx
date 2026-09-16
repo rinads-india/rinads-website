@@ -24,6 +24,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
   const { campaigns, repo } = await getSalonDeps();
   const canManage = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("salon.campaigns.manage");
   const canApproveOrSend = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("org.manage");
+  const canRetry = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("salon.communications.retry");
 
   const campaignResult = await campaigns.getCampaign(id);
   if (!campaignResult.ok) {
@@ -76,8 +77,14 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
             {campaign.campaignType} · {campaign.channel} via template <code>{campaign.templateKey}</code>
           </p>
         </div>
-        {canManage || canApproveOrSend ? (
-          <CampaignActions campaignId={campaign.id} status={campaign.status} canApproveOrSend={canApproveOrSend} />
+        {canManage || canApproveOrSend || canRetry ? (
+          <CampaignActions
+            campaignId={campaign.id}
+            status={campaign.status}
+            canApproveOrSend={canApproveOrSend}
+            canRetry={canRetry}
+            failedCount={campaign.failedCount}
+          />
         ) : null}
       </div>
 
@@ -165,7 +172,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
             campaignId={campaign.id}
             recipients={recipients}
             customerLabels={Object.fromEntries([...customersById.entries()].map(([id, c]) => [id, c.name ?? c.phone]))}
-            canManage={canManage}
+            canManage={canRetry}
           />
         )}
       </Card>
