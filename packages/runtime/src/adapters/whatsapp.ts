@@ -1,1 +1,1 @@
-export { whatsappAdapter } from "./email";
+export { whatsappAdapter, createWhatsAppAdapter } from "./email";

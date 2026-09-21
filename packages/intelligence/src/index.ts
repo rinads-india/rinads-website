@@ -9,3 +9,4 @@ export {
 } from "./salon-tools";
 export * from "./nlu-types";
 export * from "./nlu-deterministic";
+export * from "./nlu-llm";

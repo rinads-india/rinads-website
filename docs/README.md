@@ -1,29 +1,41 @@
 # RINADS Documentation
 
-**Mode:** BUILD Phase 1 CORE (identity) — staging Supabase apply pending Founder project  
-**Repository:** RINADS monorepo (Public Experience in `apps/website`)
+**Mode:** BUILD — platform Phases 9–13 + R GLOW MVP on `main`  
+**Repository:** RINADS monorepo (Public Experience in `apps/website`, Salon OS in `apps/rinaglow`)
 
 ## Start here
 
 | Document | Purpose |
 |----------|---------|
-| [architecture/AUDIT_GAP_ANALYSIS.md](./architecture/AUDIT_GAP_ANALYSIS.md) | Full architecture audit |
-| [architecture/PHASE_0_COMPLETION_REPORT.md](./architecture/PHASE_0_COMPLETION_REPORT.md) | Phase 0 build report |
-| [architecture/PHASE_1_COMPLETION_REPORT.md](./architecture/PHASE_1_COMPLETION_REPORT.md) | Phase 1 CORE report |
-| [security/FINDINGS.md](./security/FINDINGS.md) | Security findings |
-| [database/TARGET_ARCHITECTURE.md](./database/TARGET_ARCHITECTURE.md) | DB design |
-| [deployment/SUPABASE_MIGRATIONS.md](./deployment/SUPABASE_MIGRATIONS.md) | How to apply CORE migrations |
+| [STATUS.md](./STATUS.md) | **End-to-end built vs pending** (current truth) |
+| [deployment/RGLOW_PRODUCTION_CUTOVER.md](./deployment/RGLOW_PRODUCTION_CUTOVER.md) | R GLOW go-live checklist |
+| [CMS_PHASE_C.md](./CMS_PHASE_C.md) | CMS Phase C scope (blog, preview, storage, i18n) |
+| [CMS_FOLLOWUP_BACKLOG.md](./CMS_FOLLOWUP_BACKLOG.md) | CMS + platform follow-ups |
+| [RINADS-UNIFIED-REFACTOR-CHECKLIST.md](./RINADS-UNIFIED-REFACTOR-CHECKLIST.md) | Unified unfinished checklist |
+| [architecture/AUDIT_GAP_ANALYSIS.md](./architecture/AUDIT_GAP_ANALYSIS.md) | Full architecture audit (historical baseline) |
 | [decisions/README.md](./decisions/README.md) | Accepted ADRs |
 | [deployment/POLICY.md](./deployment/POLICY.md) | Deploy workflow |
-| [roadmap/30_60_90.md](./roadmap/30_60_90.md) | Roadmap |
-| [roadmap/PRIORITY_MATRIX.md](./roadmap/PRIORITY_MATRIX.md) | Priorities |
+| [deployment/VERCEL_RINAGLOW.md](./deployment/VERCEL_RINAGLOW.md) | R GLOW Vercel project |
+| [runbooks/RGLOW-COMMUNICATIONS-WORKER.md](./runbooks/RGLOW-COMMUNICATIONS-WORKER.md) | Communications worker |
+
+## R GLOW implementation docs
+
+| Document | Purpose |
+|----------|---------|
+| [implementation/RGLOW-MVP-CLOSURE.md](./implementation/RGLOW-MVP-CLOSURE.md) | MVP operator journeys closed |
+| [implementation/RGLOW-PHASE-E-SLICE-2-DEFERRED.md](./implementation/RGLOW-PHASE-E-SLICE-2-DEFERRED.md) | E.2 items (loyalty/reviews/comms completed) |
+| [implementation/RGLOW-LOYALTY-OPERATIONS.md](./implementation/RGLOW-LOYALTY-OPERATIONS.md) | Loyalty ops |
+| [RGLOW-REVIEWS-RECOVERY-OPERATIONS.md](./RGLOW-REVIEWS-RECOVERY-OPERATIONS.md) | Reviews / recovery |
 
 ## Architecture boundaries
 
 - `packages/*` — reusable platform **code**
-- `supabase/*` — PostgreSQL schema/migrations (CORE identity migration present; project link required to apply)
-- `apps/website` — Public Experience (demo auth default; Supabase via env flag)
+- `supabase/*` — PostgreSQL schema/migrations + Edge Functions
+- `apps/website` — Public Experience
+- `apps/rinaglow` — R GLOW Salon OS
 
-## Next phase
+## Next focus
 
-Intelligence / RINPO tools / verticals require **new Founder authorization** after staging Auth verification.
+1. R GLOW production cutover (deploy, Twilio, workers)
+2. Credentialed WhatsApp E2E
+3. After launch: CMS Phase C, live billing subscriptions, RINPO LLM depth

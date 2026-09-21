@@ -1,8 +1,9 @@
 # Deployment Policy
 
-**Status:** Phase 0  
+**Status:** Active (see [../STATUS.md](../STATUS.md))  
 **Default:** Safe CI-gated workflow  
-**Direct prod CLI deploy:** EMERGENCY MODE only
+**Direct prod CLI deploy:** EMERGENCY MODE only  
+**R GLOW go-live:** [RGLOW_PRODUCTION_CUTOVER.md](./RGLOW_PRODUCTION_CUTOVER.md)
 
 ## Standard workflow
 

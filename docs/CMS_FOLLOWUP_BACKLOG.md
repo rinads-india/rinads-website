@@ -9,7 +9,7 @@ Tracked follow-up PRs after the CMS + SEO admin foundation (Phase A/B).
 | Live Supabase auth cutover | `apps/website` | Replace demo `AuthContext` with Supabase sessions |
 | Apply CMS migration to staging | `supabase/migrations/20260820100000_site_cms.sql` | Founder-linked Supabase project |
 | Configure CMS cache revalidation | `WEBSITE_REVALIDATE_URL`, `CMS_REVALIDATE_SECRET` | Platform-admin POSTs to `apps/website/app/api/revalidate/route.ts` after saves |
-| Real notification delivery | `packages/runtime/src/adapters/email.ts` | Replace `{ ok: true }` stubs |
+| Real notification delivery | `packages/runtime/src/adapters/email.ts` | Honest `not_configured` + optional `RINADS_EMAIL_WEBHOOK_URL` / notify-whatsapp |
 
 ## P1 — Website product gaps
 
@@ -29,6 +29,8 @@ Tracked follow-up PRs after the CMS + SEO admin foundation (Phase A/B).
 
 ## P2 — CMS maturity (Phase C)
 
+Scoped acceptance criteria: [CMS_PHASE_C.md](./CMS_PHASE_C.md).
+
 | Item | Notes |
 |------|-------|
 | Blog/posts + `/blog/[slug]` | New tables + routes |
@@ -42,4 +44,4 @@ Tracked follow-up PRs after the CMS + SEO admin foundation (Phase A/B).
 | Item | Notes |
 |------|-------|
 | `apps/intelligence` shell | Roadmap days 61–90 |
-| LLM-backed RINPO chat | Replace rule-based `/api/chat` |
+| LLM-backed RINPO chat | Replace rule-based `/api/chat` on website; salon command bar uses `createRinpoNluAdapter()` (LLM when `RINADS_RINPO_LLM_API_KEY` is set) |

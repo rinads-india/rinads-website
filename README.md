@@ -1,21 +1,21 @@
 # RINADS Platform
 
-Monorepo for the RINADS business technology ecosystem.
+Monorepo for the RINADS business technology ecosystem: Public Experience, SaaS control plane, omnichannel commerce/ERP, salon vertical **R GLOW**, and intelligence layer **RINPO**.
 
-**Public Experience** lives in [`apps/website`](./apps/website) (formerly `rinads-website`).
+**Current status:** see [`docs/STATUS.md`](./docs/STATUS.md) (Phases 9–13 + R GLOW MVP are on `main`).
 
 ```text
 RINADS/
 ├── apps/
-│   └── website/          # Public Experience + RINPO UI
-├── packages/
-│   ├── brand/
-│   ├── ui/               # skeleton (shadcn deferred)
-│   ├── shared/
-│   ├── auth/             # interfaces only (Phase 0)
-│   ├── permissions/      # types only (Phase 0)
-│   └── database/         # code boundary only (Phase 0)
-├── supabase/             # schema home — NOT LIVE in Phase 0
+│   ├── website/           # Public Experience + Services + RINPO UI
+│   ├── rinaglow/          # R GLOW Salon OS (glow.rinads.com)
+│   ├── storefront/        # Omnichannel shop
+│   ├── customer-portal/   # Customer account
+│   ├── owner-portal/      # Merchant ERP UI
+│   └── platform-admin/    # Founder control plane + CMS
+├── packages/              # Shared platform libraries
+├── supabase/              # Migrations + Edge Functions
+├── scripts/               # Cron workers + staging tools
 ├── docs/
 └── tests/
 ```
@@ -38,7 +38,9 @@ pnpm build
 
 ## Documentation
 
-See [`docs/README.md`](./docs/README.md).
+- **Status:** [`docs/STATUS.md`](./docs/STATUS.md)
+- **Index:** [`docs/README.md`](./docs/README.md)
+- **R GLOW cutover:** [`docs/deployment/RGLOW_PRODUCTION_CUTOVER.md`](./docs/deployment/RGLOW_PRODUCTION_CUTOVER.md)
 
 ## Deploy
 

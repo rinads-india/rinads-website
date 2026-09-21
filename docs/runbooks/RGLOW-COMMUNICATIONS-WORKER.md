@@ -1,5 +1,7 @@
 # R GLOW communications worker and retry runbook
 
+Go-live checklist: [`../deployment/RGLOW_PRODUCTION_CUTOVER.md`](../deployment/RGLOW_PRODUCTION_CUTOVER.md).
+
 The worker is disabled by default and performs no sends unless all controls below are explicitly configured.
 
 ## Schedule and credentials

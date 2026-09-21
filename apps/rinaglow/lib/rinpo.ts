@@ -1,5 +1,5 @@
 import {
-  deterministicRinpoNluAdapter,
+  createRinpoNluAdapter,
   executeSalonRinpoTool,
   resolveSalonRinpoAction,
   type SalonRinpoContext,
@@ -19,14 +19,16 @@ export function toSalonRinpoContext(tenancy: TenancyContext): SalonRinpoContext 
 }
 
 /**
- * Runs one natural-language command through the deterministic NLU
- * adapter, then executes every resulting tool call server-side. Used by
+ * Runs one natural-language command through the configured NLU adapter
+ * (deterministic by default; optional LLM when `RINADS_RINPO_LLM_API_KEY`
+ * is set), then executes every resulting tool call server-side. Used by
  * the command bar (`RinpoCommandBar` + its server action) — never called
  * from the client directly, so the tenancy-derived permission set can
  * never be spoofed by the caller.
  */
 export async function runRinpoCommand(tenancy: TenancyContext, text: string, nluContext: Omit<RinpoNluContext, "organizationId">) {
-  const parsed = deterministicRinpoNluAdapter.parse(text, { organizationId: tenancy.organizationId, ...nluContext });
+  const adapter = createRinpoNluAdapter();
+  const parsed = await adapter.parse(text, { organizationId: tenancy.organizationId, ...nluContext });
   if (parsed.kind === "clarify") {
     return { kind: "clarify" as const, question: parsed.question };
   }
