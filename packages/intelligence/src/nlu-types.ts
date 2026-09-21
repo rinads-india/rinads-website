@@ -26,11 +26,10 @@ export type RinpoParsedIntent =
   | { kind: "clarify"; question: string };
 
 /**
- * Provider-agnostic seam (see plan's "Deterministic NLU" section): today
- * only `DeterministicRinpoNluAdapter` implements this. A future
- * `LlmRinpoNluAdapter` (AI SDK) could implement the same interface without
- * touching the tool-execution pipeline downstream.
+ * Provider-agnostic seam: `DeterministicRinpoNluAdapter` is the default.
+ * `LlmRinpoNluAdapter` implements the same interface (async-capable) and is
+ * selected by `createRinpoNluAdapter()` when `RINADS_RINPO_LLM_API_KEY` is set.
  */
 export type RinpoNluAdapter = {
-  parse(text: string, context: RinpoNluContext): RinpoParsedIntent;
+  parse(text: string, context: RinpoNluContext): RinpoParsedIntent | Promise<RinpoParsedIntent>;
 };

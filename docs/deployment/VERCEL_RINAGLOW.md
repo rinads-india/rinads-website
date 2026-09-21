@@ -1,5 +1,8 @@
 # Deploy R GLOW on Vercel
 
+For the full production cutover (migrations, Twilio, worker, smoke tests), use
+[`RGLOW_PRODUCTION_CUTOVER.md`](./RGLOW_PRODUCTION_CUTOVER.md).
+
 Create a separate Vercel project with repository root `apps/rinaglow`. The checked-in
 `vercel.json` installs the filtered monorepo dependencies and runs
 `pnpm --filter @rinads/rinaglow build`.
