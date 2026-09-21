@@ -46,6 +46,9 @@ export function mapLoyaltyProgramRow(row: SalonRow): SalonLoyaltyProgram {
     isActive: Boolean(row.is_active), currency: str(row, "currency"),
     earnCurrencyUnits: Number(row.earn_currency_units), earnPoints: Number(row.earn_points),
     pointsPerCurrencyUnit: Number(row.points_per_currency_unit),
+    pointsExpiryDays: row.points_expiry_days == null || row.points_expiry_days === ""
+      ? null
+      : Number(row.points_expiry_days),
     tiers: Array.isArray(row.tiers) ? row.tiers as SalonLoyaltyProgram["tiers"] : [],
     createdAt: optStr(row, "created_at"), updatedAt: optStr(row, "updated_at"),
   };

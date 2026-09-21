@@ -336,6 +336,8 @@ export type SalonLoyaltyProgram = {
   earnCurrencyUnits: number;
   earnPoints: number;
   pointsPerCurrencyUnit: number;
+  /** Null/undefined disables expiry. Whole days after earn before remaining points expire. */
+  pointsExpiryDays?: number | null;
   tiers: LoyaltyTier[];
   createdAt?: string;
   updatedAt?: string;
@@ -351,7 +353,7 @@ export type SalonLoyaltyAccount = {
   updatedAt?: string;
 };
 
-export type LoyaltyEntryType = "earn" | "redeem" | "refund_reversal" | "adjustment" | "redemption_reversal";
+export type LoyaltyEntryType = "earn" | "redeem" | "refund_reversal" | "adjustment" | "redemption_reversal" | "expire";
 
 export type SalonLoyaltyLedgerEntry = {
   id: string;
