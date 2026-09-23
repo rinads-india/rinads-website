@@ -396,17 +396,17 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
           <div className="mx-auto max-w-7xl rounded-3xl border border-rinads-primary/25 bg-rinads-primary/[0.05] p-6 md:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Try R GLOW</p>
             <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-4xl">
-              See the customer booking journey or start a salon workspace.
+              Explore the customer booking entry or start a salon workspace.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-              R GLOW product code is built, while production cutover still depends on deployment, credentials, and operational validation.
+              R GLOW product code is built, while production cutover still depends on deployment, credentials, and operational validation. Live booking links are organization-specific.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/solutions/salon/book"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark"
               >
-                Try booking
+                View booking entry
                 <ArrowRight size={15} aria-hidden />
               </Link>
               <Link
