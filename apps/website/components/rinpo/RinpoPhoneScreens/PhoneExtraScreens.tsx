@@ -20,52 +20,54 @@ export function QuickActionsScreen({
 
   const actions = [
     {
-      title: "Request Free Consultation",
-      desc: "Schedule a 1-on-1 strategy call with our architects",
+      title: "Discuss a Consultation",
+      desc: "Open RINPO and structure the business problem before a human follow-up.",
       icon: PhoneCall,
       onClick: () => {
         addInterest("Consultation");
-        startWorkflow("Free consultation request");
-        onOpenChat("I would like to book a free consultation for my business.");
+        startWorkflow("Consultation discovery");
+        onOpenChat("Help me structure what I should discuss in a RINADS consultation.");
       },
     },
     {
-      title: "Run Digital Growth Audit",
-      desc: "Instant AI analysis of your website, SEO & marketing",
+      title: "Plan a Growth Audit",
+      desc: "Structure a review of website, SEO, campaigns, lead flow, and follow-up.",
       icon: Sparkles,
       onClick: () => {
         addInterest("Digital Audit");
-        startWorkflow("Digital growth audit");
-        onOpenChat("Can you help me run an AI digital growth audit on my company?");
+        startWorkflow("Digital growth audit planning");
+        onOpenChat("Help me plan a digital growth audit for my company.");
       },
     },
     {
-      title: "Explore ERP & Custom Software",
-      desc: "Web & Mobile apps, custom workflows, automation",
+      title: "Plan Software / ERP",
+      desc: "Clarify requirements for web, mobile, business systems, and automation.",
       icon: Zap,
       onClick: () => {
         addInterest("Custom Software");
         startWorkflow("Custom software discovery");
-        onOpenChat("Tell me about custom ERP and software solutions build by RINADS.");
+        onOpenChat("Help me define requirements for a custom ERP or software system.");
       },
     },
     {
-      title: "Book Project Review Meeting",
-      desc: "Set a calendar reminder and sync with team",
+      title: "Plan a Project Review",
+      desc: "Prepare the agenda, risks, questions, and next decisions for a review.",
       icon: Calendar,
       onClick: () => {
-        addNote("Interested in booking project review");
-        startWorkflow("Project review meeting");
-        onOpenChat("How do I schedule a project kickoff meeting with RINADS?");
+        addNote("Interested in project review planning");
+        startWorkflow("Project review planning");
+        onOpenChat("Help me prepare a project review meeting with RINADS.");
       },
     },
   ];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4 scrollbar-hide text-white">
+    <div className="flex h-full flex-col space-y-4 overflow-y-auto p-4 text-white scrollbar-hide">
       <div>
-        <h3 className="text-sm font-bold text-purple-300">Quick Actions</h3>
-        <p className="text-xs text-white/60">One-tap workflows & instant AI actions</p>
+        <h3 className="text-sm font-bold text-purple-300">Conversation Starters</h3>
+        <p className="text-xs leading-5 text-white/60">
+          These open RINPO guidance. They do not book meetings, run external audits, or execute outside actions by themselves.
+        </p>
       </div>
 
       <div className="space-y-2.5">
@@ -81,14 +83,14 @@ export function QuickActionsScreen({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={act.onClick}
-              className="w-full flex items-start gap-3 p-3 rounded-2xl border border-purple-500/20 bg-gradient-to-r from-[#220d36]/80 to-[#150724]/80 text-left hover:border-purple-400/50 hover:bg-purple-950/40 transition-all shadow-md"
+              className="flex w-full items-start gap-3 rounded-2xl border border-purple-500/20 bg-gradient-to-r from-[#220d36]/80 to-[#150724]/80 p-3 text-left shadow-md transition-all hover:border-purple-400/50 hover:bg-purple-950/40"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-600/30 text-purple-300">
                 <Icon size={18} />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-white">{act.title}</div>
-                <div className="text-[11px] text-white/60 mt-0.5">{act.desc}</div>
+                <div className="mt-0.5 text-[11px] leading-4 text-white/60">{act.desc}</div>
               </div>
             </motion.button>
           );
@@ -99,59 +101,49 @@ export function QuickActionsScreen({
 }
 
 export function NotificationsScreen() {
-  const { memory } = useRinpoMemory();
-
-  const notifications = [
+  const previews = [
     {
       id: "1",
-      title: "Welcome to RINADS Cloud",
-      desc: `Hi ${memory.username}, your personalized workspace is ready.`,
-      time: "Just now",
-      unread: true,
+      title: "Page context",
+      desc: "RINPO can adapt public guidance to the RINADS area currently being viewed.",
+      state: "Preview",
     },
     {
       id: "2",
-      title: "New AI Capability: RINPO Vision",
-      desc: "Multimodal image and screenshot support is now live in RINADS Intelligence.",
-      time: "2h ago",
-      unread: true,
+      title: "Recommendation state",
+      desc: "Recommendations are visually distinct from execution and do not imply mutation authority.",
+      state: "Preview",
     },
     {
       id: "3",
-      title: "System Status: All Systems Operational",
-      desc: "Product preview only — not a live infrastructure status feed or uptime SLA.",
-      time: "1d ago",
-      unread: false,
+      title: "Product actions",
+      desc: "Real actions only become available where the connected product implements the required tool, permission, confirmation, or runtime path.",
+      state: "Boundary",
     },
   ];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4 scrollbar-hide text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-bold text-purple-300">Notifications</h3>
-          <p className="text-xs text-white/60">Live alerts & account updates</p>
-        </div>
-        <span className="rounded-full bg-purple-500/30 px-2.5 py-0.5 text-[10px] font-semibold text-purple-200">
-          2 New
-        </span>
+    <div className="flex h-full flex-col space-y-4 overflow-y-auto p-4 text-white scrollbar-hide">
+      <div>
+        <h3 className="text-sm font-bold text-purple-300">Activity Preview</h3>
+        <p className="text-xs leading-5 text-white/60">
+          Example interface states — not a live notification feed.
+        </p>
       </div>
 
       <div className="space-y-2.5">
-        {notifications.map((n) => (
+        {previews.map((item) => (
           <div
-            key={n.id}
-            className={`p-3 rounded-2xl border ${
-              n.unread
-                ? "border-purple-500/40 bg-purple-950/40"
-                : "border-white/10 bg-white/5"
-            }`}
+            key={item.id}
+            className="rounded-2xl border border-white/10 bg-white/5 p-3"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">{n.title}</span>
-              <span className="text-[10px] text-purple-300">{n.time}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-bold text-white">{item.title}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-purple-300">
+                {item.state}
+              </span>
             </div>
-            <p className="text-[11px] text-white/70 mt-1">{n.desc}</p>
+            <p className="mt-1 text-[11px] leading-5 text-white/70">{item.desc}</p>
           </div>
         ))}
       </div>
