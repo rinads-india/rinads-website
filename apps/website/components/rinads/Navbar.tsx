@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CTAS, NAV_GROUPS } from "@/lib/product-ia";
 
 const islandLinkClass =
-  "rounded-full text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:text-xs xl:tracking-[0.28em]";
+  "rounded-full px-2 py-2 text-[11px] font-semibold tracking-[0.08em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:px-2.5 xl:text-xs";
 
 function MobileMenuOverlay({
   open,
@@ -29,110 +29,122 @@ function MobileMenuOverlay({
 }) {
   return (
     <AnimatePresence>
-      {open && (
+      {open ? (
         <motion.div
           id="rinads-mobile-menu"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[45] flex flex-col items-center justify-center gap-8 overflow-y-auto bg-rinads-primary-darkest px-6 pb-28 pt-24"
+          className="fixed inset-0 z-[45] overflow-y-auto bg-rinads-primary-darkest px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-24"
         >
-          <div className="flex w-full max-w-md flex-col gap-8">
+          <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
             {NAV_GROUPS.map((group, groupIndex) => (
-              <motion.div
+              <motion.section
                 key={group.label}
-                initial={{ y: "-100%", opacity: 0 }}
+                initial={{ y: 18, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "-100%", opacity: 0 }}
-                transition={{ delay: groupIndex * 0.08, duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: groupIndex * 0.04, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
               >
-                <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.35em] text-white/50">
-                  {group.label}
-                </p>
-                <ul className="flex flex-col items-center gap-3">
+                <div className="mb-3 flex items-center justify-between gap-4">
+                  {group.href ? (
+                    <Link
+                      href={group.href}
+                      onClick={onClose}
+                      className="rounded-lg text-xl font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    >
+                      {group.label}
+                    </Link>
+                  ) : (
+                    <p className="text-xl font-bold text-white">{group.label}</p>
+                  )}
+                  {group.href ? (
+                    <Link
+                      href={group.href}
+                      onClick={onClose}
+                      className="rounded-lg text-xs font-semibold uppercase tracking-[0.14em] text-white/55 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    >
+                      Overview →
+                    </Link>
+                  ) : null}
+                </div>
+
+                <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                   {group.items.map((link) => (
                     <li key={link.href + link.label}>
-                      {link.href.startsWith("/") && !link.href.includes("#") ? (
-                        <Link
-                          href={link.href}
-                          onClick={onClose}
-                          className="block rounded-2xl px-4 py-1 text-2xl font-black text-white transition-transform duration-300 hover:scale-105 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:text-3xl"
-                        >
-                          {link.label}
-                        </Link>
-                      ) : (
-                        <a
-                          href={link.href}
-                          onClick={onClose}
-                          className="block rounded-2xl px-4 py-1 text-2xl font-black text-white transition-transform duration-300 hover:scale-105 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:text-3xl"
-                        >
-                          {link.label}
-                        </a>
-                      )}
+                      <Link
+                        href={link.href}
+                        onClick={onClose}
+                        className="block min-h-11 rounded-xl px-3 py-2.5 text-sm font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{link.label}</span>
+                          {link.status ? (
+                            <span className="rounded-full border border-white/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/55">
+                              {link.status}
+                            </span>
+                          ) : null}
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
-              </motion.div>
+              </motion.section>
             ))}
-            {isAuthenticated && (
-              <motion.div
-                initial={{ y: "-100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "-100%", opacity: 0 }}
-                transition={{ delay: NAV_GROUPS.length * 0.08, duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
-                className="text-center"
-              >
+
+            <motion.div
+              className="mt-2 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
+              initial={{ y: 18, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: NAV_GROUPS.length * 0.04, duration: 0.28 }}
+            >
+              {isAuthenticated ? (
                 <Link
                   href="/os"
                   onClick={onClose}
-                  className="inline-block rounded-2xl px-4 py-1 text-2xl font-black text-rinads-primary md:text-3xl"
+                  className="flex min-h-12 items-center justify-center rounded-full bg-rinads-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
-                  Open Business OS
+                  Open RINADS
                 </Link>
-              </motion.div>
-            )}
+              ) : (
+                <>
+                  <Link
+                    href={CTAS.secondary.href}
+                    onClick={onClose}
+                    className="flex min-h-12 items-center justify-center rounded-full bg-rinads-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    {CTAS.secondary.label}
+                  </Link>
+                  <Link
+                    href="/signup?mode=login"
+                    onClick={onClose}
+                    className="flex min-h-12 items-center justify-center rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition-colors hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Sign in
+                  </Link>
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  onTalkToRinpo();
+                  onClose();
+                }}
+                className="flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Talk to RINPO
+              </button>
+
+              <div className="flex justify-center">
+                <ThemeToggle className="h-11 w-11" />
+              </div>
+            </motion.div>
           </div>
-
-          <motion.div
-            className="flex w-full max-w-xs flex-col gap-3"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: NAV_GROUPS.length * 0.08, duration: 0.4 }}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                onTalkToRinpo();
-                onClose();
-              }}
-              className="flex h-12 items-center justify-center rounded-full bg-rinads-primary text-base font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              {CTAS.primary.label}
-            </button>
-            {!isAuthenticated && (
-              <>
-                <Link
-                  href={CTAS.secondary.href}
-                  onClick={onClose}
-                  className="flex h-12 items-center justify-center rounded-full border border-white/25 text-base font-semibold text-white transition-colors hover:border-rinads-primary hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  {CTAS.secondary.label}
-                </Link>
-                <Link
-                  href="/signup?mode=login"
-                  onClick={onClose}
-                  className="flex h-12 items-center justify-center rounded-full text-base font-semibold text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  Log in
-                </Link>
-              </>
-            )}
-          </motion.div>
-
-          <ThemeToggle className="mt-2 h-12 w-12" />
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
@@ -160,8 +172,8 @@ export function Navbar() {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -177,69 +189,65 @@ export function Navbar() {
 
   return (
     <>
-      <DynamicIslandNav expanded={open} ariaLabel="Site">
+      <DynamicIslandNav expanded={open} ariaLabel="Primary">
         <Link
           href="/"
           className="relative flex shrink-0 items-center rounded-full pl-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          aria-label="Rinads home"
+          aria-label="RINADS home"
         >
           <span
             aria-hidden
-            className="absolute -right-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-rinads-primary/80 animate-pulse"
+            className="absolute -right-0.5 top-1/2 h-2 w-2 -translate-y-1/2 animate-pulse rounded-full bg-rinads-primary/80"
           />
           <Logo className="h-6 sm:h-7 md:h-8" priority />
         </Link>
 
-        <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-2">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1">
           {NAV_GROUPS.map((group) => (
             <NavDropdown key={group.label} group={group} linkClassName={islandLinkClass} />
           ))}
-          {isAuthenticated && (
-            <Link href="/os" className={`${islandLinkClass} text-rinads-primary`}>
-              Business OS
-            </Link>
-          )}
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={talkToRinpo}
-            className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:flex sm:h-11 sm:px-5"
-          >
-            {CTAS.primary.label}
-          </button>
-          {!isAuthenticated && (
-            <Link
-              href={CTAS.secondary.href}
-              className="hidden h-10 shrink-0 items-center justify-center rounded-full border border-black/10 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--island-foreground)] transition-colors hover:border-rinads-primary/40 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11 sm:px-4"
-            >
-              {CTAS.secondary.label}
-            </Link>
-          )}
+        <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
           {isAuthenticated ? (
-            <div className="flex items-center gap-2" data-rinpo-guide="account">
-              <span className="hidden max-w-[10rem] truncate text-sm font-medium text-[var(--island-foreground)] sm:inline">
-                {user?.username}
-              </span>
-              <button
-                type="button"
-                onClick={logout}
-                className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-black/10 px-3 text-sm font-semibold text-[var(--island-foreground)] transition-colors hover:border-rinads-primary/40 hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:h-11 sm:min-w-11"
+            <>
+              <Link
+                href="/os"
+                className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11"
               >
-                <LogOut size={18} aria-hidden />
-                <span className="hidden md:inline">Log out</span>
-              </button>
-            </div>
+                Open RINADS
+              </Link>
+              <div className="flex items-center gap-1" data-rinpo-guide="account">
+                <span className="hidden max-w-[8rem] truncate text-xs font-medium text-[var(--island-foreground)] xl:inline">
+                  {user?.username}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex h-10 min-w-10 items-center justify-center rounded-full px-2 text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:h-11 sm:min-w-11"
+                  aria-label="Log out"
+                >
+                  <LogOut size={18} aria-hidden />
+                </button>
+              </div>
+            </>
           ) : (
-            <Link
-              href="/signup?mode=login"
-              data-rinpo-guide="account"
-              className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:h-11 sm:gap-2 sm:px-3"
-            >
-              <UserRound size={18} aria-hidden />
-              <span className="hidden sm:inline">Log in</span>
-            </Link>
+            <>
+              <Link
+                href="/signup?mode=login"
+                data-rinpo-guide="account"
+                className="hidden h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11"
+              >
+                <UserRound size={16} aria-hidden />
+                <span>Sign in</span>
+              </Link>
+              <Link
+                href={CTAS.secondary.href}
+                className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:flex sm:h-11"
+              >
+                {CTAS.secondary.label}
+              </Link>
+            </>
           )}
 
           <ThemeToggle variant="island" />
@@ -252,7 +260,7 @@ export function Navbar() {
             onClick={toggleMenu}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:h-11 sm:w-11 lg:hidden"
           >
-            {open ? <X size={24} /> : <Menu size={24} />}
+            {open ? <X size={24} aria-hidden /> : <Menu size={24} aria-hidden />}
           </button>
         </div>
       </DynamicIslandNav>

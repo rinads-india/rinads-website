@@ -57,8 +57,10 @@ function SpeakerIcon({ enabled }: { enabled: boolean }) {
 export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) {
   const router = useRouter();
   const {
-    setPhoneOpen,
+    closeRinpo,
     setRinpoState,
+    setInteractionState,
+    pageContext,
     openPhoneScreen,
     clearPendingChatPrompt,
   } = useRinpo();
@@ -74,7 +76,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
   const [lang, setLang] = useState<SpeechLang>(memory.preferences.language);
 
   const WELCOME_EN =
-    "Hi! I'm RINPO, your RINADS assistant. Ask me anything—services, support, or open the client portal. Business simplified.";
+    `Hi! I'm RINPO — the AI interface for RINADS. ${pageContext.prompt}`;
   const WELCOME_ML =
     "നമസ്കാരം! ഞാൻ RINPO, നിങ്ങളുടെ RINADS അസിസ്റ്റന്റ്. സേവനങ്ങൾ, സമ്പർക്ക വിവരങ്ങൾ, ക്ലയന്റ് പോർട്ടൽ എന്നിവയെക്കുറിച്ച് ചോദിക്കുക. ബിസിനസ്സ് ലളിതമാക്കൽ.";
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
@@ -114,6 +116,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
       addMessage({ role: "user", text });
       addInterest(text);
       setIsLoading(true);
+      setInteractionState("thinking");
 
       try {
         const res = await fetch("/api/chat", {
@@ -127,6 +130,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
         const effectiveLang = data.effectiveLang as "en" | "ml" | undefined;
         setMessages((prev) => [...prev, { role: "rinpo", text: reply, links }]);
         addMessage({ role: "rinpo", text: reply });
+        setInteractionState(links.length > 0 ? "recommending" : "responding");
         if (voiceOutput) speak(reply, effectiveLang);
         if (effectiveLang) setLang(effectiveLang);
         const intent = data.intent as string | undefined;
@@ -138,6 +142,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
         }
       } catch {
         const errMsg = "Sorry, I couldn't process that. Please try again or check your connection.";
+        setInteractionState("failure");
         setMessages((prev) => [...prev, { role: "rinpo", text: errMsg }]);
         addMessage({ role: "rinpo", text: errMsg });
         if (voiceOutput) speak(errMsg);
@@ -145,7 +150,18 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
         setIsLoading(false);
       }
     },
-    [isListening, voiceOutput, resetTranscript, stopListening, speak, lang, addMessage, addInterest, openPhoneScreen]
+    [
+      isListening,
+      voiceOutput,
+      resetTranscript,
+      stopListening,
+      speak,
+      lang,
+      addMessage,
+      addInterest,
+      openPhoneScreen,
+      setInteractionState,
+    ]
   );
   submitMessageRef.current = submitMessage;
 
@@ -162,7 +178,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
       }
       return prev;
     });
-  }, [lang]);
+  }, [lang, WELCOME_EN, WELCOME_ML]);
 
   useEffect(() => {
     if (!initialPrompt) return;
@@ -194,20 +210,26 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
   };
 
   const handleMicToggle = () => {
-    if (isListening) stopListening();
-    else startListening();
+    if (isListening) {
+      stopListening();
+      setInteractionState("open");
+    } else {
+      setInteractionState("listening");
+      startListening();
+    }
   };
 
   const handleStop = () => {
     if (isListening) stopListening(true);
     if (isSpeaking) stop();
+    setInteractionState("open");
   };
 
   const showStopButton = isListening || isSpeaking;
 
   const handleLinkClick = (href: string) => {
     stop();
-    setPhoneOpen(false);
+    closeRinpo();
     router.push(href);
   };
 
@@ -283,6 +305,25 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
           </motion.div>
         )}
       </div>
+      {messages.length <= 1 && !isLoading ? (
+        <div className="shrink-0 border-t border-white/10 px-3 pt-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">
+            Suggested for {pageContext.area}
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {pageContext.suggestions.slice(0, 3).map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => submitMessage(suggestion)}
+                className="min-h-9 shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 transition hover:border-rinads-primary/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-white/10 safe-area-inset-bottom">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <button

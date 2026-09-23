@@ -1,14 +1,19 @@
+export type NavStatus = "Available" | "Coming soon";
+
 export type NavLink = {
   label: string;
   href: string;
   external?: boolean;
   description?: string;
+  section?: string;
+  status?: NavStatus;
 };
 
 export type NavGroup = {
   label: string;
   href?: string;
   items: NavLink[];
+  variant?: "dropdown" | "mega";
 };
 
 export const POSITIONING = {
@@ -76,34 +81,98 @@ export const PRODUCT_HIERARCHY = {
 } as const;
 
 export const PLATFORM_OS: NavLink[] = [
-  { label: "Business OS", href: "/platform/business-os", description: "Run the business." },
-  { label: "Commerce OS", href: "/platform/commerce-os", description: "Sell and fulfill." },
-  { label: "Marketing OS", href: "/platform/marketing-os", description: "Grow the brand." },
-  { label: "Logistics OS", href: "/platform/logistics-os", description: "Move and deliver." },
-  { label: "Creative OS", href: "/platform/creative-os", description: "Create with AI." },
-  { label: "Build OS", href: "/platform/build-os", description: "Ship software." },
-  { label: "Academy OS", href: "/platform/academy-os", description: "Train people." },
-  { label: "Automation OS", href: "/platform/automation-os", description: "Automate operations." },
-  { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "The brain." },
-  { label: "RINADS Cloud", href: "/platform/rinads-cloud", description: "The foundation." },
+  { label: "Business OS", href: "/platform/business-os", description: "Run customers, work, money, and operations.", section: "Run" },
+  { label: "Commerce OS", href: "/platform/commerce-os", description: "Sell, transact, and fulfil.", section: "Run" },
+  { label: "Marketing OS", href: "/platform/marketing-os", description: "Plan, launch, and measure growth.", section: "Grow" },
+  { label: "Creative OS", href: "/platform/creative-os", description: "Create content, image, video, and film.", section: "Grow" },
+  { label: "Logistics OS", href: "/platform/logistics-os", description: "Move, track, and resolve delivery operations.", section: "Operate" },
+  { label: "Automation OS", href: "/platform/automation-os", description: "Connect workflows, approvals, and actions.", section: "Operate" },
+  { label: "Build OS", href: "/platform/build-os", description: "Turn requirements into shipped software.", section: "Build & learn" },
+  { label: "Academy OS", href: "/platform/academy-os", description: "Train people through real work.", section: "Build & learn" },
+  { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "The intelligence layer behind the platform.", section: "Core" },
+  { label: "RINADS Cloud", href: "/platform/rinads-cloud", description: "The connected platform foundation.", section: "Core" },
 ];
 
 export const NAV_PLATFORM: NavGroup = {
   label: "Platform",
   href: "/platform",
   items: PLATFORM_OS,
+  variant: "mega",
 };
 
 export const NAV_SOLUTIONS: NavGroup = {
   label: "Solutions",
   href: "/solutions",
+  variant: "mega",
   items: [
-    { label: "Retail", href: "/solutions/retail" },
-    { label: "Jewellery", href: "/solutions/jewellery" },
-    { label: "Nursery", href: "/solutions/nursery" },
-    { label: "Salon", href: "/solutions/salon" },
-    { label: "Healthcare", href: "/solutions/healthcare" },
-    { label: "Logistics", href: "/solutions/logistics" },
+    {
+      label: "Retail",
+      href: "/solutions/retail",
+      description: "Catalogue, inventory, storefront, orders, and customer growth.",
+      section: "Available",
+      status: "Available",
+    },
+    {
+      label: "Landscape & Nursery",
+      href: "/solutions/nursery",
+      description: "Inventory, project work, field operations, and customer management.",
+      section: "Available",
+      status: "Available",
+    },
+    {
+      label: "Salon / R GLOW",
+      href: "/solutions/salon",
+      description: "Appointments, clients, services, loyalty, and campaigns.",
+      section: "Available",
+      status: "Available",
+    },
+    {
+      label: "Jewellery",
+      href: "/solutions/jewellery",
+      description: "Collections, product studio, appointments, CRM, and brand content.",
+      section: "Coming soon",
+      status: "Coming soon",
+    },
+    {
+      label: "Logistics",
+      href: "/solutions/logistics",
+      description: "Provider-neutral shipment operations and exception control.",
+      section: "Coming soon",
+      status: "Coming soon",
+    },
+    {
+      label: "Healthcare",
+      href: "/solutions/healthcare",
+      description: "Scheduling, patient flow, follow-ups, team work, and analytics.",
+      section: "Coming soon",
+      status: "Coming soon",
+    },
+  ],
+};
+
+export const NAV_RINPO: NavGroup = {
+  label: "RINPO",
+  href: "/rinpo",
+  items: [
+    { label: "Overview", href: "/rinpo", description: "Meet the persistent AI interface for RINADS." },
+    { label: "Intelligence", href: "/rinpo/intelligence", description: "See how RINPO understands and assists." },
+    { label: "Story", href: "/rinpo/story", description: "Explore RINPO's origin and identity." },
+    { label: "Voice", href: "/rinpo/voice", description: "Speak to RINPO." },
+    { label: "Phone", href: "/rinpo/phone", description: "AI-assisted business calling." },
+  ],
+};
+
+export const NAV_SERVICES: NavGroup = {
+  label: "Services",
+  href: "/services",
+  items: [
+    { label: "Software", href: "/services/software", description: "Custom software and business systems." },
+    { label: "Marketing", href: "/services/marketing", description: "Strategy, campaigns, content, and growth." },
+    { label: "Intelligence & AI", href: "/services/ai", description: "AI assistants, agents, and RINPO-led experiences." },
+    { label: "Automation", href: "/services/automation", description: "Workflows and integrations." },
+    { label: "Creative", href: "/services/creative", description: "Creative production and media." },
+    { label: "Transformation", href: "/services/transformation", description: "Operating-model and system transformation." },
+    { label: "Training", href: "/services/training", description: "Team enablement and capability building." },
   ],
 };
 
@@ -123,40 +192,15 @@ export const NAV_ACADEMY: NavGroup = {
   ],
 };
 
-export const NAV_SERVICES: NavGroup = {
-  label: "Services",
-  href: "/services",
-  items: [
-    { label: "Software", href: "/services/software" },
-    { label: "Marketing", href: "/services/marketing" },
-    { label: "AI", href: "/services/ai" },
-    { label: "Creative", href: "/services/creative" },
-    { label: "Automation", href: "/services/automation" },
-    { label: "Transformation", href: "/services/transformation" },
-    { label: "Training", href: "/services/training" },
-  ],
-};
-
-export const NAV_RINPO: NavGroup = {
-  label: "RINPO",
-  href: "/rinpo",
-  items: [
-    { label: "Overview", href: "/rinpo" },
-    { label: "Intelligence", href: "/rinpo/intelligence" },
-    { label: "Story", href: "/rinpo/story" },
-    { label: "Voice", href: "/rinpo/voice" },
-    { label: "Phone", href: "/rinpo/phone" },
-  ],
-};
-
 export const NAV_RESOURCES: NavGroup = {
   label: "Resources",
   href: "/resources",
   items: [
-    { label: "Resources Hub", href: "/resources" },
-    { label: "Platform Architecture", href: "/platform" },
-    { label: "RINADS Intelligence", href: "/platform/rinads-intelligence" },
-    { label: "Start a Project", href: "/projects" },
+    { label: "Resources Hub", href: "/resources", description: "Guides and product resources." },
+    { label: "Start a Project", href: "/projects", description: "Tell RINADS what you need to accomplish." },
+    { label: "Platform Architecture", href: "/platform", description: "Understand how the platform fits together." },
+    { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "Explore the intelligence layer." },
+    { label: "Company", href: "/company", description: "About RINADS and how to contact the team." },
   ],
 };
 
@@ -167,18 +211,17 @@ export const NAV_COMPANY: NavGroup = {
     { label: "About", href: "/company" },
     { label: "Projects", href: "/projects" },
     { label: "Contact", href: "/company#contact" },
-    { label: "Business OS App", href: "/os" },
+    { label: "Open RINADS", href: "/os" },
   ],
 };
 
 export const NAV_GROUPS: NavGroup[] = [
   NAV_PLATFORM,
   NAV_SOLUTIONS,
-  NAV_ACADEMY,
-  NAV_SERVICES,
   NAV_RINPO,
+  NAV_SERVICES,
+  NAV_ACADEMY,
   NAV_RESOURCES,
-  NAV_COMPANY,
 ];
 
 export const FOOTER_PLATFORM: NavLink[] = [
@@ -197,7 +240,7 @@ export const FOOTER_COMPANY: NavLink[] = [
   { label: "Solutions", href: "/solutions" },
   { label: "Projects", href: "/projects" },
   { label: "Resources", href: "/resources" },
-  { label: "Business OS App", href: "/os" },
+  { label: "Open RINADS", href: "/os" },
 ];
 
 export const FOOTER_LEGAL: NavLink[] = [
@@ -219,15 +262,10 @@ export const BRAND_EQUATION = {
 } as const;
 
 export const HERO_COMMANDS = [
-  "What's happening today?",
-  "Build my website",
-  "Launch my campaign",
-  "Find my best leads",
-  "Track my orders",
-  "Call my logistics manager",
-  "Create an AI film",
-  "Train my team",
-  "Build a software product",
+  "What's happening in my business?",
+  "Find what needs attention",
+  "Build something",
+  "Automate a workflow",
 ] as const;
 
 export const CTAS = {

@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from "react";
 import { usePathname } from "next/navigation";
 import { RinpoCharacter } from "./RinpoCharacter";
 import { RinpoPhone } from "./RinpoPhone";
@@ -10,15 +18,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { RinpoGuideId } from "@/hooks/useRinpoGuide";
 import { RinpoMemoryProvider } from "@/hooks/useRinpoMemory";
 import type { PhoneScreenId } from "./RinpoPhoneScreens";
+import {
+  getRinpoPageContext,
+  type RinpoExperienceState,
+  type RinpoPageContext,
+} from "@/lib/rinpo-experience";
 
+/**
+ * Legacy visual state retained while the character animation is migrated.
+ * Product interaction state lives in RinpoExperienceState.
+ */
 export type RinpoState = "idle" | "listening" | "speaking" | "phone-out" | "floating";
 
 type RinpoContextType = {
   phoneOpen: boolean;
   setPhoneOpen: (open: boolean) => void;
   togglePhone: () => void;
+  closeRinpo: () => void;
   rinpoState: RinpoState;
   setRinpoState: (state: RinpoState) => void;
+  interactionState: RinpoExperienceState;
+  setInteractionState: (state: RinpoExperienceState) => void;
+  pageContext: RinpoPageContext;
   introComplete: boolean;
   setIntroComplete: (value: boolean) => void;
   isIntroMode: boolean;
@@ -46,13 +67,14 @@ export function useRinpo() {
   return ctx;
 }
 
-const INTRO_SCROLL_THRESHOLD = 0.5; // 50% of viewport
+const INTRO_SCROLL_THRESHOLD = 0.5;
 
 export function RinpoProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { login, signup, user } = useAuth();
-  const [phoneOpen, setPhoneOpen] = useState(false);
+  const [phoneOpen, setPhoneOpenState] = useState(false);
   const [rinpoState, setRinpoState] = useState<RinpoState>("idle");
+  const [interactionState, setInteractionState] = useState<RinpoExperienceState>("closed");
   const [introComplete, setIntroComplete] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginModalMode, setLoginModalMode] = useState<"login" | "signup">("login");
@@ -62,12 +84,30 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
 
   const isIntroMode = (pathname === "/" || pathname == null) && !introComplete;
   const isOsRoute = pathname?.startsWith("/os") ?? false;
+  const pageContext = useMemo(() => getRinpoPageContext(pathname), [pathname]);
 
-  const { currentGuide: rinpoGuide, advanceGuide, dismissGuide } = useRinpoGuide(isIntroMode, introComplete);
+  const { currentGuide: rinpoGuide, advanceGuide, dismissGuide } = useRinpoGuide(
+    isIntroMode,
+    introComplete
+  );
+
+  const setPhoneOpen = useCallback((open: boolean) => {
+    setPhoneOpenState(open);
+    setInteractionState(open ? "open" : "closed");
+    setRinpoState(open ? "phone-out" : "floating");
+  }, []);
+
+  const closeRinpo = useCallback(() => {
+    setPhoneOpenState(false);
+    setPendingChatPrompt(null);
+    setInteractionState("closed");
+    setRinpoState("floating");
+  }, []);
 
   const togglePhone = useCallback(() => {
-    setPhoneOpen((prev) => {
+    setPhoneOpenState((prev) => {
       const next = !prev;
+      setInteractionState(next ? "open" : "closed");
       setRinpoState(next ? "phone-out" : "floating");
       return next;
     });
@@ -76,7 +116,8 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
   const openPhoneScreen = useCallback((screen: PhoneScreenId, prompt?: string) => {
     setPhoneScreen(screen);
     if (prompt) setPendingChatPrompt(prompt);
-    setPhoneOpen(true);
+    setPhoneOpenState(true);
+    setInteractionState("open");
     setRinpoState("phone-out");
   }, []);
 
@@ -99,8 +140,12 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
         phoneOpen,
         setPhoneOpen,
         togglePhone,
+        closeRinpo,
         rinpoState,
         setRinpoState,
+        interactionState,
+        setInteractionState,
+        pageContext,
         introComplete,
         setIntroComplete,
         isIntroMode,
