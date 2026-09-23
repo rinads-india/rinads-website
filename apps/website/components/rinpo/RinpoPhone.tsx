@@ -28,26 +28,29 @@ import {
   type PhoneScreenId,
 } from "./RinpoPhoneScreens";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
+import { RINPO_STATE_LABELS } from "@/lib/rinpo-experience";
 
 const RINPO_HEAD = "/assets/rinpo-full-body-transparent-v2.png";
 
-const BOTTOM_BAR_ITEMS: { id: PhoneScreenId; label: string; icon: typeof MessageSquare; badge?: string }[] = [
+const BOTTOM_BAR_ITEMS: { id: PhoneScreenId; label: string; icon: typeof MessageSquare }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "home", label: "Apps", icon: LayoutGrid },
   { id: "quick-actions", label: "Quick Actions", icon: Zap },
-  { id: "notifications", label: "Notifications", icon: Bell, badge: "2" },
+  { id: "notifications", label: "Notifications", icon: Bell },
   { id: "profile", label: "Profile", icon: User },
 ];
 
 export function RinpoPhone() {
   const {
     phoneOpen,
-    setPhoneOpen,
+    closeRinpo,
     setLoginModalOpen,
     setLoginModalMode,
     phoneScreen: screen,
     openPhoneScreen,
     pendingChatPrompt,
+    interactionState,
+    pageContext,
   } = useRinpo();
   const [currentTime, setCurrentTime] = useState("9:41");
   const [currentDateStr, setCurrentDateStr] = useState("TUESDAY, 21 JULY");
@@ -80,7 +83,7 @@ export function RinpoPhone() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={() => setPhoneOpen(false)}
+        onClick={closeRinpo}
         aria-hidden
       />
 
@@ -165,18 +168,20 @@ export function RinpoPhone() {
               </motion.div>
 
               <div className="min-w-0">
-                <div className="text-[10px] font-bold tracking-widest uppercase text-purple-300/80">
-                  {currentDateStr}
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-300/80">
+                  <span>{currentDateStr}</span>
+                  <span aria-hidden>·</span>
+                  <span>{RINPO_STATE_LABELS[interactionState]}</span>
                 </div>
-                <div className="text-xs font-semibold text-white/95 truncate">
-                  {getPersonalizedGreeting()}
+                <div className="truncate text-xs font-semibold text-white/95">
+                  {getPersonalizedGreeting()} · {pageContext.area}
                 </div>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setPhoneOpen(false)}
+              onClick={closeRinpo}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors ml-2"
               aria-label="Close handset"
             >
@@ -245,11 +250,6 @@ export function RinpoPhone() {
                 >
                   <div className="relative">
                     <Icon size={19} className={isActive ? "text-purple-300" : ""} />
-                    {item.badge && (
-                      <span className="absolute -top-1 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-purple-500 px-1 text-[8px] font-extrabold text-white">
-                        {item.badge}
-                      </span>
-                    )}
                   </div>
                   <span className="text-[10px] mt-0.5 tracking-tight">{item.label}</span>
                   {isActive && (
