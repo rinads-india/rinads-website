@@ -17,12 +17,12 @@ function ItemContent({ item }: { item: NavLink }) {
   return (
     <>
       <span className="flex items-center gap-2">
-        <span className="font-semibold text-[var(--text-primary,var(--island-foreground))]">{item.label}</span>
+        <span className="font-semibold text-[var(--text-primary)]">{item.label}</span>
         {item.status ? (
           <span
             className={
               item.status === "Available"
-                ? "rounded-full bg-[var(--status-success-bg,#dcfce7)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--status-success-fg,#166534)]"
+                ? "rounded-full bg-[var(--status-success-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--status-success-fg)]"
                 : "rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]"
             }
           >
