@@ -262,15 +262,10 @@ export const BRAND_EQUATION = {
 } as const;
 
 export const HERO_COMMANDS = [
-  "What's happening today?",
-  "Build my website",
-  "Launch my campaign",
-  "Find my best leads",
-  "Track my orders",
-  "Call my logistics manager",
-  "Create an AI film",
-  "Train my team",
-  "Build a software product",
+  "What's happening in my business?",
+  "Find what needs attention",
+  "Build something",
+  "Automate a workflow",
 ] as const;
 
 export const CTAS = {
