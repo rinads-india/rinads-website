@@ -134,7 +134,7 @@ export function RinpoConsole({ className = "" }: { className?: string }) {
               ))}
             </div>
             <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">
-              RINPO previews meaningful actions before execution. Real actions remain subject to the platform's permissions and approval rules.
+              Executable actions are only enabled where the connected RINADS product supports the required permissions, approval rules, and audit path.
             </p>
           </div>
         </div>
