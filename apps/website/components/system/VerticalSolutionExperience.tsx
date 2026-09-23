@@ -1,12 +1,12 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
   CircleDot,
-  PackageCheck,
   ShieldCheck,
   Sparkles,
   Store,
@@ -258,7 +258,7 @@ function HealthcareDemo() {
   );
 }
 
-const DEMOS: Record<SolutionExperienceKey, React.ComponentType> = {
+const DEMOS: Record<SolutionExperienceKey, ComponentType> = {
   retail: RetailDemo,
   nursery: NurseryDemo,
   salon: SalonDemo,
