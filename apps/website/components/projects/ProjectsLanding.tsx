@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -804,7 +804,7 @@ function Field({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <label className="block">
