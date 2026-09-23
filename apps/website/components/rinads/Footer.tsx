@@ -86,9 +86,9 @@ export function Footer() {
           ) : null}
 
           <div className="footer-logo">
-            <a href="#" aria-label="Rinads home">
+            <Link href="/" aria-label="RINADS home">
               <Logo className="h-10 md:h-12 brightness-0 invert" priority={false} />
-            </a>
+            </Link>
           </div>
 
           <div className="footer-tagline-container">
@@ -158,7 +158,7 @@ export function Footer() {
                 ))}
               </div>
               <div className="footer-col">
-                <p className="footer-col-title">Company</p>
+                <p className="footer-col-title">Explore</p>
                 {FOOTER_COMPANY.map((link) => (
                   <Link key={link.label} href={link.href}>
                     {link.label}
