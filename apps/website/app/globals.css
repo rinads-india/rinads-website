@@ -24,6 +24,24 @@
   --rinads-glow: rgba(159, 75, 199, 0.35);
   --grid-opacity: 0.06;
 
+  /* UX V2 semantic roles — mirrors @rinads/brand semantic tokens. */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --interactive: #9f4bc7;
+  --interactive-hover: #7a35a0;
+  --focus: #9f4bc7;
+  --status-success-bg: #dcfce7;
+  --status-success-fg: #166534;
+  --status-warning-bg: #fef3c7;
+  --status-warning-fg: #92400e;
+  --status-critical-bg: #fee2e2;
+  --status-critical-fg: #991b1b;
+  --status-info-bg: #dbeafe;
+  --status-info-fg: #1e40af;
+
   --footer-bg: #ffffff;
   --footer-text: #2d3148;
   --footer-right-bg: #f0f1f5;
@@ -58,6 +76,22 @@
   --ring-offset: #000000;
   --rinads-glow: rgba(159, 75, 199, 0.45);
   --grid-opacity: 0.1;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --interactive: #9f4bc7;
+  --interactive-hover: #c06be8;
+  --focus: #c06be8;
+  --status-success-bg: rgba(22, 101, 52, 0.28);
+  --status-success-fg: #bbf7d0;
+  --status-warning-bg: rgba(146, 64, 14, 0.28);
+  --status-warning-fg: #fde68a;
+  --status-critical-bg: rgba(153, 27, 27, 0.28);
+  --status-critical-fg: #fecaca;
+  --status-info-bg: rgba(30, 64, 175, 0.28);
+  --status-info-fg: #bfdbfe;
 
   --footer-bg: #050505;
   --footer-text: #e5e7eb;
