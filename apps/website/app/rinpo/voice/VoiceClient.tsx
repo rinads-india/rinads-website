@@ -25,8 +25,8 @@ export function VoiceClient() {
   const onTranscriptReady = useCallback(
     (text: string) => {
       setLastTranscript(text);
-      setInteractionState("thinking");
       openPhoneScreen("chat", text);
+      setInteractionState("thinking");
     },
     [openPhoneScreen, setInteractionState]
   );
