@@ -122,7 +122,7 @@ export function IntelligenceClient() {
               Intelligence begins with business context, not a blank chat box.
             </h2>
             <p className="mt-5 text-[var(--text-muted)]">
-              The platform can expose different business signals depending on the connected product and the user's permitted context. Not every signal is available in every surface.
+              The platform can expose different business signals depending on the connected product and the user&apos;s permitted context. Not every signal is available in every surface.
             </p>
           </div>
 
