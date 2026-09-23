@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { ArrowRight, Mic, MicOff, Volume2, Waveform } from "lucide-react";
+import { ArrowRight, Mic, MicOff, Volume2 } from "lucide-react";
 import {
   CTASection,
   MarketingPageShell,
@@ -187,7 +187,7 @@ export function VoiceClient() {
       <section className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-6 py-20 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="flex items-center gap-3">
-            <Waveform size={23} className="text-rinads-primary" aria-hidden />
+            <Volume2 size={23} className="text-rinads-primary" aria-hidden />
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">
               Interaction model
             </p>
