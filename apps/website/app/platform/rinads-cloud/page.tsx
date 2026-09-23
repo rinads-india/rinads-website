@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getPageMetadata } from "@/lib/cms";
-import { getOsPage } from "@/lib/content/platform-os";
-import { OsMarketingPage } from "@/components/system/OsMarketingPage";
-
-const SLUG = "rinads-cloud";
+import { CloudClient } from "./CloudClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata(`/platform/${SLUG}`);
+  return getPageMetadata("/platform/rinads-cloud");
 }
 
 export default function Page() {
-  const content = getOsPage(SLUG);
-  if (!content) notFound();
-  return <OsMarketingPage content={content} />;
+  return <CloudClient />;
 }
