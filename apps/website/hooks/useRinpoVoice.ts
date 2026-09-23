@@ -2,35 +2,17 @@
 
 import { useCallback, useRef, useState } from "react";
 
-export const RINPO_WELCOME_SPEECH = `Hi… Welcome to Rinads. I am Rinpo.
+export const RINPO_WELCOME_SPEECH = `Hi. Welcome to RINADS. I'm RINPO.
 
-Some people call me "AI Assistant"… some say "AI Chat Bot"… But you can just call me Rinpo.
+RINADS is an AI operating platform for business. I am the character and interface that helps people understand the platform, ask questions, and find the right next step.
 
-I'm here to guide you into the world of Rinads — where business becomes simple, smooth, and stress-free.
+You can use RINADS to explore business operations, software, marketing, automation, creative work, logistics, learning, and industry configurations.
 
-At Rinads, we stand by one powerful principle: Business Simplified.
+My public website experience includes chat and browser voice. Inside connected products, RINPO can also work with supported business context and registered tools.
 
-No matter what your business is… we are here for you.
+Important actions still depend on the permissions, confirmation, approval, and runtime paths implemented by the product.
 
-Are you running a Salon & Spa? Managing an Accounting Firm? Growing a Digital Marketing Agency? An Architect managing projects? A Doctor running a clinic or hospital? Or maybe you are manufacturing Footwear… or creating beautiful Essential Oils…
-
-Whatever you do… Whatever your industry… We've got you covered.
-
-Rinads offers: Ready-Made Software – Quick to start, easy to use, industry-focused. Custom Software Solutions – Built exactly the way your business works.
-
-You choose what feels comfortable. We adapt to you.
-
-We help you automate your operations — from appointments, billing, accounting, inventory, payroll, CRM, production tracking… all the way down to the finest details.
-
-Less paperwork. Less confusion. Less stress.
-
-More clarity. More control. More growth.
-
-With Rinads, your business runs smarter — while you focus on what truly matters: serving your customers and expanding your vision.
-
-Come… Let me take you step by step into the Rinads ecosystem.
-
-Because when technology works for you… Business truly becomes simplified.`;
+Start with what you want to run, build, grow, automate, create, or learn. I'll help you find the right path.`;
 
 export type RinpoVoiceState = "idle" | "speaking" | "paused" | "ended";
 
