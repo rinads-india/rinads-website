@@ -142,7 +142,7 @@ export function VoiceClient() {
                 {isListening ? "Listening…" : "Tap the microphone and speak"}
               </p>
               <p className="mt-2 max-w-md text-xs leading-5 text-white/45">
-                Audio processing and recognition behaviour depend on the browser's Web Speech implementation.
+                Audio processing and recognition behaviour depend on the browser&apos;s Web Speech implementation.
               </p>
             </div>
 
