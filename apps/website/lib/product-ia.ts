@@ -157,8 +157,8 @@ export const NAV_RINPO: NavGroup = {
     { label: "Overview", href: "/rinpo", description: "Meet the persistent AI interface for RINADS." },
     { label: "Intelligence", href: "/rinpo/intelligence", description: "See how RINPO understands and assists." },
     { label: "Story", href: "/rinpo/story", description: "Explore RINPO's origin and identity." },
-    { label: "Voice", href: "/rinpo/voice", description: "Speak to RINPO." },
-    { label: "Phone", href: "/rinpo/phone", description: "AI-assisted business calling." },
+    { label: "Voice", href: "/rinpo/voice", description: "Browser speech input and output for the RINPO experience." },
+    { label: "Phone", href: "/rinpo/phone", description: "Product direction for governed business calling and telephony integration." },
   ],
 };
 
