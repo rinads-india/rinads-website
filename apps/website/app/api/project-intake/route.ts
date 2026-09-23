@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
 
   let raw: unknown;
   try {
-    raw = await request.json();
+    const rawText = await request.text();
+    if (new TextEncoder().encode(rawText).length > PROJECT_INTAKE_MAX_BODY_BYTES) {
+      return NextResponse.json({ error: "Request is too large" }, { status: 413 });
+    }
+    raw = JSON.parse(rawText);
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
