@@ -323,7 +323,7 @@ export const DEFAULT_SEO: SiteSeo[] = [
     "seo_projects",
     "/projects",
     "Start a Project | RINADS",
-    "Tell us about your vision. RINADS crafts bold ideas and ships them as products.",
+    "Turn a business goal into a structured RINADS Project Brief, review it with RINPO, and submit it for human review.",
   ),
   seo(
     "seo_signup",
