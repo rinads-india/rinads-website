@@ -15,7 +15,7 @@ Tracked follow-up PRs after the CMS + SEO admin foundation (Phase A/B).
 
 | Item | Path | Notes |
 |------|------|-------|
-| Project/contact form backend | `apps/website/components/projects/ProjectsLanding.tsx` | Replace fake 1s submit |
+| Project intake backend | `apps/website/app/api/project-intake/route.ts` | **Done in UX V2 PR-10** — validated server-only Supabase persistence; platform-admin review UI remains a follow-up |
 | Grow checkout → storefront | `apps/website/components/grow/GrowSectionTwo.tsx` | Wire SKUs to commerce checkout |
 | OAuth signup | `apps/website/components/auth/RinadsSignUpApp.tsx` | Google / LinkedIn providers |
 
