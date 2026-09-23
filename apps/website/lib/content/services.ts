@@ -73,8 +73,8 @@ export const RINPO_ROLES = [
   { name: "AI assistant", description: "Ask, explore, and get direction." },
   { name: "AI tutor", description: "Guide learning inside Academy." },
   { name: "AI operator", description: "Help run day-to-day work." },
-  { name: "AI voice agent", description: "Speak with your business interface." },
-  { name: "AI phone agent", description: "Handle calls and follow-ups." },
+  { name: "Voice interface", description: "Use speech as an input and output channel where the client supports it." },
+  { name: "Phone experience", description: "Product direction for connecting telephony to RINADS context and workflows." },
   { name: "AI commerce assistant", description: "Support selling and buying flows." },
   { name: "AI business interface", description: "The persistent front door to the platform." },
 ] as const;
