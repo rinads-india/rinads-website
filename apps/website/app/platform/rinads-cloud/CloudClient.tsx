@@ -202,12 +202,12 @@ export function CloudClient() {
       <section className="px-6 py-20 md:px-12 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">AI gateway position</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Model-provider boundary</p>
             <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-              Keep model providers behind the RINADS intelligence boundary.
+              Keep model providers replaceable behind the RINADS intelligence boundary.
             </h2>
             <p className="mt-5 text-[var(--text-muted)]">
-              Model providers should remain replaceable implementation choices. Business permissions, tenant context, tools, approvals, and audit belong to the RINADS platform rather than to any external model.
+              The current platform already separates business tools and runtime controls from model choice. As LLM depth expands, model providers should remain replaceable implementation choices; permissions, tenant context, tools, approvals, and audit belong to RINADS rather than to an external model.
             </p>
             <Link
               href="/platform/rinads-intelligence"
