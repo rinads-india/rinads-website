@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType, ReactNode } from "react";
 import {
   ArrowRight,
   CheckCircle2,
@@ -21,7 +22,7 @@ function DemoShell({
   children,
 }: {
   config: OperatingSystemDemoConfig;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-6 py-20 md:px-12 lg:px-20">
@@ -390,7 +391,7 @@ function AutomationDemo() {
             ["Result", CheckCircle2],
             ["Audit", Clock3],
           ].map(([label, Icon], index) => {
-            const IconComponent = Icon as React.ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean }>;
+            const IconComponent = Icon as ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean }>;
             return (
               <li key={String(label)} className="flex items-center">
                 <div className="min-w-[120px] rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
@@ -462,7 +463,7 @@ function GitNodeIcon({
   );
 }
 
-const DEMOS: Record<OperatingSystemDemoKey, React.ComponentType> = {
+const DEMOS: Record<OperatingSystemDemoKey, ComponentType> = {
   "business-os": BusinessDemo,
   "commerce-os": CommerceDemo,
   "marketing-os": MarketingDemo,
