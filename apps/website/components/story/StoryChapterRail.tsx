@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 const CHAPTERS = [
   { id: "s-prologue", label: "Prologue", pct: 0.1 },
   { id: "s-gift", label: "01 · The Gift", pct: 0.26 },
-  { id: "s-tree", label: "02 · Enlightenment", pct: 0.45 },
-  { id: "s-birth", label: "03 · The Birth", pct: 0.62 },
-  { id: "s-powers", label: "04 · The Powers", pct: 0.77 },
-  { id: "s-dive", label: "Dive In", pct: 0.92 },
+  { id: "s-tree", label: "02 · Banyan Tree", pct: 0.45 },
+  { id: "s-birth", label: "03 · The Interface", pct: 0.62 },
+  { id: "s-powers", label: "04 · What It Represents", pct: 0.77 },
+  { id: "s-dive", label: "From Story to Product", pct: 0.92 },
 ];
 
 export function StoryChapterRail() {

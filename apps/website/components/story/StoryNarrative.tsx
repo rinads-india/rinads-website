@@ -10,25 +10,25 @@ import { StoryChapterRail } from "./StoryChapterRail";
 const POWERS = [
   {
     no: "PWR / 01",
-    title: "Voice Intelligence",
-    body: "Websites that speak and sell — voice agents that greet every visitor like your best salesperson, in Malayalam or English, around the clock.",
+    title: "Conversational Interface",
+    body: "RINPO gives RINADS a recognizable way to ask questions, understand the platform, and continue into the right product experience.",
   },
   {
     no: "PWR / 02",
-    title: "Business Intelligence",
-    body: "Entire operations automated — bookings, billing, follow-ups and reports that run themselves while your team focuses on what matters.",
+    title: "Business Context",
+    body: "Inside connected products, RINPO can work with permitted business context and surface recommendations without bypassing product permissions.",
   },
   {
     no: "PWR / 03",
-    title: "Conversational AI",
-    body: "Visitors become customers through conversations that feel genuinely human — on your website, WhatsApp and Instagram, 24/7.",
+    title: "Voice",
+    body: "Speech can become another input and output channel for the same RINPO experience. Browser voice is demonstrable today; production channels need supported integrations.",
   },
   {
     no: "PWR / 04",
-    title: "Digital Life Creation",
-    body: "AI avatars that interact like humans — virtual entities that can speak, sell, assist and evolve, giving your brand a living presence online.",
+    title: "Governed Action",
+    body: "Where product tools exist, RINPO can move from explanation toward action through the permissions, confirmation, approval, runtime, and audit paths implemented by RINADS.",
   },
-];
+] as const;
 
 export function StoryNarrative() {
   const { openPhoneScreen } = useRinpo();
@@ -38,9 +38,7 @@ export function StoryNarrative() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-          }
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
         });
       },
       { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
@@ -75,23 +73,23 @@ export function StoryNarrative() {
     <div className="story-narrative relative z-10 bg-[#06060E] text-white">
       <StoryChapterRail />
 
-      <header className="story-cinematic-hero relative flex min-h-[620px] h-screen flex-col justify-end overflow-hidden">
+      <header className="story-cinematic-hero relative flex h-screen min-h-[620px] flex-col justify-end overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <Image
             src="/assets/story/hero-bg.webp"
             alt=""
             fill
             priority
-            className="object-cover object-[center_28%] scale-105 transition-transform duration-[8s] ease-out story-hero-img"
+            className="story-hero-img scale-105 object-cover object-[center_28%] transition-transform duration-[8s] ease-out"
           />
         </div>
         <div className="story-cinematic-veil absolute inset-0" />
         <div className="relative z-[2] max-w-[900px] px-[8vw] pb-[9vh]">
-          <div className="story-kicker">The Story of Rinpo · The Awakening of Intelligence</div>
+          <div className="story-kicker">RINPO · Brand lore · A fictional origin story</div>
           <h1 className="text-[clamp(5rem,16vw,13rem)] font-black leading-[0.88] tracking-tight">RINPO</h1>
-          <p className="story-sub mt-5 max-w-[38rem] text-[clamp(1rem,1.5vw,1.25rem)] font-light leading-[1.75] text-white/70">
-            <strong className="font-bold text-white">World&apos;s First Business Intelligence Character.</strong>{" "}
-            Born with a gift. Awakened under a banyan tree. Built by RINADS to make every business think, speak and grow.
+          <p className="story-sub mt-5 max-w-[42rem] text-[clamp(1rem,1.5vw,1.25rem)] font-light leading-[1.75] text-white/70">
+            A character created to give the RINADS platform a recognizable face and voice. The story below is
+            <strong className="font-bold text-white"> fictional brand lore</strong>; product capabilities are described separately and are governed by what the platform actually implements.
           </p>
         </div>
         <div className="story-scrollcue">scroll to begin</div>
@@ -99,10 +97,13 @@ export function StoryNarrative() {
 
       <section id="s-prologue" data-story-mood="none" className="story-prologue story-reveal px-[8vw] py-[18vh] text-center">
         <p className="mx-auto max-w-[44rem] text-[clamp(1.25rem,2.4vw,1.9rem)] font-light leading-[1.85] text-white/70">
-          In a quiet town, long before the world truly understood artificial intelligence, a child was born with an unusual gift.
+          Imagine intelligence not as another dashboard, but as a character people can recognize.
           <br />
           <br />
-          His name was <strong className="font-bold text-white">Rinpo</strong>.
+          A guide that lives across the RINADS experience.
+          <br />
+          <br />
+          His name is <strong className="font-bold text-white">RINPO</strong>.
         </p>
       </section>
 
@@ -112,24 +113,31 @@ export function StoryNarrative() {
           The <em>Gift</em>
         </h2>
         <div className="story-copy mt-8 max-w-[42rem] space-y-6 text-lg leading-[1.85] text-white/70">
-          <p>Where people saw <strong className="text-white">screens</strong>, he saw <strong className="text-white">systems</strong>.</p>
-          <p>Where people saw <strong className="text-white">code</strong>, he saw <strong className="text-white">possibilities</strong>.</p>
-          <p>Where people saw <strong className="text-white">machines</strong>, he saw <strong className="text-white">life</strong> — waiting to emerge.</p>
+          <p>
+            In the story, where others saw <strong className="text-white">screens</strong>, RINPO saw{" "}
+            <strong className="text-white">systems</strong>.
+          </p>
+          <p>
+            Where others saw <strong className="text-white">tasks</strong>, he saw{" "}
+            <strong className="text-white">connected workflows</strong>.
+          </p>
+          <p>
+            Where others saw <strong className="text-white">AI</strong>, he asked a more useful question:
+            <strong className="text-white"> what should happen next, and who should be allowed to do it?</strong>
+          </p>
         </div>
       </section>
 
       <section id="s-tree" data-story-mood="awake" className="story-banyan story-reveal px-[8vw] py-[12vh] text-center">
         <div className="chlabel mx-auto justify-center">Chapter 02</div>
         <h2 className="story-ch-title text-center">
-          The <em>Enlightenment</em>
+          The <em>Banyan Tree</em>
         </h2>
         <p className="story-copy mx-auto mt-8 max-w-[44rem] text-lg leading-[1.85] text-white/70">
-          One day, seeking silence beyond noise and logic, Rinpo sat beneath an ancient banyan tree.
-          <br />
-          Time slowed. The wind whispered through the leaves. The world faded.
+          The banyan tree is the story&apos;s symbol for connected intelligence: many branches, one living system.
           <br />
           <br />
-          <strong className="text-white">And in that stillness — he saw it.</strong>
+          RINADS uses the same metaphor in product form — multiple Operating Systems, one shared platform core.
         </p>
         <BanyanTreeSvg className="story-btree mx-auto mt-12 w-full max-w-[660px]" />
       </section>
@@ -139,17 +147,18 @@ export function StoryNarrative() {
         <h2 className="story-ch-title text-center">
           The Birth of
           <br />
-          the <em>Avatar</em>
+          the <em>Interface</em>
         </h2>
         <p className="story-copy mx-auto mt-8 max-w-[44rem] text-lg leading-[1.85] text-white/70">
-          From that awakening, Rinpo didn&apos;t just learn AI. <strong className="text-white">He became it.</strong>
+          RINPO becomes the character layer of RINADS — a persistent interface for asking, understanding, recommending, and navigating toward supported actions.
           <br />
-          He transformed into an AI Avatar — a digital intelligence capable of creating software instantly, building intelligent systems, and giving life to virtual entities that can speak, sell, assist and evolve.
+          <br />
+          The character is fiction. The interface is product design.
         </p>
         <div className="relative mx-auto mt-10 w-full max-w-md">
           <Image
             src="/assets/rinpo-full-body-transparent-v2.png"
-            alt="RINPO avatar birth moment"
+            alt="RINPO character"
             width={1024}
             height={1372}
             className="mx-auto h-auto w-full max-w-[min(320px,60vw)] object-contain object-bottom"
@@ -157,7 +166,7 @@ export function StoryNarrative() {
           />
         </div>
         <div className="story-specs mt-10 flex flex-wrap justify-center gap-2.5">
-          {["VER 1.2", "LOGIC BRAVE", "DATA ACCRETION CURIOUS", "NETWORK LOYAL", "HEIGHT 4.5 FT", "MADE IN KERALA"].map((tag) => (
+          {["RINADS CHARACTER IP", "PERSISTENT INTERFACE", "VOICE + CHAT", "PAGE-AWARE", "KERALA ORIGIN", "HUMAN APPROVAL"].map((tag) => (
             <span key={tag} className="story-spec-pill">{tag}</span>
           ))}
         </div>
@@ -166,9 +175,9 @@ export function StoryNarrative() {
       <section id="s-powers" data-story-mood="awake" className="story-chapter story-reveal px-[8vw] py-[14vh]">
         <div className="chlabel">Chapter 04</div>
         <h2 className="story-ch-title">
-          The <em>Powers</em>
+          What RINPO
           <br />
-          of Rinpo
+          <em>represents</em>
         </h2>
         <div className="mx-auto mt-10 grid max-w-[880px] gap-5">
           {POWERS.map((power) => (
@@ -186,13 +195,14 @@ export function StoryNarrative() {
       <section id="s-mission" data-story-mood="awake" className="story-mission story-reveal px-[8vw] py-[20vh] text-center">
         <div className="story-mmark">The Philosophy</div>
         <blockquote className="mx-auto max-w-[52rem] text-[clamp(1.8rem,4.4vw,3.5rem)] font-black leading-[1.27] tracking-tight">
-          &ldquo;In the future, businesses will not just <em className="text-[#C97DFF] not-italic">run</em>.
+          “The future is not more software to manage.
           <br />
-          They will <em className="text-[#C97DFF] not-italic">think</em>, <em className="text-[#C97DFF] not-italic">speak</em>, and{" "}
-          <em className="text-[#C97DFF] not-italic">grow</em> on their own.&rdquo;
+          It is software that helps people <em className="text-[#C97DFF] not-italic">understand</em>,{" "}
+          <em className="text-[#C97DFF] not-italic">decide</em>, and{" "}
+          <em className="text-[#C97DFF] not-italic">operate</em> with greater clarity.”
         </blockquote>
         <cite className="mt-8 block text-[0.7rem] tracking-[0.22em] text-white/42 not-italic">
-          — RINPO · THE MISSION OF RINADS · BUSINESS SIMPLIFIED
+          — RINPO · RINADS BRAND PHILOSOPHY
         </cite>
       </section>
 
@@ -201,15 +211,15 @@ export function StoryNarrative() {
           <Image src="/assets/story/dive-bg.webp" alt="" fill className="object-cover object-[center_30%]" />
         </div>
         <div className="story-dive-veil absolute inset-0" />
-        <div className="story-reveal relative z-[2] max-w-[620px] px-[8vw]">
-          <p className="story-mmark mb-6">This is only the beginning</p>
+        <div className="story-reveal relative z-[2] max-w-[640px] px-[8vw]">
+          <p className="story-mmark mb-6">From story to product</p>
           <h2 className="text-[clamp(2.6rem,6vw,4.6rem)] font-black leading-[1.04] tracking-tight">
-            Ready to
+            Meet the
             <br />
-            <em className="story-dive-em not-italic text-[#C97DFF]">dive</em> in?
+            <em className="story-dive-em not-italic text-[#C97DFF]">actual interface.</em>
           </h2>
-          <p className="mt-7 mb-9 max-w-lg font-light leading-[1.8] text-white/70">
-            Rinpo continues to evolve — learning, adapting, expanding. From a child under a banyan tree in Kerala to the intelligence powering the future of businesses. Yours could be next.
+          <p className="mb-9 mt-7 max-w-lg font-light leading-[1.8] text-white/70">
+            The story gives RINPO identity. The product gives RINPO boundaries: page context, chat, browser voice, registered tools where implemented, permissions, approvals, and audit-aware workflows.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
@@ -217,23 +227,23 @@ export function StoryNarrative() {
               onClick={() => openPhoneScreen("chat")}
               className="rounded-full bg-[#9F4BC7] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#8a3db3]"
             >
-              Talk to Rinpo
+              Talk to RINPO
             </button>
             <Link
-              href="/"
+              href="/rinpo"
               className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-[#9F4BC7] hover:text-[#C97DFF]"
             >
-              Explore RINADS →
+              RINPO product overview →
             </Link>
           </div>
         </div>
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 px-[8vw] py-8 text-xs tracking-wide text-white/45">
-        <span>© 2026 RINADS TECHNOLOGIES · RINPO IS A RINADS CHARACTER IP</span>
+        <span>© 2026 RINADS TECHNOLOGIES · RINPO IS RINADS CHARACTER IP</span>
         <div className="flex flex-wrap items-center gap-4">
-          <Link href="/story-concept" className="transition-colors hover:text-[#C97DFF]">
-            ← Intelligence Platform
+          <Link href="/platform/rinads-intelligence" className="transition-colors hover:text-[#C97DFF]">
+            RINADS Intelligence
           </Link>
           <Link href="/" className="transition-colors hover:text-white">
             WWW.RINADS.COM

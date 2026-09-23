@@ -137,19 +137,19 @@ export const DEFAULT_SEO: SiteSeo[] = [
     "seo_rinpo_story_new",
     "/rinpo/story",
     "RINPO Story | RINADS",
-    "The origin story of RINPO — RINADS Intelligent Navigation & Process Oracle.",
+    "The fictional origin story and product identity of RINPO — the persistent character interface for RINADS.",
   ),
   seo(
     "seo_rinpo_voice",
     "/rinpo/voice",
     "RINPO Voice | RINADS",
-    "Talk to your business through RINPO voice channels.",
+    "Use browser speech as an input and output channel for the persistent RINPO experience.",
   ),
   seo(
     "seo_rinpo_phone",
     "/rinpo/phone",
     "RINPO Phone | RINADS",
-    "AI phone agent for calls, follow-ups, and business conversations.",
+    "Explore the RINPO Phone product direction for governed business calling and telephony integration.",
   ),
   seo(
     "seo_academy",
