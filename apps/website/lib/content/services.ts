@@ -21,11 +21,11 @@ export const SERVICE_LINES: ServiceLine[] = [
   },
   {
     slug: "ai",
-    name: "AI",
-    verb: "Automate",
-    headline: "AI systems that operate your business.",
+    name: "Intelligence & AI",
+    verb: "Intelligence",
+    headline: "Apply intelligence where it creates business value.",
     summary:
-      "Assistants, agents, and intelligence built on RINPO — with human approval on every meaningful action.",
+      "Assistants, agents, and intelligence built around RINPO, business context, permissions, approvals, and measurable outcomes.",
     offerings: ["AI assistants", "Agent workflows", "Knowledge systems", "Voice & phone agents", "Tool integrations"],
   },
   {
