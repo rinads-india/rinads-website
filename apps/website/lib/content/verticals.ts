@@ -23,22 +23,22 @@ export const VERTICALS: VerticalContent[] = [
   },
   {
     slug: "nursery",
-    name: "Nursery",
+    name: "Landscape & Nursery",
     type: "Landscape OS",
-    headline: "Nursery and landscaping operations.",
+    headline: "Landscape and nursery operations on the RINADS core.",
     summary:
       "Live vertical template for nursery inventory, projects, and customer work — powered by Business OS.",
-    capabilities: ["Live inventory", "Project work", "Customer CRM", "Field operations", "Growth"],
+    capabilities: ["Inventory", "Quotes & project work", "Customer CRM", "Field operations", "Orders & delivery", "Growth"],
     status: "available",
   },
   {
     slug: "salon",
-    name: "Salon",
+    name: "Salon / R GLOW",
     type: "Salon OS",
-    headline: "Salon appointments, clients, and growth.",
+    headline: "Run salon operations with R GLOW.",
     summary:
-      "Booking, clients, services, and marketing — vertical configuration on the RINADS core.",
-    capabilities: ["Appointments", "Clients", "Services menu", "Loyalty", "Campaigns"],
+      "Appointments, clients, services, POS, loyalty, campaigns, communications, and reviews — a salon vertical on the shared RINADS core.",
+    capabilities: ["Appointments & calendar", "Clients & notes", "Services & staff", "POS & refunds", "Loyalty", "Campaigns", "Communications", "Reviews & recovery"],
     status: "available",
   },
   {
@@ -66,8 +66,8 @@ export const VERTICALS: VerticalContent[] = [
 export const VERTICAL_EXAMPLES = [
   "Retail",
   "Jewellery",
-  "Nursery",
-  "Salon",
+  "Landscape & Nursery",
+  "Salon / R GLOW",
   "Healthcare",
   "Restaurant",
   "Real Estate",
