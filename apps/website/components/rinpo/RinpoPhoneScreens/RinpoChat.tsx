@@ -178,7 +178,7 @@ export function RinpoChat({ initialPrompt }: { initialPrompt?: string | null }) 
       }
       return prev;
     });
-  }, [lang]);
+  }, [lang, WELCOME_EN, WELCOME_ML]);
 
   useEffect(() => {
     if (!initialPrompt) return;
