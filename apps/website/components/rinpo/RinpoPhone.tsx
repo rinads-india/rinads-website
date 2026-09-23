@@ -168,11 +168,13 @@ export function RinpoPhone() {
               </motion.div>
 
               <div className="min-w-0">
-                <div className="text-[10px] font-bold tracking-widest uppercase text-purple-300/80">
-                  {currentDateStr}
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-300/80">
+                  <span>{currentDateStr}</span>
+                  <span aria-hidden>·</span>
+                  <span>{RINPO_STATE_LABELS[interactionState]}</span>
                 </div>
-                <div className="text-xs font-semibold text-white/95 truncate">
-                  {getPersonalizedGreeting()}
+                <div className="truncate text-xs font-semibold text-white/95">
+                  {getPersonalizedGreeting()} · {pageContext.area}
                 </div>
               </div>
             </div>
@@ -248,11 +250,6 @@ export function RinpoPhone() {
                 >
                   <div className="relative">
                     <Icon size={19} className={isActive ? "text-purple-300" : ""} />
-                    {item.badge && (
-                      <span className="absolute -top-1 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-purple-500 px-1 text-[8px] font-extrabold text-white">
-                        {item.badge}
-                      </span>
-                    )}
                   </div>
                   <span className="text-[10px] mt-0.5 tracking-tight">{item.label}</span>
                   {isActive && (
