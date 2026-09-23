@@ -39,7 +39,7 @@ describe("RINPO channel UX V2 contracts", () => {
 
     assert.match(voice, /Browser voice demo/);
     assert.match(voice, /Web Speech implementation/);
-    assert.match(voice, /product actions remaining behind the platform&apos;s actual controls/);
+    assert.match(voice, /product actions remaining behind the platform's actual controls/);
   });
 
   it("removes fabricated live-notification and instant-action claims from the RINPO handset", () => {
