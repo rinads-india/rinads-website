@@ -1,18 +1,18 @@
 "use client";
 
-import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGreetingForHour } from "@/lib/os-rinpo-prompts";
+import { getUserDisplayName } from "@/lib/user-display-name";
+import { useOsShell } from "./BusinessOsShell";
 
-type OsDashboardHeroProps = {
-  onAskRinpo: (prompt: string) => void;
-};
-
-export function OsDashboardHero({ onAskRinpo }: OsDashboardHeroProps) {
+export function OsDashboardHero() {
   const { user } = useAuth();
-  const { getPersonalizedGreeting } = useRinpoMemory();
-  const displayName = user?.username?.split("@")[0] ?? user?.username ?? "there";
-  const greeting = getPersonalizedGreeting() || `${getGreetingForHour()}, ${displayName}`;
+  const { askRinpo } = useOsShell();
+  const displayName = getUserDisplayName({
+    displayName: user?.displayName,
+    email: user?.email ?? user?.username,
+  });
+  const greeting = `${getGreetingForHour()}, ${displayName}.`;
 
   return (
     <section className="os-glass rounded-3xl p-5 sm:p-6">
@@ -27,8 +27,8 @@ export function OsDashboardHero({ onAskRinpo }: OsDashboardHeroProps) {
         </p>
         <button
           type="button"
-          onClick={() => onAskRinpo("What should I focus on today?")}
-          className="mt-2 text-left text-sm font-medium text-gray-800 underline-offset-2 hover:text-rinads-primary hover:underline"
+          onClick={() => askRinpo("What should I focus on today?")}
+          className="mt-2 min-h-11 text-left text-sm font-medium text-gray-800 underline-offset-2 hover:text-rinads-primary hover:underline"
         >
           &quot;What should I focus on today?&quot;
         </button>

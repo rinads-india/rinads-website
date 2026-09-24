@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { sanitizeNextPath, OS_PATH, ONBOARDING_PATH } from "../lib/post-auth-destination";
 import { getOsNavItems } from "../lib/os-modules";
+import {
+  getOsDesktopNavItems,
+  getOsMobileMoreNavItems,
+  getOsMobilePrimaryNavItems,
+  osNavContainsDashboardLabel,
+  resolveOsActiveNavId,
+} from "../lib/os-nav";
 
 describe("post-auth-destination", () => {
   it("sanitizes safe internal next paths", () => {
@@ -16,16 +25,58 @@ describe("post-auth-destination", () => {
   });
 });
 
-describe("os-modules", () => {
-  it("returns five nav items for client role", () => {
-    const items = getOsNavItems("client");
-    assert.equal(items.length, 5);
-    assert.equal(items[0]?.id, "dashboard");
-    assert.equal(items[2]?.href, "/projects");
+describe("os-nav", () => {
+  it("uses Home as the first desktop nav item under /os", () => {
+    const items = getOsDesktopNavItems();
+    assert.equal(items[0]?.id, "home");
+    assert.equal(items[0]?.label, "Home");
+    assert.equal(items[0]?.href, "/os");
+    assert.equal(osNavContainsDashboardLabel(items), false);
   });
 
-  it("returns owner portal links for admin role", () => {
-    const items = getOsNavItems("admin");
-    assert.match(items[0]?.href ?? "", /localhost:3003\/operations/);
+  it("keeps primary nav hrefs inside /os", () => {
+    for (const item of getOsDesktopNavItems()) {
+      assert.ok(item.href.startsWith("/os"), `${item.id} must stay in Business OS shell`);
+    }
+  });
+
+  it("exposes mobile primary and More membership", () => {
+    const primary = getOsMobilePrimaryNavItems();
+    assert.deepEqual(
+      primary.map((item) => item.id),
+      ["home", "customers", "work", "growth", "more"]
+    );
+    const more = getOsMobileMoreNavItems();
+    assert.ok(more.some((item) => item.id === "money"));
+    assert.ok(more.some((item) => item.id === "automate"));
+    assert.ok(more.some((item) => item.id === "rooms"));
+    assert.ok(more.some((item) => item.id === "settings"));
+    assert.equal(osNavContainsDashboardLabel(primary), false);
+    assert.equal(osNavContainsDashboardLabel(more), false);
+  });
+
+  it("resolves active nav ids from nested paths", () => {
+    assert.equal(resolveOsActiveNavId("/os"), "home");
+    assert.equal(resolveOsActiveNavId("/os/"), "home");
+    assert.equal(resolveOsActiveNavId("/os/home"), "home");
+    assert.equal(resolveOsActiveNavId("/os/work/projects"), "work");
+    assert.equal(resolveOsActiveNavId("/os/rooms"), "rooms");
+    assert.equal(resolveOsActiveNavId("/os/settings"), "settings");
+  });
+
+  it("getOsNavItems alias matches desktop nav without Dashboard", () => {
+    const items = getOsNavItems();
+    assert.equal(items[0]?.id, "home");
+    assert.ok(!items.some((item) => item.label === "Dashboard"));
+  });
+});
+
+describe("bos redirects", () => {
+  it("registers temporary /bos compatibility redirects", () => {
+    const source = readFileSync(join(process.cwd(), "next.config.ts"), "utf8");
+    assert.match(source, /source: "\/bos"/);
+    assert.match(source, /destination: "\/os"/);
+    assert.match(source, /source: "\/bos\/customers"/);
+    assert.match(source, /destination: "\/os\/customers"/);
   });
 });

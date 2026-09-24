@@ -19,6 +19,18 @@ const nextConfig: NextConfig = {
       { source: "/rinpo-story", destination: "/company/rinpo-story", permanent: true },
       { source: "/rinpo/story", destination: "/company/rinpo-story", permanent: true },
       { source: "/grow", destination: "/platform/marketing-os", permanent: true },
+      // Business OS alias — temporary until /bos IA is fully adopted.
+      { source: "/bos", destination: "/os", permanent: false },
+      { source: "/bos/home", destination: "/os", permanent: false },
+      { source: "/bos/customers", destination: "/os/customers", permanent: false },
+      { source: "/bos/work", destination: "/os/work", permanent: false },
+      { source: "/bos/work/:path*", destination: "/os/work/:path*", permanent: false },
+      { source: "/bos/money", destination: "/os/money", permanent: false },
+      { source: "/bos/growth", destination: "/os/growth", permanent: false },
+      { source: "/bos/automate", destination: "/os/automate", permanent: false },
+      { source: "/bos/rooms", destination: "/os/rooms", permanent: false },
+      { source: "/bos/settings", destination: "/os/settings", permanent: false },
+      { source: "/bos/:path*", destination: "/os/:path*", permanent: false },
       // Quarantine: former concept HTML with unverified trust claims.
       { source: "/story-concept", destination: "/", permanent: true },
       { source: "/story-concept/:path*", destination: "/", permanent: true },

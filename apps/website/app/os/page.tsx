@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { ACTIVE_ORG_COOKIE, loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
-import { getPageMetadata } from "@/lib/cms";
 import { cookies } from "next/headers";
 import { resolveDestinationForMemberships } from "@/lib/tenant-destination-server";
 import { ensureActiveOrganizationCookieAction } from "@/lib/org-context";
-import { OsClient } from "./OsClient";
+import { OsHomeContent } from "@/components/os/OsHomeContent";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/os");
-}
-
-export default async function OsPage() {
+/**
+ * Home landing — preserves tenant destination resolution (salon → Rinaglow, etc.).
+ */
+export default async function OsHomePage() {
   if (isSupabaseMode()) {
     const supabase = await createWebsiteServerClient();
     const { data, error } = await supabase.auth.getUser();
@@ -39,7 +36,7 @@ export default async function OsPage() {
 
   return (
     <main id="main">
-      <OsClient />
+      <OsHomeContent />
     </main>
   );
 }
