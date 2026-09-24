@@ -1,11 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import type { OsCardItem } from "@/lib/os-modules";
 
 type OsCardGridProps = {
   cards: OsCardItem[];
-  view: "dashboard" | "rooms";
+  view?: "home" | "rooms";
 };
 
 function CardShell({
@@ -38,22 +39,32 @@ function CardShell({
   );
 
   if (card.href) {
+    if (card.external) {
+      return (
+        <a
+          href={card.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+        >
+          {body}
+        </a>
+      );
+    }
     return (
-      <a
+      <Link
         href={card.href}
-        target={card.external ? "_blank" : undefined}
-        rel={card.external ? "noopener noreferrer" : undefined}
         className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
       >
         {body}
-      </a>
+      </Link>
     );
   }
 
   return body;
 }
 
-export function OsCardGrid({ cards, view }: OsCardGridProps) {
+export function OsCardGrid({ cards, view = "home" }: OsCardGridProps) {
   const visible =
     view === "rooms"
       ? cards.filter((card) => card.id === "create-room" || card.id === "screen-share")
@@ -67,9 +78,7 @@ export function OsCardGrid({ cards, view }: OsCardGridProps) {
             <p className="text-sm font-semibold">{card.title}</p>
             <p className="mt-1 text-xs opacity-75">{card.subtitle}</p>
           </div>
-          {card.meta && (
-            <p className="mt-3 text-lg font-bold">{card.meta}</p>
-          )}
+          {card.meta && <p className="mt-3 text-lg font-bold">{card.meta}</p>}
           {card.id === "create-room" && (
             <div className="mt-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-gray-400 text-2xl">
               +

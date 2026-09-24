@@ -17,8 +17,8 @@ type OsRinpoDockProps = {
 
 export function OsRinpoDock({
   welcome = false,
-  welcomeMessage = "Welcome to RINADS Business OS. Explore Dashboard to launch your workspace modules.",
-  module = "dashboard",
+  welcomeMessage = "Welcome to RINADS Business OS. Explore Home to launch your workspace modules.",
+  module = "home",
   expanded: expandedProp,
   onExpandedChange,
   seedPrompt = null,

@@ -25,6 +25,8 @@ export type AuthUser = {
   id?: string;
   username: string;
   email?: string | null;
+  /** Human display name from profile metadata — never an email. */
+  displayName?: string | null;
   role: LoginRole;
   demo: boolean;
 };
@@ -75,6 +77,12 @@ function quarantineLegacyAuthStorage() {
   }
 }
 
+function displayNameFromUsername(username: string): string | null {
+  const trimmed = username.trim();
+  if (!trimmed || trimmed.includes("@")) return null;
+  return trimmed;
+}
+
 function loadDemoSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
   try {
@@ -82,7 +90,12 @@ function loadDemoSession(): AuthUser | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<AuthUser>;
     if (!parsed?.username || !isDemoAllowedRole(parsed.role)) return null;
-    return { username: parsed.username, role: parsed.role as LoginRole, demo: true };
+    return {
+      username: parsed.username,
+      displayName: displayNameFromUsername(parsed.username),
+      role: parsed.role as LoginRole,
+      demo: true,
+    };
   } catch {
     return null;
   }
@@ -123,10 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data } = await client.auth.getSession();
         const session = data.session;
         if (session?.user) {
+          const meta = session.user.user_metadata as { display_name?: string } | undefined;
           setUser({
             id: session.user.id,
             username: session.user.email ?? session.user.id,
             email: session.user.email,
+            displayName: meta?.display_name?.trim() || null,
             role: "client",
             demo: false,
           });
@@ -145,7 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isDemoAllowedRole(role)) return false;
         const trimmed = username.trim();
         if (!trimmed) return false;
-        const session: AuthUser = { username: trimmed, role, demo: true };
+        const session: AuthUser = {
+          username: trimmed,
+          displayName: displayNameFromUsername(trimmed),
+          role,
+          demo: true,
+        };
         saveDemoSession(session);
         setUser(session);
         return true;
@@ -162,6 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: session.user.id,
           username: session.user.email ?? session.user.id,
           email: session.user.email,
+          displayName: session.user.displayName?.trim() || null,
           role: "client",
           demo: false,
         });
@@ -193,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: session.user.id,
             username: session.user.email ?? session.user.id,
             email: session.user.email,
+            displayName: session.user.displayName?.trim() || null,
             role: "client",
             demo: false,
           });

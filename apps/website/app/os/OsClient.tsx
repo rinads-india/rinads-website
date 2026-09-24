@@ -12,10 +12,10 @@ function OsShellFallback() {
   );
 }
 
-export function OsClient() {
+export function OsShellLayout({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<OsShellFallback />}>
-      <BusinessOsShell />
+      <BusinessOsShell>{children}</BusinessOsShell>
     </Suspense>
   );
 }

@@ -22,15 +22,16 @@ describe("onboarding-config", () => {
 });
 
 describe("os-rinpo-prompts", () => {
-  it("returns contextual prompts for dashboard module", () => {
-    const prompts = getOsRinpoPrompts("dashboard");
+  it("returns contextual prompts for home module", () => {
+    const prompts = getOsRinpoPrompts("home");
     assert.ok(prompts[0]?.includes("focus"));
     assert.equal(prompts.length, 3);
   });
 
   it("resolves module query param", () => {
     assert.equal(resolveOsModuleFromParam("leads"), "leads");
-    assert.equal(resolveOsModuleFromParam("invalid"), "dashboard");
+    assert.equal(resolveOsModuleFromParam("dashboard"), "home");
+    assert.equal(resolveOsModuleFromParam("invalid"), "home");
   });
 
   it("returns time-based greeting", () => {
