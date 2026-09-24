@@ -7,7 +7,8 @@ export default function OsWorkTasksPage() {
         config={{
           id: "work-tasks",
           title: "Tasks",
-          summary: "First-class Business OS tasks are not available yet. Use Work destinations for supported queues.",
+          summary:
+            "First-class Business OS tasks are not available yet. Use Work destinations for supported queues.",
           destinations: [
             {
               id: "tasks-unavailable",
@@ -21,6 +22,7 @@ export default function OsWorkTasksPage() {
               description: "See available Work destinations.",
               href: "/os/work",
               status: "available",
+              minTier: "client",
             },
           ],
         }}

@@ -8,6 +8,7 @@ import {
   resolveOsActiveNavId,
   type OsNavItem,
 } from "@/lib/os-nav";
+import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
 
 function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
   const Icon = item.icon;
@@ -28,8 +29,9 @@ function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
 export function OsNavPanel() {
   const pathname = usePathname() ?? "/os";
   const activeId = resolveOsActiveNavId(pathname);
-  const primary = getOsDesktopNavItems();
-  const utility = getOsSidebarUtilityItems();
+  const { tier } = useOsOrgRole();
+  const primary = getOsDesktopNavItems(tier);
+  const utility = getOsSidebarUtilityItems(tier);
 
   const primaryItems = primary.filter((item) => item.id !== "rooms");
   const roomsItem = primary.find((item) => item.id === "rooms");
@@ -56,25 +58,25 @@ export function OsNavPanel() {
       </ul>
 
       {roomsItem && (
-        <>
-          <div className="border-t border-white/40 pt-3">
-            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
-              Collaboration
-            </p>
-            <NavLink item={roomsItem} active={roomsItem.id === activeId} />
-          </div>
-        </>
+        <div className="border-t border-white/40 pt-3">
+          <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+            Collaboration
+          </p>
+          <NavLink item={roomsItem} active={roomsItem.id === activeId} />
+        </div>
       )}
 
-      <div className="mt-auto border-t border-white/40 pt-3">
-        <ul className="flex flex-col gap-1">
-          {utility.map((item) => (
-            <li key={item.id}>
-              <NavLink item={item} active={item.id === activeId} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      {utility.length > 0 && (
+        <div className="mt-auto border-t border-white/40 pt-3">
+          <ul className="flex flex-col gap-1">
+            {utility.map((item) => (
+              <li key={item.id}>
+                <NavLink item={item} active={item.id === activeId} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 }

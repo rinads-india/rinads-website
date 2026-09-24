@@ -21,6 +21,7 @@ export default function OsWorkCalendarPage() {
               description: "See available Work destinations.",
               href: "/os/work",
               status: "available",
+              minTier: "client",
             },
           ],
         }}

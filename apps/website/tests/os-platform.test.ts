@@ -46,13 +46,17 @@ describe("os-nav", () => {
       primary.map((item) => item.id),
       ["home", "customers", "work", "growth", "more"]
     );
-    const more = getOsMobileMoreNavItems();
+    const more = getOsMobileMoreNavItems("admin");
     assert.ok(more.some((item) => item.id === "money"));
     assert.ok(more.some((item) => item.id === "automate"));
     assert.ok(more.some((item) => item.id === "rooms"));
     assert.ok(more.some((item) => item.id === "settings"));
     assert.equal(osNavContainsDashboardLabel(primary), false);
     assert.equal(osNavContainsDashboardLabel(more), false);
+
+    const clientMore = getOsMobileMoreNavItems("client");
+    assert.ok(!clientMore.some((item) => item.id === "money"));
+    assert.ok(!clientMore.some((item) => item.id === "settings"));
   });
 
   it("resolves active nav ids from nested paths", () => {

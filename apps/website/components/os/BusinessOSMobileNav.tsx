@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -8,16 +8,29 @@ import {
   getOsMobilePrimaryNavItems,
   resolveOsActiveNavId,
 } from "@/lib/os-nav";
+import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const nodes = container.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+  return Array.from(nodes).filter(
+    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true"
+  );
+}
 
 export function BusinessOSMobileNav() {
   const pathname = usePathname() ?? "/os";
   const activeId = resolveOsActiveNavId(pathname);
+  const { tier } = useOsOrgRole();
   const [moreOpen, setMoreOpen] = useState(false);
   const titleId = useId();
-  const primary = getOsMobilePrimaryNavItems();
-  const moreItems = getOsMobileMoreNavItems();
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const primary = getOsMobilePrimaryNavItems(tier);
+  const moreItems = getOsMobileMoreNavItems(tier);
 
-  // Close More when the route changes without syncing open state in an effect.
   const navPath = pathname;
   const [lastPath, setLastPath] = useState(navPath);
   if (lastPath !== navPath) {
@@ -25,16 +38,68 @@ export function BusinessOSMobileNav() {
     if (moreOpen) setMoreOpen(false);
   }
 
+  const closeMore = useCallback(() => {
+    setMoreOpen(false);
+  }, []);
+
+  const openMore = useCallback(() => {
+    previouslyFocusedRef.current =
+      (document.activeElement as HTMLElement | null) ?? moreButtonRef.current;
+    setMoreOpen(true);
+  }, []);
+
+  // Body scroll lock + initial focus + Escape/Tab trap + focus restore
   useEffect(() => {
     if (!moreOpen) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMoreOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [moreOpen]);
 
-  const closeMore = useCallback(() => setMoreOpen(false), []);
+    const triggerButton = moreButtonRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const dialog = dialogRef.current;
+    const focusFirst = () => {
+      if (!dialog) return;
+      const focusables = getFocusableElements(dialog);
+      (focusables[0] ?? dialog).focus();
+    };
+    const frame = window.requestAnimationFrame(focusFirst);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMore();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const focusables = getFocusableElements(dialog);
+      if (focusables.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (event.shiftKey) {
+        if (active === first || !dialog.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      const restore = previouslyFocusedRef.current ?? triggerButton;
+      restore?.focus();
+    };
+  }, [moreOpen, closeMore]);
 
   const moreActive =
     activeId === "money" ||
@@ -61,11 +126,13 @@ export function BusinessOSMobileNav() {
             return (
               <button
                 key={item.id}
+                ref={moreButtonRef}
                 type="button"
                 className={className}
                 aria-expanded={moreOpen}
+                aria-haspopup="dialog"
                 aria-controls={titleId}
-                onClick={() => setMoreOpen((value) => !value)}
+                onClick={() => (moreOpen ? closeMore() : openMore())}
               >
                 <Icon size={16} aria-hidden />
                 {item.label}
@@ -97,16 +164,18 @@ export function BusinessOSMobileNav() {
             onClick={closeMore}
           />
           <div
+            ref={dialogRef}
             id={titleId}
             role="dialog"
             aria-modal="true"
             aria-labelledby={`${titleId}-title`}
-            className="os-glass absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] rounded-3xl p-4 shadow-2xl"
+            tabIndex={-1}
+            className="os-glass absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] rounded-3xl p-4 shadow-2xl outline-none"
           >
             <p id={`${titleId}-title`} className="text-sm font-semibold text-gray-900">
               More
             </p>
-            <ul className="mt-3 space-y-1">
+            <ul className="mt-3 max-h-[min(60vh,24rem)] space-y-1 overflow-y-auto">
               {moreItems.map((item) => {
                 const Icon = item.icon;
                 const active = item.id === activeId;
