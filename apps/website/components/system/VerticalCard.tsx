@@ -1,14 +1,25 @@
 import Link from "next/link";
+import { ProductStatus } from "@/components/system/ProductStatus";
+import type { ProductStatusValue } from "@/lib/product-status";
+import { fromLegacyAvailability } from "@/lib/product-status";
 
 type VerticalCardProps = {
   name: string;
   type: string;
   summary: string;
   href: string;
-  status?: "available" | "coming";
+  status?: ProductStatusValue | "available" | "coming";
 };
 
-export function VerticalCard({ name, type, summary, href, status = "coming" }: VerticalCardProps) {
+export function VerticalCard({
+  name,
+  type,
+  summary,
+  href,
+  status = "coming_soon",
+}: VerticalCardProps) {
+  const normalized = fromLegacyAvailability(status);
+
   return (
     <Link
       href={href}
@@ -16,13 +27,7 @@ export function VerticalCard({ name, type, summary, href, status = "coming" }: V
     >
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{type}</p>
-        <span
-          className={`text-[10px] font-semibold uppercase tracking-wider ${
-            status === "available" ? "text-emerald-400" : "text-white/40"
-          }`}
-        >
-          {status === "available" ? "Available" : "Coming soon"}
-        </span>
+        <ProductStatus status={normalized} />
       </div>
       <h3 className="mt-3 text-lg font-bold text-foreground">{name}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{summary}</p>

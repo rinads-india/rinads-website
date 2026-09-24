@@ -18,10 +18,10 @@ export default async function HomePage() {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       description:
-        "The AI Operating Platform for Business — run, build, grow, learn, and automate with RINPO.",
+        "AI operating platform for growing businesses — run customers, work, commerce, marketing and automation with RINPO.",
       offers: {
         "@type": "Offer",
-        url: "https://www.rinads.com/signup",
+        url: "https://www.rinads.com/contact?intent=demo",
       },
     },
   ];

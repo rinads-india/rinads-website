@@ -23,8 +23,8 @@ export function OsMarketingPage({ content }: { content: OsPageContent }) {
         eyebrow={content.eyebrow}
         headline={content.headline}
         summary={content.summary}
-        primaryHref="/signup"
-        primaryLabel="Start with RINADS"
+        primaryHref="/contact?intent=demo"
+        primaryLabel="Book a platform demo"
         secondaryHref="/platform"
         secondaryLabel="Platform overview"
       />

@@ -15,11 +15,14 @@ const nextConfig: NextConfig = {
       { source: "/rinpo-intelligence", destination: "/platform/rinads-intelligence", permanent: true },
       { source: "/cloud", destination: "/platform/rinads-cloud", permanent: true },
       { source: "/rinads-cloud", destination: "/platform/rinads-cloud", permanent: true },
-      { source: "/rinpo-story", destination: "/rinpo/story", permanent: true },
+      // Narrative owns /company/rinpo-story; product stays at /rinpo.
+      { source: "/rinpo-story", destination: "/company/rinpo-story", permanent: true },
+      { source: "/rinpo/story", destination: "/company/rinpo-story", permanent: true },
       { source: "/grow", destination: "/platform/marketing-os", permanent: true },
     ];
   },
   async rewrites() {
+    // story-concept remains as a non-indexable rewrite only; robots + sitemap exclude it.
     return [
       { source: "/story-concept", destination: "/story-concept/index.html" },
     ];

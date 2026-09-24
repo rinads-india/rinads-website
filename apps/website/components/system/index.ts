@@ -22,3 +22,5 @@ export { AcademyProgramPage } from "./AcademyProgramPage";
 export { ServiceLinePage } from "./ServiceLinePage";
 export { VerticalSolutionPage } from "./VerticalSolutionPage";
 export { LegalPage, type LegalSection } from "./LegalPage";
+export { ProductStatus } from "./ProductStatus";
+export { LeadForm } from "./LeadForm";

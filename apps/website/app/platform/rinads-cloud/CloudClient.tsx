@@ -80,10 +80,10 @@ const FOUNDATION_AREAS = [
 ] as const;
 
 const HONEST_LIMITS = [
-  "Some provider adapters remain stubs or require live credentials before production use.",
-  "Website RINPO chat is still distinct from full product-side intelligence/tool execution.",
-  "Some runtime definitions are still backed by built-in code paths rather than fully database-loaded workflow definitions.",
-  "Production capability should be described from implemented code and deployment state, not from intended roadmap alone.",
+  "Some external provider connections still need live credentials before production use.",
+  "Public RINPO demo chat is distinct from authenticated product-side intelligence and tool execution.",
+  "Some workflow definitions are still evolving toward fully configurable, organisation-managed runbooks.",
+  "Availability statements on this site reflect implemented product posture — not roadmap aspirations alone.",
 ] as const;
 
 export function CloudClient() {
@@ -247,7 +247,7 @@ export function CloudClient() {
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Current boundaries</p>
           <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-            Cloud architecture should show what is implemented and what still needs production work.
+            Clear boundaries between what is available, configured, and still in progress.
           </h2>
 
           <div className="mt-10 grid gap-3">

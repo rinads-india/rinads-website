@@ -276,7 +276,7 @@ export function RinpoMemoryProvider({ children }: { children: ReactNode }) {
       return "Staff Portal: 5 customer inquiries received today. AI lead routing is active.";
     }
     if (favs.includes("AI Automation")) {
-      return "Did you know? RINADS AI workflows reduce manual customer response times by up to 75%.";
+      return "RINADS helps teams prepare follow-up work faster when workflows and permissions are configured — results vary by organisation.";
     }
     if (favs.includes("Digital Marketing")) {
       return "Pro tip: Combining custom SEO architecture with high-conversion ad funnels maximizes ROI.";

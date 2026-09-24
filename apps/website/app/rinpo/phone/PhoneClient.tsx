@@ -33,11 +33,11 @@ export function PhoneClient() {
       <PageHero
         eyebrow="RINPO Phone"
         headline="A governed business-calling experience for RINPO."
-        summary="RINPO Phone is the product direction for connecting business calls to RINADS context, workflows, approvals, and follow-up. The current repository does not contain a live PSTN/telephony provider connector, so this page is a product demonstration rather than a live calling service."
-        primaryHref="/projects"
-        primaryLabel="Plan phone integration"
+        summary="RINPO Phone is the product direction for connecting business calls to RINADS context, workflows, approvals, and follow-up. A live telephony provider is not connected on this public surface, so this page is a product demonstration rather than a live calling service."
+        primaryHref="/contact?intent=implementation"
+        primaryLabel="Talk to an implementation specialist"
         secondaryHref="/rinpo"
-        secondaryLabel="RINPO overview"
+        secondaryLabel="See how RINPO works"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -194,16 +194,16 @@ export function PhoneClient() {
       <section className="border-t border-[var(--border)] px-6 py-16 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl rounded-3xl border border-rinads-primary/25 bg-rinads-primary/[0.05] p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">
-            Current repository boundary
+            Availability
           </p>
           <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--text-muted)]">
-            The current RINADS repository contains the RINPO web/chat/voice UI, runtime and business-tool foundations, but no live telephony/PSTN connector was found. RINPO Phone is therefore presented as an integration-ready product direction, not as an already-live calling service.
+            RINPO Phone demonstrates how governed calling could connect to business context, approvals, and follow-up. Live PSTN/telephony calling is not available on this public demo. Treat this page as product direction, not a production calling service.
           </p>
           <Link
-            href="/projects"
+            href="/contact?intent=implementation"
             className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline"
           >
-            Define a phone-integration project
+            Talk to an implementation specialist
             <ArrowRight size={15} aria-hidden />
           </Link>
         </div>

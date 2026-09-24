@@ -111,18 +111,18 @@ function MobileMenuOverlay({
               ) : (
                 <>
                   <Link
-                    href={CTAS.secondary.href}
+                    href={CTAS.primary.href}
                     onClick={onClose}
                     className="flex min-h-12 items-center justify-center rounded-full bg-rinads-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
-                    {CTAS.secondary.label}
+                    {CTAS.primary.label}
                   </Link>
                   <Link
-                    href="/signup?mode=login"
+                    href={CTAS.signIn.href}
                     onClick={onClose}
                     className="flex min-h-12 items-center justify-center rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition-colors hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
-                    Sign in
+                    {CTAS.signIn.label}
                   </Link>
                 </>
               )}
@@ -135,7 +135,7 @@ function MobileMenuOverlay({
                 }}
                 className="flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                Talk to RINPO
+                {CTAS.rinpo.label}
               </button>
 
               <div className="flex justify-center">
@@ -234,18 +234,18 @@ export function Navbar() {
           ) : (
             <>
               <Link
-                href="/signup?mode=login"
+                href={CTAS.signIn.href}
                 data-rinpo-guide="account"
                 className="hidden h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11"
               >
                 <UserRound size={16} aria-hidden />
-                <span>Sign in</span>
+                <span>{CTAS.signIn.label}</span>
               </Link>
               <Link
-                href={CTAS.secondary.href}
+                href={CTAS.primary.href}
                 className="hidden h-10 shrink-0 items-center justify-center rounded-full bg-rinads-primary px-4 text-xs font-semibold text-white shadow-md shadow-rinads-primary/20 transition-colors hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary sm:flex sm:h-11"
               >
-                {CTAS.secondary.label}
+                {CTAS.primary.label}
               </Link>
             </>
           )}

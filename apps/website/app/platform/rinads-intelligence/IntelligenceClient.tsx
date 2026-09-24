@@ -207,7 +207,7 @@ export function IntelligenceClient() {
             Read, draft, then act through explicit boundaries.
           </h2>
           <p className="mt-5 max-w-2xl text-white/60">
-            The current intelligence package separates tool behaviour into READ, DRAFT, and ACTION categories. Customer-facing flows do not get silent mutation authority.
+            RINADS Intelligence organises assistance into read, draft, and action behaviours. Customer-facing flows do not get silent mutation authority — supported actions still require the right permissions and approvals.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">

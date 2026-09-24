@@ -4,15 +4,14 @@ import { describe, it } from "node:test";
 import { PLATFORM_OS } from "../lib/product-ia";
 
 describe("Platform core UX V2 contracts", () => {
-  it("keeps exactly eight operating systems and two core layers", () => {
+  it("keeps eight operating systems plus core product layers", () => {
     const operatingSystems = PLATFORM_OS.filter((item) => item.section !== "Core");
     const core = PLATFORM_OS.filter((item) => item.section === "Core");
 
     assert.equal(operatingSystems.length, 8);
-    assert.deepEqual(
-      core.map((item) => item.label),
-      ["RINADS Intelligence", "RINADS Cloud"]
-    );
+    assert.ok(core.some((item) => item.label === "RINPO"));
+    assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
+    assert.ok(core.some((item) => item.label === "RINADS Cloud"));
   });
 
   it("uses dedicated Intelligence and Cloud experiences instead of the generic OS page template", () => {

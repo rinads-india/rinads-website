@@ -48,7 +48,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
     foundation: ["Business OS", "Automation OS", "RINADS Intelligence", "RINADS Cloud"],
     workflow: ["Booking", "Calendar", "Client", "Service", "POS", "Loyalty", "Campaign", "Review"],
     demoLabel: "R GLOW product experience",
-    demoSummary: "A real salon vertical in the RINADS monorepo with booking, operations, POS, CRM, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
+    demoSummary: "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
     rinpoPrompt: "Show me how R GLOW handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
     statusNote: "Product code built · production cutover still requires deployment and live credentials",
   },

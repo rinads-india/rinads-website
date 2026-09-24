@@ -53,22 +53,22 @@ export type AppDefinition = {
 };
 
 export const GRID_APPS: AppDefinition[] = [
-  { id: "dashboard", name: "Dashboard", icon: TrendingUp, category: "analytics", description: "Real-time metrics, live revenue overview and quick KPIs." },
-  { id: "analytics", name: "Analytics", icon: TrendingUp, category: "analytics", description: "Traffic funnels, conversion rates, and SEO performance." },
-  { id: "leads", name: "Leads", icon: Users, badge: "+12", category: "growth", description: "AI-captured inbound prospects and qualified customer inquiries." },
-  { id: "projects", name: "Projects", icon: Briefcase, category: "business", description: "Active software deliverables, sprint boards, and deployments." },
-  { id: "tasks", name: "Tasks", icon: CheckSquare, badge: "3", category: "business", description: "Your daily action items, milestones, and automated workflows." },
-  { id: "calendar", name: "Calendar", icon: CalendarIcon, category: "business", description: "Scheduled client demos, strategy reviews, and team standups." },
-  { id: "invoices", name: "Invoices", icon: Receipt, category: "business", description: "Automated billing, GST compliant receipts, and payout status." },
-  { id: "clients", name: "Clients", icon: Building2, category: "business", description: "Customer relationship directory with history and service tiers." },
-  { id: "marketing", name: "Marketing", icon: Megaphone, category: "growth", description: "Active ad campaigns on Meta & Google with live ROI tracking." },
-  { id: "ai-tools", name: "AI Tools", icon: Bot, badge: "AI", category: "tools", description: "RINADS smart assistants, text generators, and vision engines." },
-  { id: "automations", name: "Automations", icon: Zap, category: "tools", description: "No-code event triggers, WhatsApp notifications, and lead sync." },
-  { id: "support-app", name: "Support", icon: Headphones, category: "tools", description: "24/7 dedicated support desk with priority ticket handling." },
-  { id: "reports", name: "Reports", icon: FileText, category: "analytics", description: "Exportable monthly executive reports and audit summaries." },
-  { id: "settings-app", name: "Settings", icon: Settings, category: "tools", description: "Organization profile, API keys, brand colors, and security." },
-  { id: "integrations", name: "Integrations", icon: LinkIcon, category: "tools", description: "Connect Slack, WhatsApp, Stripe, GitHub, and Shopify." },
-  { id: "more", name: "More", icon: MoreHorizontal, category: "tools", description: "Developer tools, SDKs, and RINADS Business Cloud extensions." },
+  { id: "dashboard", name: "Dashboard", icon: TrendingUp, category: "analytics", description: "Sample metrics and KPI overview for the demo workspace." },
+  { id: "analytics", name: "Analytics", icon: TrendingUp, category: "analytics", description: "Traffic and conversion views when connected data is configured." },
+  { id: "leads", name: "Leads", icon: Users, badge: "+12", category: "growth", description: "Inbound prospects and follow-up queues in the demo workspace." },
+  { id: "projects", name: "Projects", icon: Briefcase, category: "business", description: "Projects, milestones, and delivery status." },
+  { id: "tasks", name: "Tasks", icon: CheckSquare, badge: "3", category: "business", description: "Action items and milestones for the current workspace." },
+  { id: "calendar", name: "Calendar", icon: CalendarIcon, category: "business", description: "Scheduled meetings and operational appointments." },
+  { id: "invoices", name: "Invoices", icon: Receipt, category: "business", description: "Billing documents and payment status for supported flows." },
+  { id: "clients", name: "Clients", icon: Building2, category: "business", description: "Customer directory with history and notes." },
+  { id: "marketing", name: "Marketing", icon: Megaphone, category: "growth", description: "Campaign planning connected to CRM follow-up." },
+  { id: "ai-tools", name: "AI Tools", icon: Bot, badge: "AI", category: "tools", description: "RINPO-assisted drafting and guidance inside permissions." },
+  { id: "automations", name: "Automations", icon: Zap, category: "tools", description: "Event triggers and notifications when integrations are configured." },
+  { id: "support-app", name: "Support", icon: Headphones, category: "tools", description: "Support queue views for the demo workspace." },
+  { id: "reports", name: "Reports", icon: FileText, category: "analytics", description: "Summaries when reporting is configured for the organisation." },
+  { id: "settings-app", name: "Settings", icon: Settings, category: "tools", description: "Organisation profile, branding, and access settings." },
+  { id: "integrations", name: "Integrations", icon: LinkIcon, category: "tools", description: "Connect supported tools — each integration declares its availability." },
+  { id: "more", name: "More", icon: MoreHorizontal, category: "tools", description: "Additional tools and platform extensions as they become available." },
 ];
 
 export function AppDetailModal({
