@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,9 +24,19 @@ export function RinaglowNav({ organizationName, roleKey }: { organizationName?: 
   return (
     <header className="border-b border-rinads-primary/15 bg-surface">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">R GLOW · Salon OS</p>
-          <h1 className="text-lg font-semibold text-foreground">{organizationName ?? "Owner & staff console"}</h1>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/assets/rglow-logo.png"
+            alt="R GLOW"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-xl object-contain"
+            priority
+          />
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">R GLOW · Salon OS</p>
+            <h1 className="text-lg font-semibold text-foreground">{organizationName ?? "Owner & staff console"}</h1>
+          </div>
         </div>
         <nav aria-label="Rinaglow console" className="flex flex-wrap gap-1">
           {links.map(({ href, label }) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { AttentionItem } from "@rinads/salon";
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { resolveRinpoActionAction, runRinpoCommandAction, type RinpoCommandOutcome } from "@/app/(console)/rinpo-actions";
@@ -154,6 +155,14 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
           }}
           className="flex items-center gap-2 p-3"
         >
+          <Image
+            src="/assets/rinpo-face.png"
+            alt=""
+            width={36}
+            height={36}
+            className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-rinads-primary/25"
+            aria-hidden
+          />
           <span className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">RINPO</span>
           <input
             value={text}

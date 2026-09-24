@@ -34,6 +34,19 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      <div className="today-checkin-banner flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">Today · front office</p>
+          <p className="mt-1 text-sm text-foreground">
+            <span className="font-semibold">{summary.todayAppointments.total}</span> appointment
+            {summary.todayAppointments.total === 1 ? "" : "s"} on the board — open the calendar to confirm and check in.
+          </p>
+        </div>
+        <Link href="/calendar" className="btn-primary">
+          Open today&rsquo;s calendar
+        </Link>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Today</p>
