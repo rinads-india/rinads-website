@@ -134,7 +134,7 @@ export default async function CalendarPage({
         ) : null}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Link href={`/calendar${branchFilter ? `?branch=${branchFilter}` : ""}`} className={calendarView === "today" ? "btn-primary" : "btn-secondary"}>
           Today
         </Link>
@@ -142,6 +142,16 @@ export default async function CalendarPage({
           Upcoming
         </Link>
       </div>
+
+      {calendarView === "today" ? (
+        <div className="today-checkin-banner">
+          <p className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">Check-in queue</p>
+          <p className="mt-1 text-sm text-foreground">
+            Use <span className="font-semibold">Check in</span> / <span className="font-semibold">Start service</span> on
+            each appointment card below. Walk-ins can be added with the form.
+          </p>
+        </div>
+      ) : null}
 
       <NewAppointmentForm
         branches={branches.filter((branch) => branch.isActive)}

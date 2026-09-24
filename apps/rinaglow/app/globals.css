@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f5f8;
+  /* Brand tokens — R Glow / RINADS (Figtree + purple) */
+  --pur: #9f4bc7;
+  --pur2: #b866e0;
+  --pur-d: #7a2fa0;
+  --surf: #f8f4ff;
+  --mid: #2a0f42;
+  --bg-void: #0a0612;
+
+  --background: #f4f0fa;
   --foreground: #111827;
   --surface: #ffffff;
-  --surface-muted: #eef0f4;
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-  --rinads-primary: #9f4bc7;
+  --surface-muted: #f0e8f8;
+  --muted-foreground: #6b5b78;
+  --border: color-mix(in srgb, var(--pur) 18%, #e8e0f0);
+  --rinads-primary: var(--pur);
   --danger: #dc2626;
   --success: #16a34a;
 }
@@ -20,7 +28,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-rinads-primary: var(--rinads-primary);
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -107,6 +115,25 @@ th {
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-muted);
+  border-color: color-mix(in srgb, var(--rinads-primary) 35%, var(--border));
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -115,4 +142,15 @@ th {
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: capitalize;
+}
+
+.today-checkin-banner {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--pur) 28%, transparent);
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--pur) 12%, white),
+    color-mix(in srgb, var(--surf) 80%, white)
+  );
+  padding: 1rem 1.25rem;
 }

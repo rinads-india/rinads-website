@@ -104,9 +104,13 @@ function SalonDemo() {
   return (
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">R GLOW · Salon OS</p>
-          <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Owner & staff operating loop</p>
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/rglow-logo.png" alt="" width={40} height={40} className="h-10 w-10 rounded-xl object-contain" />
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">R GLOW · Salon OS</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Owner & staff operating loop</p>
+          </div>
         </div>
         <CheckCircle2 size={20} className="text-[var(--status-success-fg)]" aria-hidden />
       </div>
@@ -146,11 +150,21 @@ function SalonDemo() {
             ))}
           </div>
         </div>
-        <div className="bg-black p-5 text-white">
+        <div className="relative overflow-hidden bg-black p-5 text-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/rinpo-face.png"
+            alt=""
+            width={96}
+            height={96}
+            className="absolute -right-2 -top-2 h-24 w-24 rounded-full object-cover opacity-40"
+            aria-hidden
+          />
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RINPO in R GLOW</p>
           <p className="mt-4 text-lg font-semibold">Salon attention and action context.</p>
           <p className="mt-3 text-sm leading-6 text-white/60">
-            Product-side salon tools reuse salon data, permission checks, approvals, and audit paths instead of creating a separate intelligence stack.
+            Product-side salon tools reuse salon data, permission checks, approvals, and audit paths instead of creating a
+            separate intelligence stack.
           </p>
         </div>
       </div>

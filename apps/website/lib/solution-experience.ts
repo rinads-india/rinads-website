@@ -43,13 +43,15 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   salon: {
     slug: "salon",
-    publicName: "Salon / R GLOW",
+    publicName: "R GLOW",
     signature: "R GLOW · Salon Operating System",
     foundation: ["Business OS", "Automation OS", "RINADS Intelligence", "RINADS Cloud"],
     workflow: ["Booking", "Calendar", "Client", "Service", "POS", "Loyalty", "Campaign", "Review"],
     demoLabel: "R GLOW product experience",
-    demoSummary: "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
-    rinpoPrompt: "Show me how R GLOW handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
+    demoSummary:
+      "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
+    rinpoPrompt:
+      "Show me how R GLOW handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
     statusNote: "Product code built · production cutover still requires deployment and live credentials",
   },
   jewellery: {

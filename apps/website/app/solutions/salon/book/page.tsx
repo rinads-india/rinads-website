@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getPageMetadata } from "@/lib/cms";
 import { getPublicSalonRepository } from "@/lib/salon-booking";
@@ -16,8 +17,20 @@ function BookingShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-[100dvh] bg-rinads-primary-darkest px-6 pb-24 pt-32 text-white md:px-12">
       <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rinads-primary">RINADS Salon OS</p>
-        <h1 className="mt-2 text-3xl font-black">Book an appointment</h1>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/assets/rglow-logo.png"
+            alt="R GLOW"
+            width={44}
+            height={44}
+            className="h-11 w-11 rounded-xl object-contain"
+            priority
+          />
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rinads-primary">R GLOW</p>
+            <h1 className="mt-1 text-3xl font-black">Book an appointment</h1>
+          </div>
+        </div>
         {children}
       </div>
     </main>
@@ -35,7 +48,7 @@ export default async function SalonBookingPage({ searchParams }: Props) {
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm">/solutions/salon/book?org=your-salon</code>).
         </p>
         <Link href="/solutions/salon" className="mt-8 inline-block text-sm text-rinads-primary underline">
-          Learn about RINADS Salon OS
+          Learn about R GLOW Salon OS
         </Link>
       </BookingShell>
     );
@@ -49,7 +62,7 @@ export default async function SalonBookingPage({ searchParams }: Props) {
       <BookingShell>
         <p className="mt-6 text-white/70">We couldn&rsquo;t find a salon at this link. Double-check the URL with them.</p>
         <Link href="/solutions/salon" className="mt-8 inline-block text-sm text-rinads-primary underline">
-          Learn about RINADS Salon OS
+          Learn about R GLOW Salon OS
         </Link>
       </BookingShell>
     );
