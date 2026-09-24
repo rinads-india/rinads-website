@@ -29,8 +29,8 @@ describe("RINPO channel UX V2 contracts", () => {
   it("keeps Phone transparent about current telephony maturity", () => {
     const phone = read("../app/rinpo/phone/PhoneClient.tsx");
 
-    assert.match(phone, /does not contain a live PSTN\/telephony provider connector/i);
-    assert.match(phone, /product demonstration rather than a live calling service/i);
+    assert.match(phone, /Live PSTN\/telephony calling is not available/i);
+    assert.match(phone, /product direction, not a production calling service/i);
     assert.match(phone, /no live phone call/i);
   });
 

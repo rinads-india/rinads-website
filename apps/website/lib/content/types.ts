@@ -20,6 +20,7 @@ export type VerticalContent = {
   headline: string;
   summary: string;
   capabilities: string[];
+  /** @deprecated Prefer VERTICAL_AVAILABILITY / ProductStatus — kept for legacy callers. */
   status: "available" | "coming";
 };
 

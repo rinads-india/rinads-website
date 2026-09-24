@@ -96,10 +96,10 @@ export function PlatformClient() {
         eyebrow={PLATFORM_OVERVIEW.eyebrow}
         headline={PLATFORM_OVERVIEW.headline}
         summary="One connected operating platform for business — with RINPO as the interface, RINADS Intelligence as the intelligence layer, eight Operating Systems, and RINADS Cloud as the shared foundation."
-        primaryHref="/signup"
-        primaryLabel="Start with RINADS"
+        primaryHref="/contact?intent=demo"
+        primaryLabel="Book a platform demo"
         secondaryHref="/rinpo"
-        secondaryLabel="Talk to RINPO"
+        secondaryLabel="See how RINPO works"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -278,7 +278,7 @@ export function PlatformClient() {
                 Shared foundation beneath every operating surface.
               </h2>
               <p className="mt-5 text-white/60">
-                The platform repository already separates identity, tenancy, business domains, runtime, intelligence, billing, CMS, and product apps into shared packages and applications.
+                RINADS keeps identity, organisation context, permissions and business workflows on a shared foundation so different operating systems can work from the same source of truth.
               </p>
               <Link href="/platform/rinads-cloud" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline">
                 Explore RINADS Cloud

@@ -14,8 +14,8 @@ import { getSolutionExperience } from "@/lib/solution-experience";
 export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }) {
   const config = getSolutionExperience(vertical.slug);
   const available = vertical.status === "available";
-  const primaryHref = available ? "/signup" : "/projects";
-  const primaryLabel = available ? "Start with RINADS" : "Plan this solution";
+  const primaryHref = available ? "/contact?intent=demo" : "/projects";
+  const primaryLabel = available ? "Book a platform demo" : "Plan this solution";
 
   return (
     <MarketingPageShell>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   COMPANY_SIZES,
   PROJECT_OUTCOMES,
@@ -404,7 +404,7 @@ function Field({
   label: string;
   error?: string;
   required?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (

@@ -9,7 +9,7 @@ export const VERTICALS: VerticalContent[] = [
     summary:
       "Catalogue, inventory, storefront, orders, and customer growth — configured for retail, not rebuilt as a separate platform.",
     capabilities: ["Catalogue & inventory", "Storefront", "Orders & payments", "CRM & loyalty", "Marketing automation"],
-    status: "available",
+    status: "coming",
   },
   {
     slug: "jewellery",
@@ -27,9 +27,9 @@ export const VERTICALS: VerticalContent[] = [
     type: "Landscape OS",
     headline: "Landscape and nursery operations on the RINADS core.",
     summary:
-      "Live vertical template for nursery inventory, projects, and customer work — powered by Business OS.",
+      "Nursery inventory, projects, and customer work configured on Business OS — currently shown as a demo / configuration path.",
     capabilities: ["Inventory", "Quotes & project work", "Customer CRM", "Field operations", "Orders & delivery", "Growth"],
-    status: "available",
+    status: "coming",
   },
   {
     slug: "salon",

@@ -13,7 +13,7 @@ export default function StatusPage() {
       <PageHero
         eyebrow="Status"
         headline="Service status for public surfaces."
-        summary="Status claims are only published when backed by monitoring. This page does not invent uptime percentages, SLAs, or “all systems operational” theatre."
+        summary="Status claims are only published when backed by monitoring. This page does not invent uptime percentages or SLA theatre."
       />
       <section className="px-6 pb-24 md:px-12 lg:px-20">
         <div className="mx-auto max-w-3xl space-y-6">

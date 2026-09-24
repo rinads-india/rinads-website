@@ -73,7 +73,6 @@ export function track(event: AnalyticsEvent, props?: AnalyticsProps) {
     // Analytics must never break UX.
   }
   if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
     console.debug("[analytics]", event, clean ?? {});
   }
 }
