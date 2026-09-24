@@ -297,10 +297,6 @@ export const HERO_COMMANDS = [
   "Automate a workflow",
 ] as const;
 
-/** Navbar utility CTAs — prefer commercial clarity over vague “Start”. */
-export const CTAS = {
-  primary: { label: "Book a platform demo", href: "/contact?intent=demo" },
-  secondary: { label: "Explore Business OS", href: "/platform/business-os" },
-  signIn: { label: "Sign in", href: "/signup?mode=login" },
-  rinpo: { label: "See how RINPO works", action: "rinpo" as const },
-} as const;
+/** Re-export navbar-shaped CTAs from the single taxonomy in lib/ctas.ts */
+export { NAV_CTAS as CTAS } from "@/lib/ctas";
+export { CTAS as CTA_TAXONOMY } from "@/lib/ctas";

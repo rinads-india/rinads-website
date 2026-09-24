@@ -32,17 +32,17 @@ export function BusinessOsClient() {
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
-              href="/signup"
+              href="/contact?intent=demo"
               className="inline-flex items-center gap-2 rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white"
             >
-              Get Started
+              Book a platform demo
               <ArrowRight size={16} aria-hidden />
             </Link>
             <Link
               href={isAuthenticated ? "/os" : "/signup?mode=login"}
               className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold"
             >
-              {isAuthenticated ? "Open Business OS" : "Log in to Business OS"}
+              {isAuthenticated ? "Open Business OS" : "Sign in"}
             </Link>
           </div>
         </div>

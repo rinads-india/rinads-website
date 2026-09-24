@@ -169,3 +169,13 @@ export const VERTICAL_AVAILABILITY: VerticalAvailability[] = [
   { slug: "healthcare", status: "private_preview", tier: "future" },
   { slug: "logistics", status: "coming_soon", tier: "future" },
 ];
+
+export function getVerticalAvailability(slug: string): VerticalAvailability {
+  return (
+    VERTICAL_AVAILABILITY.find((item) => item.slug === slug) ?? {
+      slug,
+      status: "coming_soon" as const,
+      tier: "future" as const,
+    }
+  );
+}

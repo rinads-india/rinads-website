@@ -14,7 +14,9 @@ import {
   Users,
 } from "lucide-react";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
+import { ProductStatus } from "@/components/system/ProductStatus";
 import type { VerticalContent } from "@/lib/content/types";
+import { getVerticalAvailability } from "@/lib/content/leads";
 import {
   getSolutionExperience,
   type SolutionExperienceConfig,
@@ -22,18 +24,8 @@ import {
 } from "@/lib/solution-experience";
 
 function StatusBadge({ vertical }: { vertical: VerticalContent }) {
-  const available = vertical.status === "available";
-  return (
-    <span
-      className={
-        available
-          ? "rounded-full bg-[var(--status-success-bg)] px-3 py-1 text-xs font-semibold text-[var(--status-success-fg)]"
-          : "rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]"
-      }
-    >
-      {available ? "Available" : "Coming soon"}
-    </span>
-  );
+  const availability = getVerticalAvailability(vertical.slug);
+  return <ProductStatus status={availability.status} />;
 }
 
 function RetailDemo() {
@@ -316,9 +308,13 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
               </h2>
               <p className="mt-4 max-w-2xl text-[var(--text-muted)]">{config.demoSummary}</p>
             </div>
-            {vertical.status === "coming" ? (
+            {vertical.status !== "available" ? (
               <p className="max-w-sm text-xs leading-5 text-[var(--text-muted)]">
                 This page is a product-direction preview. Coming-soon visuals do not imply production availability.
+              </p>
+            ) : getVerticalAvailability(vertical.slug).status === "prototype_demo" ? (
+              <p className="max-w-sm text-xs leading-5 text-[var(--text-muted)]">
+                Demo / sample configuration — not a claim that a production vertical is generally available.
               </p>
             ) : null}
           </div>
@@ -410,13 +406,13 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
                 <ArrowRight size={15} aria-hidden />
               </Link>
               <Link
-                href="/signup"
+                href="/contact?intent=demo"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:border-rinads-primary/45"
               >
-                Start with RINADS
+                Book a platform demo
               </Link>
               <Link
-                href="/os"
+                href="/signup?mode=login"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-rinads-primary"
               >
                 Existing salon sign in

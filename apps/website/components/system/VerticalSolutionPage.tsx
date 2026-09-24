@@ -6,16 +6,21 @@ import {
   PageHero,
   ModuleGrid,
   CTASection,
+  ProductStatus,
 } from "@/components/system";
 import { VerticalSolutionExperience } from "@/components/system/VerticalSolutionExperience";
 import type { VerticalContent } from "@/lib/content/types";
 import { getSolutionExperience } from "@/lib/solution-experience";
+import { getVerticalAvailability } from "@/lib/content/leads";
 
 export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }) {
   const config = getSolutionExperience(vertical.slug);
-  const available = vertical.status === "available";
-  const primaryHref = available ? "/contact?intent=demo" : "/projects";
-  const primaryLabel = available ? "Book a platform demo" : "Plan this solution";
+  const availability = getVerticalAvailability(vertical.slug);
+  const configurable =
+    availability.status === "available_configuration" ||
+    availability.status === "generally_available";
+  const primaryHref = configurable ? "/contact?intent=demo" : "/projects";
+  const primaryLabel = configurable ? "Book a platform demo" : "Plan this solution";
 
   return (
     <MarketingPageShell>
@@ -28,6 +33,12 @@ export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }
         secondaryHref="/solutions"
         secondaryLabel="All solutions"
       />
+
+      <section className="px-6 pb-2 md:px-12 lg:px-20">
+        <div className="mx-auto max-w-7xl">
+          <ProductStatus status={availability.status} size="md" showDescription />
+        </div>
+      </section>
 
       <VerticalSolutionExperience vertical={vertical} />
 
@@ -57,14 +68,14 @@ export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }
 
       <CTASection
         headline={
-          available
+          configurable
             ? "Configure " + (config?.publicName ?? vertical.name) + " on RINADS."
             : "Shape the " + (config?.publicName ?? vertical.name) + " configuration with RINADS."
         }
         summary={
-          available
+          configurable
             ? "Start with the shared RINADS core and configure the workflows this industry needs."
-            : "This vertical is coming soon. Use RINPO or the project intake to define the operating requirements without assuming production availability."
+            : "This vertical is not generally available yet. Use a project conversation to define requirements without assuming production availability."
         }
       />
     </MarketingPageShell>

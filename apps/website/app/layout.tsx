@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { RinpoProvider } from "@/components/rinpo/RinpoProvider";
 import { ThemeScript } from "@/components/rinads/ThemeScript";
+import { AnalyticsProvider } from "@/components/system/AnalyticsProvider";
 import { siteBrand } from "@/lib/brand";
 
 const figtree = Figtree({
@@ -77,7 +78,9 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <AuthProvider>
-            <RinpoProvider>{children}</RinpoProvider>
+            <AnalyticsProvider>
+              <RinpoProvider>{children}</RinpoProvider>
+            </AnalyticsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
