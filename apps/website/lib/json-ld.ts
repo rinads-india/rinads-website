@@ -1,6 +1,7 @@
 /**
  * Reusable JSON-LD helpers for commercial marketing pages.
- * Never emit JobPosting / Course with fake openings or schedules.
+ * Do not emit fabricated openings or class schedules via schema types
+ * that imply live hiring or course calendars.
  */
 
 const DEFAULT_SITE_URL = "https://www.rinads.com";

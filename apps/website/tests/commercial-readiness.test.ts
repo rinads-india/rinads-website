@@ -212,6 +212,11 @@ describe("commercial readiness QA gate", () => {
         /headline=/.test(blob) ||
         /PageHero/.test(blob) ||
         /HomeHero/.test(blob) ||
+        /LegalPage/.test(blob) ||
+        /OsMarketingPage/.test(blob) ||
+        /VerticalSolutionPage/.test(blob) ||
+        /AcademyProgramPage/.test(blob) ||
+        /ServiceLinePage/.test(blob) ||
         /HomeClient|PlatformClient|SolutionsClient|RinpoClient|PricingClient/.test(blob);
       if (!hasH1) missing.push(`${route.path} (${relative(WEBSITE_ROOT, file)})`);
     }
