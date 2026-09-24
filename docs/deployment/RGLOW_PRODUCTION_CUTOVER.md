@@ -99,9 +99,23 @@ Optional reviews automation after a tick: `RINADS_REVIEWS_AUTOMATION_URL`, `RINA
 
 ## 7. Explicitly deferred (do not block launch)
 
-- Loyalty expiry batch job (Phase E master prompt; not a go-live blocker)
+- ~~Loyalty expiry batch job~~ — shipped (`points_expiry_days` + `pnpm loyalty-expiry:worker`; still off by default)
 - Production cron for reviews/recovery (callable API exists; schedule is optional)
 - Full Playwright E2E suite
+
+## Cutover progress (agent notes)
+
+Observed 2026-09-21 while attempting go-live automation:
+
+| Check | Result |
+|-------|--------|
+| `https://www.rinads.com/api/health` | OK (`productionEnvContract`) |
+| `https://glow.rinads.com` | DNS does not resolve yet |
+| Separate Vercel project `rinaglow` | Needs Git link to `rinads-india/rinads-website` with root `apps/rinaglow` (MCP create could not verify the link) |
+| Twilio / communications worker secrets | Not configured in this environment |
+| Supabase MCP | Auth required before migration push |
+
+**Founder actions required:** connect Git on the `rinaglow` Vercel project, add `glow.rinads.com`, copy Production env from the website project (Supabase + cookie domain + `NEXT_PUBLIC_RINAGLOW_URL`), apply loyalty expiry migration, then continue the checklist above.
 
 ## Sign-off
 
@@ -113,3 +127,4 @@ Optional reviews automation after a tick: `RINADS_REVIEWS_AUTOMATION_URL`, `RINA
 | Twilio sandbox send + webhook | | | |
 | Worker allowlisted tick | | | |
 | Operator smoke | | | |
+| Loyalty expiry worker (optional) | | | |

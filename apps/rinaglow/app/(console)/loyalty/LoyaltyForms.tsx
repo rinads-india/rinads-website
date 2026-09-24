@@ -13,14 +13,22 @@ function Message({ state }: { state: LoyaltyActionState }) {
 export function ProgramForm({ program }: { program?: SalonLoyaltyProgram }) {
   const [state, action, pending] = useActionState(saveLoyaltyProgramAction, undefined);
   return (
-    <form action={action} className="mt-3 grid gap-2 sm:grid-cols-5">
+    <form action={action} className="mt-3 grid gap-2 sm:grid-cols-6">
       <input name="name" defaultValue={program?.name ?? "R GLOW Rewards"} className="field-input" required />
       <input name="currency" defaultValue={program?.currency ?? "INR"} className="field-input" required />
       <input name="earnCurrencyUnits" type="number" min="1" defaultValue={program?.earnCurrencyUnits ?? 100} className="field-input" required />
       <input name="earnPoints" type="number" min="1" defaultValue={program?.earnPoints ?? 1} className="field-input" required />
       <input name="pointsPerCurrencyUnit" type="number" min="1" defaultValue={program?.pointsPerCurrencyUnit ?? 10} className="field-input" required />
+      <input
+        name="pointsExpiryDays"
+        type="number"
+        min="1"
+        placeholder="Expiry days (blank=off)"
+        defaultValue={program?.pointsExpiryDays ?? undefined}
+        className="field-input"
+      />
       <button className="btn-primary text-xs" disabled={pending}>{pending ? "Saving…" : "Save program"}</button>
-      <div className="sm:col-span-4"><Message state={state} /></div>
+      <div className="sm:col-span-5"><Message state={state} /></div>
     </form>
   );
 }

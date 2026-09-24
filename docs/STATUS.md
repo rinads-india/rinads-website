@@ -80,7 +80,7 @@ Supabase Auth → @rinads/tenancy
 1. **Live Twilio WhatsApp** — code path ready; without secrets returns `not_configured`; credentialed E2E not verified
 2. **Production enablement** — Vercel `glow.rinads.com`, migration rollout, cookie domain, Twilio templates/webhooks/consent
 3. **Workers default off** — need `RINADS_COMMUNICATIONS_WORKER_ENABLED=1` (+ allowlist)
-4. **Loyalty expiry batches** — mentioned in Phase E master prompt; not shipped as a worker job
+4. **Loyalty expiry batches** — shipped (`points_expiry_days` + `pnpm loyalty-expiry:worker`; off by default until enablement)
 
 **Go-live checklist:** [deployment/RGLOW_PRODUCTION_CUTOVER.md](./deployment/RGLOW_PRODUCTION_CUTOVER.md)
 

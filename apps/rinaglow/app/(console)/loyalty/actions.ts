@@ -15,6 +15,11 @@ export async function saveLoyaltyProgramAction(_state: LoyaltyActionState, formD
     earnCurrencyUnits: Number(formData.get("earnCurrencyUnits")),
     earnPoints: Number(formData.get("earnPoints")),
     pointsPerCurrencyUnit: Number(formData.get("pointsPerCurrencyUnit")),
+    pointsExpiryDays: (() => {
+      const raw = String(formData.get("pointsExpiryDays") ?? "").trim();
+      if (!raw) return null;
+      return Number(raw);
+    })(),
   });
   revalidatePath("/loyalty");
   return result.ok ? { success: "Loyalty program saved." } : { error: result.error.message };
