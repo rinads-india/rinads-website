@@ -49,16 +49,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(destination, redirect.permanent ? 308 : 307);
   }
 
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-rinads-pathname", request.nextUrl.pathname);
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const provider = process.env.NEXT_PUBLIC_AUTH_PROVIDER;
 
   if (provider !== "supabase" || !url || !anonKey) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   }
 
   let response = NextResponse.next({
-    request: { headers: request.headers },
+    request: { headers: requestHeaders },
   });
 
   const supabase = createServerClient(url, anonKey, {
@@ -72,7 +77,7 @@ export async function middleware(request: NextRequest) {
       },
       setAll(cookiesToSet: CookieToSet[]) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request: { headers: request.headers } });
+        response = NextResponse.next({ request: { headers: requestHeaders } });
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });

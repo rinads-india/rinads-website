@@ -1,8 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
+import type { RoleKey } from "@rinads/permissions";
 import "@/app/os/os.css";
 import { BusinessOsShell } from "@/components/os/BusinessOsShell";
+import { OsOrgRoleProvider } from "@/components/os/OsOrgRoleProvider";
 
 function OsShellFallback() {
   return (
@@ -12,10 +14,23 @@ function OsShellFallback() {
   );
 }
 
-export function OsShellLayout({ children }: { children: React.ReactNode }) {
+export function OsShellLayout({
+  children,
+  membershipRoleKey = null,
+  membershipResolved = false,
+}: {
+  children: React.ReactNode;
+  membershipRoleKey?: RoleKey | null;
+  membershipResolved?: boolean;
+}) {
   return (
-    <Suspense fallback={<OsShellFallback />}>
-      <BusinessOsShell>{children}</BusinessOsShell>
-    </Suspense>
+    <OsOrgRoleProvider
+      membershipRoleKey={membershipRoleKey}
+      membershipResolved={membershipResolved}
+    >
+      <Suspense fallback={<OsShellFallback />}>
+        <BusinessOsShell>{children}</BusinessOsShell>
+      </Suspense>
+    </OsOrgRoleProvider>
   );
 }

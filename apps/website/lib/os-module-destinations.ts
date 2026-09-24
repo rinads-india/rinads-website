@@ -1,6 +1,8 @@
 import { getPortalUrls, portalUrl } from "@/lib/portal-urls";
+import type { OsCapabilityTier } from "@/lib/os-org-role";
+import { tierAtLeast } from "@/lib/os-org-role";
 
-export type ModuleDestinationStatus = "available" | "unavailable";
+export type ModuleDestinationStatus = "available" | "external_public" | "unavailable";
 
 export type ModuleDestination = {
   id: string;
@@ -9,6 +11,8 @@ export type ModuleDestination = {
   href?: string;
   external?: boolean;
   status: ModuleDestinationStatus;
+  /** Minimum capability tier for authenticated product destinations. Omit for external_public / unavailable. */
+  minTier?: OsCapabilityTier;
 };
 
 export type OsModuleBridgeConfig = {
@@ -18,8 +22,79 @@ export type OsModuleBridgeConfig = {
   destinations: ModuleDestination[];
 };
 
+export type FilteredModuleDestination = ModuleDestination & {
+  /** Final visibility after role + configuration checks. */
+  visible: boolean;
+  reason?: "role" | "unconfigured" | "unresolved_role";
+};
+
 function portals() {
   return getPortalUrls();
+}
+
+function isPortalConfigured(kind: "owner" | "customer" | "platform"): boolean {
+  const envKey =
+    kind === "owner"
+      ? "NEXT_PUBLIC_OWNER_PORTAL_URL"
+      : kind === "customer"
+        ? "NEXT_PUBLIC_CUSTOMER_PORTAL_URL"
+        : "NEXT_PUBLIC_PLATFORM_ADMIN_URL";
+  const value = process.env[envKey];
+  // Explicitly configured OR local defaults from getPortalUrls() — treat as configured for demo/dev.
+  // Unconfigured only when intentionally blank string.
+  if (value === "") return false;
+  return Boolean(portals()[kind]);
+}
+
+export function filterDestinationsForCapability(
+  destinations: ModuleDestination[],
+  tier: OsCapabilityTier | null
+): FilteredModuleDestination[] {
+  return destinations
+    .map((destination): FilteredModuleDestination | null => {
+      if (destination.status === "unavailable") {
+        return { ...destination, visible: true };
+      }
+
+      if (destination.status === "external_public") {
+        if (!destination.href) {
+          return { ...destination, visible: false, reason: "unconfigured" };
+        }
+        return { ...destination, visible: true };
+      }
+
+      // available — authenticated product surface
+      if (!destination.href) {
+        return { ...destination, visible: false, reason: "unconfigured", status: "unavailable" };
+      }
+
+      if (destination.external) {
+        const href = destination.href;
+        const p = portals();
+        if (href.startsWith(p.owner) && !isPortalConfigured("owner")) {
+          return { ...destination, visible: false, reason: "unconfigured" };
+        }
+        if (href.startsWith(p.customer) && !isPortalConfigured("customer")) {
+          return { ...destination, visible: false, reason: "unconfigured" };
+        }
+      }
+
+      const required = destination.minTier ?? "client";
+      if (!tier) {
+        // Unresolved live role: hide privileged surfaces; allow in-shell client-safe only if minTier is client and not external portal ops.
+        if (required === "client" && !destination.external) {
+          return { ...destination, visible: true };
+        }
+        return { ...destination, visible: false, reason: "unresolved_role" };
+      }
+
+      if (!tierAtLeast(tier, required)) {
+        return { ...destination, visible: false, reason: "role" };
+      }
+
+      return { ...destination, visible: true };
+    })
+    .filter((d): d is FilteredModuleDestination => d !== null && d.visible);
 }
 
 export function getCustomersModuleDestinations(): OsModuleBridgeConfig {
@@ -36,6 +111,7 @@ export function getCustomersModuleDestinations(): OsModuleBridgeConfig {
         href: portalUrl(p.customer, "/"),
         external: true,
         status: "available",
+        minTier: "client",
       },
       {
         id: "customer-support",
@@ -44,6 +120,7 @@ export function getCustomersModuleDestinations(): OsModuleBridgeConfig {
         href: portalUrl(p.customer, "/support"),
         external: true,
         status: "available",
+        minTier: "client",
       },
       {
         id: "leads-pipeline",
@@ -74,13 +151,14 @@ export function getWorkModuleDestinations(): OsModuleBridgeConfig {
         description: "Start or continue a project conversation.",
         href: "/os/work/projects",
         status: "available",
+        minTier: "client",
       },
       {
         id: "projects-legacy",
-        label: "Project intake (legacy)",
-        description: "Existing public project intake form.",
+        label: "Project intake (public)",
+        description: "Public project conversation form on the marketing site.",
         href: "/projects",
-        status: "available",
+        status: "external_public",
       },
       {
         id: "teams",
@@ -88,27 +166,27 @@ export function getWorkModuleDestinations(): OsModuleBridgeConfig {
         description: "Team collaboration destinations.",
         href: "/os/work/teams",
         status: "available",
+        minTier: "client",
       },
       {
         id: "owner-tasks",
         label: "Task queue (operations)",
-        description: "Existing owner-portal task list when configured.",
+        description: "Owner-portal task list. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/tasks"),
         external: true,
         status: "available",
+        minTier: "staff",
       },
       {
         id: "tasks",
         label: "Tasks",
         description: "First-class Business OS tasks module is not available yet.",
-        href: "/os/work/tasks",
         status: "unavailable",
       },
       {
         id: "calendar",
         label: "Calendar",
         description: "Business OS calendar is not available yet.",
-        href: "/os/work/calendar",
         status: "unavailable",
       },
     ],
@@ -123,10 +201,10 @@ export function getWorkProjectsDestinations(): OsModuleBridgeConfig {
     destinations: [
       {
         id: "project-intake",
-        label: "Open project intake",
-        description: "Existing project conversation form.",
+        label: "Project intake (public)",
+        description: "Public project conversation form on the marketing site.",
         href: "/projects",
-        status: "available",
+        status: "external_public",
       },
       {
         id: "project-workspace",
@@ -148,10 +226,11 @@ export function getWorkTeamsDestinations(): OsModuleBridgeConfig {
       {
         id: "owner-tasks",
         label: "Team task queue",
-        description: "Existing operations task surface.",
+        description: "Operations task surface. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/tasks"),
         external: true,
         status: "available",
+        minTier: "staff",
       },
       {
         id: "rooms",
@@ -159,6 +238,7 @@ export function getWorkTeamsDestinations(): OsModuleBridgeConfig {
         description: "Open the Rooms collaboration layer.",
         href: "/os/rooms",
         status: "available",
+        minTier: "client",
       },
       {
         id: "team-directory",
@@ -180,18 +260,20 @@ export function getMoneyModuleDestinations(): OsModuleBridgeConfig {
       {
         id: "billing-settings",
         label: "Billing settings",
-        description: "Organisation billing configuration.",
+        description: "Organisation billing configuration. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/settings/billing"),
         external: true,
         status: "available",
+        minTier: "admin",
       },
       {
         id: "orders",
         label: "Orders",
-        description: "Commerce order list in the owner portal.",
+        description: "Commerce order list. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/orders"),
         external: true,
         status: "available",
+        minTier: "staff",
       },
       {
         id: "invoices",
@@ -213,14 +295,14 @@ export function getGrowthModuleDestinations(): OsModuleBridgeConfig {
   return {
     id: "growth",
     title: "Growth",
-    summary: "Marketing and revenue operations. Open RINADS Grow and related experiences.",
+    summary: "Marketing and revenue operations. Public Grow overview is separate from in-app campaign tools.",
     destinations: [
       {
         id: "marketing-os",
-        label: "RINADS Grow / Marketing OS",
-        description: "Plan, launch, and measure growth programmes.",
+        label: "RINADS Grow overview",
+        description: "Public Marketing OS page — not an authenticated campaign console.",
         href: "/platform/marketing-os",
-        status: "available",
+        status: "external_public",
       },
       {
         id: "campaigns",
@@ -247,26 +329,28 @@ export function getAutomateModuleDestinations(): OsModuleBridgeConfig {
     destinations: [
       {
         id: "automation-os",
-        label: "Automation OS",
-        description: "Workflows, approvals, and actions overview.",
+        label: "Automation OS overview",
+        description: "Public Automation OS page — not an authenticated workflow builder.",
         href: "/platform/automation-os",
-        status: "available",
+        status: "external_public",
       },
       {
         id: "approvals",
         label: "Approvals",
-        description: "Existing approvals queue in operations.",
+        description: "Approvals queue. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/approvals"),
         external: true,
         status: "available",
+        minTier: "staff",
       },
       {
         id: "runtime",
         label: "Runtime & executions",
-        description: "Workflow runtime status.",
+        description: "Workflow runtime status. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/runtime"),
         external: true,
         status: "available",
+        minTier: "staff",
       },
       {
         id: "integrations",
@@ -294,18 +378,20 @@ export function getSettingsModuleDestinations(): OsModuleBridgeConfig {
       {
         id: "billing",
         label: "Billing settings",
-        description: "Subscription and billing configuration.",
+        description: "Subscription and billing configuration. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/settings/billing"),
         external: true,
         status: "available",
+        minTier: "admin",
       },
       {
         id: "domains",
         label: "Domains",
-        description: "Organisation domain settings.",
+        description: "Organisation domain settings. Authorization is enforced in the portal.",
         href: portalUrl(p.owner, "/settings/domains"),
         external: true,
         status: "available",
+        minTier: "admin",
       },
       {
         id: "org-settings",

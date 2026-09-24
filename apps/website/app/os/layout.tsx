@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { createWebsiteServerClient } from "@/lib/supabase/server";
-import { isSupabaseMode } from "@/lib/supabase/env";
+import type { RoleKey } from "@rinads/permissions";
 import { getPageMetadata } from "@/lib/cms";
+import { requireOsShellAccess, readOsRequestPathname } from "@/lib/os-shell-access";
 import { OsShellLayout } from "./OsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -10,17 +9,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Shared Business OS shell. Auth is required for all /os/* routes.
- * Tenant destination resolution (salon → Rinaglow) remains on the Home page only.
+ * Shared Business OS shell. Every nested `/os/*` route runs the shared access resolver
+ * (auth, membership, active org, salon→Rinaglow / onboarding destinations).
  */
 export default async function OsLayout({ children }: { children: React.ReactNode }) {
-  if (isSupabaseMode()) {
-    const supabase = await createWebsiteServerClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-      redirect("/signup?mode=login&next=/os");
-    }
-  }
+  const pathname = await readOsRequestPathname();
+  const access = await requireOsShellAccess(pathname);
 
-  return <OsShellLayout>{children}</OsShellLayout>;
+  return (
+    <OsShellLayout
+      membershipRoleKey={access.roleKey as RoleKey | null}
+      membershipResolved={access.enforced}
+    >
+      {children}
+    </OsShellLayout>
+  );
 }

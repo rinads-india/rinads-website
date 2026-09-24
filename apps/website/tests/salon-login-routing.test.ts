@@ -124,10 +124,13 @@ describe("tenant-aware post-auth routing", () => {
 });
 
 describe("/os and onboarding defense contracts", () => {
-  it("runs tenant destination resolution in the /os server page", () => {
-    const source = readFileSync(join(process.cwd(), "app/os/page.tsx"), "utf8");
-    assert.match(source, /resolveDestinationForMemberships/);
-    assert.match(source, /if \(destination !== "\/os"\)/);
+  it("runs tenant destination resolution for every /os/* route via shared access helper", () => {
+    const layout = readFileSync(join(process.cwd(), "app/os/layout.tsx"), "utf8");
+    const access = readFileSync(join(process.cwd(), "lib/os-shell-access.ts"), "utf8");
+    assert.match(layout, /requireOsShellAccess/);
+    assert.match(access, /resolveDestinationForMemberships/);
+    assert.match(access, /destination !== OS_PATH/);
+    assert.match(access, /sanitizeOsLoginNext/);
   });
 
   it("uses shared template validation and supports salon-os in both provisioners", () => {

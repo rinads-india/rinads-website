@@ -10,6 +10,8 @@ import {
   Wallet,
   Workflow,
 } from "lucide-react";
+import type { OsCapabilityTier } from "@/lib/os-org-role";
+import { tierAtLeast } from "@/lib/os-org-role";
 
 export type OsPrimaryNavId =
   | "home"
@@ -29,23 +31,33 @@ export type OsNavItem = {
   label: string;
   icon: LucideIcon;
   href: string;
+  /** Minimum capability to show this nav item. Omit = always for authenticated OS users. */
+  minTier?: OsCapabilityTier;
 };
 
+function visibleForTier(item: OsNavItem, tier: OsCapabilityTier | null): boolean {
+  if (!item.minTier) return true;
+  if (!tier) return false;
+  return tierAtLeast(tier, item.minTier);
+}
+
 /** Desktop primary + secondary (Rooms). */
-export function getOsDesktopNavItems(): OsNavItem[] {
-  return [
+export function getOsDesktopNavItems(tier: OsCapabilityTier | null = null): OsNavItem[] {
+  const items: OsNavItem[] = [
     { id: "home", label: "Home", icon: Home, href: "/os" },
     { id: "customers", label: "Customers", icon: Users, href: "/os/customers" },
     { id: "work", label: "Work", icon: Briefcase, href: "/os/work" },
-    { id: "money", label: "Money", icon: Wallet, href: "/os/money" },
+    { id: "money", label: "Money", icon: Wallet, href: "/os/money", minTier: "staff" },
     { id: "growth", label: "Growth", icon: Sparkles, href: "/os/growth" },
     { id: "automate", label: "Automate", icon: Workflow, href: "/os/automate" },
     { id: "rooms", label: "Rooms", icon: Layers, href: "/os/rooms" },
   ];
+  return items.filter((item) => visibleForTier(item, tier));
 }
 
 /** Mobile bottom bar — Home, Customers, Work, Growth, More. */
-export function getOsMobilePrimaryNavItems(): OsNavItem[] {
+export function getOsMobilePrimaryNavItems(_tier: OsCapabilityTier | null = null): OsNavItem[] {
+  void _tier;
   return [
     { id: "home", label: "Home", icon: Home, href: "/os" },
     { id: "customers", label: "Customers", icon: Users, href: "/os/customers" },
@@ -56,18 +68,22 @@ export function getOsMobilePrimaryNavItems(): OsNavItem[] {
 }
 
 /** Items inside mobile More sheet. */
-export function getOsMobileMoreNavItems(): OsNavItem[] {
-  return [
-    { id: "money", label: "Money", icon: Wallet, href: "/os/money" },
+export function getOsMobileMoreNavItems(tier: OsCapabilityTier | null = null): OsNavItem[] {
+  const items: OsNavItem[] = [
+    { id: "money", label: "Money", icon: Wallet, href: "/os/money", minTier: "staff" },
     { id: "automate", label: "Automate", icon: Workflow, href: "/os/automate" },
     { id: "rooms", label: "Rooms", icon: Layers, href: "/os/rooms" },
     { id: "integrations", label: "Integrations", icon: Workflow, href: "/os/automate#integrations" },
-    { id: "settings", label: "Settings", icon: Settings, href: "/os/settings" },
+    { id: "settings", label: "Settings", icon: Settings, href: "/os/settings", minTier: "admin" },
   ];
+  return items.filter((item) => visibleForTier(item, tier));
 }
 
-export function getOsSidebarUtilityItems(): OsNavItem[] {
-  return [{ id: "settings", label: "Settings", icon: Settings, href: "/os/settings" }];
+export function getOsSidebarUtilityItems(tier: OsCapabilityTier | null = null): OsNavItem[] {
+  const items: OsNavItem[] = [
+    { id: "settings", label: "Settings", icon: Settings, href: "/os/settings", minTier: "admin" },
+  ];
+  return items.filter((item) => visibleForTier(item, tier));
 }
 
 /**
