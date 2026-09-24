@@ -1,5 +1,12 @@
 import Script from "next/script";
-import { getCachedSeoByPath, getOrganizationJsonLd, getPageMetadata, getWebPageJsonLd } from "@/lib/cms";
+import { getCachedSeoByPath, getPageMetadata } from "@/lib/cms";
+import {
+  buildOrganizationJsonLd,
+  buildSoftwareApplicationJsonLd,
+  buildWebPageJsonLd,
+  buildWebSiteJsonLd,
+  serializeJsonLd,
+} from "@/lib/json-ld";
 import { HomeClient } from "./HomeClient";
 
 export async function generateMetadata() {
@@ -9,21 +16,16 @@ export async function generateMetadata() {
 export default async function HomePage() {
   const seo = await getCachedSeoByPath("/");
   const jsonLd = [
-    getOrganizationJsonLd(),
-    getWebPageJsonLd("/", seo),
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      name: "RINADS",
-      applicationCategory: "BusinessApplication",
-      operatingSystem: "Web",
+    buildOrganizationJsonLd(),
+    buildWebSiteJsonLd(),
+    buildWebPageJsonLd({
+      path: "/",
+      title: seo?.title ?? "RINADS | AI Operating Platform for Growing Businesses",
       description:
-        "AI operating platform for growing businesses — run customers, work, commerce, marketing and automation with RINPO.",
-      offers: {
-        "@type": "Offer",
-        url: "https://www.rinads.com/contact?intent=demo",
-      },
-    },
+        seo?.description ??
+        "Run customers, work, commerce, marketing and automation on one connected platform.",
+    }),
+    buildSoftwareApplicationJsonLd(),
   ];
 
   return (
@@ -31,7 +33,7 @@ export default async function HomePage() {
       <Script
         id="home-jsonld"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <HomeClient />
     </>

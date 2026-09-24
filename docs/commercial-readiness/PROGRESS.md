@@ -37,11 +37,29 @@
 - CMS `DEFAULT_SEO` synced with commercial route registry paths
 - Dead surfaces removed: unused home sections, ProjectsLanding, Header, GameBackground, Rinpo3D, BeyondHero/Marquee/Portfolio, beyond-hero CSS
 
+### Phase 4 closeout (engineering pendings)
+- Lead persistence: webhook → Supabase `site_leads` (service role) → honest `{ stored: false }` ack
+- Migration `supabase/migrations/20260924100000_site_leads.sql` (RLS deny-all for anon; no secrets columns)
+- Optional GTM loader via `NEXT_PUBLIC_GTM_ID` (unset = current dataLayer-only behaviour)
+- JSON-LD helpers (`lib/json-ld.ts`) + attach on `/`, `/pricing`, `/security`, `/about`, `/contact`, `/platform`, `/rinpo`, `/solutions`, `/customers`
+- Expanded CI: sitemap/auth exclusion, H1 contract, nav link crawl, JSON-LD parse, LeadForm/ProductStatus a11y, no Three.js reintroduction
+- `prefers-reduced-motion` hardening: Navbar, DynamicIslandNav, RinpoCharacter; LeadForm focuses first error
+- Perf hygiene: lazy `dynamic()` RINPO character/phone islands; removed unused Three.js deps; image width/height kept
+- Legal `AwaitingCounselNotice` shared on LegalPage (privacy/terms/cookies/DPA/subprocessors)
+
+#### Performance budgets (targets — full Lighthouse needs preview URL)
+| Metric | Target | Notes |
+|--------|--------|--------|
+| LCP | ≤ 2.5s | Hero text + brand; defer RINPO islands |
+| INP | ≤ 200ms | Forms and nav; reduced-motion disables decorative loops |
+| CLS | ≤ 0.1 | Explicit image dimensions on marketing assets |
+
+Run `pnpm --filter @rinads/website build` for route/size inventory. Full Lighthouse against a preview deployment remains a manual follow-up.
+
 ## Remaining (needs human/ops — not inventable in code)
 - Counsel-approved Privacy / Terms / Cookies / DPA / Subprocessors copy
 - Verified case studies + logos (none invented)
-- Approved numeric pricing
-- Production `LEAD_WEBHOOK_URL` for CRM persistence
-- Real analytics vendor account (endpoint/tag manager)
-- Full responsive / a11y / performance visual QA pass
-- Expand CI: broken-link crawl, JSON-LD schema validation against live HTML
+- Approved numeric pricing (INR/USD)
+- Production `LEAD_WEBHOOK_URL` and/or applied `site_leads` migration + service role
+- Real GTM container ID (`NEXT_PUBLIC_GTM_ID`) / analytics endpoint values
+- Full responsive / a11y / performance visual QA pass on preview URL (Lighthouse)

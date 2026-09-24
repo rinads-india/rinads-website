@@ -1,9 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { Metadata } from "next";
 import {
-  buildOrganizationJsonLd,
   buildPageMetadata,
-  buildWebPageJsonLd,
   findRedirectForPath,
   getAboutFromPage,
   getPageBySlug,
@@ -17,6 +15,7 @@ import {
 } from "@rinads/cms";
 import { siteBrand } from "@/lib/brand";
 import { getWebsiteCmsClient } from "@/lib/cms-client";
+import { buildOrganizationJsonLd, buildWebPageJsonLd } from "@/lib/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
 

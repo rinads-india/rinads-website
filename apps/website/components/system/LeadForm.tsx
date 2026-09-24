@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   COMPANY_SIZES,
   PROJECT_OUTCOMES,
@@ -63,6 +63,7 @@ export function LeadForm({
   compact = false,
 }: LeadFormProps) {
   const formId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -85,6 +86,15 @@ export function LeadForm({
       delete next[key];
       return next;
     });
+  }
+
+  function focusFirstError(nextErrors: Record<string, string>) {
+    const firstField = Object.keys(nextErrors)[0];
+    if (!firstField || !formRef.current) return;
+    const el =
+      formRef.current.querySelector<HTMLElement>(`[name="${firstField}"]`) ??
+      formRef.current.querySelector<HTMLElement>(`#${CSS.escape(`${formId}-${firstField}`)}`);
+    el?.focus();
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -121,6 +131,7 @@ export function LeadForm({
         setErrors(nextErrors);
         setStatus("error");
         setServerMessage(data.error ?? "Please fix the highlighted fields.");
+        queueMicrotask(() => focusFirstError(nextErrors));
         return;
       }
 
@@ -162,6 +173,7 @@ export function LeadForm({
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       noValidate
       className={`rounded-2xl border border-[var(--border)] bg-[var(--surface)] ${compact ? "p-5" : "p-6 md:p-8"}`}

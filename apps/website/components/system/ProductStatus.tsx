@@ -37,6 +37,7 @@ export function ProductStatus({
       <span
         className={`inline-flex w-fit items-center rounded-full border font-semibold uppercase tracking-[0.08em] ${sizeClass} ${TONE_CLASS[value]}`}
         title={meta.description}
+        aria-label={`Availability: ${meta.label}. ${meta.description}`}
       >
         {meta.label}
       </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 type DynamicIslandNavProps = {
   children: ReactNode;
@@ -16,6 +16,8 @@ export function DynamicIslandNav({
   className = "",
   ariaLabel = "Primary",
 }: DynamicIslandNavProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <div
       className={`pointer-events-none fixed inset-x-0 top-0 flex justify-center pt-[max(0.5rem,env(safe-area-inset-top))] ${
@@ -23,12 +25,16 @@ export function DynamicIslandNav({
       }`}
     >
       <motion.nav
-        layout
+        layout={!prefersReducedMotion}
         aria-label={ariaLabel}
-        animate={{
-          scale: expanded ? 1.02 : 1,
-          paddingBlock: expanded ? "0.875rem" : "0.625rem",
-        }}
+        animate={
+          prefersReducedMotion
+            ? undefined
+            : {
+                scale: expanded ? 1.02 : 1,
+                paddingBlock: expanded ? "0.875rem" : "0.625rem",
+              }
+        }
         transition={{ type: "spring", stiffness: 420, damping: 32 }}
         className={`pointer-events-auto flex min-h-14 w-[calc(100%-12px)] max-w-7xl items-center gap-2 rounded-full border border-[var(--island-border)] bg-[var(--island-bg)] px-3 shadow-[var(--island-shadow)] sm:w-[calc(100%-24px)] sm:gap-2 sm:px-4 xl:gap-3 xl:px-5 ${className}`}
       >

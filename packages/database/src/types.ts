@@ -135,6 +135,28 @@ export type ServiceOrder = {
   updated_at: string;
 };
 
+/** Marketing-site lead capture (service-role insert only). No secrets columns. */
+export type SiteLead = {
+  id: string;
+  outcome: string;
+  name: string;
+  work_email: string;
+  company: string;
+  role: string;
+  company_size: string;
+  industry: string;
+  current_tools: string | null;
+  problem: string;
+  timeline: string;
+  budget: string | null;
+  message: string | null;
+  intent: string | null;
+  plan: string | null;
+  source_path: string | null;
+  privacy_accepted: boolean;
+  created_at: string;
+};
+
 /** Minimal Database typing for CORE + platform tables (expand via supabase gen types). */
 export type Database = {
   public: {
@@ -202,6 +224,12 @@ export type Database = {
           amount: number;
         };
         Update: Partial<ServiceOrder>;
+        Relationships: [];
+      };
+      site_leads: {
+        Row: SiteLead;
+        Insert: Omit<SiteLead, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: never;
         Relationships: [];
       };
     };
