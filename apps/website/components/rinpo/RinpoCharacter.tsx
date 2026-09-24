@@ -399,49 +399,59 @@ function RinpoFloatingWidget({
       aria-hidden={hidden}
     >
       {/* Attention sparkles — only once RINPO has left the O and settled. */}
-      <motion.span
-        className="pointer-events-none absolute -top-1 right-2 h-1.5 w-1.5 rounded-full bg-purple-300"
-        style={{ opacity: settled }}
-        animate={{ y: [0, -14, -22], x: [0, 6, 10] }}
-        transition={{ duration: 3.4, repeat: Infinity, repeatDelay: 1.6, ease: "easeOut" }}
-        aria-hidden
-      />
-      <motion.span
-        className="pointer-events-none absolute top-4 right-10 h-1 w-1 rounded-full bg-fuchsia-300"
-        style={{ opacity: settled }}
-        animate={{ y: [0, -10, -18], x: [0, -8, -14] }}
-        transition={{ duration: 3.8, repeat: Infinity, repeatDelay: 2.4, delay: 0.6, ease: "easeOut" }}
-        aria-hidden
-      />
+      {!prefersReducedMotion ? (
+        <>
+          <motion.span
+            className="pointer-events-none absolute -top-1 right-2 h-1.5 w-1.5 rounded-full bg-purple-300"
+            style={{ opacity: settled }}
+            animate={{ y: [0, -14, -22], x: [0, 6, 10] }}
+            transition={{ duration: 3.4, repeat: Infinity, repeatDelay: 1.6, ease: "easeOut" }}
+            aria-hidden
+          />
+          <motion.span
+            className="pointer-events-none absolute top-4 right-10 h-1 w-1 rounded-full bg-fuchsia-300"
+            style={{ opacity: settled }}
+            animate={{ y: [0, -10, -18], x: [0, -8, -14] }}
+            transition={{ duration: 3.8, repeat: Infinity, repeatDelay: 2.4, delay: 0.6, ease: "easeOut" }}
+            aria-hidden
+          />
+        </>
+      ) : null}
 
       <motion.button
         type="button"
         onClick={togglePhone}
         className="group relative flex flex-col items-center rounded-3xl bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rinads-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
         aria-label="Open RINADS Intelligence — chat with RINPO"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.96 }}
+        whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+        whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
       >
         {/* Grounding glow so the cut-out character doesn't float untethered — no hard-edged box. */}
         <motion.span
           className="pointer-events-none absolute bottom-1 left-1/2 h-6 w-20 -translate-x-1/2 rounded-[50%] blur-md sm:w-24"
-          style={{ background: "var(--rinads-glow)" }}
-          animate={{ opacity: isListening || isSpeaking ? [0.6, 0.9, 0.6] : [0.35, 0.55, 0.35] }}
+          style={{ background: "var(--rinads-glow)", opacity: prefersReducedMotion ? 0.45 : undefined }}
+          animate={
+            prefersReducedMotion
+              ? undefined
+              : { opacity: isListening || isSpeaking ? [0.6, 0.9, 0.6] : [0.35, 0.55, 0.35] }
+          }
           transition={{ duration: isListening || isSpeaking ? 1.2 : 3, repeat: Infinity }}
           aria-hidden
         />
         <motion.div
           className="relative flex h-36 w-28 items-end justify-center sm:h-40 sm:w-32 md:h-44 md:w-36"
           animate={
-            isIdle
-              ? { y: [0, -5, 0, 0, 0, 0, -3, 3, -2, 0], rotate: [0, 0, 0, 0, 0, 0, -4, 4, -2, 0] }
-              : isListening
-                ? { scale: [1, 1.03, 1] }
-                : isSpeaking
-                  ? { scale: [1, 1.04, 1] }
-                  : isPhoneOut
-                    ? { rotateZ: [-2, 2, -2] }
-                    : {}
+            prefersReducedMotion
+              ? undefined
+              : isIdle
+                ? { y: [0, -5, 0, 0, 0, 0, -3, 3, -2, 0], rotate: [0, 0, 0, 0, 0, 0, -4, 4, -2, 0] }
+                : isListening
+                  ? { scale: [1, 1.03, 1] }
+                  : isSpeaking
+                    ? { scale: [1, 1.04, 1] }
+                    : isPhoneOut
+                      ? { rotateZ: [-2, 2, -2] }
+                      : {}
           }
           transition={{
             duration: isIdle ? 6.4 : 1.2,
@@ -456,9 +466,10 @@ function RinpoFloatingWidget({
             width={1024}
             height={1372}
             priority={false}
+            loading="lazy"
             className="h-full w-full object-contain drop-shadow-[0_0_32px_rgba(159,75,199,0.55)]"
           />
-          {(isListening || isSpeaking) && (
+          {(isListening || isSpeaking) && !prefersReducedMotion && (
             <motion.span
               className="pointer-events-none absolute inset-0 rounded-3xl"
               style={{
@@ -473,7 +484,7 @@ function RinpoFloatingWidget({
           <motion.span
             className="pointer-events-none absolute -right-1 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-rinads-primary text-white shadow-[0_0_16px_rgba(159,75,199,0.75)] sm:h-7 sm:w-7"
             style={{ opacity: settled }}
-            animate={{ scale: [1, 1.12, 1] }}
+            animate={prefersReducedMotion ? undefined : { scale: [1, 1.12, 1] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden
           >

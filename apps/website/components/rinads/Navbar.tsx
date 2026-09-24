@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { LogOut, Menu, UserRound, X } from "lucide-react";
 import { DynamicIslandNav } from "./DynamicIslandNav";
 import { Logo } from "./Logo";
@@ -27,24 +27,38 @@ function MobileMenuOverlay({
   isAuthenticated: boolean;
   onTalkToRinpo: () => void;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+  const enter = prefersReducedMotion
+    ? { opacity: 1 }
+    : { opacity: 0 };
+  const shown = { opacity: 1 };
+  const sectionEnter = prefersReducedMotion
+    ? { opacity: 1, y: 0 }
+    : { opacity: 0, y: 18 };
+
   return (
     <AnimatePresence>
       {open ? (
         <motion.div
           id="rinads-mobile-menu"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={enter}
+          animate={shown}
+          exit={enter}
+          transition={prefersReducedMotion ? { duration: 0 } : undefined}
           className="fixed inset-0 z-[45] overflow-y-auto bg-rinads-primary-darkest px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-24"
         >
           <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
             {NAV_GROUPS.map((group, groupIndex) => (
               <motion.section
                 key={group.label}
-                initial={{ y: 18, opacity: 0 }}
+                initial={sectionEnter}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ delay: groupIndex * 0.04, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : { delay: groupIndex * 0.04, duration: 0.28, ease: [0.16, 1, 0.3, 1] }
+                }
                 className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
               >
                 <div className="mb-3 flex items-center justify-between gap-4">
@@ -95,10 +109,14 @@ function MobileMenuOverlay({
 
             <motion.div
               className="mt-2 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
-              initial={{ y: 18, opacity: 0 }}
+              initial={sectionEnter}
               animate={{ y: 0, opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ delay: NAV_GROUPS.length * 0.04, duration: 0.28 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { delay: NAV_GROUPS.length * 0.04, duration: 0.28 }
+              }
             >
               {isAuthenticated ? (
                 <Link

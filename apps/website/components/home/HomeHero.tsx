@@ -9,9 +9,9 @@ import { trackMarketing } from "@/lib/analytics";
 export function HomeHero() {
   return (
     <section className="relative z-10 min-h-screen w-full overflow-hidden bg-black text-white">
-      <div className="pointer-events-none absolute inset-0 rinads-aurora opacity-45" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 rinads-aurora opacity-45 motion-reduce:opacity-30" aria-hidden />
       <div
-        className="pointer-events-none absolute inset-0 opacity-30"
+        className="pointer-events-none absolute inset-0 opacity-30 motion-reduce:opacity-15"
         aria-hidden
         style={{
           backgroundImage:

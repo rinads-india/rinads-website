@@ -9,9 +9,8 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { RinpoCharacter } from "./RinpoCharacter";
-import { RinpoPhone } from "./RinpoPhone";
 import { LoginModal } from "./LoginModal";
 import { useRinpoGuide } from "@/hooks/useRinpoGuide";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +22,15 @@ import {
   type RinpoExperienceState,
   type RinpoPageContext,
 } from "@/lib/rinpo-experience";
+
+/** Defer heavy RINPO client islands until after hydration / interaction. */
+const RinpoCharacter = dynamic(
+  () => import("./RinpoCharacter").then((m) => m.RinpoCharacter),
+  { ssr: false },
+);
+const RinpoPhone = dynamic(() => import("./RinpoPhone").then((m) => m.RinpoPhone), {
+  ssr: false,
+});
 
 /**
  * Legacy visual state retained while the character animation is migrated.
