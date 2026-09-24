@@ -43,8 +43,8 @@ export function RinpoClient() {
         eyebrow="RINPO"
         headline="The AI interface for RINADS."
         summary="Talk to your business. Ask questions. Understand what matters. Review recommendations. Approve actions. Get work done through the RINADS platform."
-        primaryHref="/signup"
-        primaryLabel="Start with RINADS"
+        primaryHref="/contact?intent=demo"
+        primaryLabel="Book a platform demo"
         secondaryHref="/platform/rinads-intelligence"
         secondaryLabel="RINADS Intelligence"
       />

@@ -17,8 +17,8 @@ export function RinpoChannelPage({ eyebrow, headline, summary, channel }: Props)
         eyebrow={eyebrow}
         headline={headline}
         summary={summary}
-        primaryHref="/signup"
-        primaryLabel="Start with RINADS"
+        primaryHref="/contact?intent=demo"
+        primaryLabel="Book a platform demo"
         secondaryHref="/rinpo"
         secondaryLabel="RINPO overview"
       />

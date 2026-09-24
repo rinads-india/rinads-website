@@ -19,12 +19,9 @@ const nextConfig: NextConfig = {
       { source: "/rinpo-story", destination: "/company/rinpo-story", permanent: true },
       { source: "/rinpo/story", destination: "/company/rinpo-story", permanent: true },
       { source: "/grow", destination: "/platform/marketing-os", permanent: true },
-    ];
-  },
-  async rewrites() {
-    // story-concept remains as a non-indexable rewrite only; robots + sitemap exclude it.
-    return [
-      { source: "/story-concept", destination: "/story-concept/index.html" },
+      // Quarantine: former concept HTML with unverified trust claims.
+      { source: "/story-concept", destination: "/", permanent: true },
+      { source: "/story-concept/:path*", destination: "/", permanent: true },
     ];
   },
   transpilePackages: [

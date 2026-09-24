@@ -183,3 +183,7 @@ export const OS_AVAILABILITY: OperatingSystemAvailability[] = [
     commercialPriority: "foundation",
   },
 ];
+
+export function getOsAvailability(slug: string): OperatingSystemAvailability | undefined {
+  return OS_AVAILABILITY.find((item) => item.slug === slug);
+}

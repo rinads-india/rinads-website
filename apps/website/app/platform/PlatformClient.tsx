@@ -20,6 +20,9 @@ import {
 import { PLATFORM_OVERVIEW } from "@/lib/content/platform-os";
 import { PLATFORM_OS } from "@/lib/product-ia";
 import { VERTICALS } from "@/lib/content/verticals";
+import { getOsAvailability } from "@/lib/content/pricing";
+import { getVerticalAvailability } from "@/lib/content/leads";
+import { ProductStatus } from "@/components/system/ProductStatus";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 
 const PLATFORM_LAYERS = [
@@ -218,15 +221,21 @@ export function PlatformClient() {
             Eight systems on one platform core.
           </h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {operatingSystems.map((os) => (
-              <PlatformCard
-                key={os.href}
-                title={os.label}
-                description={os.description ?? ""}
-                href={os.href}
-                eyebrow={os.section}
-              />
-            ))}
+            {operatingSystems.map((os) => {
+              const slug = os.href.replace("/platform/", "");
+              const availability = getOsAvailability(slug);
+              return (
+                <div key={os.href} className="space-y-2">
+                  <PlatformCard
+                    title={os.label}
+                    description={os.description ?? ""}
+                    href={os.href}
+                    eyebrow={os.section}
+                  />
+                  {availability ? <ProductStatus status={availability.status} /> : null}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -244,7 +253,9 @@ export function PlatformClient() {
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {VERTICALS.map((vertical) => (
+            {VERTICALS.map((vertical) => {
+              const availability = getVerticalAvailability(vertical.slug);
+              return (
               <Link
                 key={vertical.slug}
                 href={`/solutions/${vertical.slug}`}
@@ -254,16 +265,15 @@ export function PlatformClient() {
                   <span className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">
                     {vertical.type}
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                    {vertical.status === "available" ? "Available" : "Coming soon"}
-                  </span>
+                  <ProductStatus status={availability.status} />
                 </div>
                 <h3 className="mt-4 text-lg font-bold text-[var(--text-primary)]">
                   {vertical.slug === "nursery" ? "Landscape & Nursery" : vertical.name}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{vertical.summary}</p>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

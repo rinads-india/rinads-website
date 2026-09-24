@@ -21,8 +21,8 @@ export function CompanyClient() {
         summary="RINADS is not another business application. RINADS is the intelligent operating platform through which a business can run, build, grow, learn, and automate."
         primaryHref="/projects"
         primaryLabel="Start a project"
-        secondaryHref="/signup"
-        secondaryLabel="Start with RINADS"
+        secondaryHref="/contact?intent=demo"
+        secondaryLabel="Book a platform demo"
       />
 
       <section id="about" className="px-6 pb-16 md:px-12 lg:px-20">
@@ -49,21 +49,33 @@ export function CompanyClient() {
         <div className="mx-auto max-w-7xl">
           <h2 className="text-2xl font-bold text-foreground">Contact</h2>
           <p className="mt-3 max-w-xl text-muted-foreground">
-            Talk to RINPO, start a project, or create your RINADS account.
+            Book a platform demo, start a project conversation, or sign in to an existing workspace.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/contact?intent=demo"
+              className="rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white hover:bg-rinads-primary-dark"
+            >
+              Book a platform demo
+            </Link>
             <button
               type="button"
               onClick={() => openPhoneScreen("chat", "I want to talk about RINADS")}
-              className="rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white hover:bg-rinads-primary-dark"
+              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-foreground hover:border-rinads-primary/50"
             >
-              Talk to RINPO
+              See how RINPO works
             </button>
             <Link
               href="/projects"
               className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-foreground hover:border-rinads-primary/50"
             >
-              Start a project
+              Start a project conversation
+            </Link>
+            <Link
+              href="/signup?mode=login"
+              className="rounded-full px-6 py-3 text-sm font-semibold text-rinads-primary"
+            >
+              Sign in
             </Link>
           </div>
         </div>

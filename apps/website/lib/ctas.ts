@@ -1,7 +1,10 @@
 /**
- * Site-wide CTA taxonomy. Prefer these labels so destinations stay obvious.
+ * Site-wide CTA taxonomy — single source of truth for marketing destinations.
  * Avoid vague labels like "Start", "Get started", "Explore more" unless the
  * destination is unambiguous from context.
+ *
+ * createWorkspace stays disabled until production self-service onboarding is ready.
+ * Prefer Book a platform demo / Sign in on public marketing surfaces.
  */
 export const CTAS = {
   bookDemo: { label: "Book a platform demo", href: "/contact?intent=demo" },
@@ -23,3 +26,14 @@ export const CTAS = {
 } as const;
 
 export type CtaKey = keyof typeof CTAS;
+
+/**
+ * Navbar / hero / CTASection compatibility shape.
+ * primary = commercial demo; secondary = product exploration; signIn = auth.
+ */
+export const NAV_CTAS = {
+  primary: CTAS.bookDemo,
+  secondary: CTAS.exploreBusinessOs,
+  signIn: CTAS.signIn,
+  rinpo: { label: CTAS.seeRinpo.label, action: "rinpo" as const },
+} as const;

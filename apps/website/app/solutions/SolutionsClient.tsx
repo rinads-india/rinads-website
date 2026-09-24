@@ -17,6 +17,7 @@ import {
 } from "@/components/system";
 import { VERTICALS } from "@/lib/content/verticals";
 import { getSolutionExperience } from "@/lib/solution-experience";
+import { getVerticalAvailability } from "@/lib/content/leads";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 
 const CONFIGURATION_MODEL = [
@@ -39,8 +40,12 @@ const CONFIGURATION_MODEL = [
 
 export function SolutionsClient() {
   const { openPhoneScreen } = useRinpo();
-  const available = VERTICALS.filter((vertical) => vertical.status === "available");
-  const coming = VERTICALS.filter((vertical) => vertical.status === "coming");
+  const commercial = VERTICALS.filter(
+    (vertical) => getVerticalAvailability(vertical.slug).tier === "commercial",
+  );
+  const future = VERTICALS.filter(
+    (vertical) => getVerticalAvailability(vertical.slug).tier === "future",
+  );
 
   return (
     <MarketingPageShell>
@@ -50,8 +55,8 @@ export function SolutionsClient() {
         summary="RINADS does not need a separate technology platform for every industry. The shared core stays consistent while workflows, terminology, modules, and integrations are configured around how each business operates."
         primaryHref="/platform"
         primaryLabel="Explore the platform"
-        secondaryHref="/signup"
-        secondaryLabel="Start with RINADS"
+        secondaryHref="/contact?intent=demo"
+        secondaryLabel="Book a platform demo"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -90,10 +95,10 @@ export function SolutionsClient() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)]">
                 <CheckCircle2 size={14} className="text-[var(--status-success-fg)]" aria-hidden />
-                Available configurations
+                Commercial focus
               </div>
               <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-                Start from a configuration that already exists.
+                Start from configurations teams can explore today.
               </h2>
             </div>
             <button
@@ -101,7 +106,7 @@ export function SolutionsClient() {
               onClick={() =>
                 openPhoneScreen(
                   "chat",
-                  "Help me identify which available RINADS industry configuration best fits my business."
+                  "Help me identify which RINADS industry configuration best fits my business."
                 )
               }
               className="inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
@@ -112,8 +117,9 @@ export function SolutionsClient() {
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {available.map((vertical) => {
+            {commercial.map((vertical) => {
               const experience = getSolutionExperience(vertical.slug);
+              const availability = getVerticalAvailability(vertical.slug);
               return (
                 <VerticalCard
                   key={vertical.slug}
@@ -121,7 +127,7 @@ export function SolutionsClient() {
                   type={vertical.type}
                   summary={vertical.summary}
                   href={`/solutions/${vertical.slug}`}
-                  status={vertical.status}
+                  status={availability.status}
                 />
               );
             })}
@@ -134,19 +140,20 @@ export function SolutionsClient() {
           <div className="flex items-start gap-3">
             <Sparkles size={22} className="mt-1 text-rinads-primary" aria-hidden />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Coming next</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Future / private preview</p>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
                 Planned vertical depth on the same platform.
               </h2>
               <p className="mt-4 max-w-2xl text-[var(--text-muted)]">
-                Coming-soon solution pages describe product direction and configuration models. They do not imply that a production vertical is already available.
+                Future and private-preview pages describe product direction. They do not imply production availability.
               </p>
             </div>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {coming.map((vertical) => {
+            {future.map((vertical) => {
               const experience = getSolutionExperience(vertical.slug);
+              const availability = getVerticalAvailability(vertical.slug);
               return (
                 <VerticalCard
                   key={vertical.slug}
@@ -154,7 +161,7 @@ export function SolutionsClient() {
                   type={vertical.type}
                   summary={vertical.summary}
                   href={`/solutions/${vertical.slug}`}
-                  status={vertical.status}
+                  status={availability.status}
                 />
               );
             })}

@@ -23,8 +23,8 @@ export function AcademyProgramPage({ program }: { program: AcademyProgram }) {
         eyebrow={"RINADS Academy · " + program.name}
         headline={program.headline}
         summary={program.summary}
-        primaryHref="/signup"
-        primaryLabel="Start with RINADS"
+        primaryHref="/contact?intent=demo"
+        primaryLabel="Book a platform demo"
         secondaryHref="/academy"
         secondaryLabel="All programs"
       />
