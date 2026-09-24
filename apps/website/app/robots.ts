@@ -6,10 +6,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Authenticated app surfaces, checkout, order tracking, and any
-      // future embedded vertical apps (e.g. /rinaglow) are not public
-      // marketing content and must never be indexed.
-      disallow: ["/os", "/services/checkout", "/track", "/rinaglow"],
+      // Authenticated app surfaces, checkout, tracking, concept/demo-only paths,
+      // and API routes are not public marketing content.
+      disallow: [
+        "/os",
+        "/signup",
+        "/onboarding",
+        "/services/checkout",
+        "/track",
+        "/rinaglow",
+        "/story-concept",
+        "/api",
+      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };
