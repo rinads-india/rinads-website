@@ -106,10 +106,11 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "Across RINADS I can surface today's attention across **Business OS** — customers, work, money, growth, and automation. " +
-        "Start with RINADS to connect your workspace, or explore the platform architecture.";
+        "Book a platform demo to connect your workspace, or explore the platform architecture.";
       links = [
+        { label: "Book a platform demo", href: "/contact?intent=demo" },
         { label: "Business OS", href: "/platform/business-os" },
-        { label: "Talk to RINPO", href: "/rinpo" },
+        { label: "See how RINPO works", href: "/rinpo" },
       ];
       intent = "heroToday";
     } else if (lower.includes("build my website") || lower.includes("build a software") || lower.includes("software product")) {

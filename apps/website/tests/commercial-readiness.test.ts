@@ -100,6 +100,13 @@ describe("commercial readiness QA gate", () => {
     assert.deepEqual(offenders, [], offenders.join("\n"));
   });
 
+  it("quarantines story-concept via redirect instead of serving concept HTML", () => {
+    const config = readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
+    assert.match(config, /source:\s*"\/story-concept"/);
+    assert.match(config, /destination:\s*"\/"/);
+    assert.doesNotMatch(config, /story-concept\/index\.html/);
+  });
+
   it("keeps registry size intentional", () => {
     assert.ok(ROUTE_REGISTRY.length > 40);
   });

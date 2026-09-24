@@ -7,15 +7,18 @@ import {
   PageHero,
   ModuleGrid,
   CTASection,
+  ProductStatus,
 } from "@/components/system";
 import { OperatingSystemDemo } from "@/components/system/OperatingSystemDemo";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { getOperatingSystemDemo } from "@/lib/os-demo-config";
+import { getOsAvailability } from "@/lib/content/pricing";
 import type { OsPageContent } from "@/lib/content/types";
 
 export function OsMarketingPage({ content }: { content: OsPageContent }) {
   const { openPhoneScreen } = useRinpo();
   const demo = getOperatingSystemDemo(content.slug);
+  const availability = getOsAvailability(content.slug);
 
   return (
     <MarketingPageShell>
@@ -26,8 +29,16 @@ export function OsMarketingPage({ content }: { content: OsPageContent }) {
         primaryHref="/contact?intent=demo"
         primaryLabel="Book a platform demo"
         secondaryHref="/platform"
-        secondaryLabel="Platform overview"
+        secondaryLabel="Explore the platform"
       />
+
+      {availability ? (
+        <section className="px-6 pb-4 md:px-12 lg:px-20">
+          <div className="mx-auto max-w-7xl">
+            <ProductStatus status={availability.status} size="md" showDescription />
+          </div>
+        </section>
+      ) : null}
 
       {demo ? <OperatingSystemDemo config={demo} /> : null}
 

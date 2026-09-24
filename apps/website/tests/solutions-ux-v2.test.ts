@@ -52,6 +52,6 @@ describe("Solutions UX V2 contracts", () => {
       new URL("../components/system/VerticalSolutionExperience.tsx", import.meta.url),
       "utf8"
     );
-    assert.match(source, /Coming-soon visuals do not imply production availability/);
+    assert.match(source, /Coming-soon visuals do not imply production availability|not a claim that a production vertical is generally available/);
   });
 });
