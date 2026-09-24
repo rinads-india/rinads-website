@@ -112,7 +112,7 @@ export function BusinessOSMobileNav() {
     <>
       <nav
         aria-label="Business OS mobile"
-        className="os-glass fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-stretch gap-1 rounded-2xl p-1.5 shadow-lg lg:hidden"
+        className="os-glass fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 flex items-stretch gap-1 rounded-2xl p-1.5 shadow-lg lg:hidden"
       >
         {primary.map((item) => {
           const Icon = item.icon;
@@ -156,7 +156,7 @@ export function BusinessOSMobileNav() {
       </nav>
 
       {moreOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" role="presentation">
+        <div className="fixed inset-0 z-[60] lg:hidden" role="presentation">
           <button
             type="button"
             className="absolute inset-0 bg-black/35"

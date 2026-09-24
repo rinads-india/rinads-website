@@ -80,7 +80,7 @@ export function OsRinpoDock({
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div className="pointer-events-none fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
       {expanded && (
         <div className="pointer-events-auto os-glass w-[min(92vw,360px)] rounded-3xl p-4 shadow-2xl">
           <div className="mb-3 flex items-center gap-2">
