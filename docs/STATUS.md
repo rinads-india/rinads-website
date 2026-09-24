@@ -101,7 +101,7 @@ Supabase Auth → @rinads/tenancy
 | Website forms / OAuth | Fake submit; Google/LinkedIn “coming soon” |
 | Grow → storefront checkout | Not wired |
 | Full Playwright E2E | Deferred |
-| Design tokens / Figtree everywhere | Incomplete |
+| Design tokens / Figtree everywhere | Partial — website + rinaglow load Figtree; brand pack in `docs/rglow/PROTOTYPE-GAP.md` |
 | Invoice / in-app notify / renewal / health crons | Checklist leftovers |
 | Formal GL/accounting, DLQ replay UI | Deferred |
 | Legacy Ambady import | Blocked (no source data) |
