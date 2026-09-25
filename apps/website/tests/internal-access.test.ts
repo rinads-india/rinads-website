@@ -24,13 +24,11 @@ describe("website auth callback destinations", () => {
 });
 
 describe("website portal URL config", () => {
-  it("keeps localhost defaults outside production", () => {
+  it("uses only trusted local or production portal origins", () => {
     const urls = getPortalUrls();
     assert.match(urls.platform, /localhost:3004|admin\.rinads\.com/);
-    if (!process.env.VERCEL_ENV && process.env.NODE_ENV !== "production") {
-      assert.equal(urls.owner, "http://localhost:3003");
-      assert.equal(urls.customer, "http://localhost:3002");
-    }
+    assert.match(urls.owner, /localhost:3003|app\.rinads\.com/);
+    assert.match(urls.customer, /localhost:3002|customers\.rinads\.com/);
   });
 
   it("hides platform from client persona", () => {
