@@ -108,6 +108,11 @@
   --footer-btn-bg: #9f4bc7;
   --footer-btn-hover: #7a35a0;
   --footer-watermark-fill: rgba(255, 255, 255, 0.04);
+
+  --island-bg: #140c1c;
+  --island-border: rgba(159, 75, 199, 0.28);
+  --island-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --island-foreground: rgba(255, 255, 255, 0.9);
 }
 
 @theme inline {

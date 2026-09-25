@@ -87,7 +87,7 @@ export function Footer() {
 
           <div className="footer-logo">
             <Link href="/" aria-label="RINADS home">
-              <Logo className="h-10 md:h-12 brightness-0 invert" priority={false} />
+              <Logo className="h-10 md:h-12" tone="onDark" priority={false} />
             </Link>
           </div>
 

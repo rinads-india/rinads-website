@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/rinads/Logo";
 import { ThemeToggle } from "@/components/rinads/ThemeToggle";
@@ -13,19 +13,6 @@ import { navigateAfterAuth } from "@/lib/post-auth-navigation";
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260506_081238_406ed0e3-5d83-436e-a512-0bbff7ec5b95.mp4";
 
-const heroContainer = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
-  },
-};
-
-const heroItem = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
 export default function RinadsSignUpApp() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,6 +20,32 @@ export default function RinadsSignUpApp() {
   const nextParam = searchParams.get("next");
   const { signup, login } = useAuth();
   const { openPhoneScreen } = useRinpo();
+  const prefersReducedMotion = useReducedMotion();
+
+  const heroContainer = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { hidden: { opacity: 1 }, show: { opacity: 1 } }
+        : {
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+            },
+          },
+    [prefersReducedMotion],
+  );
+
+  const heroItem = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { hidden: { opacity: 1, y: 0 }, show: { opacity: 1, y: 0 } }
+        : {
+            hidden: { opacity: 0, y: 10 },
+            show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+          },
+    [prefersReducedMotion],
+  );
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -117,9 +130,8 @@ export default function RinadsSignUpApp() {
           initial="hidden"
           animate="show"
         >
-          <motion.div variants={heroItem} className="flex items-center gap-2.5 text-white">
-            <Logo className="h-8 brightness-0 invert" priority={false} />
-            <span className="text-xl font-semibold tracking-tight">RINADS</span>
+          <motion.div variants={heroItem} className="flex items-center text-white">
+            <Logo className="h-8" tone="onDark" priority={false} />
           </motion.div>
 
           <motion.div variants={heroItem} className="space-y-3 text-white">
@@ -141,19 +153,24 @@ export default function RinadsSignUpApp() {
         </motion.div>
       </section>
 
-      <section className="signup-form-column relative flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-12 sm:px-12 lg:overflow-hidden lg:px-16 lg:py-6 xl:px-24">
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+      <section className="signup-form-column relative flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-12 sm:px-8 md:px-12 lg:overflow-hidden lg:px-16 lg:py-6 xl:px-24">
+        <div className="absolute top-4 left-4 z-10 flex items-center sm:top-6 sm:left-6 lg:hidden">
+          <Logo className="h-7" tone="auto" priority={false} />
+        </div>
+        <div className="absolute top-4 right-4 z-10 sm:top-6 sm:right-6">
           <ThemeToggle />
         </div>
 
         <motion.div
-          className="w-full max-w-xl space-y-8 sm:space-y-10 lg:space-y-6"
-          initial={{ opacity: 0 }}
+          className="w-full max-w-xl space-y-8 pt-10 sm:space-y-10 sm:pt-8 lg:space-y-6 lg:pt-0"
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={
+            prefersReducedMotion ? { duration: 0 } : { duration: 0.8, ease: "easeOut" }
+          }
         >
           <div className="space-y-2">
-            <h2 className="text-3xl font-medium tracking-tight">
+            <h2 className="text-2xl font-medium tracking-tight sm:text-3xl">
               {isLogin ? "Log in to RINADS" : "Let's set up your business workspace"}
             </h2>
             <p className="signup-subtitle">

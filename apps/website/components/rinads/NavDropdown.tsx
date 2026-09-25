@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import type { NavGroup, NavLink } from "@/lib/product-ia";
@@ -39,6 +40,7 @@ function ItemContent({ item }: { item: NavLink }) {
 
 export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isMega = group.variant === "mega";
 
@@ -54,6 +56,10 @@ export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavD
   }, [group.items]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const onPointer = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -65,11 +71,14 @@ export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavD
     };
     document.addEventListener("mousedown", onPointer);
     window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    if (isMega) document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("mousedown", onPointer);
       window.removeEventListener("keydown", onKey);
+      if (isMega) document.body.style.overflow = prevOverflow;
     };
-  }, [open]);
+  }, [open, isMega]);
 
   const renderLink = (item: NavLink, compact = false) => {
     const className = compact
@@ -114,8 +123,21 @@ export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavD
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
 
+      {open && mounted && isMega
+        ? createPortal(
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="fixed inset-0 z-[55] cursor-default bg-black/45 backdrop-blur-[2px]"
+              onClick={() => setOpen(false)}
+            />,
+            document.body,
+          )
+        : null}
+
       {open ? (
         <div
+          role="menu"
           className={`absolute left-1/2 top-[calc(100%+0.75rem)] z-[60] max-h-[76vh] -translate-x-1/2 overflow-y-auto rounded-2xl border border-[var(--island-border)] bg-[var(--island-bg)] p-3 shadow-[var(--island-shadow)] ${
             isMega ? "w-[min(92vw,58rem)]" : "min-w-[18rem] max-w-[22rem]"
           }`}

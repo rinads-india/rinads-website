@@ -17,11 +17,11 @@ export function OsTopBar() {
   return (
     <header className="os-glass flex items-center gap-3 rounded-2xl px-3 py-2 shadow-sm sm:px-4">
       <Link href="/os" className="flex shrink-0 items-center" aria-label="RINADS Business OS Home">
-        <Logo className="h-7 w-auto" />
+        <Logo className="h-7 w-auto" tone="auto" />
       </Link>
 
       <div className="hidden min-w-0 flex-1 items-center gap-2 md:flex">
-        <p className="truncate text-xs font-medium text-gray-700">RINADS Business OS</p>
+        <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-200">Business OS</p>
       </div>
 
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
