@@ -7,6 +7,15 @@ export {
   type SalonRinpoContext,
   type SalonRinpoDeps,
 } from "./salon-tools";
+export {
+  checkRinpoBudget,
+  estimateToolCostUsd,
+  getRinpoObservationSnapshot,
+  recordRinpoObservation,
+  resetRinpoObservationsForTests,
+  type RinpoBudgetStatus,
+  type RinpoObservation,
+} from "./observability";
 export * from "./nlu-types";
 export * from "./nlu-deterministic";
 export * from "./nlu-llm";

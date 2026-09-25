@@ -278,13 +278,13 @@ export class DeterministicRinpoNluAdapter implements RinpoNluAdapter {
     if (/send (a )?confirmation/i.test(lower)) {
       const appointmentId = extractUuid(text) ?? context.selectedAppointmentId;
       if (!appointmentId) return clarify("Which appointment's confirmation should I send?");
-      return calls("Queuing confirmation.", { tool: "send_appointment_confirmation", args: { appointmentId } });
+      return calls("Drafting confirmation for approval.", { tool: "send_appointment_confirmation", args: { appointmentId } });
     }
 
     if (/send (a )?reminder/i.test(lower)) {
       const appointmentId = extractUuid(text) ?? context.selectedAppointmentId;
       if (!appointmentId) return clarify("Which appointment's reminder should I send?");
-      return calls("Queuing reminder.", { tool: "send_appointment_reminder", args: { appointmentId } });
+      return calls("Drafting reminder for approval.", { tool: "send_appointment_reminder", args: { appointmentId } });
     }
 
     if (/record (a )?(cash|upi|card|razorpay) payment/i.test(lower)) {
