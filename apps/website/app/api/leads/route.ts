@@ -132,8 +132,8 @@ export async function POST(request: Request) {
       duplicate: result.duplicate ?? false,
       id: result.id,
       message: result.stored
-        ? "Thanks — your enquiry was received."
-        : "Thanks — your enquiry was received. Our team will follow up.",
+        ? "Thanks — your enquiry was saved. Our team will follow up."
+        : "Thanks — your enquiry was accepted. Persistence is pending configuration; our team can still follow up from this receipt.",
     });
   } catch {
     return NextResponse.json(

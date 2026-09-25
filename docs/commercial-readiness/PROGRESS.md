@@ -56,6 +56,8 @@
 
 Run `pnpm --filter @rinads/website build` for route/size inventory. Full Lighthouse against a preview deployment remains a manual follow-up.
 
+**2026-09-25 page-matrix pass (no Lighthouse scores invented):** Lead confirmation distinguishes `stored` vs pending persistence; pricing contact-rate copy clarified; LeadForm fields wire `aria-invalid` / `aria-describedby`. Live HTTP smoke for `/`, `/pricing`, `/security`, `/contact`, `/customers` remains PASS (see `docs/founder-audit/RELEASE-ACCEPTANCE.md`).
+
 ## Remaining (needs human/ops — not inventable in code)
 - Counsel-approved Privacy / Terms / Cookies / DPA / Subprocessors copy
 - Verified case studies + logos (none invented)

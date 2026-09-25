@@ -63,7 +63,11 @@ export function PricingClient() {
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
                 <p className="mt-5 text-2xl font-black text-foreground">{priceLabel(plan.monthlyPrice)}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Monthly · {priceLabel(plan.annualPrice)} annually</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {plan.monthlyPrice === "contact" || plan.monthlyPrice === "coming_soon"
+                    ? "Public numeric rates appear after commercial approval"
+                    : `Monthly · ${priceLabel(plan.annualPrice)} annually`}
+                </p>
                 <p className="mt-4 text-xs text-muted-foreground">For: {plan.targetCustomer}</p>
                 <ul className="mt-5 flex-1 space-y-2 text-sm text-muted-foreground">
                   <li>Users: {plan.includedUsers}</li>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, cloneElement, isValidElement, type FormEvent, type ReactElement, type ReactNode } from "react";
 import {
   COMPANY_SIZES,
   PROJECT_OUTCOMES,
@@ -120,6 +120,7 @@ export function LeadForm({
         ok?: boolean;
         message?: string;
         error?: string;
+        stored?: boolean;
         errors?: { field: string; message: string }[];
       };
 
@@ -136,7 +137,12 @@ export function LeadForm({
       }
 
       setStatus("success");
-      setServerMessage(data.message ?? "Thanks — your enquiry was received.");
+      setServerMessage(
+        data.message ??
+          (data.stored === false
+            ? "Thanks — your enquiry was accepted. Persistence is pending configuration."
+            : "Thanks — your enquiry was saved."),
+      );
       trackMarketing(
         defaultIntent === "demo" ? "demo_booking_completed" : "project_form_completed",
         { sourcePath, intent: defaultIntent, plan: defaultPlan },
@@ -419,13 +425,25 @@ function Field({
   children: ReactNode;
   className?: string;
 }) {
+  const describedBy = error ? `${id}-error` : undefined;
+  const control = (() => {
+    if (!isValidElement(children)) return children;
+    const childProps = children.props as Record<string, unknown>;
+    return cloneElement(children as ReactElement<Record<string, unknown>>, {
+      id,
+      "aria-invalid": error ? true : undefined,
+      "aria-required": required || undefined,
+      "aria-describedby": describedBy ?? (childProps["aria-describedby"] as string | undefined),
+    });
+  })();
+
   return (
     <div className={className}>
       <label htmlFor={id} className="text-sm font-semibold text-[var(--text-primary)]">
         {label}
         {required ? <span className="text-rinads-primary"> *</span> : null}
       </label>
-      {children}
+      {control}
       {error ? (
         <p className="mt-1.5 text-sm text-red-400" role="alert" id={`${id}-error`}>
           {error}
