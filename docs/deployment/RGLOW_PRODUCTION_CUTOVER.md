@@ -105,17 +105,44 @@ Optional reviews automation after a tick: `RINADS_REVIEWS_AUTOMATION_URL`, `RINA
 
 ## Cutover progress (agent notes)
 
-Observed 2026-09-21 while attempting go-live automation:
+### 2026-09-21 (historical)
 
 | Check | Result |
 |-------|--------|
 | `https://www.rinads.com/api/health` | OK (`productionEnvContract`) |
-| `https://glow.rinads.com` | DNS does not resolve yet |
-| Separate Vercel project `rinaglow` | Needs Git link to `rinads-india/rinads-website` with root `apps/rinaglow` (MCP create could not verify the link) |
-| Twilio / communications worker secrets | Not configured in this environment |
+| `https://glow.rinads.com` | DNS did not resolve yet |
+| Separate Vercel project `rinaglow` | Git link / domain setup incomplete at the time |
+| Twilio / communications worker secrets | Not configured in agent environment |
 | Supabase MCP | Auth required before migration push |
 
-**Founder actions required:** connect Git on the `rinaglow` Vercel project, add `glow.rinads.com`, copy Production env from the website project (Supabase + cookie domain + `NEXT_PUBLIC_RINAGLOW_URL`), apply loyalty expiry migration, then continue the checklist above.
+### 2026-09-25 (founder-audit re-check — supersedes DNS row above)
+
+Evidence also recorded in [`docs/founder-audit/PRODUCTION-TRUTH.md`](../founder-audit/PRODUCTION-TRUTH.md) and [`docs/founder-audit/VERCEL-CHECKLIST.md`](../founder-audit/VERCEL-CHECKLIST.md).
+
+| Check | Result |
+|-------|--------|
+| Production deploy SHA (website + rinaglow) | `eb7a95a` (GitHub Deployments API; matches `main`) |
+| `https://www.rinads.com/api/health` | OK (`productionEnvContract`) |
+| `https://glow.rinads.com` DNS | **Resolves** via Vercel DNS |
+| `https://glow.rinads.com/login` | HTTP 200 — R GLOW login + `rglow-logo` present |
+| `https://glow.rinads.com/api/health` | OK (`productionEnvContract`) |
+| Vercel projects visible via MCP | `rinads-website`, `rinaglow` on team `rinadss-projects-1ebcffe7` |
+| Vercel MCP `get_project` / `list_deployments` | Forbidden / not found — root-dir and env keys **not** re-read via API |
+| Supabase migrations applied on production | **UNKNOWN** (Supabase MCP `needsAuth`) |
+| Twilio / communications worker | Treat as **not enabled**; keep workers off until founder approval |
+| Authenticated salon SSO / operator smoke | **SKIP** — no founder test credentials in this audit |
+| Digital Store / Staff phone app | **Not launched** — see [`docs/rglow/PROTOTYPE-GAP.md`](../rglow/PROTOTYPE-GAP.md) |
+
+**Still required from founder (unchanged policy):**
+
+1. Confirm production Supabase migrations through salon vertical routing + loyalty expiry (+ `site_leads` if using website lead persistence).
+2. Confirm Auth redirect allowlist includes www, apex, and glow.
+3. Confirm cookie domain `.rinads.com` on both Vercel projects.
+4. Sandbox Twilio send + webhook signature tests **before** any production traffic.
+5. Enable communications worker only with explicit org allowlist + `RINADS_COMMUNICATIONS_WORKER_ENABLED=1`.
+6. Authenticated SSO + operator smoke with real personas.
+
+**Do not claim:** Digital Store launched, Staff phone app launched, or live WhatsApp delivery without sandbox evidence.
 
 ## Sign-off
 
