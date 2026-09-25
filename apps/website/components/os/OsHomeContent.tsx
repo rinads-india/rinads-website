@@ -1,24 +1,8 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { getOsCards } from "@/lib/os-modules";
-import { OsCardGrid } from "./OsCardGrid";
-import { OsDashboardHero } from "./OsDashboardHero";
-import { OsPresenceRow } from "./OsPresenceRow";
-import { OsSystemStatus } from "./OsSystemStatus";
+import type { OsHomeData } from "@/lib/os-home/types";
+import { OsHomeCommandCentre } from "@/components/os/home/OsHomeCommandCentre";
 
-export function OsHomeContent() {
-  const { user } = useAuth();
-  const cards = getOsCards(user?.role ?? "client");
-
-  return (
-    <>
-      <OsDashboardHero />
-      <div className="flex flex-1 flex-col gap-4 xl:flex-row">
-        <OsCardGrid cards={cards} view="home" />
-        <OsSystemStatus />
-      </div>
-      <OsPresenceRow />
-    </>
-  );
+export function OsHomeContent({ data }: { data: OsHomeData }) {
+  return <OsHomeCommandCentre data={data} />;
 }
