@@ -2,18 +2,6 @@ import type { PermissionKey, RoleKey } from "@rinads/permissions";
 import type { AttentionItem } from "@/lib/os-home/types";
 import { capabilityTierFromRoleKey, tierAtLeast } from "@/lib/os-org-role";
 
-type CountClient = {
-  from: (table: string) => {
-    select: (columns: string, opts?: { count?: "exact"; head?: boolean }) => unknown;
-  };
-};
-
-async function runCount(query: PromiseLike<{ count: number | null; error: { message: string } | null }>) {
-  const { count, error } = await query;
-  if (error) throw new Error(error.message);
-  return count ?? 0;
-}
-
 /**
  * Live attention items from RLS-readable tables only.
  * Unsupported CRM/invoice/project types are never fabricated.
@@ -30,26 +18,22 @@ export async function loadLiveAttentionItems(input: {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
   const dueIso = endOfDay.toISOString();
-  const client = input.client as CountClient;
 
   try {
-    const tasksDue = await runCount(
-      client
-        .from("operational_tasks")
-        .select("id", { count: "exact", head: true })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq("organization_id", input.organizationId)
-        .in("status", ["todo", "in_progress", "blocked"])
-        .lte("due_at", dueIso) as PromiseLike<{ count: number | null; error: { message: string } | null }>
-    );
-    if (tasksDue > 0) {
+    const { count, error } = await input.client
+      .from("operational_tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", input.organizationId)
+      .in("status", ["todo", "in_progress", "blocked"])
+      .lte("due_at", dueIso);
+    if (!error && (count ?? 0) > 0) {
       items.push({
         id: "live-tasks-due",
         type: "task_due",
         label: "Tasks due today",
-        count: tasksDue,
+        count: count ?? 0,
         href: "/os/work/tasks",
-        severity: tasksDue >= 5 ? "critical" : "attention",
+        severity: (count ?? 0) >= 5 ? "critical" : "attention",
         source: "live",
       });
     }
@@ -58,20 +42,17 @@ export async function loadLiveAttentionItems(input: {
   }
 
   try {
-    const alerts = await runCount(
-      client
-        .from("operational_alerts")
-        .select("id", { count: "exact", head: true })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq("organization_id", input.organizationId)
-        .eq("acknowledged", false) as PromiseLike<{ count: number | null; error: { message: string } | null }>
-    );
-    if (alerts > 0) {
+    const { count, error } = await input.client
+      .from("operational_alerts")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", input.organizationId)
+      .eq("acknowledged", false);
+    if (!error && (count ?? 0) > 0) {
       items.push({
         id: "live-alerts",
         type: "alert",
         label: "Operational alerts",
-        count: alerts,
+        count: count ?? 0,
         href: "/os/work",
         severity: "attention",
         source: "live",
@@ -83,20 +64,17 @@ export async function loadLiveAttentionItems(input: {
 
   if (tier && tierAtLeast(tier, "staff")) {
     try {
-      const approvals = await runCount(
-        client
-          .from("runtime_approvals")
-          .select("id", { count: "exact", head: true })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("organization_id", input.organizationId)
-          .eq("status", "pending") as PromiseLike<{ count: number | null; error: { message: string } | null }>
-      );
-      if (approvals > 0) {
+      const { count, error } = await input.client
+        .from("runtime_approvals")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", input.organizationId)
+        .eq("status", "pending");
+      if (!error && (count ?? 0) > 0) {
         items.push({
           id: "live-approvals",
           type: "approval",
           label: "Approvals waiting",
-          count: approvals,
+          count: count ?? 0,
           href: "/os/automate",
           severity: "neutral",
           source: "live",
@@ -114,25 +92,22 @@ export async function loadLiveAttentionItems(input: {
 
   if (canOrders) {
     try {
-      const openOrders = await runCount(
-        client
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("organization_id", input.organizationId)
-          .in("status", [
-            "pending",
-            "confirmed",
-            "processing",
-            "awaiting_payment",
-          ]) as PromiseLike<{ count: number | null; error: { message: string } | null }>
-      );
-      if (openOrders > 0) {
+      const { count, error } = await input.client
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", input.organizationId)
+        .in("status", [
+          "pending",
+          "confirmed",
+          "processing",
+          "awaiting_payment",
+        ]);
+      if (!error && (count ?? 0) > 0) {
         items.push({
           id: "live-orders",
           type: "order_attention",
           label: "Open orders",
-          count: openOrders,
+          count: count ?? 0,
           href: "/os/money",
           severity: "neutral",
           source: "live",
