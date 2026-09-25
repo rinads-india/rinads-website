@@ -75,6 +75,7 @@ export function OsModuleBridge({ config }: { config: OsModuleBridgeConfig }) {
   const available = visible.filter((d) => d.status === "available");
   const publicPages = visible.filter((d) => d.status === "external_public");
   const unavailable = visible.filter((d) => d.status === "unavailable");
+  const hasAnyDestination = available.length + publicPages.length + unavailable.length > 0;
 
   return (
     <section className="flex flex-col gap-4">
@@ -90,6 +91,31 @@ export function OsModuleBridge({ config }: { config: OsModuleBridgeConfig }) {
           </p>
         )}
       </div>
+
+      {!hasAnyDestination && (
+        <div className="os-glass rounded-3xl p-5 sm:p-6" role="status">
+          <p className="text-sm font-semibold text-gray-900">Nothing to open here yet</p>
+          <p className="mt-2 text-sm text-gray-600">
+            {source === "unresolved"
+              ? "Your organisation role is unresolved, so privileged destinations stay hidden. Switch organisation in Settings or contact an admin."
+              : "No destinations are available for your role in this module. Public marketing pages and future tools will appear here when configured."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href="/os/home"
+              className="inline-flex min-h-11 items-center rounded-xl bg-black px-4 text-sm font-semibold text-white"
+            >
+              Back to Home
+            </Link>
+            <Link
+              href="/os/settings"
+              className="inline-flex min-h-11 items-center rounded-xl border border-gray-300/80 bg-white/60 px-4 text-sm font-semibold text-gray-900"
+            >
+              Open Settings
+            </Link>
+          </div>
+        </div>
+      )}
 
       {available.length > 0 && (
         <div>
