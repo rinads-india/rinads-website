@@ -40,8 +40,7 @@ function ItemContent({ item }: { item: NavLink }) {
 
 export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavDropdownProps) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+    const ref = useRef<HTMLDivElement>(null);
   const isMega = group.variant === "mega";
 
   const sections = useMemo(() => {
@@ -54,10 +53,6 @@ export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavD
     }
     return Array.from(map.entries());
   }, [group.items]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -123,7 +118,7 @@ export function NavDropdown({ group, linkClassName = defaultTriggerClass }: NavD
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
 
-      {open && mounted && isMega
+      {open && isMega
         ? createPortal(
             <button
               type="button"
