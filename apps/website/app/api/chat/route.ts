@@ -56,47 +56,64 @@ export async function POST(request: NextRequest) {
     let intent: string = "default";
 
     if (osContext) {
-      const osModule = osContext.module ?? "dashboard";
+      const osModule = osContext.module ?? "home";
       if (
         lower.includes("attention") ||
         lower.includes("focus") ||
         lower.includes("today") ||
-        osModule === "dashboard"
+        osModule === "dashboard" ||
+        osModule === "home"
       ) {
         reply =
-          "**Here's what needs your attention today:**\n\n" +
-          "• 3 overdue invoices\n" +
-          "• 7 leads need follow-up\n" +
-          "• 2 projects are behind schedule\n" +
-          "• 1 campaign is underperforming\n\n" +
-          "Start with overdue invoices, then follow up on hot leads.";
-        links = [{ label: "Open Leads", href: "/os?module=leads" }];
+          "I can help you prioritise using your **Business OS Home** panels.\n\n" +
+          "Open **Needs your attention** and **Your daily brief** on Home for permission-filtered items. " +
+          "I will not invent live invoices, leads, or project risk unless those modules expose data.";
+        links = [{ label: "Open Home", href: "/os" }];
         intent = "osAttention";
-      } else if (lower.includes("lead") || osModule === "leads") {
+      } else if (lower.includes("lead") || osModule === "leads" || osModule === "customers") {
         reply =
-          "Based on your pipeline, **7 leads need follow-up today**. Priority: leads with no contact in 5+ days.";
+          "Lead follow-up lives under **Customers** when CRM data is connected. " +
+          "I will not invent lead counts. Open Customers to use available destinations.";
+        links = [{ label: "Customers", href: "/os/customers" }];
         intent = "osLeads";
-      } else if (lower.includes("project") || osModule === "projects") {
-        reply = "**2 projects are at risk** — both are past milestone dates with open tasks.";
+      } else if (lower.includes("project") || osModule === "projects" || osModule === "work") {
+        reply =
+          "Project risk is only reported when Work data is available. " +
+          "Open **Work** for supported project and task destinations — I will not invent at-risk project counts.";
+        links = [{ label: "Work", href: "/os/work" }];
         intent = "osProjects";
-      } else if (lower.includes("invoice") || lower.includes("overdue") || osModule === "finance") {
-        reply = "You have **3 overdue invoices** totaling pending collections. Send reminders today.";
+      } else if (
+        lower.includes("invoice") ||
+        lower.includes("overdue") ||
+        osModule === "finance" ||
+        osModule === "money"
+      ) {
+        reply =
+          "Invoice and receivables figures appear only when Money sources are connected. " +
+          "I will not invent overdue invoice totals. Open **Money** for available tools.";
+        links = [{ label: "Money", href: "/os/money" }];
         intent = "osFinance";
-      } else if (lower.includes("campaign") || osModule === "marketing") {
-        reply = "Your **social campaign is underperforming** — CTR dropped 18% this week.";
+      } else if (lower.includes("campaign") || osModule === "marketing" || osModule === "growth") {
+        reply =
+          "Campaign performance is not invented here. Open **Growth** for public Grow overview and future campaign tools.";
+        links = [{ label: "Growth", href: "/os/growth" }];
         intent = "osMarketing";
       } else if (lower.includes("changed") || osModule === "analytics") {
         reply =
-          "This month: **+12 new leads**, revenue flat, **2 projects completed**, marketing spend up 8%.";
+          "Use **Business Pulse** on Home for supported metrics with an explicit data source. " +
+          "Unsupported KPIs stay hidden rather than fabricated.";
+        links = [{ label: "Open Home", href: "/os" }];
         intent = "osAnalytics";
       } else if (lower.includes("prioritize") || osModule === "tasks") {
         reply =
-          "Priority for today: finish invoice follow-ups, review at-risk projects, then campaign adjustments.";
+          "Prioritise from **Needs your attention** and open tasks under Work when those sources return live counts.";
+        links = [{ label: "Work", href: "/os/work" }];
         intent = "osTasks";
       } else {
         reply =
-          "I'm connected to your **Business OS** workspace. Ask about leads, projects, invoices, campaigns, or what needs attention.";
-        links = [{ label: "Business OS", href: "/platform/business-os" }];
+          "I'm connected to your **Business OS** workspace. Ask about attention, work, money, growth, or rooms — " +
+          "and rely on Home panels for live, permission-filtered status.";
+        links = [{ label: "Business OS Home", href: "/os" }];
         intent = "osDefault";
       }
     } else if (
