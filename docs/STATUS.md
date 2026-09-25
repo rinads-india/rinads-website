@@ -100,7 +100,7 @@ Supabase Auth → @rinads/tenancy
 | RINPO vector/embeddings | Schema present; indexing + `match_business_data` pending |
 | Edge `morning-digest` / `health-check` | Scaffolds incomplete |
 | CMS Phase C | Blog, preview tokens, Storage uploads, i18n — see [CMS_PHASE_C.md](./CMS_PHASE_C.md) |
-| Website forms / OAuth | Fake submit; Google/LinkedIn “coming soon” |
+| Website forms / OAuth | LeadForm + `/api/leads` (webhook → `site_leads` → honest `stored:false`); production DB apply unverified — see founder-audit. Google/LinkedIn “coming soon” |
 | Grow → storefront checkout | Not wired |
 | Full Playwright E2E | Deferred |
 | Design tokens / Figtree everywhere | Partial — website + rinaglow load Figtree; brand pack in `docs/rglow/PROTOTYPE-GAP.md` |
