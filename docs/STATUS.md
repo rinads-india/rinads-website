@@ -1,8 +1,10 @@
 # RINADS end-to-end status (as of `main`)
 
+> **Founder production truth (2026-09-25):** prefer [`docs/founder-audit/PRODUCTION-TRUTH.md`](./founder-audit/PRODUCTION-TRUTH.md) over older claims in this file. Production website + R GLOW were verified at SHA `eb7a95a` (includes #73–#78).
+
 **Verdict:** RINADS is a multi-app SaaS + commerce/ERP + salon OS monorepo. Platform Phases 9–13 and **R GLOW MVP + Phase E/E.2 are code-complete on `main`**. Remaining work is mostly **live credentials/ops cutover**, **provider stubs outside salon WhatsApp**, **LLM/intelligence depth**, and **CMS/polish**—not missing core product surfaces.
 
-Latest merged work: salon login → R GLOW (#57), MVP operator closure (#56), E.2 loyalty/reviews/comms (#53–#55).
+Latest merged work (git `main`): Home Command Centre (#78), logo chrome (#77), R Glow brand align (#76), BOS tenancy gate (#75), commercial Phase 4 (#73). Older note retained for salon MVP lineage: login → R GLOW (#57), MVP operator closure (#56), E.2 loyalty/reviews/comms (#53–#55).
 
 ## Architecture
 
@@ -98,7 +100,7 @@ Supabase Auth → @rinads/tenancy
 | RINPO vector/embeddings | Schema present; indexing + `match_business_data` pending |
 | Edge `morning-digest` / `health-check` | Scaffolds incomplete |
 | CMS Phase C | Blog, preview tokens, Storage uploads, i18n — see [CMS_PHASE_C.md](./CMS_PHASE_C.md) |
-| Website forms / OAuth | Fake submit; Google/LinkedIn “coming soon” |
+| Website forms / OAuth | LeadForm + `/api/leads` (webhook → `site_leads` → honest `stored:false`); production DB apply unverified — see founder-audit. Google/LinkedIn “coming soon” |
 | Grow → storefront checkout | Not wired |
 | Full Playwright E2E | Deferred |
 | Design tokens / Figtree everywhere | Partial — website + rinaglow load Figtree; brand pack in `docs/rglow/PROTOTYPE-GAP.md` |
