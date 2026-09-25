@@ -41,6 +41,11 @@ import {
 } from "@rinads/salon-server";
 import { getRinpoTool } from "./registry";
 import type { RinpoToolInput, RinpoToolResult } from "./types";
+import {
+  checkRinpoBudget,
+  estimateToolCostUsd,
+  recordRinpoObservation,
+} from "./observability";
 
 export type SalonRinpoContext = {
   organizationId: string;
@@ -132,7 +137,143 @@ async function requestApproval(
   return deps.actions.createPending(ctx.organizationId, { userId: ctx.userId, actionType: tool, input, reason });
 }
 
+function maskPhone(phone: string | null | undefined): string {
+  if (!phone) return "(no phone on file)";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 4) return "••••";
+  return `••••${digits.slice(-4)}`;
+}
+
+/**
+ * Pilot: appointment confirmation / reminder drafts a preview and requires
+ * explicit approval before any outbox enqueue (WhatsApp/SMS still subject to
+ * Twilio + worker enablement — enqueue may return not_configured).
+ */
+async function buildAppointmentMessageDraft(
+  deps: SalonRinpoDeps,
+  ctx: SalonRinpoContext,
+  input: RinpoToolInput
+): Promise<{ ok: true; approvalInput: Record<string, unknown>; message: string } | { ok: false; message: string }> {
+  const appointmentId = arg(input, "appointmentId");
+  if (!appointmentId) return { ok: false, message: "appointmentId is required." };
+  const apptResult = await deps.repo.getAppointment(appointmentId);
+  if (!apptResult.ok) return { ok: false, message: apptResult.error.message };
+  if (apptResult.data.organizationId !== ctx.organizationId) {
+    return { ok: false, message: "Appointment is outside the active organisation." };
+  }
+  const customerResult = await deps.repo.getCustomer(apptResult.data.customerId);
+  if (!customerResult.ok) return { ok: false, message: customerResult.error.message };
+  if (customerResult.data.organizationId !== ctx.organizationId) {
+    return { ok: false, message: "Customer is outside the active organisation." };
+  }
+
+  const event = input.tool === "send_appointment_confirmation" ? "booking.confirmed" : "appointment.reminder_due";
+  const channel = customerResult.data.preferredChannel ?? "whatsapp";
+  const draftPreview = {
+    event,
+    appointmentId,
+    bookingNumber: apptResult.data.bookingNumber ?? null,
+    startsAt: apptResult.data.startsAt,
+    recipientPhoneMasked: maskPhone(customerResult.data.phone),
+    preferredChannel: channel,
+    optedOut: Boolean(customerResult.data.optedOutAt),
+    copy:
+      event === "booking.confirmed"
+        ? `Confirm booking ${apptResult.data.bookingNumber ?? appointmentId} at ${apptResult.data.startsAt}.`
+        : `Reminder for booking ${apptResult.data.bookingNumber ?? appointmentId} at ${apptResult.data.startsAt}.`,
+  };
+
+  return {
+    ok: true,
+    approvalInput: {
+      ...input.args,
+      appointmentId,
+      draftPreview,
+    },
+    message: customerResult.data.optedOutAt
+      ? "Draft ready, but this customer is opted out — approval will skip send."
+      : `Draft ready for ${channel} to ${draftPreview.recipientPhoneMasked}. Approve to queue (delivery still needs Twilio/worker).`,
+  };
+}
+
+async function enqueueAppointmentMessage(
+  deps: SalonRinpoDeps,
+  ctx: SalonRinpoContext,
+  tool: "send_appointment_confirmation" | "send_appointment_reminder",
+  appointmentId: string
+): Promise<RinpoToolResult> {
+  const apptResult = await deps.repo.getAppointment(appointmentId);
+  if (!apptResult.ok) return { tool, ok: false, message: apptResult.error.message };
+  if (apptResult.data.organizationId !== ctx.organizationId) {
+    return { tool, ok: false, message: "Appointment is outside the active organisation." };
+  }
+  const customerResult = await deps.repo.getCustomer(apptResult.data.customerId);
+  if (!customerResult.ok) return { tool, ok: false, message: customerResult.error.message };
+
+  const event = tool === "send_appointment_confirmation" ? "booking.confirmed" : "appointment.reminder_due";
+  const enqueueResult = await deps.notifications.enqueue({
+    organizationId: ctx.organizationId,
+    event,
+    recipientPhone: customerResult.data.phone,
+    preferredChannel: customerResult.data.preferredChannel,
+    optedOutAt: customerResult.data.optedOutAt,
+    payload: { appointmentId, startsAt: apptResult.data.startsAt, bookingNumber: apptResult.data.bookingNumber },
+    idempotencyKey: `${event}:${appointmentId}`,
+  });
+  if (!enqueueResult.ok) return { tool, ok: false, message: enqueueResult.error.message };
+  const enqueueData = enqueueResult.data;
+  await auditWrite(deps, ctx, `rinpo.${tool}`, "salon_appointment", appointmentId, {
+    queued: !enqueueData.skipped,
+    reason: enqueueData.skipped ? enqueueData.reason : null,
+  });
+  return {
+    tool,
+    ok: true,
+    message: enqueueData.skipped
+      ? `Not queued: ${enqueueData.reason}`
+      : "Message queued for delivery (worker/Twilio must be enabled to send).",
+    data: enqueueData,
+  };
+}
+
 export async function executeSalonRinpoTool(
+  deps: SalonRinpoDeps,
+  ctx: SalonRinpoContext,
+  input: RinpoToolInput
+): Promise<RinpoToolResult> {
+  const started = Date.now();
+  const budget = checkRinpoBudget(ctx.organizationId);
+  if (!budget.allowed) {
+    const result: RinpoToolResult = { tool: input.tool, ok: false, message: budget.reason ?? "Budget exceeded." };
+    recordRinpoObservation({
+      organizationId: ctx.organizationId,
+      tool: input.tool,
+      ok: false,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: 0,
+      failureReason: result.message,
+      at: new Date().toISOString(),
+    });
+    return result;
+  }
+
+  const result = await executeSalonRinpoToolInner(deps, ctx, input);
+  recordRinpoObservation({
+    organizationId: ctx.organizationId,
+    tool: input.tool,
+    ok: result.ok,
+    latencyMs: Date.now() - started,
+    estimatedCostUsd: estimateToolCostUsd(input.tool, false),
+    pendingApproval: Boolean(
+      result.data && typeof result.data === "object" && (result.data as { status?: string }).status === "pending_approval"
+    ),
+    failureReason: result.ok ? undefined : result.message,
+    at: new Date().toISOString(),
+  });
+  return result;
+}
+
+async function executeSalonRinpoToolInner(
   deps: SalonRinpoDeps,
   ctx: SalonRinpoContext,
   input: RinpoToolInput
@@ -147,6 +288,15 @@ export async function executeSalonRinpoTool(
 
   if (def.category === "SENSITIVE" && def.requiresApproval) {
     let approvalInput = input.args as Record<string, unknown>;
+    let draftMessage: string | undefined;
+
+    if (input.tool === "send_appointment_confirmation" || input.tool === "send_appointment_reminder") {
+      const draft = await buildAppointmentMessageDraft(deps, ctx, input);
+      if (!draft.ok) return { tool: input.tool, ok: false, message: draft.message };
+      approvalInput = draft.approvalInput;
+      draftMessage = draft.message;
+    }
+
     if (input.tool === "retry_failed_message_batch") {
       const campaignId = arg(input, "campaignId");
       if (!campaignId) return { tool: input.tool, ok: false, message: "campaignId is required." };
@@ -179,8 +329,14 @@ export async function executeSalonRinpoTool(
     return {
       tool: input.tool,
       ok: true,
-      message: "This action requires approval before it runs. An admin can approve it from the RINPO approvals list.",
-      data: { actionId: pending.data.id, status: "pending_approval" },
+      message:
+        draftMessage ??
+        "This action requires approval before it runs. An admin can approve it from the RINPO approvals list.",
+      data: {
+        actionId: pending.data.id,
+        status: "pending_approval",
+        draftPreview: approvalInput.draftPreview ?? null,
+      },
     };
   }
 
@@ -400,33 +556,8 @@ export async function executeSalonRinpoTool(
       await auditWrite(deps, ctx, "rinpo.create_customer_followup", "salon_note", result.data.id, { customerId });
       return { tool: input.tool, ok: true, message: "Follow-up task created.", data: result.data };
     }
-    case "send_appointment_confirmation":
-    case "send_appointment_reminder": {
-      const appointmentId = arg(input, "appointmentId");
-      if (!appointmentId) return { tool: input.tool, ok: false, message: "appointmentId is required." };
-      const apptResult = await deps.repo.getAppointment(appointmentId);
-      if (!apptResult.ok) return { tool: input.tool, ok: false, message: apptResult.error.message };
-      const customerResult = await deps.repo.getCustomer(apptResult.data.customerId);
-      if (!customerResult.ok) return { tool: input.tool, ok: false, message: customerResult.error.message };
-      const event = input.tool === "send_appointment_confirmation" ? "booking.confirmed" : "appointment.reminder_due";
-      const enqueueResult = await deps.notifications.enqueue({
-        organizationId: ctx.organizationId,
-        event,
-        recipientPhone: customerResult.data.phone,
-        preferredChannel: customerResult.data.preferredChannel,
-        optedOutAt: customerResult.data.optedOutAt,
-        payload: { appointmentId, startsAt: apptResult.data.startsAt, bookingNumber: apptResult.data.bookingNumber },
-        idempotencyKey: `${event}:${appointmentId}`,
-      });
-      if (!enqueueResult.ok) return { tool: input.tool, ok: false, message: enqueueResult.error.message };
-      await auditWrite(deps, ctx, `rinpo.${input.tool}`, "salon_appointment", appointmentId, {});
-      return {
-        tool: input.tool,
-        ok: true,
-        message: enqueueResult.data.skipped ? `Not queued: ${enqueueResult.data.reason}` : "Message queued for delivery.",
-        data: enqueueResult.data,
-      };
-    }
+    // send_appointment_confirmation / send_appointment_reminder are SENSITIVE +
+    // requiresApproval — handled above via draft preview + pending approval.
     case "create_reactivation_campaign": {
       const daysInactive = argNum(input, "daysInactive", 45) ?? 45;
       const candidatesResult = await deps.repo.getReactivationCandidates(ctx.organizationId, daysInactive);
@@ -594,6 +725,31 @@ export async function executeSalonRinpoTool(
   }
 }
 
+export async function resolveSalonRinpoAction(
+  deps: SalonRinpoDeps,
+  ctx: SalonRinpoContext,
+  actionId: string,
+  decision: "approve" | "reject"
+): Promise<RinpoToolResult> {
+  const started = Date.now();
+  const result = await resolveSalonRinpoActionInner(deps, ctx, actionId, decision);
+  const actionType =
+    typeof result.data === "object" && result.data && "actionType" in result.data
+      ? String((result.data as { actionType?: string }).actionType)
+      : "resolve_rinpo_action";
+  recordRinpoObservation({
+    organizationId: ctx.organizationId,
+    tool: actionType,
+    ok: result.ok,
+    latencyMs: Date.now() - started,
+    estimatedCostUsd: 0,
+    approvedActionCompleted: decision === "approve" && result.ok,
+    failureReason: result.ok ? undefined : result.message,
+    at: new Date().toISOString(),
+  });
+  return result;
+}
+
 /**
  * Resolves a pending RINPO action after an `org.manage` approver decides.
  * For `initiate_refund`, the domain-level `salon_refunds` row is the real
@@ -602,7 +758,7 @@ export async function executeSalonRinpoTool(
  * `modify_discount` there is no other pending state — approving here is
  * what actually applies the change.
  */
-export async function resolveSalonRinpoAction(
+async function resolveSalonRinpoActionInner(
   deps: SalonRinpoDeps,
   ctx: SalonRinpoContext,
   actionId: string,
@@ -612,16 +768,53 @@ export async function resolveSalonRinpoAction(
   if (!actionResult.ok) return { tool: "resolve_rinpo_action", ok: false, message: actionResult.error.message };
   const action = actionResult.data;
 
+  if (action.organizationId && action.organizationId !== ctx.organizationId) {
+    return { tool: "resolve_rinpo_action", ok: false, message: "Action is outside the active organisation." };
+  }
+
   if (decision === "reject") {
     const rejectResult = await deps.actions.reject(actionId, ctx.userId ?? "");
     if (!rejectResult.ok) return { tool: "resolve_rinpo_action", ok: false, message: rejectResult.error.message };
-    return { tool: "resolve_rinpo_action", ok: true, message: "Action rejected." };
+    return { tool: "resolve_rinpo_action", ok: true, message: "Action rejected.", data: { actionType: action.actionType } };
+  }
+
+  const budget = checkRinpoBudget(ctx.organizationId);
+  if (!budget.allowed) {
+    return { tool: "resolve_rinpo_action", ok: false, message: budget.reason ?? "Budget exceeded." };
   }
 
   const approveResult = await deps.actions.approve(actionId, ctx.userId ?? "");
   if (!approveResult.ok) return { tool: "resolve_rinpo_action", ok: false, message: approveResult.error.message };
 
   switch (action.actionType) {
+    case "send_appointment_confirmation":
+    case "send_appointment_reminder": {
+      const appointmentId = String(action.input.appointmentId ?? "");
+      if (!appointmentId) {
+        await deps.actions.markFailed(actionId, "No appointmentId on pending action.");
+        return { tool: "resolve_rinpo_action", ok: false, message: "No appointmentId on pending action." };
+      }
+      const queued = await enqueueAppointmentMessage(
+        deps,
+        ctx,
+        action.actionType,
+        appointmentId
+      );
+      if (!queued.ok) {
+        await deps.actions.markFailed(actionId, queued.message);
+        return { ...queued, tool: "resolve_rinpo_action" };
+      }
+      await deps.actions.markExecuted(actionId, {
+        appointmentId,
+        enqueue: queued.data ?? null,
+      });
+      return {
+        tool: "resolve_rinpo_action",
+        ok: true,
+        message: queued.message,
+        data: { actionType: action.actionType, ...(typeof queued.data === "object" && queued.data ? queued.data : {}) },
+      };
+    }
     case "modify_pricing": {
       const serviceId = String(action.input.serviceId ?? "");
       const newPrice = Number(action.input.newPrice ?? action.input.price ?? 0);
