@@ -17,6 +17,7 @@ import {
   PlatformCard,
   CTASection,
 } from "@/components/system";
+import { OutcomeJourneySection } from "@/components/system/OutcomeJourneySection";
 import { PLATFORM_OVERVIEW } from "@/lib/content/platform-os";
 import { PLATFORM_OS } from "@/lib/product-ia";
 import { VERTICALS } from "@/lib/content/verticals";
@@ -103,6 +104,11 @@ export function PlatformClient() {
         primaryLabel="Book a platform demo"
         secondaryHref="/rinpo"
         secondaryLabel="See how RINPO works"
+      />
+
+      <OutcomeJourneySection
+        eyebrow="Customer journey"
+        headline="Start from the outcome you need."
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">

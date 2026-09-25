@@ -15,6 +15,7 @@ import {
   VerticalCard,
   CTASection,
 } from "@/components/system";
+import { OutcomeJourneySection } from "@/components/system/OutcomeJourneySection";
 import { VERTICALS } from "@/lib/content/verticals";
 import { getSolutionExperience } from "@/lib/solution-experience";
 import { getVerticalAvailability } from "@/lib/content/leads";
@@ -57,6 +58,11 @@ export function SolutionsClient() {
         primaryLabel="Explore the platform"
         secondaryHref="/contact?intent=demo"
         secondaryLabel="Book a platform demo"
+      />
+
+      <OutcomeJourneySection
+        eyebrow="Choose your path"
+        headline="From industry need to the right RINADS surface."
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
