@@ -25,5 +25,6 @@ export { LegalPage, type LegalSection } from "./LegalPage";
 export { AwaitingCounselNotice } from "./AwaitingCounselNotice";
 export { ProductStatus } from "./ProductStatus";
 export { LeadForm } from "./LeadForm";
+export { OutcomeJourneySection } from "./OutcomeJourneySection";
 export { AnalyticsProvider } from "./AnalyticsProvider";
 export { JsonLd } from "./JsonLd";
