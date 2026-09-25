@@ -1,11 +1,13 @@
 import { createServerSupabaseClient } from "@rinads/database";
+import { getSharedAuthCookieOptions } from "@rinads/auth";
 import { cookies } from "next/headers";
 import "server-only";
+import { getSupabasePublicConfig } from "./env";
 
 export async function createOwnerServerClient() {
   const cookieStore = await cookies();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const { url, anonKey } = getSupabasePublicConfig();
+  const cookieOptions = getSharedAuthCookieOptions();
 
   return createServerSupabaseClient(
     { url, anonKey },
@@ -13,11 +15,14 @@ export async function createOwnerServerClient() {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet) => {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, { ...options, ...cookieOptions })
+          );
         } catch {
           // middleware refreshes session
         }
       },
-    }
+    },
+    cookieOptions
   );
 }

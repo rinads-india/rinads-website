@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import {
   buildTenancyContext,
   requireOrgActive,
+  requireOwnerStaffRole,
   requirePermission,
+  requirePrivilegedRole,
   toCommerceContext,
   evaluateFeatureFlags,
 } from "../src/index";
@@ -52,6 +54,25 @@ describe("TenancyContext", () => {
     const ctx = buildTenancyContext({ userId: "u", memberships })!;
     assert.ok(requirePermission(ctx, "inventory.read").allowed);
     assert.ok(!requirePermission(ctx, "platform.tenants.manage").allowed);
+  });
+
+  it("requires owner staff roles and platform privileges", () => {
+    const staff = buildTenancyContext({ userId: "u", memberships })!;
+    assert.ok(requireOwnerStaffRole(staff).allowed);
+    assert.ok(!requirePrivilegedRole(staff).allowed);
+
+    const client = buildTenancyContext({
+      userId: "u",
+      memberships: [{ ...memberships[0], roleKey: "client" }],
+    })!;
+    assert.ok(!requireOwnerStaffRole(client).allowed);
+
+    const founder = buildTenancyContext({
+      userId: "u",
+      memberships: [{ ...memberships[0], roleKey: "founder" }],
+    })!;
+    assert.ok(requirePrivilegedRole(founder).allowed);
+    assert.ok(requireOwnerStaffRole(founder).allowed);
   });
 
   it("maps to commerce context", () => {

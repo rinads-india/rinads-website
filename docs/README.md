@@ -15,6 +15,7 @@
 | [architecture/AUDIT_GAP_ANALYSIS.md](./architecture/AUDIT_GAP_ANALYSIS.md) | Full architecture audit (historical baseline) |
 | [decisions/README.md](./decisions/README.md) | Accepted ADRs |
 | [deployment/POLICY.md](./deployment/POLICY.md) | Deploy workflow |
+| [deployment/VERCEL_INTERNAL_PORTALS.md](./deployment/VERCEL_INTERNAL_PORTALS.md) | Internal portal domains, auth, founder bootstrap |
 | [deployment/VERCEL_RINAGLOW.md](./deployment/VERCEL_RINAGLOW.md) | R GLOW Vercel project |
 | [runbooks/RGLOW-COMMUNICATIONS-WORKER.md](./runbooks/RGLOW-COMMUNICATIONS-WORKER.md) | Communications worker |
 

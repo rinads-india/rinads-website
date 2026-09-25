@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
+import { CANONICAL_FORGOT_PASSWORD_URL } from "@rinads/auth";
 
 export function ClientPortal() {
   const { user, login, logout, isAuthenticated } = useAuth();
@@ -131,6 +132,11 @@ export function ClientPortal() {
               required
             />
           </div>
+          <p className="text-center text-xs">
+            <a href={CANONICAL_FORGOT_PASSWORD_URL} className="text-[var(--rinads-primary)] hover:underline">
+              Forgot password?
+            </a>
+          </p>
           <button
             type="submit"
             className="w-full py-2.5 rounded-lg bg-[var(--rinads-primary)] text-white text-sm font-semibold hover:opacity-90"

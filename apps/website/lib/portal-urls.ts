@@ -1,12 +1,38 @@
+import { getPortalUrlMap, portalUrl as joinPortalUrl, getVisiblePortalLinks } from "@rinads/auth";
+import { isCustomerRoleKey, isOwnerStaffRoleKey, isPrivilegedRoleKey } from "@rinads/permissions";
+
 export function getPortalUrls() {
+  const map = getPortalUrlMap();
   return {
-    owner: process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? "http://localhost:3003",
-    customer: process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_URL ?? "http://localhost:3002",
-    platform: process.env.NEXT_PUBLIC_PLATFORM_ADMIN_URL ?? "http://localhost:3004",
+    owner: map.owner,
+    customer: map.customer,
+    platform: map.platform,
+    glow: map.glow,
+    website: map.website,
   } as const;
 }
 
 export function portalUrl(base: string, path: string): string {
-  const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${base.replace(/\/$/, "")}${normalized}`;
+  return joinPortalUrl(base, path);
+}
+
+export function normalizeWebsiteRoleKey(role: string): string {
+  return role === "super-admin" ? "super_admin" : role;
+}
+
+export function getWebsitePortalVisibility(role: string) {
+  const key = normalizeWebsiteRoleKey(role);
+  return {
+    privileged: isPrivilegedRoleKey(key),
+    ownerStaff: isOwnerStaffRoleKey(key),
+    customer: isCustomerRoleKey(key),
+  };
+}
+
+export function getVisibleWebsitePortalLinks(role: string) {
+  const flags = getWebsitePortalVisibility(role);
+  return getVisiblePortalLinks({
+    ...flags,
+    urls: getPortalUrlMap(),
+  });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { signInWithPassword } from "@rinads/auth";
+import { CANONICAL_FORGOT_PASSWORD_URL, sanitizeRelativeNext, signInWithPassword } from "@rinads/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createRinaglowBrowserClient } from "@/lib/supabase/browser";
@@ -8,7 +8,7 @@ import { createRinaglowBrowserClient } from "@/lib/supabase/browser";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/calendar";
+  const next = sanitizeRelativeNext(searchParams.get("next")) ?? "/calendar";
   const orgInactive = searchParams.get("reason") === "org_inactive";
 
   const [email, setEmail] = useState("");
@@ -78,6 +78,11 @@ export function LoginForm() {
       <button type="submit" className="btn-primary w-full" disabled={submitting}>
         {submitting ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-xs text-muted-foreground">
+        <a href={CANONICAL_FORGOT_PASSWORD_URL} className="text-rinads-primary hover:underline">
+          Forgot password?
+        </a>
+      </p>
     </form>
   );
 }

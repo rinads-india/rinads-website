@@ -1,4 +1,8 @@
-import { resolveAuthConfig, isSupabaseAuthReady } from "@rinads/auth";
+import {
+  allowDevelopmentAuthBypass,
+  isSupabaseAuthReady,
+  resolveAuthConfig,
+} from "@rinads/auth";
 
 export function getAuthConfig() {
   return resolveAuthConfig({
@@ -12,8 +16,9 @@ export function isSupabaseMode(): boolean {
   return isSupabaseAuthReady(getAuthConfig());
 }
 
+/** Explicit development-only demo. Preview and production fail closed. */
 export function isDemoMode(): boolean {
-  return process.env.USE_DEMO_STORE === "1" || !isSupabaseMode();
+  return allowDevelopmentAuthBypass();
 }
 
 export function getSupabasePublicConfig() {

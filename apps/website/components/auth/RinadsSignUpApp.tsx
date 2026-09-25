@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/rinads/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { navigateAfterAuth } from "@/lib/post-auth-navigation";
+import { CANONICAL_FORGOT_PASSWORD_URL } from "@rinads/auth";
 
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260506_081238_406ed0e3-5d83-436e-a512-0bbff7ec5b95.mp4";
@@ -261,7 +262,16 @@ export default function RinadsSignUpApp() {
                 <p className="text-xs text-white/35 dark:text-white/35 [.signup-form-column_&]:text-muted-foreground">
                   Requires at least 8 symbols.
                 </p>
-              ) : null}
+              ) : (
+                <p className="text-xs">
+                  <a
+                    href={CANONICAL_FORGOT_PASSWORD_URL}
+                    className="text-rinads-primary hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </p>
+              )}
             </div>
 
             {error ? (

@@ -22,7 +22,8 @@
     "communications:worker": "pnpm exec tsx scripts/cron/communications-worker.ts",
     "loyalty-expiry:worker": "pnpm exec tsx scripts/cron/loyalty-expiry-worker.ts",
     "deploy:emergency": "pnpm --filter @rinads/website deploy:emergency",
-    "push:github": "pnpm --filter @rinads/website push:github"
+    "push:github": "pnpm --filter @rinads/website push:github",
+    "admin:bootstrap-founder": "pnpm exec tsx scripts/admin/bootstrap-founder.ts"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.49.8",
