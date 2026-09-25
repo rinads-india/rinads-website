@@ -217,7 +217,7 @@ export function Navbar() {
             aria-hidden
             className="absolute -right-0.5 top-1/2 h-2 w-2 -translate-y-1/2 animate-pulse rounded-full bg-rinads-primary/80"
           />
-          <Logo className="h-6 sm:h-7 md:h-8" priority />
+          <Logo className="h-6 sm:h-7 md:h-8" priority tone="auto" />
         </Link>
 
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1">
