@@ -16,6 +16,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "ops:verify": "pnpm exec tsx scripts/ops/verify-production.ts",
+    "ops:preflight": "pnpm exec tsx scripts/ops/preflight-config.ts",
     "staging:ambady-seed": "pnpm exec tsx scripts/staging/ambady-cutover.ts",
     "provisioning:worker": "pnpm exec tsx scripts/cron/provisioning-worker.ts",
     "runtime:worker": "pnpm exec tsx scripts/cron/runtime-worker.ts",
