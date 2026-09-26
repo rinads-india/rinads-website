@@ -1,9 +1,10 @@
 # Founder audit index
 
-**Phase 0 source of truth** for RINADS commercial release readiness (2026-09-25).
+**Phase 0 source of truth** for RINADS commercial release readiness (2026-09-25), with live E2E refresh on 2026-09-26.
 
 | Document | Purpose |
 |----------|---------|
+| [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md) | Built vs pending live gates — latest probes |
 | [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md) | Evidence-labeled reality vs docs |
 | [PAGE-MATRIX.md](./PAGE-MATRIX.md) | Required IA vs actual routes / defects |
 | [SECURITY-TENANCY.md](./SECURITY-TENANCY.md) | #75 release gate + residual risks |

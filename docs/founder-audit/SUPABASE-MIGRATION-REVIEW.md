@@ -1,8 +1,8 @@
 # Supabase migration and rollback review
 
-**Audit date:** 2026-09-25  
+**Audit date:** 2026-09-25 (refresh 2026-09-26)  
 **Repo migrations:** 31 files under `supabase/migrations/`  
-**Production applied status:** **UNKNOWN / BLOCKED** — Supabase MCP requires authentication; no agent-side `supabase db` production access in this run.
+**Production applied status:** **PARTIAL** — full migration list still **BLOCKED** (Supabase MCP `needsAuth`). Live lead API returned `stored: true` on 2026-09-26, so `site_leads` persistence path is live; salon routing / loyalty expiry apply status remains unknown. See [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md).
 
 ## Policy
 
@@ -51,7 +51,7 @@
 - [ ] List applied migrations on **production** project (dashboard or CLI).
 - [ ] Confirm `20260916100003_fix_salon_vertical_routing.sql` applied.
 - [ ] Confirm `20260921100000_salon_loyalty_expiry.sql` applied if expiry job will be used.
-- [ ] Confirm `20260924100000_site_leads.sql` applied **before** relying on lead persistence.
+- [x] Confirm `20260924100000_site_leads.sql` / lead persistence live — **API-proven 2026-09-26** (`stored: true`, id `32188892-3852-4389-97bc-c1d06b85a8c8`); optional: confirm/delete row in Table Editor.
 - [ ] Confirm Auth redirect allowlist: `www.rinads.com/**`, `rinads.com/**`, `glow.rinads.com/**`.
 - [ ] Spot-check RLS: anon cannot SELECT/INSERT `site_leads`; salon tables tenant-scoped.
 
