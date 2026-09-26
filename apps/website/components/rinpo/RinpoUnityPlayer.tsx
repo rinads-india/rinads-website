@@ -36,7 +36,7 @@ export function RinpoUnityPlayer({ onClose }: { onClose: () => void }) {
     async function load() {
       try {
         const canvas = canvasRef.current;
-        if (!canvas || !("WebAssembly" in window) || !canvas.getContext("webgl2")) {
+        if (!canvas || !("WebAssembly" in window) || !document.createElement("canvas").getContext("webgl2")) {
           throw new Error("Unity Web requires WebAssembly and WebGL 2.");
         }
         const baseUrl = resolveRinpoUnityBaseUrl(
