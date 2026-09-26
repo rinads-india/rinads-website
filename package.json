@@ -16,6 +16,9 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "ops:verify": "pnpm exec tsx scripts/ops/verify-production.ts",
+    "ops:preflight": "pnpm exec tsx scripts/ops/preflight-config.ts",
+    "test:e2e": "playwright test",
     "staging:ambady-seed": "pnpm exec tsx scripts/staging/ambady-cutover.ts",
     "provisioning:worker": "pnpm exec tsx scripts/cron/provisioning-worker.ts",
     "runtime:worker": "pnpm exec tsx scripts/cron/runtime-worker.ts",
@@ -26,6 +29,7 @@
     "admin:bootstrap-founder": "pnpm exec tsx scripts/admin/bootstrap-founder.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@supabase/supabase-js": "^2.49.8",
     "tsx": "^4.19.4",
     "turbo": "^2.5.4",
