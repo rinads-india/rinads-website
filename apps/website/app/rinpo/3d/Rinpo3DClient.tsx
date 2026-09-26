@@ -39,7 +39,7 @@ export function Rinpo3DClient() {
 
   return (
     <MarketingPageShell>
-      <main id="rinpo-unity-experience" className="px-6 pb-20 pt-16 md:px-12 lg:px-20">
+      <section id="rinpo-unity-experience" className="px-6 pb-20 pt-16 md:px-12 lg:px-20">
         <div className="mx-auto max-w-6xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rinads-primary">
             RINPO · OPTIONAL 3D PREVIEW
@@ -97,7 +97,7 @@ export function Rinpo3DClient() {
             <Link href="/contact?intent=demo">Book a demonstration →</Link>
           </nav>
         </div>
-      </main>
+      </section>
     </MarketingPageShell>
   );
 }
