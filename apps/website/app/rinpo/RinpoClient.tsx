@@ -113,6 +113,9 @@ export function RinpoClient() {
             <Link href="/rinpo/story">Story →</Link>
             <Link href="/rinpo/voice">Voice →</Link>
             <Link href="/rinpo/phone">Phone →</Link>
+            {process.env.NEXT_PUBLIC_RINPO_UNITY_ENABLED === "true" && (
+              <Link href="/rinpo/3d">3D preview →</Link>
+            )}
           </div>
         </div>
       </section>
