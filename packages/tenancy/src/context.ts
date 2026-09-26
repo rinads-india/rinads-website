@@ -1,7 +1,7 @@
 import type { CommerceContext } from "@rinads/commerce";
 import type { OperationsContext } from "@rinads/operations";
 import type { PermissionKey } from "@rinads/permissions";
-import { decideAccess } from "@rinads/permissions";
+import { decideAccess, isOwnerStaffRoleKey, isPrivilegedRoleKey } from "@rinads/permissions";
 import type { AccessDecision } from "@rinads/permissions";
 import type { TenancyContext, TenancyLoadInput } from "./types";
 
@@ -69,8 +69,17 @@ export function requirePermission(tenancy: TenancyContext, permission: Permissio
 }
 
 export function requirePrivilegedRole(tenancy: TenancyContext): AccessDecision {
-  if (tenancy.roleKey !== "founder" && tenancy.roleKey !== "super_admin") {
+  if (!isPrivilegedRoleKey(tenancy.roleKey)) {
     return decideAccess(false, "Platform privileges required.");
+  }
+  return decideAccess(true, "");
+}
+
+export function requireOwnerStaffRole(tenancy: TenancyContext): AccessDecision {
+  const active = requireOrgActive(tenancy);
+  if (!active.allowed) return active;
+  if (!isOwnerStaffRoleKey(tenancy.roleKey)) {
+    return decideAccess(false, "Owner workspace access requires an active staff role.");
   }
   return decideAccess(true, "");
 }

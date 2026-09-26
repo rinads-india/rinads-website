@@ -1,10 +1,12 @@
 import { createServerSupabaseClient, createServiceRoleClient } from "@rinads/database";
+import { getSharedAuthCookieOptions } from "@rinads/auth";
 import { cookies } from "next/headers";
 import { getSupabasePublicConfig, getServiceRoleKey } from "./env";
 
 export async function createPlatformServerClient() {
   const cookieStore = await cookies();
   const { url, anonKey } = getSupabasePublicConfig();
+  const cookieOptions = getSharedAuthCookieOptions();
 
   return createServerSupabaseClient(
     { url, anonKey },
@@ -13,13 +15,14 @@ export async function createPlatformServerClient() {
       setAll: (cookiesToSet) => {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, { ...options, ...cookieOptions });
           });
         } catch {
           // Server Component — session refresh handled in middleware
         }
       },
-    }
+    },
+    cookieOptions
   );
 }
 

@@ -58,6 +58,16 @@ export const PRIVILEGED_ROLE_KEYS: readonly RoleKey[] = [
   "super_admin",
 ] as const;
 
+export const OWNER_STAFF_ROLE_KEYS: readonly RoleKey[] = [
+  "founder",
+  "super_admin",
+  "admin",
+  "manager",
+  "staff",
+] as const;
+
+export const CUSTOMER_ROLE_KEYS: readonly RoleKey[] = ["client"] as const;
+
 export const CORE_PERMISSION_KEYS = [
   "org.read",
   "org.manage",
@@ -68,6 +78,14 @@ export const CORE_PERMISSION_KEYS = [
 
 export function isPrivilegedRoleKey(key: string): boolean {
   return (PRIVILEGED_ROLE_KEYS as readonly string[]).includes(key);
+}
+
+export function isOwnerStaffRoleKey(key: string): boolean {
+  return (OWNER_STAFF_ROLE_KEYS as readonly string[]).includes(key);
+}
+
+export function isCustomerRoleKey(key: string): boolean {
+  return (CUSTOMER_ROLE_KEYS as readonly string[]).includes(key);
 }
 
 /**

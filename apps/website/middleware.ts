@@ -1,9 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { findRedirectForPath, listRedirects } from "@rinads/cms";
-import { checkProductionEnvContract, renderProductionEnvContractUnavailablePage } from "@rinads/auth";
+import {
+  checkProductionEnvContract,
+  getSharedAuthCookieOptions,
+  renderProductionEnvContractUnavailablePage,
+} from "@rinads/auth";
 import { getWebsiteCmsClient } from "@/lib/cms-client";
-import { sharedAuthCookieOptions } from "@rinads/database";
 
 type CookieToSet = {
   name: string;
@@ -66,11 +69,9 @@ export async function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 
+  const cookieOptions = getSharedAuthCookieOptions();
   const supabase = createServerClient(url, anonKey, {
-    cookieOptions: sharedAuthCookieOptions({
-      cookieDomain: process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN,
-      production: process.env.VERCEL_ENV === "production",
-    }),
+    cookieOptions,
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -79,7 +80,7 @@ export async function middleware(request: NextRequest) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request: { headers: requestHeaders } });
         cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, { ...options, ...cookieOptions });
         });
       },
     },

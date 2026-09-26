@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { signOut } from "@rinads/auth";
+import { createRinaglowBrowserClient } from "@/lib/supabase/browser";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
@@ -20,6 +23,19 @@ const links = [
 
 export function RinaglowNav({ organizationName, roleKey }: { organizationName?: string; roleKey?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut(createRinaglowBrowserClient());
+      router.replace("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <header className="border-b border-rinads-primary/15 bg-surface">
@@ -54,6 +70,14 @@ export function RinaglowNav({ organizationName, roleKey }: { organizationName?: 
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-surface-muted hover:text-foreground disabled:opacity-60 sm:text-sm"
+          >
+            {signingOut ? "Signing out…" : "Sign out"}
+          </button>
         </nav>
       </div>
       {roleKey ? (

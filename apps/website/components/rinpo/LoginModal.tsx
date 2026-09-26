@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DEMO_ALLOWED_ROLES, type DemoAllowedRole } from "@/lib/demo-auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { navigateAfterAuth } from "@/lib/post-auth-navigation";
+import { CANONICAL_FORGOT_PASSWORD_URL } from "@rinads/auth";
 
 /** Privileged roles exist in CORE but are never selectable in public UI. */
 export type LoginRole = DemoAllowedRole | "founder" | "super-admin";
@@ -208,6 +209,16 @@ export function LoginModal({ isOpen, initialMode = "login", onClose, onLogin, on
                     required
                     autoComplete={mode === "login" ? "current-password" : "new-password"}
                   />
+                  {mode === "login" ? (
+                    <p className="mt-2 text-sm">
+                      <a
+                        href={CANONICAL_FORGOT_PASSWORD_URL}
+                        className="text-[var(--rinads-primary)] hover:underline"
+                      >
+                        Forgot password?
+                      </a>
+                    </p>
+                  ) : null}
                 </div>
 
                 {isDemoMode && (

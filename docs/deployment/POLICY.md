@@ -21,6 +21,8 @@ PR
 
 Full checklist: [`VERCEL_PUBLIC_EXPERIENCE.md`](./VERCEL_PUBLIC_EXPERIENCE.md).
 
+Internal portals (`admin.rinads.com`, `app.rinads.com`, `customers.rinads.com`, `glow.rinads.com`) and founder bootstrap: [`VERCEL_INTERNAL_PORTALS.md`](./VERCEL_INTERNAL_PORTALS.md). Each portal has its own `vercel.json`. Do not point those Vercel projects at `apps/website`.
+
 - Project root directory: `apps/website` (required after monorepo move)
 - Framework: Next.js
 - Install / build: committed in [`apps/website/vercel.json`](../../apps/website/vercel.json) (`pnpm install --filter @rinads/website...`, `pnpm --filter @rinads/website build` from monorepo root)

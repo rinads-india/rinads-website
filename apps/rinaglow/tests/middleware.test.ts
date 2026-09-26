@@ -19,5 +19,7 @@ describe("R GLOW middleware public path contract", () => {
     const source = fs.readFileSync(new URL("../middleware.ts", import.meta.url), "utf8");
     assert.ok(source.indexOf("checkProductionEnvContract()") < source.indexOf("isRinaglowPublicPath(pathname)"));
     assert.match(source, /status:\s*503/);
+    assert.match(source, /sanitizeRelativeNext/);
+    assert.match(source, /getSharedAuthCookieOptions/);
   });
 });
