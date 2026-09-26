@@ -62,13 +62,15 @@ These change **git** only. They do **not** by themselves mutate production data,
 **Date (UTC):** ______________________  
 **Signature / ack:** ______________________
 
-## D. Current recommendation (2026-09-25)
+## D. Current recommendation (2026-09-26)
 
 | Slice | Recommendation |
 |-------|----------------|
-| Public marketing site at `eb7a95a` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
+| Public marketing site at `67473ae` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
+| Lead capture persistence | **API-proven** (`stored: true`); optional Table Editor confirm |
 | Business OS authenticated | **Do not** declare production-ready until SECURITY-TENANCY SKIP tests PASS |
-| R GLOW messaging | **Keep workers/Twilio off** |
+| Auth allowlist + cookie env | Founder dashboard confirm still required |
+| R GLOW messaging | **Keep workers/Twilio off** until this checklist is signed |
 | Digital Store / staff apps | **PLANNED only** — not launched |
 
-Companion: [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).
+Companion: [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md), [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).

@@ -1,8 +1,9 @@
 # Production truth — RINADS Founder Audit
 
-**Audit date:** 2026-09-25 (UTC)  
+**Audit date:** 2026-09-25 (UTC); **live E2E refresh:** 2026-09-26  
 **Auditor run:** Cursor Cloud Agent (`bc-01a0d63b-8603-7c00-8376-d9afe406ea81`)  
 **Repository:** `rinads-india/rinads-website`  
+**Latest live evidence:** [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md)  
 **Claim policy:** Every row includes evidence and access limitations. Labels are mutually exclusive per claim. Never invent metrics, customers, prices, certifications, or readiness.
 
 ## Labels
@@ -22,20 +23,19 @@
 
 | Claim | Label | Evidence | Access limitation |
 |-------|-------|----------|-------------------|
-| Audited `main` SHA | MERGED | `eb7a95ae6bf851d6003fe0c5d9e4592623f5333e` — `feat(bos): Home Command Centre (PR 2) (#78)` | Local `git fetch origin main` |
-| Production website SHA | DEPLOYED | GitHub Deployments `Production – rinads-website` created 2026-09-25T02:39:15Z → `eb7a95a` | Vercel MCP `list_deployments` / `get_project` return 403/404; SHA from GitHub Deployments API |
-| Production R GLOW SHA | DEPLOYED | GitHub Deployments `Production – rinaglow` created 2026-09-25T02:38:17Z → `eb7a95a` | Same Vercel MCP gap |
-| PRs #73, #74, #75, #76, #77, #78 | MERGED | GitHub PR state MERGED | — |
-| Open PRs (at audit) | PARTIAL | #79 lint unblock (CI green), #70 project intake (stale), #36 Vercel Analytics | Merge decisions are founder-only |
+| Audited `main` SHA (2026-09-26) | MERGED | `67473ae` — `Secure production access to RINADS internal portals (#86)` | Local `git` + GitHub |
+| Production website SHA | DEPLOYED | GitHub Deployments `Production – rinads-website` 2026-09-26T09:27:49Z → `67473ae` | Vercel MCP cannot read rinads projects (404/empty); SHA from GitHub Deployments API |
+| Production R GLOW SHA | DEPLOYED | GitHub Deployments `Production – rinaglow` 2026-09-26T09:27:17Z → `67473ae` | Same Vercel MCP gap |
+| PRs #73–#86 (commercial, OS, R GLOW, RINPO, docs, portals) | MERGED | GitHub PR state MERGED | — |
+| Open PRs (2026-09-26) | PARTIAL | #79 superseded lint, #70 stale intake, #36 analytics, #87 Unity scaffold (review only) | Housekeeping: close #79/#70/#36 |
 
 ### Recent `main` history (evidence)
 
 ```
-eb7a95a feat(bos): Home Command Centre (PR 2) (#78)
-29c5e96 fix(website): RINADS logo chrome, dark islands, mega-menu scrim (#77)
-4d52fb5 R Glow — brand assets + UI align to handoff prototypes (#76)
-7f64de9 fix(bos): tenancy gate, org-role destinations, More dialog a11y (#75)
-7d7aa1c Phase 4 — close commercial engineering pendings (#73)
+67473ae Secure production access to RINADS internal portals (#86)
+235e888 feat(website): outcome-based journey IA on platform and solutions (#85)
+13d0a13 fix(website): honest lead ack, form a11y, pricing contact copy (#84)
+… includes #80–#83 founder-audit, BOS empty states, cutover, RINPO pilot
 ```
 
 ## Access limitations (apply to all rows below)
@@ -76,8 +76,8 @@ Probed 2026-09-25 via HTTPS (agent egress). Apex `rinads.com` → 307 → `https
 | `/academy` | DEPLOYED | HTTP 200 | — |
 | `/customers`, `/about`, `/services*`, `/docs`, `/developers/*`, `/integrations`, `/changelog`, `/careers`, `/status`, `/legal/*` | BUILT / DEPLOYED | Route registry + commercial rebuild #71–#73 | Spot-checked registry; not every subroute HTTP-probed this run |
 | `/api/health` productionEnvContract | TESTED | `{"status":"ok","checks":{"productionEnvContract":"ok"}` | Contract check only — not full dependency health |
-| Lead API (`/api/leads`) code path | BUILT / MERGED | `apps/website/app/api/leads/route.ts`: webhook → `site_leads` service role → honest `{stored:false}` | Whether webhook/service-role/migration applied in prod = BLOCKED |
-| `site_leads` migration in repo | BUILT / MERGED | `supabase/migrations/20260924100000_site_leads.sql` | Applied on production DB = BLOCKED (Supabase auth) |
+| Lead API (`/api/leads`) live persistence | TESTED | 2026-09-26 POST → `{ok:true,stored:true,id:32188892-…}` | Table Editor row view still needs founder Supabase UI |
+| `site_leads` migration in repo | BUILT / MERGED | `supabase/migrations/20260924100000_site_leads.sql` | Full migration **list** on prod still BLOCKED (Supabase auth); persistence path proven live |
 | GTM / analytics IDs | PARTIAL | Optional `NEXT_PUBLIC_GTM_ID`; dataLayer sink in AnalyticsProvider | Whether production IDs set = BLOCKED (env unread) |
 | Counsel-approved legal copy | BLOCKED / PLANNED | `AwaitingCounselNotice` on legal shells | Needs counsel |
 | Verified case studies / logos / numeric pricing | BLOCKED / PLANNED | Commercial PROGRESS.md leftovers | Must not invent |
@@ -111,7 +111,7 @@ Probed 2026-09-25 via HTTPS (agent egress). Apex `rinads.com` → 307 → `https
 | Twilio WhatsApp live send | BLOCKED | Code returns `not_configured` without secrets | Sandbox credentials + consent required |
 | Communications worker enabled | BLOCKED | Off by default (`RINADS_COMMUNICATIONS_WORKER_ENABLED`) | Founder enablement only |
 | Digital Store / Staff phone app | PLANNED | `docs/rglow/PROTOTYPE-GAP.md` | Do not claim launched |
-| Migrations applied through loyalty expiry + site_leads | BLOCKED | Files exist in repo | Supabase MCP unauthenticated |
+| Migrations applied through loyalty expiry + site_leads | PARTIAL | `site_leads` path live via API; salon/loyalty list unknown | Supabase MCP unauthenticated |
 
 ---
 
@@ -143,7 +143,7 @@ Probed 2026-09-25 via HTTPS (agent egress). Apex `rinads.com` → 307 → `https
 - No SOC 2 / ISO / uptime SLA certification claimed.
 - No customer logos, case-study metrics, or currency prices treated as commercially binding.
 - No “AI can do X in production” beyond tools that exist in code with permission gates.
-- No assertion that `site_leads` or salon migrations are applied until Supabase verification.
+- No assertion that the full salon migration chain is applied until Supabase dashboard list is confirmed (lead persistence alone is proven).
 
 ## Supersedes
 

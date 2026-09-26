@@ -1,7 +1,7 @@
 # Release acceptance checklist and test results
 
-**Audit date:** 2026-09-25  
-**Production SHA under test:** `eb7a95a` (website + rinaglow)
+**Audit date:** 2026-09-25 (refresh 2026-09-26)  
+**Production SHA under test:** `67473ae` (website + rinaglow) — see [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md)
 
 ## Results legend
 
@@ -47,7 +47,7 @@
 | Multi-org without active org stays `/os` | SKIP | Test account |
 | Client role cannot see Money/billing bridges | SKIP | Test account |
 | Mobile More focus trap on real device | SKIP | Browser session |
-| Lead form persists row in `site_leads` | SKIP | Migration + service role proof |
+| Lead form persists (`stored: true`) | PASS | Live POST 2026-09-26 → id `32188892-3852-4389-97bc-c1d06b85a8c8`; Table Editor row view still SKIP |
 | Razorpay / Stripe live payment | SKIP | Credentials; Stripe NOT_IMPLEMENTED |
 
 ## R GLOW operator smoke (BLOCKED)
@@ -66,7 +66,7 @@
 |------|--------|
 | Public `/api/chat` rule-based (no LLM required) | PASS (code review) |
 | Deterministic salon tools exist | PASS (code review) |
-| Pilot appointment→confirmation audit path | PLANNED (implementation PR) |
+| Pilot appointment→confirmation audit path | PASS (code on main #83); send gated |
 | Live LLM in production | SKIP (key presence unknown) |
 
 ## Acceptance for “commercially usable slice”
@@ -79,4 +79,4 @@ A slice may be called **commercially usable** only when:
 4. No fabricated commercial claims on pages in scope.
 5. Founder signed FOUNDER-SIGNOFF for any send/worker/migrate actions.
 
-**Current overall:** Public marketing + env contract = **PARTIAL commercial surface**. Authenticated OS / R GLOW ops / messaging = **not accepted** until SKIP items cleared.
+**Current overall (2026-09-26):** Public marketing + env contract + **lead persistence** = **PARTIAL commercial surface** (leads API-proven). Authenticated OS / R GLOW ops / messaging = **not accepted** until SKIP items cleared and FOUNDER-SIGNOFF signed for messaging.

@@ -1,9 +1,9 @@
 # Vercel deployment verification checklist
 
-**Audit date:** 2026-09-25  
+**Audit date:** 2026-09-25 (refresh 2026-09-26)  
 **Team:** `rinadss-projects-1ebcffe7` (`team_5JqD1eqjxH1JTNYYAB5c13Z2`)
 
-## Projects (MCP `list_projects` — authorized)
+## Projects (historical IDs — MCP scope reduced 2026-09-26)
 
 | Project | ID | Role |
 |---------|----|------|
@@ -14,28 +14,29 @@
 
 | API | Result | Workaround used |
 |-----|--------|-----------------|
-| `list_projects` | OK | — |
-| `get_project` | 404 Not Found | Treat root-dir/env as **unverified via API** |
-| `list_deployments` | 403 Forbidden | GitHub Deployments API for SHA |
+| `list_projects` (2026-09-26) | Only unrelated project visible; `search=rinads` empty | Treat website/rinaglow as **out of MCP scope** for this token |
+| `get_project` / `filter_project_envs` / `list_project_domains` | 404 Not Found for rinads project IDs | Root-dir/env/cookie env **unverified via API** |
+| `list_deployments` | 403 Forbidden (prior) | GitHub Deployments API for SHA |
 
 ## Production deploy SHA (GitHub Deployments)
 
 | Environment | SHA | Created (UTC) |
 |-------------|-----|---------------|
-| Production – rinads-website | `eb7a95ae6bf851d6003fe0c5d9e4592623f5333e` | 2026-09-25T02:39:15Z |
-| Production – rinaglow | `eb7a95ae6bf851d6003fe0c5d9e4592623f5333e` | 2026-09-25T02:38:17Z |
+| Production – rinads-website | `67473ae` | 2026-09-26T09:27:49Z |
+| Production – rinaglow | `67473ae` | 2026-09-26T09:27:17Z |
 
-Matches `origin/main` at audit time (**DEPLOYED = main**).
+Matches `origin/main` at 2026-09-26 verification (**DEPLOYED = main**). Prior audit SHA `eb7a95a` superseded.
 
 ## Domain / health probes
 
-| Check | Expected | Result 2026-09-25 |
+| Check | Expected | Result 2026-09-26 |
 |-------|----------|-------------------|
 | `https://www.rinads.com/api/health` | productionEnvContract ok | PASS |
 | `https://glow.rinads.com/api/health` | productionEnvContract ok | PASS |
-| `https://rinads.com/` | redirect to www | PASS (307 → www) |
-| `https://glow.rinads.com/login` | R GLOW login | PASS (brand strings present) |
-| DNS `glow.rinads.com` | Vercel | PASS (resolves) — **supersedes 2026-09-21 “DNS missing” note** |
+| `https://rinads.com/` | redirect to www | PASS (prior 2026-09-25) |
+| `https://glow.rinads.com/login` | R GLOW login | PASS (HTTP 200) |
+| DNS `www` / `glow` | Vercel | PASS (`*.vercel-dns-*.com`) |
+| Cookie domain env on both projects | `.rinads.com` | **BLOCKED** via API; code defaults production domain in `@rinads/auth` |
 
 ## Required project settings (verify in dashboard — agent cannot read)
 

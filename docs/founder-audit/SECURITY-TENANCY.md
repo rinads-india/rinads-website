@@ -1,11 +1,11 @@
 # Security and tenancy findings
 
-**Audit date:** 2026-09-25  
+**Audit date:** 2026-09-25 (refresh 2026-09-26)  
 **Scope:** Business OS `/os`, R GLOW tenancy, marketing lead capture. Read-only; no production DB changes.
 
 ## Executive summary
 
-PR **#75** (tenancy gate, org-role destinations, More a11y) is **MERGED** and included in production SHA `eb7a95a`. Unauthenticated `/os` correctly routes to login on live `www.rinads.com`. Residual risk is **authenticated E2E not re-proven in this audit**, demo-mode bypass outside Supabase, and UI gating that must never replace portal/API authorization.
+PR **#75** (tenancy gate, org-role destinations, More a11y) is **MERGED** and included in production SHA `67473ae`. Unauthenticated `/os` correctly routes to login on live `www.rinads.com` (reconfirmed 2026-09-26: `307` → `/signup?mode=login&next=%2Fos`). Residual risk is **authenticated E2E not re-proven**, demo-mode bypass outside Supabase, and UI gating that must never replace portal/API authorization. Lead persistence is now API-proven (`stored: true`).
 
 ## #75 release-gate report (post-merge)
 
@@ -48,15 +48,16 @@ PR **#75** (tenancy gate, org-role destinations, More a11y) is **MERGED** and in
 | Validation + honeypot + dedupe | BUILT (#73) |
 | `site_leads` RLS deny-all for anon/authenticated; service-role insert | BUILT in migration |
 | Honest `{ stored: false }` when no webhook/service role | BUILT |
-| Production migration applied | BLOCKED (Supabase MCP unauthenticated) |
+| Production lead persistence | TESTED 2026-09-26 (`stored: true`); full migration list still BLOCKED |
 
 ## R GLOW / cookie domain
 
 | Control | Status |
 |---------|--------|
-| Shared cookie domain `.rinads.com` required for SSO | Documented in `VERCEL_RINAGLOW.md` |
-| Live cookie domain value | BLOCKED (env unread) |
+| Shared cookie domain `.rinads.com` required for SSO | Documented in `VERCEL_RINAGLOW.md`; hardcoded in `@rinads/auth` for production |
+| Live Vercel env `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN` | BLOCKED (project env unread via MCP 2026-09-26) |
 | Auth redirect allowlist includes glow + www | BLOCKED (Supabase dashboard) |
+| Cross-host SSO with real accounts | SKIP (no credentials) |
 
 ## Recommendations (no automatic merge/deploy)
 
