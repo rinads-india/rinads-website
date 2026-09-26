@@ -17,8 +17,9 @@ has been uploaded or verified. Do not enable public marketing links until QA is 
 ## Create the separate Unity project
 
 1. Install Unity Hub and a supported Unity 6 editor with Web Build Support.
-2. Create a separate source repository such as 'rinads-rinpo-unity' (do not
-   initialize a Unity project inside the deployed Next.js application).
+2. Use the existing PRIVATE 'rinads-india/RINADS-RINPO' repository as the
+   separate Unity source project (starter in draft PR #1 under /unity-rinpo).
+   Initialize its Unity 6 project locally, not inside the deployed website.
 3. Import the approved licensed and rigged RINPO 3D master. If unavailable,
    use basic scene geometry internally only, never present it as RINPO.
 4. Add a minimal scene with RINPO, a camera, directional light, idle/wave
