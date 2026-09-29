@@ -21,30 +21,30 @@ export function checkAsset(manifest, operation) {
   if (typeof manifest.filename !== "string" || !manifest.filename.trim()) fail("Filename required");
   if (!sourceTypes.has(manifest.source_type)) fail("Unrecognized source_type");
   if (typeof manifest.creator !== "string" || !manifest.creator.trim()) fail("Creator provenance missing");
-  if (!Number.isFinite(Date.parse(manifest.captured_or_created_at))) fail("Valid capture/creation timestamp required");
+  if (typeof manifest.captured_or_created_at !== "string" || !Number.isFinite(Date.parse(manifest.captured_or_created_at))) fail("Valid capture/creation timestamp required");
   if (!Array.isArray(manifest.intended_uses) || manifest.intended_uses.length === 0 || manifest.intended_uses.some(x => !operations.has(x))) fail("Valid intended_uses list required");
 
   if (manifest.source_type === "google_reference_only") {
     if (operation !== "internal_review") fail("Google reference assets are research-only, never standalone WORLD assets");
     if (manifest.usage_status === "approved") fail("Google reference cannot be approved via this manifest");
-    if (manifest.intended_uses?.some(x => x !== "internal_review")) fail("Google reference permits internal_review only");
+    if (Array.isArray(manifest.intended_uses) && manifest.intended_uses.some(x => x !== "internal_review")) fail("Google reference permits internal_review only");
   }
   if (operation === "internal_review") {
     if (manifest.usage_status === "rejected") fail("Rejected asset cannot be used for any operation");
-    if (!manifest.intended_uses?.includes("internal_review")) fail("Internal review use not declared");
+    if (!Array.isArray(manifest.intended_uses) || !manifest.intended_uses.includes("internal_review")) fail("Internal review use not declared");
   } else {
     if (manifest.usage_status !== "approved") fail("Production operation requires usage_status=approved");
-    if (!manifest.intended_uses?.includes(operation)) fail("Requested operation not in approved intended_uses");
+    if (!Array.isArray(manifest.intended_uses) || !manifest.intended_uses.includes(operation)) fail("Requested operation not in approved intended_uses");
     if (!Array.isArray(manifest.rights_evidence) || manifest.rights_evidence.length === 0 ||
         manifest.rights_evidence.some(x => !x || typeof x.record_id !== "string" || !x.record_id.trim() ||
           !["creator_contract","merchant_permission","property_permission","third_party_license","open_data_licence","privacy_release"].includes(x.evidence_type))) {
       fail("Specific recorded rights evidence required");
     }
-    if (typeof manifest.reviewed_by !== "string" || !manifest.reviewed_by.trim() || !Number.isFinite(Date.parse(manifest.reviewed_at))) fail("Dated named rights review required");
+    if (typeof manifest.reviewed_by !== "string" || !manifest.reviewed_by.trim() || (typeof manifest.reviewed_at !== "string" || !Number.isFinite(Date.parse(manifest.reviewed_at)))) fail("Dated named rights review required");
     if (manifest.privacy_review !== "approved") fail("Privacy review must be approved");
     if (operation === "world_geometry") {
       if (!["field_surveyed","licensed_dataset"].includes(manifest.geography?.verification)) fail("Production geometry needs an independent survey or licensed dataset");
-      if (manifest.geography?.verification === "field_surveyed" && !manifest.geography?.survey_record_id?.trim()) fail("Surveyed geometry requires survey record ID");
+      if (manifest.geography?.verification === "field_surveyed" && (typeof manifest.geography?.survey_record_id !== "string" || !manifest.geography.survey_record_id.trim())) fail("Surveyed geometry requires survey record ID");
     }
     if (manifest.geography?.public_safe === false) fail("Asset is explicitly not approved for public-safe location display");
   }
