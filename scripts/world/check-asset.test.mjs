@@ -57,3 +57,16 @@ test("fail closed for malformed manifest and unknown operation", () => {
   assert.equal(checkAsset(null, "world_texture").ok, false);
   assert.equal(checkAsset(clean(), "unknown-use").ok, false);
 });
+
+test("malformed intended_uses fails closed without throwing", () => {
+  const m = clean(); m.intended_uses = "world_texture";
+  assert.equal(checkAsset(m, "world_texture").ok, false);
+});
+test("malformed Google reference list cannot trigger an uncaught error", () => {
+  const m = clean(); m.source_type = "google_reference_only"; m.usage_status = "restricted"; m.intended_uses = "internal_review";
+  assert.equal(checkAsset(m, "internal_review").ok, false);
+});
+test("malformed survey evidence fails closed without throwing", () => {
+  const m = clean(); m.geography.survey_record_id = 123;
+  assert.equal(checkAsset(m, "world_geometry").ok, false);
+});
