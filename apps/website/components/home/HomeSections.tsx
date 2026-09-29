@@ -12,6 +12,7 @@ import {
 import { PlatformCard } from "@/components/system/PlatformCard";
 import { VerticalCard } from "@/components/system/VerticalCard";
 import { CTASection } from "@/components/system/CTASection";
+import { CommandBar } from "@/components/system/CommandBar";
 import { ProductStatus } from "@/components/system/ProductStatus";
 import { PLATFORM_OS } from "@/lib/product-ia";
 import { VERTICALS } from "@/lib/content/verticals";
@@ -224,6 +225,25 @@ export function HomeSections() {
 
   return (
     <>
+      <section
+        id="ask-rinpo"
+        className="scroll-mt-24 border-b border-[var(--border)] bg-black px-6 py-16 text-white md:px-12 lg:px-20"
+      >
+        <div className="mx-auto max-w-7xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">Talk to RINPO</p>
+          <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight md:text-4xl">
+            Ask what needs attention in your business.
+          </h2>
+          <p className="mt-4 max-w-2xl text-white/60">
+            Open a guided conversation with RINPO — the AI interface across RINADS. Suggestions prepare work;
+            execution still requires the right permissions.
+          </p>
+          <div className="mt-8">
+            <CommandBar placeholder="Ask RINPO what needs attention…" />
+          </div>
+        </div>
+      </section>
+
       <DemoWorkspace />
 
       <section className="px-6 py-20 md:px-12 lg:px-20">
