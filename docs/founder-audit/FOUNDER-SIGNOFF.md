@@ -62,15 +62,18 @@ These change **git** only. They do **not** by themselves mutate production data,
 **Date (UTC):** ______________________  
 **Signature / ack:** ______________________
 
-## D. Current recommendation (2026-09-26)
+## D. Current recommendation (2026-09-30)
 
 | Slice | Recommendation |
 |-------|----------------|
-| Public marketing site at `67473ae` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
-| Lead capture persistence | **API-proven** (`stored: true`); optional Table Editor confirm |
-| Business OS authenticated | **Do not** declare production-ready until SECURITY-TENANCY SKIP tests PASS |
-| Auth allowlist + cookie env | Founder dashboard confirm still required |
+| Public marketing site at `8305a64` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
+| Lead capture persistence | **API + DB proven**; probe rows cleaned |
+| Production migrations | **PASS** through `site_leads` on `rinads-platform` |
+| Cookie domain env | **PASS** — `.rinads.com` on website + rinaglow |
+| Business OS authenticated | **Do not** declare production-ready until persona smoke PASS |
+| Auth redirect allowlist | Founder dashboard confirm **still required** |
 | R GLOW messaging | **Keep workers/Twilio off** until this checklist is signed |
+| Creative OS product | **PR-C0 / Gate A docs only** — Coming soon; not launched |
 | Digital Store / staff apps | **PLANNED only** — not launched |
 
-Companion: [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md), [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).
+Companion: [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md), [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).

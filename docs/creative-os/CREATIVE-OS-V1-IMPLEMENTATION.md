@@ -10,6 +10,7 @@ Scope: Independently engineered functional parity with publicly advertised AI ma
 - Keep canonical authenticated `/os` routing unchanged. Mount Creative modules beneath the existing shell and launch `creative.rinads.com` as an optional product-specific front door only after domain and auth strategy review.
 - This plan does not authorize mutating production data, provider spend, billing or customer social accounts.
 - Feature parity must use independently created RINADS interface and assets.
+- **PR-C0 inventory (2026-09-30):** [PR-C0-INVENTORY.md](./PR-C0-INVENTORY.md), [PACKAGE-CONTRACTS.md](./PACKAGE-CONTRACTS.md), [GATE-A-CHECKLIST.md](./GATE-A-CHECKLIST.md).
 
 ## 1. Release decisions
 - Today: open a design/architecture branch; confirm existing package APIs; implement docs, gates and cost/latency benchmark harness in isolation.

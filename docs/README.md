@@ -8,7 +8,10 @@
 | Document | Purpose |
 |----------|---------|
 | [STATUS.md](./STATUS.md) | **End-to-end built vs pending** (current truth) |
+| [founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md](./founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md) | Latest live production gates |
 | [deployment/RGLOW_PRODUCTION_CUTOVER.md](./deployment/RGLOW_PRODUCTION_CUTOVER.md) | R GLOW go-live checklist |
+| [creative-os/GATE-A-CHECKLIST.md](./creative-os/GATE-A-CHECKLIST.md) | Creative OS Gate A / PR-C0 |
+| [creative-os/CREATIVE-OS-V1-IMPLEMENTATION.md](./creative-os/CREATIVE-OS-V1-IMPLEMENTATION.md) | Creative OS launch blueprint |
 | [CMS_PHASE_C.md](./CMS_PHASE_C.md) | CMS Phase C scope (blog, preview, storage, i18n) |
 | [CMS_FOLLOWUP_BACKLOG.md](./CMS_FOLLOWUP_BACKLOG.md) | CMS + platform follow-ups |
 | [RINADS-UNIFIED-REFACTOR-CHECKLIST.md](./RINADS-UNIFIED-REFACTOR-CHECKLIST.md) | Unified unfinished checklist |
@@ -37,6 +40,7 @@
 
 ## Next focus
 
-1. R GLOW production cutover (deploy, Twilio, workers)
-2. Credentialed WhatsApp E2E
-3. After launch: CMS Phase C, live billing subscriptions, RINPO LLM depth
+1. Auth allowlist + authenticated persona smoke (founder)
+2. Keep Twilio/workers off until FOUNDER-SIGNOFF
+3. Creative OS Gate A → PR-C1 after approval
+4. After salon messaging: CMS Phase C, live billing subscriptions, RINPO LLM depth

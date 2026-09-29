@@ -1,8 +1,9 @@
 # Supabase migration and rollback review
 
-**Audit date:** 2026-09-25 (refresh 2026-09-26)  
+**Audit date:** 2026-09-25 (refresh **2026-09-30**)  
 **Repo migrations:** 31 files under `supabase/migrations/`  
-**Production applied status:** **PARTIAL** — full migration list still **BLOCKED** (Supabase MCP `needsAuth`). Live lead API returned `stored: true` on 2026-09-26, so `site_leads` persistence path is live; salon routing / loyalty expiry apply status remains unknown. See [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md).
+**Production project:** `rinads-platform` (`zznigagovilnffyzcrlj`) — `ACTIVE_HEALTHY`  
+**Production applied status:** **PASS** — Supabase MCP `list_migrations` shows all 31 versions through `20260924100000_site_leads`, including salon vertical routing + loyalty expiry. See [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md).
 
 ## Policy
 
@@ -48,10 +49,10 @@
 
 ## High-priority verification checklist (founder)
 
-- [ ] List applied migrations on **production** project (dashboard or CLI).
-- [ ] Confirm `20260916100003_fix_salon_vertical_routing.sql` applied.
-- [ ] Confirm `20260921100000_salon_loyalty_expiry.sql` applied if expiry job will be used.
-- [x] Confirm `20260924100000_site_leads.sql` / lead persistence live — **API-proven 2026-09-26** (`stored: true`, id `32188892-3852-4389-97bc-c1d06b85a8c8`); optional: confirm/delete row in Table Editor.
+- [x] List applied migrations on **production** project — **PASS 2026-09-30** via Supabase MCP on `rinads-platform`.
+- [x] Confirm `20260916100003_fix_salon_vertical_routing.sql` applied.
+- [x] Confirm `20260921100000_salon_loyalty_expiry.sql` applied.
+- [x] Confirm `20260924100000_site_leads.sql` / lead persistence live — re-proven 2026-09-30 (`stored: true`, id `d83061cc-…`; probe rows deleted after verification).
 - [ ] Confirm Auth redirect allowlist: `www.rinads.com/**`, `rinads.com/**`, `glow.rinads.com/**`.
 - [ ] Spot-check RLS: anon cannot SELECT/INSERT `site_leads`; salon tables tenant-scoped.
 
