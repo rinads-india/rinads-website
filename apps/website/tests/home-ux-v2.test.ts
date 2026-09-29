@@ -58,4 +58,16 @@ describe("Homepage UX V2 contracts", () => {
     assert.ok(getIndexableRoutes().some((route) => route.path === "/pricing"));
     assert.ok(getIndexableRoutes().some((route) => route.path === "/security"));
   });
+
+  it("keeps home hero brand-first without embedding the command bar", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const hero = await readFile(new URL("../components/home/HomeHero.tsx", import.meta.url), "utf8");
+    const sections = await readFile(new URL("../components/home/HomeSections.tsx", import.meta.url), "utf8");
+
+    assert.match(hero, /Logo/);
+    assert.match(hero, /RINADS TECHNOLOGIES/);
+    assert.doesNotMatch(hero, /CommandBar/);
+    assert.match(sections, /id="ask-rinpo"/);
+    assert.match(sections, /CommandBar/);
+  });
 });
