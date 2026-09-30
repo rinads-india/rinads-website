@@ -1,10 +1,10 @@
 # RINADS end-to-end status (as of `main`)
 
-> **Founder production truth (2026-09-30):** prefer [`docs/founder-audit/PRODUCTION-TRUTH.md`](./founder-audit/PRODUCTION-TRUTH.md) and [`LIVE-E2E-VERIFICATION-2026-09-30.md`](./founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md). Production website + R GLOW verified at SHA `8305a64`; Supabase migrations through `site_leads` applied on `rinads-platform`; cookie domain confirmed. Auth allowlist + persona smoke still open; Twilio/workers KEEP OFF.
+> **Founder production truth (2026-09-30):** prefer [`docs/founder-audit/PRODUCTION-TRUTH.md`](./founder-audit/PRODUCTION-TRUTH.md), [`LIVE-E2E-VERIFICATION-2026-09-30.md`](./founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md), and [`STATUS-EXECUTION-2026-09-30.md`](./founder-audit/STATUS-EXECUTION-2026-09-30.md). `main` at `f273306` (#96 merged). Migrations + cookie domain PASS. Auth allowlist + authed personas **explicitly deferred**. Twilio/workers **KEEP OFF**.
 
-**Verdict:** RINADS is a multi-app SaaS + commerce/ERP + salon OS monorepo. Platform Phases 9–13 and **R GLOW MVP + Phase E/E.2 are code-complete on `main`**. Ops cutover advanced (migrations + cookie env). Remaining work is mostly **Auth allowlist confirm**, **authenticated persona smoke**, **provider stubs outside salon WhatsApp**, **LLM/intelligence depth**, **CMS/polish**, and **Creative OS PR-C1+** (Gate A inventory only).
+**Verdict:** RINADS is a multi-app SaaS + commerce/ERP + salon OS monorepo. Platform Phases 9–13 and **R GLOW MVP + Phase E/E.2 are code-complete on `main`**. Ops cutover advanced (migrations + cookie env + docs Gate A). Remaining work is mostly **Auth allowlist dashboard confirm**, **authenticated persona smoke (`E2E_*`)**, **provider stubs outside salon WhatsApp**, **LLM/intelligence depth**, **CMS/polish**, and **Creative OS PR-C1+**.
 
-Latest merged work (git `main`): Creative OS launch architecture docs (#91), production readiness tooling (#90), live E2E founder-audit (#89), secured portals (#86).
+Latest merged work (git `main`): ops refresh + Creative OS Gate A (#96), brand-first home hero (#95), Creative OS launch architecture docs (#91).
 
 ## Architecture
 
@@ -110,8 +110,8 @@ Supabase Auth → @rinads/tenancy
 
 ## Suggested next focus
 
-1. Founder: confirm Supabase Auth redirect allowlist (www / apex / glow)
-2. Founder: authenticated `/os` + salon→glow persona smoke
-3. Keep Twilio/workers off until [FOUNDER-SIGNOFF.md](./founder-audit/FOUNDER-SIGNOFF.md) signed
-4. Creative OS: Gate A docs merged → PR-C1 schema only after approval ([creative-os/GATE-A-CHECKLIST.md](./creative-os/GATE-A-CHECKLIST.md))
+1. Founder: Supabase Auth URL configuration (www / apex / glow) — deferred pending dashboard login
+2. Founder: set `E2E_*` personas and run `tests/e2e/auth.spec.ts` against production
+3. Keep Twilio/workers off until FOUNDER-SIGNOFF sandbox send is signed
+4. Creative OS: PR-C1 schema only after explicit approval ([creative-os/GATE-A-CHECKLIST.md](./creative-os/GATE-A-CHECKLIST.md))
 5. After salon messaging launch: Razorpay live subscriptions, CMS Phase C, RINPO LLM depth

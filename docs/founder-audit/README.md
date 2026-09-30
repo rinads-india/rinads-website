@@ -4,7 +4,8 @@
 
 | Document | Purpose |
 |----------|---------|
-| [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md) | **Latest** built vs pending live gates |
+| [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md) | **Latest** live production gates |
+| [STATUS-EXECUTION-2026-09-30.md](./STATUS-EXECUTION-2026-09-30.md) | Plan execution: #96 merge + deferred/KEEP OFF gates |
 | [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md) | Prior probe record |
 | [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md) | Evidence-labeled reality vs docs |
 | [PAGE-MATRIX.md](./PAGE-MATRIX.md) | Required IA vs actual routes / defects |
