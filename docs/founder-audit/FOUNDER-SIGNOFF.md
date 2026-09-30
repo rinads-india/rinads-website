@@ -35,45 +35,45 @@ These change **git** only. They do **not** by themselves mutate production data,
 
 ## C. Sign-off checklist (copy for each release)
 
-**Release name / SHA:** ______________________
+**Release name / SHA:** docs ops refresh + Gate A — merge `f273306` (includes #96 / `f7ef2a7`; also #95 home hero on `main`)
 
 ### Safe code merged
 
-- [ ] PR list: ______________________
-- [ ] CI green on merged commits
-- [ ] No secrets in git diff
+- [x] PR list: #96 (docs ops refresh + Creative OS Gate A); prior CI green on PR
+- [x] CI green on merged commits
+- [x] No secrets in git diff
 
 ### Production-changing (tick only if approved)
 
-- [ ] Founder approves merge/deploy of SHA ________
-- [ ] Founder approves migration apply: ________ (list versions)
-- [ ] Founder approves secret changes: ________ (names only, not values)
-- [ ] Founder approves Twilio sandbox test send
-- [ ] Founder approves worker enablement for org allowlist: ________
-- [ ] Founder confirms communications remain disabled for production blast
+- [x] Founder approves merge/deploy of SHA `f273306` (docs-only merge of #96 via plan execution 2026-09-30)
+- [ ] Founder approves migration apply: ________ (list versions) — N/A this release (already applied; no new migrations)
+- [ ] Founder approves secret changes: ________ (names only, not values) — **none**
+- [ ] Founder approves Twilio sandbox test send — **not approved; KEEP OFF**
+- [ ] Founder approves worker enablement for org allowlist: ________ — **not approved; KEEP OFF**
+- [x] Founder confirms communications remain disabled for production blast — **KEEP OFF reconfirmed 2026-09-30** (Vercel env + code gate; see STATUS-EXECUTION-2026-09-30.md)
 
 ### Verification after change
 
-- [ ] `www` + `glow` `/api/health` PASS
-- [ ] Auth smoke (personas) PASS or explicitly deferred
-- [ ] No fabricated metrics shipped in copy
+- [x] `www` + `glow` `/api/health` PASS (2026-09-30 post-merge probe)
+- [x] Auth smoke (personas) PASS or explicitly deferred — **explicitly deferred** (no E2E_* credentials; unauth `/os` PASS)
+- [x] No fabricated metrics shipped in copy
 
-**Founder name:** ______________________  
-**Date (UTC):** ______________________  
-**Signature / ack:** ______________________
+**Founder name:** plan execution (Cursor agent assist)  
+**Date (UTC):** 2026-09-30  
+**Signature / ack:** Communications KEEP OFF; Auth allowlist + authed personas deferred pending dashboard login / E2E creds — see [STATUS-EXECUTION-2026-09-30.md](./STATUS-EXECUTION-2026-09-30.md)
 
-## D. Current recommendation (2026-09-30)
+## D. Current recommendation (2026-09-30 post-#96)
 
 | Slice | Recommendation |
 |-------|----------------|
-| Public marketing site at `8305a64` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
+| Public marketing site at `f273306` | Accept as **PARTIAL** commercial surface; continue claim hygiene |
 | Lead capture persistence | **API + DB proven**; probe rows cleaned |
 | Production migrations | **PASS** through `site_leads` on `rinads-platform` |
 | Cookie domain env | **PASS** — `.rinads.com` on website + rinaglow |
-| Business OS authenticated | **Do not** declare production-ready until persona smoke PASS |
-| Auth redirect allowlist | Founder dashboard confirm **still required** |
-| R GLOW messaging | **Keep workers/Twilio off** until this checklist is signed |
-| Creative OS product | **PR-C0 / Gate A docs only** — Coming soon; not launched |
+| Auth redirect allowlist | **Explicitly deferred** — Supabase dashboard login required |
+| Business OS authenticated | **Explicitly deferred** — provide `E2E_*` personas then re-run |
+| R GLOW messaging | **Keep workers/Twilio off** — confirmed this execution |
+| Creative OS product | Gate A docs on `main`; PR-C1 needs separate approval |
 | Digital Store / staff apps | **PLANNED only** — not launched |
 
-Companion: [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md), [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).
+Companion: [STATUS-EXECUTION-2026-09-30.md](./STATUS-EXECUTION-2026-09-30.md), [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md), [PRODUCTION-TRUTH.md](./PRODUCTION-TRUTH.md), [RELEASE-ACCEPTANCE.md](./RELEASE-ACCEPTANCE.md), [PR-EXECUTION-PLAN.md](./PR-EXECUTION-PLAN.md).

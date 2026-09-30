@@ -1,7 +1,7 @@
 # Release acceptance checklist and test results
 
-**Audit date:** 2026-09-25 (refresh 2026-09-26)  
-**Production SHA under test:** `67473ae` (website + rinaglow) — see [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md)
+**Audit date:** 2026-09-25 (refresh **2026-09-30** post-#96)  
+**Production SHA under test:** `f273306` (website + rinaglow track `main`) — see [STATUS-EXECUTION-2026-09-30.md](./STATUS-EXECUTION-2026-09-30.md)
 
 ## Results legend
 
@@ -9,56 +9,41 @@
 - **FAIL** — proven broken
 - **SKIP** — blocked by access / credentials / policy
 - **N/A** — out of scope for current release slice
+- **DEFERRED** — founder explicitly deferred with evidence of attempt
 
 ## Automated CI (repository)
 
 | Gate | Result | Evidence |
 |------|--------|----------|
-| Lint / typecheck / test / build on `main` path | PASS (assumed via merge + #79 CI) | #78/#77 merged; #79 workflow SUCCESS |
-| Playwright in CI | SKIP / N/A | Not configured in `.github/workflows/ci.yml` |
-| Commercial readiness unit tests | BUILT | `apps/website/tests/commercial-readiness.test.ts` (run in CI on PRs) |
+| Lint / typecheck / test / build on #96 | PASS | PR #96 statusCheckRollup SUCCESS |
+| Playwright smoke (public website) on #96 | PASS | CI job SUCCESS |
+| Playwright authenticated auth.spec | DEFERRED | `E2E_*` unset |
 
-## Production HTTP smoke (this audit)
+## Production HTTP smoke (2026-09-30)
 
 | Test | Result | Notes |
 |------|--------|-------|
-| www `/` 200 | PASS | |
-| www `/platform` 200 | PASS | |
-| www `/solutions` 200 | PASS | |
-| www `/rinpo` 200 | PASS | |
-| www `/pricing` 200 | PASS | |
-| www `/security` 200 | PASS | |
-| www `/contact` 200 | PASS | |
-| www `/projects` 200 | PASS | |
-| www `/academy` 200 | PASS | |
-| www `/os` → login for anonymous | PASS | Sign Up page |
 | www `/api/health` | PASS | productionEnvContract ok |
-| apex → www | PASS | 307 |
-| glow `/login` | PASS | R GLOW branding |
 | glow `/api/health` | PASS | productionEnvContract ok |
+| www `/os` → login for anonymous | PASS | 307 → signup login |
+| glow `/login` | PASS | HTTP 200 |
 
-## Authenticated / tenancy (BLOCKED this audit)
+## Authenticated / tenancy
 
 | Test | Result | Needs |
 |------|--------|-------|
-| Non-salon member uses `/os` | SKIP | Test account |
-| Salon member SSO to glow calendar | SKIP | Test account + cookie domain |
-| No membership → onboarding | SKIP | Test account |
-| Multi-org without active org stays `/os` | SKIP | Test account |
-| Client role cannot see Money/billing bridges | SKIP | Test account |
-| Mobile More focus trap on real device | SKIP | Browser session |
-| Lead form persists (`stored: true`) | PASS | Live POST 2026-09-26 → id `32188892-3852-4389-97bc-c1d06b85a8c8`; Table Editor row view still SKIP |
-| Razorpay / Stripe live payment | SKIP | Credentials; Stripe NOT_IMPLEMENTED |
+| Non-salon member uses `/os` | DEFERRED | `E2E_MEMBER_*` |
+| Salon member SSO to glow calendar | DEFERRED | `E2E_SALON_*` |
+| No membership → onboarding | DEFERRED | `E2E_NOMEMBER_*` |
+| Auth redirect allowlist confirm | DEFERRED | Supabase dashboard login |
+| Lead form persists | PASS | Prior live POST + DB |
 
-## R GLOW operator smoke (BLOCKED)
+## Communications
 
 | Test | Result |
 |------|--------|
-| Calendar walk-in/phone booking | SKIP |
-| POS → loyalty earn | SKIP |
-| Campaign approve → send | SKIP (Twilio BLOCKED) |
-| Public feedback token | SKIP |
-| Communications worker tick | SKIP (must stay disabled) |
+| Communications worker | KEEP OFF (reconfirmed) |
+| Twilio sandbox send | KEEP OFF (not approved) |
 
 ## RINPO
 

@@ -9,11 +9,12 @@
 |----|------|------------|-------|---------------------|
 | P0-1 | Publish founder-audit docs (this package) | — | Agent (docs PR) | Done on `main`; refresh in progress |
 | P0-2 | Disposition open #79 (lint unblock) | P0-1 optional | Founder | Closed / absent from open PR list |
-| P0-3 | Authenticated `/os` + salon→glow smoke with real accounts | Test credentials | Founder + agent assist | **OPEN** — SKIP without personas |
+| P0-3 | Authenticated `/os` + salon→glow smoke with real accounts | Test credentials | Founder + agent assist | **EXPLICITLY DEFERRED** 2026-09-30 — no `E2E_*` creds; unauth PASS |
 | P0-4 | Confirm `site_leads` + salon migrations applied on production Supabase | Supabase access | Agent (MCP) | **DONE** — `rinads-platform` through `site_leads` |
-| P0-5 | Do **not** enable Twilio/workers until sandbox checklist signed | P0-4 | Founder | **KEEP OFF** |
-| P0-6 | Confirm Auth redirect allowlist (www / apex / glow) | Supabase dashboard | Founder | **OPEN** |
+| P0-5 | Do **not** enable Twilio/workers until sandbox checklist signed | P0-4 | Founder | **KEEP OFF** reconfirmed 2026-09-30 |
+| P0-6 | Confirm Auth redirect allowlist (www / apex / glow) | Supabase dashboard | Founder | **EXPLICITLY DEFERRED** — dashboard sign-in wall |
 | P0-7 | Cookie domain `.rinads.com` on website + rinaglow | Vercel | Agent (MCP) | **DONE** |
+| P0-8 | Merge docs ops refresh + Gate A | CI green | Founder/agent | **DONE** — #96 → `f273306` |
 
 ## P1 — commercial + OS honesty
 
