@@ -1,9 +1,9 @@
 # Production truth — RINADS Founder Audit
 
-**Audit date:** 2026-09-25 (UTC); **live E2E refresh:** 2026-09-26  
-**Auditor run:** Cursor Cloud Agent (`bc-01a0d63b-8603-7c00-8376-d9afe406ea81`)  
+**Audit date:** 2026-09-25 (UTC); **live E2E refresh:** **2026-09-30** (prior 2026-09-26)  
+**Auditor run:** Cursor Agent (local) + Supabase/Vercel MCP  
 **Repository:** `rinads-india/rinads-website`  
-**Latest live evidence:** [LIVE-E2E-VERIFICATION-2026-09-26.md](./LIVE-E2E-VERIFICATION-2026-09-26.md)  
+**Latest live evidence:** [LIVE-E2E-VERIFICATION-2026-09-30.md](./LIVE-E2E-VERIFICATION-2026-09-30.md)  
 **Claim policy:** Every row includes evidence and access limitations. Labels are mutually exclusive per claim. Never invent metrics, customers, prices, certifications, or readiness.
 
 ## Labels
@@ -23,11 +23,12 @@
 
 | Claim | Label | Evidence | Access limitation |
 |-------|-------|----------|-------------------|
-| Audited `main` SHA (2026-09-26) | MERGED | `67473ae` — `Secure production access to RINADS internal portals (#86)` | Local `git` + GitHub |
-| Production website SHA | DEPLOYED | GitHub Deployments `Production – rinads-website` 2026-09-26T09:27:49Z → `67473ae` | Vercel MCP cannot read rinads projects (404/empty); SHA from GitHub Deployments API |
-| Production R GLOW SHA | DEPLOYED | GitHub Deployments `Production – rinaglow` 2026-09-26T09:27:17Z → `67473ae` | Same Vercel MCP gap |
-| PRs #73–#86 (commercial, OS, R GLOW, RINPO, docs, portals) | MERGED | GitHub PR state MERGED | — |
-| Open PRs (2026-09-26) | PARTIAL | #79 superseded lint, #70 stale intake, #36 analytics, #87 Unity scaffold (review only) | Housekeeping: close #79/#70/#36 |
+| Audited `main` SHA (2026-09-30) | MERGED | `8305a64` — Creative OS launch docs (#91) | Local `git` + GitHub |
+| Production website SHA | DEPLOYED | Vercel production `rinads-website` → `8305a64` | — |
+| Production R GLOW SHA | DEPLOYED | Vercel production `rinaglow` → `8305a64` | — |
+| Production Supabase migrations through `site_leads` | TESTED | MCP `list_migrations` on `rinads-platform` | — |
+| Cookie domain `.rinads.com` (website + rinaglow) | TESTED | Vercel env plain values | — |
+| Open PRs (2026-09-30) | PARTIAL | #92 Thrissur draft, #87 Unity draft | — |
 
 ### Recent `main` history (evidence)
 
@@ -40,10 +41,9 @@
 
 ## Access limitations (apply to all rows below)
 
-1. **Supabase MCP:** `needsAuth` — cannot list applied migrations, live RLS, Auth redirect allowlist, or confirm `site_leads` table exists in production.
-2. **Vercel MCP:** `list_projects` OK (`rinads-website`, `rinaglow` on team `rinadss-projects-1ebcffe7`); `get_project` / `list_deployments` forbidden/not found — cannot read env keys, root directory, or deployment logs via MCP.
-3. **No founder test credentials** — cannot authenticate into `/os`, R GLOW console, or multi-tenant flows.
-4. **Secrets / Twilio / workers** — not readable; communications delivery remains BLOCKED until sandbox send + explicit enablement.
+1. **Supabase Auth redirect allowlist:** still requires founder dashboard confirm (no Auth URL API this run). Migrations list is now readable via MCP.
+2. **No founder test credentials** — cannot authenticate into `/os`, R GLOW console, or multi-tenant flows.
+3. **Secrets / Twilio / workers** — communications delivery remains KEEP OFF until sandbox send + explicit enablement.
 
 ---
 

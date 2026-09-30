@@ -10,8 +10,8 @@ Companion docs:
 
 ## 1. Supabase
 
-- [ ] Apply migrations through `20260916100003_fix_salon_vertical_routing.sql` (and any later salon migrations on `main`)
-- [ ] Confirm RLS policies for salon tables on the target project
+- [x] Apply migrations through `20260916100003_fix_salon_vertical_routing.sql` (and later salon + `site_leads` on `main`) — **PASS 2026-09-30** on `rinads-platform`
+- [ ] Confirm RLS policies for salon tables on the target project (spot-check still founder)
 - [ ] Add Auth redirect allowlist entries:
   - `https://www.rinads.com/**`
   - `https://rinads.com/**`
@@ -24,22 +24,22 @@ Create/verify a Vercel project with repository root `apps/rinaglow` (see `vercel
 
 Production env:
 
-| Variable | Value |
-|----------|--------|
-| `NEXT_PUBLIC_AUTH_PROVIDER` | `supabase` |
-| `USE_SUPABASE` | `1` |
-| `USE_DEMO_STORE` | `0` |
-| `NEXT_PUBLIC_SUPABASE_URL` | production project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | service role (server only) |
-| `NEXT_PUBLIC_RINAGLOW_URL` | `https://glow.rinads.com` |
-| `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN` | `.rinads.com` |
+| Variable | Value | 2026-09-30 |
+|----------|--------|------------|
+| `NEXT_PUBLIC_AUTH_PROVIDER` | `supabase` | Present (encrypted) |
+| `USE_SUPABASE` | `1` | **PASS** (plain `1`) |
+| `USE_DEMO_STORE` | `0` | **PASS** (plain `0`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | production project URL | Present |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key | Present |
+| `SUPABASE_SERVICE_ROLE_KEY` | service role (server only) | Present on website project |
+| `NEXT_PUBLIC_RINAGLOW_URL` | `https://glow.rinads.com` | **PASS** both projects |
+| `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN` | `.rinads.com` | **PASS** both projects |
 
 Also set `NEXT_PUBLIC_RINAGLOW_URL` and `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN` on the **website** project.
 
-- [ ] Point DNS `glow.rinads.com` at the Vercel project and verify the domain
-- [ ] Deploy R GLOW, then website, with matching Supabase + cookie values
-- [ ] Confirm `https://glow.rinads.com/api/health` reports a valid Production env contract
+- [x] Point DNS `glow.rinads.com` at the Vercel project and verify the domain
+- [x] Deploy R GLOW, then website, with matching Supabase + cookie values — prod SHA `8305a64`
+- [x] Confirm `https://glow.rinads.com/api/health` reports a valid Production env contract
 
 ## 3. Auth / routing smoke
 
@@ -142,16 +142,29 @@ Evidence also recorded in [`docs/founder-audit/PRODUCTION-TRUTH.md`](../founder-
 5. Enable communications worker only with explicit org allowlist + `RINADS_COMMUNICATIONS_WORKER_ENABLED=1`.
 6. Authenticated SSO + operator smoke with real personas.
 
+### 2026-09-30 (ops refresh)
+
+| Check | Result |
+|-------|--------|
+| Production deploy SHA (website + rinaglow) | `8305a64` (Vercel production deployments) |
+| `www` + `glow` `/api/health` | OK (`productionEnvContract`) |
+| Cookie domain `.rinads.com` on website + rinaglow | **PASS** (Vercel env plain values) |
+| `USE_DEMO_STORE=0` / `USE_SUPABASE=1` on rinaglow | **PASS** |
+| Supabase migrations through salon + `site_leads` | **PASS** (`rinads-platform`) |
+| Auth redirect allowlist | **Still founder dashboard** |
+| Twilio / communications worker | **KEEP OFF** |
+| Authenticated salon SSO / operator smoke | **SKIP** — no founder test credentials |
+
 **Do not claim:** Digital Store launched, Staff phone app launched, or live WhatsApp delivery without sandbox evidence.
 
 ## Sign-off
 
 | Check | Owner | Date | Result |
 |-------|-------|------|--------|
-| Migrations applied | | | |
-| `glow.rinads.com` healthy | | | |
-| Salon SSO redirect | | | |
-| Twilio sandbox send + webhook | | | |
-| Worker allowlisted tick | | | |
-| Operator smoke | | | |
-| Loyalty expiry worker (optional) | | | |
+| Migrations applied | Agent MCP | 2026-09-30 | PASS |
+| `glow.rinads.com` healthy | Agent probe | 2026-09-30 | PASS |
+| Salon SSO redirect | Founder | | |
+| Twilio sandbox send + webhook | Founder | | KEEP OFF |
+| Worker allowlisted tick | Founder | | KEEP OFF |
+| Operator smoke | Founder | | |
+| Loyalty expiry worker (optional) | Founder | | off by default |
