@@ -1,0 +1,27 @@
+name: WORLD asset gate (isolated)
+on:
+  pull_request:
+    paths:
+      - 'scripts/world/**'
+      - 'docs/world/**'
+      - '.github/workflows/world-asset-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  world-asset-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: node --check scripts/world/check-asset.mjs
+      - name: Asset policy tests
+        run: node --test scripts/world/check-asset.test.mjs
+      - name: Validate manifest schema JSON
+        run: node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('docs/world/asset-manifest.schema.json', 'utf8'));"
