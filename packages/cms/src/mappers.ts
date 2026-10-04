@@ -1,4 +1,4 @@
-import type { SiteMedia, SitePage, SiteRedirect, SiteSeo } from "./types";
+import type { SiteBlogPost, SiteMedia, SitePage, SiteRedirect, SiteSeo } from "./types";
 
 type Row = Record<string, unknown>;
 
@@ -50,6 +50,37 @@ export function mapSiteMediaRow(row: Row): SiteMedia {
     width: row.width != null ? Number(row.width) : undefined,
     height: row.height != null ? Number(row.height) : undefined,
     createdAt: String(row.created_at ?? new Date().toISOString()),
+  };
+}
+
+export function mapSiteBlogPostRow(row: Row): SiteBlogPost {
+  const rawTags = row.tags;
+  const tags = Array.isArray(rawTags) ? rawTags.map((tag) => String(tag)) : [];
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    title: String(row.title ?? ""),
+    excerpt: String(row.excerpt ?? ""),
+    body: String(row.body ?? ""),
+    status: (row.status as SiteBlogPost["status"]) ?? "draft",
+    coverImageUrl: row.cover_image_url ? String(row.cover_image_url) : undefined,
+    tags,
+    publishedAt: row.published_at ? String(row.published_at) : undefined,
+    updatedAt: String(row.updated_at ?? new Date().toISOString()),
+  };
+}
+
+export function blogPostToDbRow(input: Omit<SiteBlogPost, "id" | "updatedAt">) {
+  return {
+    slug: input.slug,
+    title: input.title,
+    excerpt: input.excerpt,
+    body: input.body,
+    status: input.status,
+    cover_image_url: input.coverImageUrl ?? null,
+    tags: input.tags,
+    published_at: input.publishedAt ?? null,
+    updated_at: new Date().toISOString(),
   };
 }
 

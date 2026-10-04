@@ -1,4 +1,4 @@
-import type { CmsStore, ServiceCardContent, SiteSeo } from "./types";
+import type { CmsStore, ServiceCardContent, SiteBlogPost, SiteSeo } from "./types";
 
 export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
   {
@@ -27,6 +27,40 @@ export const DEFAULT_ABOUT = {
   body: "RINADS® is an intelligent operating platform — run, build, grow, learn, and automate through one ecosystem powered by RINPO.",
   subbody: "RINPO is the interface. RINADS Intelligence is the brain. RINADS is the operating platform.",
 };
+
+export const DEFAULT_BLOG_POSTS: SiteBlogPost[] = [
+  {
+    id: "blog_operating-platform-not-another-tool",
+    slug: "operating-platform-not-another-tool",
+    title: "Why RINADS is an operating platform, not another tool",
+    excerpt:
+      "Most teams drown in disconnected apps. RINADS connects run, build, grow, learn, and automate into one operating layer.",
+    body: [
+      "Fragmented software is the default state of most growing businesses: a CRM here, a project tool there, a storefront somewhere else, and spreadsheets stitching it together.",
+      "RINADS takes a different position. Instead of adding one more tool, it provides a single operating layer where customers, work, money, growth, and automation share one data model and one intelligence layer.",
+      "RINPO is the interface, RINADS Intelligence is the brain, and the platform is the operating system that keeps them connected.",
+    ].join("\n\n"),
+    status: "published",
+    tags: ["platform", "vision"],
+    publishedAt: new Date(0).toISOString(),
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
+    id: "blog_rinpo-grounded-business-actions",
+    slug: "rinpo-grounded-business-actions",
+    title: "How RINPO turns business data into grounded actions",
+    excerpt:
+      "RINPO does not guess. It grounds every suggestion in your real business data and routes sensitive actions through approvals.",
+    body: [
+      "An AI assistant is only useful inside a business when it is grounded in that business's real data and governed by its real permissions.",
+      "RINPO reads from the same governed data model as the rest of RINADS, proposes actions, and funnels anything sensitive — like sending a customer message — through an explicit approval step.",
+      "This post walks through the appointment-confirmation flow as a concrete example of grounded, approval-gated automation.",
+    ].join("\n\n"),
+    status: "draft",
+    tags: ["rinpo", "intelligence"],
+    updatedAt: new Date(0).toISOString(),
+  },
+];
 
 function seo(
   id: string,
@@ -314,6 +348,12 @@ export const DEFAULT_SEO: SiteSeo[] = [
     "Architecture explainers, platform guides, and paths into RINADS.",
   ),
   seo(
+    "seo_blog",
+    "/blog",
+    "Blog | RINADS",
+    "Product thinking, platform updates, and operating-model notes from the team building RINADS.",
+  ),
+  seo(
     "seo_company",
     "/company",
     "Company | RINADS",
@@ -557,6 +597,7 @@ export function createDefaultCmsStore(): CmsStore {
       { id: "redir_grow", fromPath: "/grow", toPath: "/platform/marketing-os", permanent: true, createdAt: now },
     ],
     media: [],
+    blogPosts: DEFAULT_BLOG_POSTS.map((post) => ({ ...post, tags: [...post.tags] })),
   };
 }
 
@@ -571,4 +612,8 @@ export function getDefaultServiceCards(): ServiceCardContent[] {
 
 export function getDefaultAbout() {
   return { ...DEFAULT_ABOUT };
+}
+
+export function getDefaultBlogPosts(): SiteBlogPost[] {
+  return DEFAULT_BLOG_POSTS.map((post) => ({ ...post, tags: [...post.tags] }));
 }

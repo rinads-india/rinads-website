@@ -6,8 +6,10 @@ import {
 import {
   addMediaInMemory,
   deleteRedirectInMemory,
+  getBlogPostBySlugFromMemory,
   getPageBySlugFromMemory,
   getSeoByPathFromMemory,
+  listBlogPostsFromMemory,
   listMediaFromMemory,
   listPagesFromMemory,
   listPublishedPathsFromMemory,
@@ -18,8 +20,8 @@ import {
   upsertRedirectInMemory,
   upsertSeoInMemory,
 } from "./memory";
-import { mapSiteMediaRow, mapSitePageRow, mapSiteRedirectRow, mapSiteSeoRow, mediaToDbRow, redirectToDbRow, seoToDbRow } from "./mappers";
-import type { CmsSupabaseClient, CmsSupabaseResult, ServiceCardContent, SiteMedia, SitePage, SitePageStatus, SiteRedirect, SiteSeo } from "./types";
+import { mapSiteBlogPostRow, mapSiteMediaRow, mapSitePageRow, mapSiteRedirectRow, mapSiteSeoRow, mediaToDbRow, redirectToDbRow, seoToDbRow } from "./mappers";
+import type { CmsSupabaseClient, CmsSupabaseResult, ServiceCardContent, SiteBlogPost, SiteMedia, SitePage, SitePageStatus, SiteRedirect, SiteSeo } from "./types";
 
 type SupabaseResult<T> = CmsSupabaseResult<T>;
 
@@ -68,6 +70,37 @@ export async function getPageBySlug(
   return mapSitePageRow(data, sections);
 }
 
+export async function listBlogPosts(
+  client: CmsSupabaseClient | null,
+  includeDrafts = false
+): Promise<SiteBlogPost[]> {
+  if (!client) return listBlogPostsFromMemory(includeDrafts);
+  const builder = client.from("site_blog_posts").select("*");
+  const { data, error } = (await builder.order("published_at", { ascending: false })) as SupabaseResult<
+    Array<Record<string, unknown>>
+  >;
+  if (error || !data) return listBlogPostsFromMemory(includeDrafts);
+  const posts: SiteBlogPost[] = [];
+  for (const row of data) {
+    if (!includeDrafts && row.status !== "published") continue;
+    posts.push(mapSiteBlogPostRow(row));
+  }
+  return posts;
+}
+
+export async function getBlogPostBySlug(
+  client: CmsSupabaseClient | null,
+  slug: string,
+  includeDrafts = false
+): Promise<SiteBlogPost | null> {
+  if (!client) return getBlogPostBySlugFromMemory(slug, includeDrafts);
+  const builder = client.from("site_blog_posts").select("*").eq("slug", slug);
+  const { data, error } = await builder.maybeSingle();
+  if (error || !data) return getBlogPostBySlugFromMemory(slug, includeDrafts);
+  if (!includeDrafts && data.status !== "published") return null;
+  return mapSiteBlogPostRow(data);
+}
+
 export async function listSeo(client: CmsSupabaseClient | null): Promise<SiteSeo[]> {
   if (!client) return listSeoFromMemory();
   const builder = client.from("site_seo").select("*");
@@ -113,12 +146,16 @@ export async function listPublishedPaths(
   if (!client) return listPublishedPathsFromMemory();
   const pages = await listPages(client, false);
   const seo = await listSeo(client);
+  const blogPosts = await listBlogPosts(client, false);
   const merged = new Map<string, string>();
   for (const page of pages) {
     merged.set(page.slug === "home" ? "/" : `/${page.slug}`, page.updatedAt);
   }
   for (const row of seo.filter((item) => item.robotsIndex)) {
     merged.set(row.path, row.updatedAt);
+  }
+  for (const post of blogPosts) {
+    merged.set(`/blog/${post.slug}`, post.publishedAt ?? post.updatedAt);
   }
   return Array.from(merged.entries()).map(([path, updatedAt]) => ({ path, updatedAt }));
 }

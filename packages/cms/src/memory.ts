@@ -1,5 +1,5 @@
 import { createDefaultCmsStore } from "./defaults";
-import type { CmsStore, SiteMedia, SitePage, SitePageStatus, SiteRedirect, SiteSeo } from "./types";
+import type { CmsStore, SiteBlogPost, SiteMedia, SitePage, SitePageStatus, SiteRedirect, SiteSeo } from "./types";
 
 let sharedStore: CmsStore | null = null;
 
@@ -33,6 +33,28 @@ export function getPageBySlugFromMemory(slug: string, includeDrafts = false): Si
   if (!page) return null;
   if (!includeDrafts && page.status !== "published") return null;
   return { ...page, sections: { ...page.sections } };
+}
+
+function cloneBlogPost(post: SiteBlogPost): SiteBlogPost {
+  return { ...post, tags: [...post.tags] };
+}
+
+function blogSortKey(post: SiteBlogPost): string {
+  return post.publishedAt ?? post.updatedAt;
+}
+
+export function listBlogPostsFromMemory(includeDrafts = false): SiteBlogPost[] {
+  return getSharedCmsStore()
+    .blogPosts.filter((post) => includeDrafts || post.status === "published")
+    .map(cloneBlogPost)
+    .sort((a, b) => blogSortKey(b).localeCompare(blogSortKey(a)));
+}
+
+export function getBlogPostBySlugFromMemory(slug: string, includeDrafts = false): SiteBlogPost | null {
+  const post = getSharedCmsStore().blogPosts.find((row) => row.slug === slug);
+  if (!post) return null;
+  if (!includeDrafts && post.status !== "published") return null;
+  return cloneBlogPost(post);
 }
 
 export function listSeoFromMemory(): SiteSeo[] {
@@ -143,8 +165,11 @@ export function listPublishedPathsFromMemory(): { path: string; updatedAt: strin
   const seoPaths = store.seo
     .filter((row) => row.robotsIndex)
     .map((row) => ({ path: row.path, updatedAt: row.updatedAt }));
+  const blogPaths = store.blogPosts
+    .filter((post) => post.status === "published")
+    .map((post) => ({ path: `/blog/${post.slug}`, updatedAt: post.publishedAt ?? post.updatedAt }));
   const merged = new Map<string, string>();
-  for (const row of [...pagePaths, ...seoPaths]) {
+  for (const row of [...pagePaths, ...seoPaths, ...blogPaths]) {
     merged.set(row.path, row.updatedAt);
   }
   return Array.from(merged.entries()).map(([path, updatedAt]) => ({ path, updatedAt }));
