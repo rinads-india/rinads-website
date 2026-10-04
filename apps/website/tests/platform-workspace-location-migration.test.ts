@@ -42,7 +42,7 @@ describe("workspace + shared location foundation migration", () => {
   });
 
   it("does not introduce authenticated hard-delete policies", () => {
-    assert.doesNotMatch(sql, /CREATE POLICY[^;]+FOR DELETE TO authenticated/is);
+    assert.doesNotMatch(sql, /CREATE POLICY[^;]+FOR DELETE TO authenticated/i);
   });
 
   it("leaves legacy inventory and salon location schemas untouched in K2", () => {
