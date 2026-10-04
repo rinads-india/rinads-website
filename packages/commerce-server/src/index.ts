@@ -11,14 +11,21 @@ import {
   type CommerceContext,
 } from "@rinads/commerce";
 import { getSharedCommerceRepository, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
+import { createLegacyVariantStockInventoryPort } from "./legacy-inventory";
 
 const repo = getSharedCommerceRepository();
+const legacyInventory = createLegacyVariantStockInventoryPort(repo);
 
+/**
+ * Standalone commerce-server remains a demo/compatibility surface.
+ * Production storefront/operations wiring uses @rinads/operations-server,
+ * where StockLedgerService is the authoritative InventoryPort.
+ */
 export const commerce = {
   repo,
   catalog: new CatalogService(repo),
-  cart: new CartService(repo),
-  checkout: new CheckoutService(repo),
+  cart: new CartService(repo, legacyInventory),
+  checkout: new CheckoutService(repo, legacyInventory),
   order: new OrderService(repo),
   tax: new TaxService(repo),
   shipping: new ShippingService(repo),
@@ -37,6 +44,7 @@ export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceC
   };
 }
 
+export { createLegacyVariantStockInventoryPort } from "./legacy-inventory";
 export { createInMemoryRepository, getSharedCommerceRepository, resetCommerceStore, AMBADY_ORG_ID, DEMO_CUSTOMER_ID } from "./memory";
 export { createAmbadySeedStore } from "./seed";
 export { createGenericRetailSeedStore } from "./generic-retail-seed";
