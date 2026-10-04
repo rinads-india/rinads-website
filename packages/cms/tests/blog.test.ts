@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
-import { getBlogPostBySlug, listBlogPosts, listPublishedPaths } from "../src/repository";
+import {
+  deleteBlogPost,
+  getBlogPostBySlug,
+  listBlogPosts,
+  listPublishedPaths,
+  saveBlogPost,
+  saveBlogPostStatus,
+} from "../src/repository";
 import { resetCmsStore } from "../src/memory";
 
 afterEach(() => {
@@ -55,5 +62,66 @@ describe("cms blog posts (in-memory backend)", () => {
     const paths = (await listPublishedPaths(null)).map((entry) => entry.path);
     assert.ok(paths.includes("/blog/operating-platform-not-another-tool"));
     assert.ok(!paths.includes("/blog/rinpo-grounded-business-actions"));
+  });
+});
+
+describe("cms blog post writes (in-memory backend)", () => {
+  const baseInput = {
+    slug: "a-new-post",
+    title: "A new post",
+    excerpt: "An excerpt.",
+    body: "Body paragraph one.\n\nBody paragraph two.",
+    status: "draft" as const,
+    tags: ["news"],
+  };
+
+  it("creates a new draft that is hidden from the public read path", async () => {
+    const saved = await saveBlogPost(null, baseInput);
+    assert.equal(saved.slug, "a-new-post");
+    assert.equal(saved.status, "draft");
+    assert.ok(saved.id);
+    assert.equal(await getBlogPostBySlug(null, "a-new-post"), null);
+    const withDraft = await getBlogPostBySlug(null, "a-new-post", true);
+    assert.equal(withDraft?.title, "A new post");
+  });
+
+  it("upserts (updates) an existing post by slug without duplicating", async () => {
+    await saveBlogPost(null, baseInput);
+    const before = (await listBlogPosts(null, true)).filter((p) => p.slug === "a-new-post").length;
+    assert.equal(before, 1);
+    await saveBlogPost(null, { ...baseInput, title: "Updated title" });
+    const matches = (await listBlogPosts(null, true)).filter((p) => p.slug === "a-new-post");
+    assert.equal(matches.length, 1);
+    assert.equal(matches[0].title, "Updated title");
+  });
+
+  it("publishing sets publishedAt and makes the post public", async () => {
+    await saveBlogPost(null, baseInput);
+    const published = await saveBlogPostStatus(null, "a-new-post", "published");
+    assert.equal(published?.status, "published");
+    assert.ok(published?.publishedAt, "publishedAt should be set on publish");
+    const publicPost = await getBlogPostBySlug(null, "a-new-post");
+    assert.equal(publicPost?.status, "published");
+    const paths = (await listPublishedPaths(null)).map((entry) => entry.path);
+    assert.ok(paths.includes("/blog/a-new-post"));
+  });
+
+  it("unpublishing clears publishedAt and re-hides the post", async () => {
+    await saveBlogPost(null, baseInput);
+    await saveBlogPostStatus(null, "a-new-post", "published");
+    const unpublished = await saveBlogPostStatus(null, "a-new-post", "draft");
+    assert.equal(unpublished?.status, "draft");
+    assert.equal(unpublished?.publishedAt, undefined);
+    assert.equal(await getBlogPostBySlug(null, "a-new-post"), null);
+  });
+
+  it("returns null when updating the status of an unknown slug", async () => {
+    assert.equal(await saveBlogPostStatus(null, "ghost", "published"), null);
+  });
+
+  it("deletes a post by id", async () => {
+    const saved = await saveBlogPost(null, baseInput);
+    await deleteBlogPost(null, saved.id);
+    assert.equal(await getBlogPostBySlug(null, "a-new-post", true), null);
   });
 });

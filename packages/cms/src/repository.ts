@@ -5,6 +5,7 @@ import {
 } from "./defaults";
 import {
   addMediaInMemory,
+  deleteBlogPostInMemory,
   deleteRedirectInMemory,
   getBlogPostBySlugFromMemory,
   getPageBySlugFromMemory,
@@ -15,12 +16,14 @@ import {
   listPublishedPathsFromMemory,
   listRedirectsFromMemory,
   listSeoFromMemory,
+  updateBlogPostStatusInMemory,
   updatePageStatusInMemory,
+  upsertBlogPostInMemory,
   upsertPageSectionInMemory,
   upsertRedirectInMemory,
   upsertSeoInMemory,
 } from "./memory";
-import { mapSiteBlogPostRow, mapSiteMediaRow, mapSitePageRow, mapSiteRedirectRow, mapSiteSeoRow, mediaToDbRow, redirectToDbRow, seoToDbRow } from "./mappers";
+import { blogPostToDbRow, mapSiteBlogPostRow, mapSiteMediaRow, mapSitePageRow, mapSiteRedirectRow, mapSiteSeoRow, mediaToDbRow, redirectToDbRow, seoToDbRow } from "./mappers";
 import type { CmsSupabaseClient, CmsSupabaseResult, ServiceCardContent, SiteBlogPost, SiteMedia, SitePage, SitePageStatus, SiteRedirect, SiteSeo } from "./types";
 
 type SupabaseResult<T> = CmsSupabaseResult<T>;
@@ -228,6 +231,46 @@ export async function saveMedia(client: CmsSupabaseClient | null, input: Omit<Si
   const { data, error } = await builder.single();
   if (error || !data) return addMediaInMemory(input);
   return mapSiteMediaRow(data);
+}
+
+export async function saveBlogPost(
+  client: CmsSupabaseClient | null,
+  input: Omit<SiteBlogPost, "id" | "updatedAt">
+): Promise<SiteBlogPost> {
+  if (!client) return upsertBlogPostInMemory(input);
+  const builder = client
+    .from("site_blog_posts")
+    .upsert(blogPostToDbRow(input), { onConflict: "slug" })
+    .select("*");
+  const { data, error } = await builder.single();
+  if (error || !data) return upsertBlogPostInMemory(input);
+  return mapSiteBlogPostRow(data);
+}
+
+export async function saveBlogPostStatus(
+  client: CmsSupabaseClient | null,
+  slug: string,
+  status: SitePageStatus
+): Promise<SiteBlogPost | null> {
+  const publishedAt = status === "published" ? new Date().toISOString() : null;
+  if (!client) return updateBlogPostStatusInMemory(slug, status);
+  const builder = client
+    .from("site_blog_posts")
+    .update({ status, published_at: publishedAt, updated_at: new Date().toISOString() })
+    .eq("slug", slug)
+    .select("*");
+  const { data, error } = await builder.single();
+  if (error || !data) return updateBlogPostStatusInMemory(slug, status);
+  return mapSiteBlogPostRow(data);
+}
+
+export async function deleteBlogPost(client: CmsSupabaseClient | null, id: string) {
+  if (!client) {
+    deleteBlogPostInMemory(id);
+    return;
+  }
+  client.from("site_blog_posts").delete().eq("id", id);
+  deleteBlogPostInMemory(id);
 }
 
 export function getServiceCardsFromPage(page: SitePage | null): ServiceCardContent[] {
