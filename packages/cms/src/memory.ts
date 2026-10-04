@@ -57,6 +57,45 @@ export function getBlogPostBySlugFromMemory(slug: string, includeDrafts = false)
   return cloneBlogPost(post);
 }
 
+export function upsertBlogPostInMemory(
+  input: Omit<SiteBlogPost, "id" | "updatedAt"> & { id?: string }
+): SiteBlogPost {
+  const store = getSharedCmsStore();
+  const existing = store.blogPosts.find((row) => row.slug === input.slug);
+  const next: SiteBlogPost = {
+    id: existing?.id ?? input.id ?? `blog_${input.slug}`,
+    slug: input.slug,
+    title: input.title,
+    excerpt: input.excerpt,
+    body: input.body,
+    status: input.status,
+    coverImageUrl: input.coverImageUrl,
+    tags: [...input.tags],
+    publishedAt: input.publishedAt,
+    updatedAt: new Date().toISOString(),
+  };
+  if (existing) {
+    Object.assign(existing, next);
+    return cloneBlogPost(existing);
+  }
+  store.blogPosts.push(next);
+  return cloneBlogPost(next);
+}
+
+export function updateBlogPostStatusInMemory(slug: string, status: SitePageStatus): SiteBlogPost | null {
+  const post = getSharedCmsStore().blogPosts.find((row) => row.slug === slug);
+  if (!post) return null;
+  post.status = status;
+  post.publishedAt = status === "published" ? post.publishedAt ?? new Date().toISOString() : undefined;
+  post.updatedAt = new Date().toISOString();
+  return cloneBlogPost(post);
+}
+
+export function deleteBlogPostInMemory(id: string) {
+  const store = getSharedCmsStore();
+  store.blogPosts = store.blogPosts.filter((row) => row.id !== id);
+}
+
 export function listSeoFromMemory(): SiteSeo[] {
   return getSharedCmsStore().seo.map((row) => ({ ...row }));
 }

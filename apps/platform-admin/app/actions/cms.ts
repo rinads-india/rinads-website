@@ -1,11 +1,15 @@
 "use server";
 
 import {
+  deleteBlogPost,
+  listBlogPosts,
   listMedia,
   listPages,
   listRedirects,
   listSeo,
   removeRedirect,
+  saveBlogPost,
+  saveBlogPostStatus,
   saveMedia,
   savePageSection,
   savePageStatus,
@@ -14,6 +18,7 @@ import {
   type CmsSupabaseClient,
   type SitePageStatus,
 } from "@rinads/cms";
+import { createPreviewToken, resolvePreviewSecret } from "@rinads/cms/preview-tokens";
 import { createPlatformServiceClient } from "@/lib/supabase/server";
 import { requirePlatformTenancy } from "@/lib/tenancy";
 import { isDemoMode } from "@/lib/supabase/env";
@@ -164,5 +169,98 @@ export async function registerCmsMediaAction(input: {
     return { ok: true as const };
   } catch (error) {
     return { ok: false as const, error: error instanceof Error ? error.message : "Failed to register media" };
+  }
+}
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function listCmsBlogPostsAction() {
+  try {
+    await requirePlatformTenancy();
+    const posts = await listBlogPosts(getCmsClient(), true);
+    return { ok: true as const, posts };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Failed to load blog posts" };
+  }
+}
+
+export async function saveCmsBlogPostAction(input: {
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  tags: string[];
+  coverImageUrl?: string;
+}) {
+  try {
+    await requirePlatformTenancy();
+    const slug = slugify(input.slug || input.title);
+    if (!slug) {
+      return { ok: false as const, error: "A slug or title is required." };
+    }
+    const existing = (await listBlogPosts(getCmsClient(), true)).find((post) => post.slug === slug);
+    const post = await saveBlogPost(getCmsClient(), {
+      slug,
+      title: input.title,
+      excerpt: input.excerpt,
+      body: input.body,
+      tags: input.tags,
+      coverImageUrl: input.coverImageUrl,
+      // Preserve current status on edit; new posts start as draft.
+      status: existing?.status ?? "draft",
+      publishedAt: existing?.publishedAt,
+    });
+    bumpCmsCache();
+    return { ok: true as const, slug: post.slug };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Failed to save blog post" };
+  }
+}
+
+export async function updateCmsBlogPostStatusAction(slug: string, status: SitePageStatus) {
+  try {
+    await requirePlatformTenancy();
+    await saveBlogPostStatus(getCmsClient(), slug, status);
+    bumpCmsCache();
+    return { ok: true as const };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Failed to update blog post" };
+  }
+}
+
+export async function deleteCmsBlogPostAction(id: string) {
+  try {
+    await requirePlatformTenancy();
+    await deleteBlogPost(getCmsClient(), id);
+    bumpCmsCache();
+    return { ok: true as const };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Failed to delete blog post" };
+  }
+}
+
+export async function createCmsBlogPreviewLinkAction(slug: string) {
+  try {
+    await requirePlatformTenancy();
+    const secret = resolvePreviewSecret();
+    if (!secret) {
+      return {
+        ok: false as const,
+        error: "No preview secret configured (set CMS_PREVIEW_SECRET).",
+      };
+    }
+    const path = `/blog/${slug}`;
+    const token = createPreviewToken({ path, secret });
+    const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
+    const url = `${origin}${path}?preview=${token}`;
+    return { ok: true as const, url };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Failed to create preview link" };
   }
 }
