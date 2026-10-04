@@ -25,6 +25,39 @@ describe("Phase 10 integration", () => {
     assert.equal(variant?.stock, after.available);
   });
 
+  it("K3: ledger rejects oversell even when scalar stock projection is stale-high", () => {
+    const ctx = demoContext({ customerId: "cust_k3_high" });
+    const variant = commerce.repo.getStore().variants.find((v) => v.id === "var_pebbles_500g");
+    assert.ok(variant);
+
+    const available = operations.ledger.getAvailable(opsContext(), variant.id);
+    variant.stock = available + 10_000;
+
+    const cart = commerce.cart.getOrCreate(ctx);
+    const result = commerce.cart.addLine(ctx, cart.id, variant.id, available + 1);
+    assert.equal(result.ok, false);
+
+    operations.refreshStockProjections();
+    assert.equal(variant.stock, operations.ledger.getAvailable(opsContext(), variant.id));
+  });
+
+  it("K3: ledger allows valid stock even when scalar projection is stale-low", () => {
+    const ctx = demoContext({ customerId: "cust_k3_low" });
+    const variant = commerce.repo.getStore().variants.find((v) => v.id === "var_pebbles_500g");
+    assert.ok(variant);
+    assert.ok(operations.ledger.getAvailable(opsContext(), variant.id) > 0);
+
+    variant.stock = 0;
+
+    const cart = commerce.cart.getOrCreate(ctx);
+    const result = commerce.cart.addLine(ctx, cart.id, variant.id, 1);
+    assert.ok(result.ok);
+    commerce.cart.clear(ctx, cart.id);
+
+    operations.refreshStockProjections();
+    assert.equal(variant.stock, operations.ledger.getAvailable(opsContext(), variant.id));
+  });
+
   it("TEST 03: order.paid triggers async runtime workflow", async () => {
     const ctx = demoContext();
     const cart = commerce.cart.getOrCreate(ctx);
