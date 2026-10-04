@@ -10,7 +10,6 @@ import {
   getProductWithDetails,
   AMBADY_ORG_ID,
 } from "../lib/commerce";
-import { CartService, CheckoutService } from "@rinads/commerce";
 
 describe("owner-portal smoke", () => {
   it("demoContext is org owner without customerId", () => {
@@ -47,13 +46,10 @@ describe("owner-portal smoke", () => {
 
   it("lists org orders without customerId filter", () => {
     const ctx = demoContext();
-    const repo = commerce.repo;
-    const cartSvc = new CartService(repo);
-    const checkout = new CheckoutService(repo);
     const customerCtx = { organizationId: AMBADY_ORG_ID, customerId: "cust_smoke_test" };
-    const cart = cartSvc.getOrCreate(customerCtx);
-    cartSvc.addLine(customerCtx, cart.id, "var_pebbles_500g", 1);
-    const placed = checkout.placeOrder(customerCtx, {
+    const cart = commerce.cart.getOrCreate(customerCtx);
+    commerce.cart.addLine(customerCtx, cart.id, "var_pebbles_500g", 1);
+    const placed = commerce.checkout.placeOrder(customerCtx, {
       cartId: cart.id,
       customerId: customerCtx.customerId,
       shippingMethodCode: "standard",
