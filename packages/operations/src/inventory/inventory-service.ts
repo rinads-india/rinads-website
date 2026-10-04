@@ -100,13 +100,24 @@ export class StockLedgerService implements InventoryPort {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
+  /**
+   * Canonical inventory snapshot for one tenant and location. The scalar
+   * commerce `ProductVariant.stock` field is only a projection of this value.
+   */
   getBalance(ctx: OperationsContext, variantId: string, locationId?: string): StockBalance {
     const store = this.repo.getStore();
     const locId = locationId ?? this.locations.getDefault(ctx)?.id ?? "";
-    const onHand = computeOnHand(store.movements, variantId, locId);
-    const reserved = computeReserved(store.reservations, variantId, locId);
+    const scopedMovements = store.movements.filter(
+      (movement) => movement.organizationId === ctx.organizationId
+    );
+    const scopedReservations = store.reservations.filter(
+      (reservation) => reservation.organizationId === ctx.organizationId
+    );
+
+    const onHand = computeOnHand(scopedMovements, variantId, locId);
+    const reserved = computeReserved(scopedReservations, variantId, locId);
     const damaged = computeOnHand(
-      store.movements.filter((m) => m.movementType === "damage"),
+      scopedMovements.filter((m) => m.movementType === "damage"),
       variantId,
       locId
     );
@@ -155,26 +166,41 @@ export class StockLedgerService implements InventoryPort {
     cartId: string,
     lines: { variantId: string; quantity: number }[]
   ): Result<void> {
-    const store = this.repo.getStore();
     const defaultLoc = this.locations.getDefault(ctx);
     if (!defaultLoc) return err("NO_DEFAULT_LOCATION", "No default inventory location configured.");
 
+    // Replacing a cart reservation is idempotent. Release the previous set first,
+    // then validate the complete requested quantity before writing any new hold.
     this.releaseCartReservations(ctx, cartId);
 
+    const requestedByVariant = new Map<string, number>();
     for (const line of lines) {
-      const check = this.checkAvailable(ctx, line.variantId, line.quantity);
-      if (!check.ok) return check;
+      if (line.quantity <= 0) return err("INVALID_QUANTITY", "Reservation quantity must be positive.");
+      requestedByVariant.set(
+        line.variantId,
+        (requestedByVariant.get(line.variantId) ?? 0) + line.quantity
+      );
+    }
 
+    for (const [variantId, quantity] of requestedByVariant) {
+      const check = this.checkAvailable(ctx, variantId, quantity);
+      if (!check.ok) return check;
+    }
+
+    const store = this.repo.getStore();
+    const createdAt = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    for (const [variantId, quantity] of requestedByVariant) {
       store.reservations.push({
         id: this.repo.nextId("rsv"),
         organizationId: ctx.organizationId,
-        variantId: line.variantId,
+        variantId,
         locationId: defaultLoc.id,
         cartId,
-        quantity: line.quantity,
+        quantity,
         status: "active",
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        createdAt: new Date().toISOString(),
+        expiresAt,
+        createdAt,
       });
     }
     this.repo.saveStore(store);
