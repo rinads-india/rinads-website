@@ -19,8 +19,8 @@ function migrationFiles(): string[] {
     .sort();
 }
 
-// Milestone migrations that must exist through the salon vertical routing,
-// loyalty expiry, and site_leads cutover surfaces.
+// Milestone migrations that must exist through the current platform-kernel
+// workspace/location foundation.
 const REQUIRED_MILESTONES = [
   "20260814100000_core_tenancy.sql",
   "20260816100001_rls_complete.sql",
@@ -33,6 +33,7 @@ const REQUIRED_MILESTONES = [
   "20260916100003_fix_salon_vertical_routing.sql",
   "20260921100000_salon_loyalty_expiry.sql",
   "20260924100000_site_leads.sql",
+  "20261005100000_platform_workspaces_locations.sql",
 ];
 
 describe("production migration ledger", () => {
@@ -50,7 +51,7 @@ describe("production migration ledger", () => {
     assert.deepEqual(stamps, sorted, "migrations are not in ascending timestamp order");
   });
 
-  it("contains every required milestone migration through the salon + site_leads cutover", () => {
+  it("contains every required milestone migration through the platform kernel foundation", () => {
     const files = new Set(migrationFiles());
     for (const milestone of REQUIRED_MILESTONES) {
       assert.ok(files.has(milestone), `missing required migration: ${milestone}`);
@@ -62,6 +63,12 @@ describe("production migration ledger", () => {
     assert.match(commerce, /ENABLE ROW LEVEL SECURITY/i);
     const leads = readFileSync(join(MIGRATIONS_DIR, "20260924100000_site_leads.sql"), "utf8");
     assert.match(leads, /ENABLE ROW LEVEL SECURITY/i);
+    const workspaceLocation = readFileSync(
+      join(MIGRATIONS_DIR, "20261005100000_platform_workspaces_locations.sql"),
+      "utf8",
+    );
+    assert.match(workspaceLocation, /ALTER TABLE public\.workspaces ENABLE ROW LEVEL SECURITY/i);
+    assert.match(workspaceLocation, /ALTER TABLE public\.locations ENABLE ROW LEVEL SECURITY/i);
     const rls = readFileSync(join(MIGRATIONS_DIR, "20260816100001_rls_complete.sql"), "utf8");
     assert.match(rls, /CREATE POLICY/i);
     assert.match(rls, /is_org_member/i);
