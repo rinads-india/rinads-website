@@ -4,12 +4,15 @@ import {
   buildPageMetadata,
   findRedirectForPath,
   getAboutFromPage,
+  getBlogPostBySlug,
   getPageBySlug,
   getSeoByPath,
   getServiceCardsFromPage,
+  listBlogPosts,
   listPublishedPaths,
   listRedirects,
   type ServiceCardContent,
+  type SiteBlogPost,
   type SiteRedirect,
   type SiteSeo,
 } from "@rinads/cms";
@@ -39,6 +42,16 @@ async function loadPublishedPaths() {
   return listPublishedPaths(client);
 }
 
+async function loadPublishedBlogPosts() {
+  const client = await getWebsiteCmsClient();
+  return listBlogPosts(client, false);
+}
+
+async function loadBlogPost(slug: string, includeDrafts: boolean) {
+  const client = await getWebsiteCmsClient();
+  return getBlogPostBySlug(client, slug, includeDrafts);
+}
+
 export const getCachedSeoByPath = unstable_cache(
   async (path: string) => loadSeo(path),
   ["cms-seo"],
@@ -54,6 +67,16 @@ export const getCachedHomeContent = unstable_cache(
     };
   },
   ["cms-home"],
+  { tags: ["cms"] }
+);
+
+export const getCachedBlogIndex = unstable_cache(loadPublishedBlogPosts, ["cms-blog-index"], {
+  tags: ["cms"],
+});
+
+export const getCachedBlogPost = unstable_cache(
+  async (slug: string) => loadBlogPost(slug, false),
+  ["cms-blog-post"],
   { tags: ["cms"] }
 );
 
@@ -96,4 +119,24 @@ export type HomeCmsContent = {
 
 export async function getHomeCmsContent(): Promise<HomeCmsContent> {
   return getCachedHomeContent();
+}
+
+export async function getBlogIndex(): Promise<SiteBlogPost[]> {
+  return getCachedBlogIndex();
+}
+
+/**
+ * Fetch a single blog post. When `preview` is true (a verified draft preview),
+ * draft posts are included and the cache is bypassed so editors always see the
+ * latest unpublished content. Otherwise only published posts are served, from
+ * the cached read path.
+ */
+export async function getBlogPost(
+  slug: string,
+  options: { preview?: boolean } = {}
+): Promise<SiteBlogPost | null> {
+  if (options.preview) {
+    return loadBlogPost(slug, true);
+  }
+  return getCachedBlogPost(slug);
 }
