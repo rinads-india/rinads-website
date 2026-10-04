@@ -104,16 +104,16 @@ describe("platform kernel architecture contract", () => {
     const contract = readFileSync(join(REPO_ROOT, "docs/architecture/PLATFORM-KERNEL-CONTRACT.md"), "utf8");
     const adr = readFileSync(join(REPO_ROOT, "docs/decisions/ADR-013-platform-kernel-canonicalization.md"), "utf8");
 
-    assert.match(contract, /product_variants\.stock.*projection/is);
-    assert.match(contract, /stock_movements.*reservations/is);
-    assert.match(adr, /product_variants\.stock.*compatibility\/read projection/is);
+    assert.match(contract, /product_variants\.stock[\s\S]*projection/i);
+    assert.match(contract, /stock_movements[\s\S]*reservations/i);
+    assert.match(adr, /product_variants\.stock[\s\S]*compatibility\/read projection/i);
   });
 
   it("locks organization as tenant boundary while allowing additive workspace/location scope", () => {
     const adr = readFileSync(join(REPO_ROOT, "docs/decisions/ADR-013-platform-kernel-canonicalization.md"), "utf8");
 
-    assert.match(adr, /organization_id.*mandatory tenant boundary/is);
-    assert.match(adr, /Organization\s*\n\s*-> Workspace/is);
-    assert.match(adr, /Existing tables are not mass-rewritten/is);
+    assert.match(adr, /organization_id[\s\S]*mandatory tenant boundary/i);
+    assert.match(adr, /Organization\s*\n\s*-> Workspace/i);
+    assert.match(adr, /Existing tables are not mass-rewritten/i);
   });
 });
