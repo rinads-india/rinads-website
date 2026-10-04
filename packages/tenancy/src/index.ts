@@ -6,3 +6,4 @@ export * from "./feature-flags-types";
 export * from "./load";
 export * from "./host-resolver";
 export * from "./plan-limits";
+export * from "./scopes";
