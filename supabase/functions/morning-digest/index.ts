@@ -65,19 +65,19 @@ async function loadDigestSignals(
   organizationId: string,
 ) {
   const nowIso = new Date().toISOString();
-  const staleCutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
+  // Only query org-scoped sources we can rely on. Each lookup is best-effort:
+  // a missing table/column yields an omitted signal (never fabricated data).
+  // Additional signals (stale CRM leads, at-risk projects) can be wired here
+  // once a confirmed org-scoped source exists; the digest builder already
+  // supports them.
   const overdueInvoices = await safeCount(supabase, "invoices", (q: any) =>
     q.eq("organization_id", organizationId).lt("due_date", nowIso).neq("status", "paid"),
-  );
-  const staleLeads = await safeCount(supabase, "site_leads", (q: any) =>
-    q.eq("organization_id", organizationId).lt("updated_at", staleCutoff),
   );
 
   return {
     organizationId,
     overdueInvoices: overdueInvoices ?? undefined,
-    staleLeads: staleLeads ?? undefined,
   };
 }
 
