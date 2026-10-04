@@ -8,6 +8,7 @@ const links = [
   { href: "/plans", label: "Plans" },
   { href: "/billing/events", label: "Billing events" },
   { href: "/website/pages", label: "Website CMS" },
+  { href: "/website/blog", label: "Blog" },
   { href: "/website/seo", label: "SEO" },
   { href: "/website/media", label: "Media" },
   { href: "/website/redirects", label: "Redirects" },
