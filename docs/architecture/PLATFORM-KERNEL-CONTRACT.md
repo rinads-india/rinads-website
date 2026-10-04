@@ -31,7 +31,7 @@ The system remains a modular monorepo. Network microservices are introduced only
 | Audit | `audit_logs` + approved domain append-only audit | UI projections | mutable audit replacement |
 | Business events | `business_events` | event explorers/projections | new vertical canonical event stores |
 | Runtime | Runtime 2.0 persisted artifacts | in-memory execution state | second orchestration engine |
-| Inventory | `stock_movements` + reservations | `product_variants.stock` projection | independent stock counters as authority |
+| Inventory | `stock_movements` + active reservations | `product_variants.stock` projection | independent stock counters as authority |
 | Orders | shared commerce/orders or explicitly mapped shared service order contract | UI/order journey projections | duplicate generic order engines per vertical |
 | Payments | shared billing/payment + webhook-idempotency patterns | provider-specific references | independent payment architecture per vertical |
 | Notifications | `notification_outbox` and shared communications adapters | delivery/read models | direct provider sends from UI/domain code |
@@ -39,13 +39,13 @@ The system remains a modular monorepo. Network microservices are introduced only
 
 ## 3. Tenant hierarchy
 
-Current mandatory scope:
+Mandatory security scope:
 
 ```text
 organization_id
 ```
 
-Target additive hierarchy:
+Additive hierarchy now present in the repository schema:
 
 ```text
 Organization
@@ -60,24 +60,28 @@ Rules:
 2. Workspace is a business-unit/operating-context scope, not a replacement tenant id.
 3. Location represents an operational/physical site and must not be overloaded as a tenant.
 4. Existing inventory and salon branch/location concepts remain functional until mapped deliberately.
-5. PR-K2 owns the additive schema and RLS implementation.
+5. PR-K2 added the workspace/shared-location schema, RLS, default-workspace backfill/trigger and same-organization composite FK. Repository merge does not by itself prove production migration application.
 
 ## 4. Inventory truth contract
 
 The operational stock ledger is authoritative.
 
 ```text
-on_hand = SUM(stock_movements.quantity_delta)
-available = on_hand - active_reservations - blocked_stock
+on_hand = SUM(tenant-scoped stock_movements.quantity_delta)
+reserved = active + unexpired tenant-scoped reservations
+available = MAX(0, on_hand - reserved)
 ```
 
 Current compatibility:
 
-- `product_variants.stock` remains for existing storefront/read paths.
-- `packages/operations-server/src/seed.ts` may synchronize the projection from the ledger.
-- `packages/commerce/src/services/checkout.ts` contains a legacy/demo fallback when an operations reservation service is unavailable.
+- `product_variants.stock` remains for existing storefront/read projections.
+- `packages/operations-server/src/seed.ts` may synchronize that projection from the ledger.
+- `packages/commerce-server/src/legacy-inventory.ts` is the isolated scalar-stock adapter for demo/legacy commerce-server flows only.
+- `CheckoutService.placeOrder()` fails closed without an `InventoryPort`; authoritative checkout cannot silently mutate scalar variant stock.
 
-No new direct `variant.stock` mutation site may be introduced. PR-K3 removes the compatibility dependency from authoritative checkout/ops paths.
+Production storefront/operations wiring uses `@rinads/operations` `StockLedgerService` through the `InventoryPort`. Direct `variant.stock` mutations are architecture-guarded and allowed only in the explicit legacy adapter and projection synchronizer.
+
+PR-K3 also requires balance calculations to scope movements/reservations by `organization_id`, and reservation creation to validate the complete aggregate request before writing new holds.
 
 ## 5. Durable runtime contract
 
@@ -171,23 +175,24 @@ Shared capabilities to reuse:
 
 ## 9. Architecture guard policy
 
-Repository tests protect two high-risk divergence classes now:
+Repository tests protect high-risk divergence classes including:
 
 1. duplicate creation of protected canonical shared tables;
-2. new direct mutation sites for `variant.stock` outside explicit compatibility exceptions.
+2. direct mutation of `variant.stock` outside the explicit compatibility/projection adapters;
+3. authoritative checkout proceeding without an inventory provider.
 
 The guards are intentionally conservative. When architecture legitimately evolves, update ADR-013, this contract and tests in the same PR.
 
 ## 10. PR sequence and acceptance
 
-### PR-K1 — current
-Documentation + non-destructive guards only.
+### PR-K1 — merged
+Architecture contract + repository guards.
 
-### PR-K2
-Workspace/shared-location additive schema, RLS and isolation tests.
+### PR-K2 — merged to repository
+Workspace/shared-location additive schema, RLS and isolation tests. Production migration application remains a separate ops action.
 
-### PR-K3
-Canonical stock availability service/query; authoritative reads migrate from scalar stock.
+### PR-K3 — current
+Inventory truth hardening: tenant-scoped ledger/reservation availability, fail-closed checkout inventory dependency, isolated legacy scalar adapter and reservation atomicity tests.
 
 ### PR-K4
 Transactional command/event/outbox proof for selected critical flows.
