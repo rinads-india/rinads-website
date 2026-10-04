@@ -50,11 +50,25 @@ export type ServiceCardContent = {
   href?: string;
 };
 
+export type SiteBlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  status: SitePageStatus;
+  coverImageUrl?: string;
+  tags: string[];
+  publishedAt?: string;
+  updatedAt: string;
+};
+
 export type CmsStore = {
   pages: SitePage[];
   seo: SiteSeo[];
   redirects: SiteRedirect[];
   media: SiteMedia[];
+  blogPosts: SiteBlogPost[];
 };
 
 export type CmsSupabaseResult<T> = {
