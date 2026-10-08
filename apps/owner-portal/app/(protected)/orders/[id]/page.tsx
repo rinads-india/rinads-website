@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Card } from "@rinads/ui";
-import { commerce, demoContext } from "@/lib/commerce";
+import { loadOwnerOrderRuntime } from "@/lib/order-runtime";
 import { OrderStatusForm } from "./OrderStatusForm";
 
 type PageProps = {
@@ -10,8 +10,8 @@ type PageProps = {
 
 export default async function OrderDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const ctx = demoContext();
-  const result = commerce.order.getById(ctx, id);
+  const { ctx, orders: orderService } = await loadOwnerOrderRuntime();
+  const result = orderService.getById(ctx, id);
 
   if (!result.ok) notFound();
 
@@ -24,7 +24,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
           ← Orders
         </Link>
         <h2 className="mt-2 text-2xl font-semibold text-foreground">{order.orderNumber}</h2>
-        <p className="text-sm text-muted-foreground">Placed {new Date(order.createdAt).toLocaleString()}</p>
+        <p className="text-sm text-muted-foreground">
+          Placed {new Date(order.createdAt).toLocaleString("en-IN")}
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -77,7 +79,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
         <ol className="space-y-3">
           {order.events.map((event) => (
             <li key={event.id} className="flex gap-3 text-sm">
-              <span className="text-muted-foreground">{new Date(event.occurredAt).toLocaleString()}</span>
+              <span className="text-muted-foreground">
+                {new Date(event.occurredAt).toLocaleString("en-IN")}
+              </span>
               <span>{event.label}</span>
             </li>
           ))}
