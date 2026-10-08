@@ -39,11 +39,11 @@ export function CampaignDraftForm() {
           <option value="email">Email</option>
         </select>
       </div>
-      <div className="flex items-center gap-2 pt-6">
-        <input id="communicationOptIn" name="communicationOptIn" type="checkbox" defaultChecked value="true" className="h-4 w-4" />
-        <label htmlFor="communicationOptIn" className="text-xs text-muted-foreground">
-          Exclude opted-out customers (recommended)
-        </label>
+      <div className="pt-6">
+        <input name="communicationOptIn" type="hidden" value="true" />
+        <p className="text-xs text-muted-foreground">
+          Campaigns include only clients with affirmative marketing consent and no opt-out.
+        </p>
       </div>
 
       <div className="sm:col-span-2">

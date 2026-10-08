@@ -69,6 +69,10 @@ export async function createBookingAction(input: CreateBookingInput): Promise<Cr
   const rateLimitKey = createHash("sha256")
     .update(`${input.organizationId}:${clientAddress ? `ip:${clientAddress}` : `phone:${normalizedPhone}`}`)
     .digest("hex");
+  const rateLimit = await repo.consumePublicBookingRateLimit(input.organizationId, rateLimitKey);
+  if (!rateLimit.ok) {
+    return { ok: false, error: "Too many booking attempts. Please try again later." };
+  }
 
   // Pre-submit revalidation: re-check the slot is still free right before
   // writing, so a stale slot list (someone else booked it moments ago)
