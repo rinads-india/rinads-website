@@ -45,6 +45,7 @@ async function seedCustomerWithOneVisit(repo: SalonRepository, phone: string, am
   if (!branch.ok) throw new Error("branch seed failed");
   const customer = await repo.upsertCustomerByPhone(ORG_ID, { phone });
   if (!customer.ok) throw new Error("customer seed failed");
+  await repo.updateCustomerCommunicationPreferences(customer.data.id, { marketingConsent: true });
   const sale = await repo.createSale(ORG_ID, { branchId: branch.data.id, customerId: customer.data.id });
   if (!sale.ok) throw new Error("sale seed failed");
   await repo.addSaleLine(ORG_ID, sale.data.id, { description: "Service", unitPrice: amount });
