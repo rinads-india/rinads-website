@@ -15,6 +15,7 @@ export function MediaLibrary({ initialRows }: MediaLibraryProps) {
   const [altText, setAltText] = useState("");
   const [uploadAltText, setUploadAltText] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -40,6 +41,7 @@ export function MediaLibrary({ initialRows }: MediaLibraryProps) {
             }
             setRows((current) => [result.row, ...current]);
             setFile(null);
+            setFileInputKey((key) => key + 1);
             setUploadAltText("");
             setMessage(
               result.demoFallback
@@ -58,6 +60,7 @@ export function MediaLibrary({ initialRows }: MediaLibraryProps) {
         <label className="block space-y-1 sm:col-span-2">
           <span className="text-sm font-medium">Image file</span>
           <input
+            key={fileInputKey}
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
