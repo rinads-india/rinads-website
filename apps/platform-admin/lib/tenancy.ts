@@ -56,3 +56,16 @@ export async function requirePlatformTenancy(): Promise<TenancyContext> {
   }
   return access.tenancy;
 }
+
+/**
+ * Founder Intelligence is intentionally narrower than the rest of the control
+ * plane. `super_admin` is the existing platform-owner role in the canonical
+ * RBAC model; no organization admin or staff role is accepted here.
+ */
+export async function requireFounderTenancy(): Promise<TenancyContext> {
+  const tenancy = await requirePlatformTenancy();
+  if (tenancy.roleKey !== "founder" && tenancy.roleKey !== "super_admin") {
+    throw new Error("Founder or platform-owner access required.");
+  }
+  return tenancy;
+}

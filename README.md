@@ -40,6 +40,7 @@ pnpm build
 
 - **Status:** [`docs/STATUS.md`](./docs/STATUS.md)
 - **Index:** [`docs/README.md`](./docs/README.md)
+- **Founder Intelligence:** [`docs/architecture/FOUNDER-INTELLIGENCE.md`](./docs/architecture/FOUNDER-INTELLIGENCE.md)
 - **R GLOW cutover:** [`docs/deployment/RGLOW_PRODUCTION_CUTOVER.md`](./docs/deployment/RGLOW_PRODUCTION_CUTOVER.md)
 
 ## Deploy
