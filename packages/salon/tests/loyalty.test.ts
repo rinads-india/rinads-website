@@ -16,7 +16,14 @@ describe("loyalty helpers", () => {
   });
 
   it("supports balance and tier segmentation criteria", () => {
-    const base = { visitCount: 1, lifetimeSpend: 100, preferredChannel: "whatsapp" as const, loyaltyBalance: 50, loyaltyTier: "Gold" };
+    const base = {
+      visitCount: 1,
+      lifetimeSpend: 100,
+      preferredChannel: "whatsapp" as const,
+      marketingConsent: true,
+      loyaltyBalance: 50,
+      loyaltyTier: "Gold",
+    };
     assert.deepEqual(matchesSegment(base, { minLoyaltyBalance: 50, loyaltyTier: "Gold" }), { matches: true });
     assert.equal(matchesSegment(base, { minLoyaltyBalance: 51 }).matches, false);
   });
