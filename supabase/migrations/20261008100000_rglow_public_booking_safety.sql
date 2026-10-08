@@ -20,6 +20,49 @@ CREATE TABLE IF NOT EXISTS salon_public_booking_rate_limits (
 ALTER TABLE salon_public_booking_rate_limits ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE salon_public_booking_rate_limits FROM PUBLIC, anon, authenticated;
 
+CREATE OR REPLACE FUNCTION public.consume_public_salon_booking_rate_limit(
+  p_organization_id UUID,
+  p_identifier_hash TEXT
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_request_count INT;
+BEGIN
+  IF p_identifier_hash IS NULL OR length(p_identifier_hash) < 32 THEN
+    RAISE EXCEPTION 'A valid booking rate-limit identifier is required';
+  END IF;
+
+  INSERT INTO salon_public_booking_rate_limits (
+    organization_id, identifier_hash, window_started_at, request_count, updated_at
+  )
+  VALUES (p_organization_id, p_identifier_hash, now(), 1, now())
+  ON CONFLICT (organization_id, identifier_hash) DO UPDATE SET
+    window_started_at = CASE
+      WHEN salon_public_booking_rate_limits.window_started_at < now() - interval '1 hour' THEN now()
+      ELSE salon_public_booking_rate_limits.window_started_at
+    END,
+    request_count = CASE
+      WHEN salon_public_booking_rate_limits.window_started_at < now() - interval '1 hour' THEN 1
+      ELSE salon_public_booking_rate_limits.request_count + 1
+    END,
+    updated_at = now()
+  RETURNING request_count INTO v_request_count;
+
+  IF v_request_count > 20 THEN
+    RAISE EXCEPTION 'Too many booking attempts. Please try again later.';
+  END IF;
+
+  RETURN true;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.consume_public_salon_booking_rate_limit(UUID, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.consume_public_salon_booking_rate_limit(UUID, TEXT) TO anon, authenticated;
+
 DROP FUNCTION IF EXISTS public.create_public_salon_booking(
   UUID, UUID, UUID, UUID[], TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT
 );
@@ -35,8 +78,7 @@ CREATE OR REPLACE FUNCTION public.create_public_salon_booking(
   p_customer_email TEXT DEFAULT NULL,
   p_notes TEXT DEFAULT NULL,
   p_idempotency_key TEXT DEFAULT NULL,
-  p_marketing_consent BOOLEAN DEFAULT false,
-  p_rate_limit_key TEXT DEFAULT NULL
+  p_marketing_consent BOOLEAN DEFAULT false
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -55,7 +97,6 @@ DECLARE
   v_customer_channel TEXT;
   v_customer_opted_out TIMESTAMPTZ;
   v_normalized_phone TEXT;
-  v_request_count INT;
   v_recent_phone_bookings INT;
 BEGIN
   IF p_idempotency_key IS NOT NULL THEN
@@ -78,7 +119,7 @@ BEGIN
     RAISE EXCEPTION 'At least one service is required';
   END IF;
 
-  v_normalized_phone := trim(p_customer_phone);
+  v_normalized_phone := trim(coalesce(p_customer_phone, ''));
   IF v_normalized_phone !~ '^\+?[0-9]{8,15}$' THEN
     RAISE EXCEPTION 'Enter a valid phone number with 8 to 15 digits';
   END IF;
@@ -98,28 +139,6 @@ BEGIN
     AND is_active;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Staff member not found for this branch';
-  END IF;
-
-  IF p_rate_limit_key IS NOT NULL AND length(p_rate_limit_key) >= 32 THEN
-    INSERT INTO salon_public_booking_rate_limits (
-      organization_id, identifier_hash, window_started_at, request_count, updated_at
-    )
-    VALUES (p_organization_id, p_rate_limit_key, now(), 1, now())
-    ON CONFLICT (organization_id, identifier_hash) DO UPDATE SET
-      window_started_at = CASE
-        WHEN salon_public_booking_rate_limits.window_started_at < now() - interval '1 hour' THEN now()
-        ELSE salon_public_booking_rate_limits.window_started_at
-      END,
-      request_count = CASE
-        WHEN salon_public_booking_rate_limits.window_started_at < now() - interval '1 hour' THEN 1
-        ELSE salon_public_booking_rate_limits.request_count + 1
-      END,
-      updated_at = now()
-    RETURNING request_count INTO v_request_count;
-
-    IF v_request_count > 20 THEN
-      RAISE EXCEPTION 'Too many booking attempts. Please try again later.';
-    END IF;
   END IF;
 
   SELECT count(*) INTO v_recent_phone_bookings
@@ -250,8 +269,8 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.create_public_salon_booking(
-  UUID, UUID, UUID, UUID[], TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN, TEXT
+  UUID, UUID, UUID, UUID[], TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN
 ) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_public_salon_booking(
-  UUID, UUID, UUID, UUID[], TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN, TEXT
+  UUID, UUID, UUID, UUID[], TIMESTAMPTZ, TEXT, TEXT, TEXT, TEXT, TEXT, BOOLEAN
 ) TO anon, authenticated;

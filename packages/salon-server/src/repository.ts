@@ -122,8 +122,6 @@ export type CreatePublicBookingInput = {
   marketingConsent?: boolean;
   notes?: string;
   idempotencyKey?: string;
-  /** Server-derived, privacy-preserving identifier used by the DB rate limiter. */
-  rateLimitKey?: string;
 };
 
 export type PublicBookingResult = {
@@ -1215,6 +1213,16 @@ export class SalonRepository {
     return ok(rows.map((r) => ({ start: r.starts_at, end: r.ends_at })));
   }
 
+  /** Consume one anonymous booking-attempt allowance using a server-derived hashed identifier. */
+  async consumePublicBookingRateLimit(organizationId: string, identifierHash: string): Promise<Result<true>> {
+    const { data, error } = await this.client.rpc("consume_public_salon_booking_rate_limit", {
+      p_organization_id: organizationId,
+      p_identifier_hash: identifierHash,
+    });
+    if (error) return fail("rate_limited", error.message);
+    return data === true ? ok(true) : fail("rate_limited", "Could not validate this booking attempt.");
+  }
+
   /** Anonymous booking — calls `create_public_salon_booking`, which enforces the double-booking guard server-side. */
   async createPublicBooking(input: CreatePublicBookingInput): Promise<Result<PublicBookingResult>> {
     if (!input.serviceIds.length) return fail("invalid_input", "At least one service is required.");
@@ -1235,7 +1243,6 @@ export class SalonRepository {
       p_notes: input.notes ?? null,
       p_idempotency_key: input.idempotencyKey ?? null,
       p_marketing_consent: input.marketingConsent ?? false,
-      p_rate_limit_key: input.rateLimitKey ?? null,
     });
     if (error) return fail("booking_failed", error.message);
 
