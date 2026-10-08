@@ -17,7 +17,13 @@ export type OwnerOrderRuntime = {
   persistOrder: (order: Order) => Promise<void>;
 };
 
-type OwnerSupabaseClient = Awaited<ReturnType<typeof createOwnerServerClient>>;
+type PersistenceResult = Promise<{ error: { message: string } | null }>;
+type OrderPersistenceClient = {
+  from: (_table: string) => {
+    upsert: (rows: Record<string, unknown>[]) => PersistenceResult;
+    insert: (rows: Record<string, unknown>[]) => PersistenceResult;
+  };
+};
 
 function throwIfError(error: { message: string } | null, operation: string): void {
   if (error) {
@@ -26,7 +32,7 @@ function throwIfError(error: { message: string } | null, operation: string): voi
 }
 
 async function persistOrderToSupabase(
-  client: OwnerSupabaseClient,
+  client: OrderPersistenceClient,
   organizationId: string,
   order: Order
 ): Promise<void> {
@@ -80,6 +86,7 @@ export async function loadOwnerOrderRuntime(): Promise<OwnerOrderRuntime> {
   const supabase = await createOwnerServerClient();
   const ctx = await getCommerceContextFromTenancy(async () => supabase);
   const commerceClient = supabase as unknown as CommerceSupabaseClient;
+  const persistenceClient = supabase as unknown as OrderPersistenceClient;
   const store = await loadCommerceStoreFromSupabase(commerceClient, ctx.organizationId);
 
   if (!store) {
@@ -96,6 +103,6 @@ export async function loadOwnerOrderRuntime(): Promise<OwnerOrderRuntime> {
   return {
     ctx,
     orders: new OrderService(repo),
-    persistOrder: (order) => persistOrderToSupabase(supabase, ctx.organizationId, order),
+    persistOrder: (order) => persistOrderToSupabase(persistenceClient, ctx.organizationId, order),
   };
 }
