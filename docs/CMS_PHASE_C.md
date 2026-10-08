@@ -2,7 +2,7 @@
 
 Follow-up after CMS + SEO admin foundation (Phase A/B). Tracked originally in [CMS_FOLLOWUP_BACKLOG.md](./CMS_FOLLOWUP_BACKLOG.md).
 
-**Status:** slice C1 (signed preview tokens) landed as a tested, pure helper in `@rinads/cms` (`packages/cms/src/preview-tokens.ts`, `createPreviewToken` / `verifyPreviewToken` / `resolvePreviewSecret`). Route wiring and the remaining slices (C2–C6) still depend on a staging Supabase with the CMS migration applied, which is founder-gated. This document freezes acceptance criteria so Phase C ships as focused PRs.
+**Status:** C1 (signed preview tokens) landed as a tested helper in `@rinads/cms` (`preview-tokens`). C2 (Storage media upload) landed as tested path/validation helpers (`@rinads/cms/media-upload`), platform-admin upload UI + `uploadCmsMediaAction`, and an **unapplied** `rinads-cms` Storage bucket migration. Live Storage apply + remaining slices (C3–C6) are founder-gated. This document freezes acceptance criteria so Phase C ships as focused PRs.
 
 ## Goals
 
@@ -23,7 +23,7 @@ Follow-up after CMS + SEO admin foundation (Phase A/B). Tracked originally in [C
 | Slice | Deliverable | Done when |
 |-------|-------------|-----------|
 | C1 | Preview tokens | Draft page loads with valid token; invalid/expired token 404s; no index. **Token helper implemented + unit-tested (`@rinads/cms`); route wiring pending.** |
-| C2 | Storage media upload | Admin uploads file → Storage → media row; public URL works |
+| C2 | Storage media upload | Admin uploads file → Storage → media row; public URL works. **Helpers + admin upload action/UI shipped; demo data-URL fallback; Storage bucket migration unapplied (founder-gated).** |
 | C3 | Blog schema + admin CRUD | Create/edit/publish post; RLS tenant-safe |
 | C4 | Public blog routes | `/blog`, `/blog/[slug]` with SEO meta + revalidation |
 | C5 | i18n content rows | Locale switch or path prefix; fallback to en |
