@@ -254,7 +254,7 @@ export async function loadCommerceStoreFromSupabase(
     .from("products")
     .select("*")
     .eq("organization_id", organizationId);
-  if (pErr || !products?.length) return null;
+  if (pErr) return null;
 
   const fetch = (table: string) =>
     client.from(table).select("*").eq("organization_id", organizationId);
@@ -352,7 +352,7 @@ export async function loadCommerceStoreFromSupabase(
   });
 
   return {
-    products: products.map((row) => mapProductRow(row, organizationId)),
+    products: (products ?? []).map((row) => mapProductRow(row, organizationId)),
     variants: (variants ?? []).map((row) => mapVariantRow(row, organizationId)),
     media: [],
     carts: mappedCarts,
