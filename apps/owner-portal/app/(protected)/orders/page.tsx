@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { Badge, Card, EmptyState } from "@rinads/ui";
-import { demoContext, listOrgOrders } from "@/lib/commerce";
+import { loadOwnerOrderRuntime } from "@/lib/order-runtime";
 
-export default function OrdersPage() {
-  const ctx = demoContext();
-  const orders = listOrgOrders(ctx);
+export default async function OrdersPage() {
+  const { ctx, orders: orderService } = await loadOwnerOrderRuntime();
+  const orders = orderService.listForOrg(ctx);
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-foreground">Orders</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          All organization orders — owner context has no customerId restriction.
+          All orders for the active organization.
         </p>
       </div>
 
@@ -47,7 +47,7 @@ export default function OrdersPage() {
                   </td>
                   <td>{order.paymentStatus}</td>
                   <td>₹{order.grandTotal.toLocaleString("en-IN")}</td>
-                  <td className="text-muted-foreground">{new Date(order.createdAt).toLocaleString()}</td>
+                  <td className="text-muted-foreground">{new Date(order.createdAt).toLocaleString("en-IN")}</td>
                 </tr>
               ))}
             </tbody>
