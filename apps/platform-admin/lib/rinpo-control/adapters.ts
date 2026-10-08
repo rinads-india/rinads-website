@@ -5,9 +5,16 @@ import {
   SupabaseStatusSource,
 } from "@/lib/founder-intelligence/adapters";
 import type { ConnectionState } from "@/lib/founder-intelligence/types";
-import type { RinpoControlSnapshot, RinpoMetric, RinpoMetricId } from "./types";
+import type {
+  RinpoControlSnapshot,
+  RinpoMetric,
+  RinpoMetricId,
+  RinpoSessionInspection,
+  RinpoSessionSummary,
+} from "./types";
 
 const REQUEST_TIMEOUT_MS = 5_000;
+const SESSION_INSPECTION_LIMIT = 12;
 
 type Probe = {
   id: RinpoMetricId;
@@ -88,6 +95,14 @@ function disconnectedMetrics(detail: string): RinpoMetric[] {
   }));
 }
 
+function disconnectedSessionInspection(detail: string): RinpoSessionInspection {
+  return {
+    state: "not_connected",
+    detail,
+    sessions: [],
+  };
+}
+
 async function runProbe(baseUrl: string, serviceRoleKey: string, probe: Probe): Promise<RinpoMetric> {
   const query = new URLSearchParams({ select: "id" });
   if (probe.filter) query.set(probe.filter.column, `eq.${probe.filter.value}`);
@@ -137,6 +152,92 @@ async function runProbe(baseUrl: string, serviceRoleKey: string, probe: Probe): 
   }
 }
 
+function asSessionSummary(row: unknown): RinpoSessionSummary | null {
+  if (!row || typeof row !== "object") return null;
+  const value = row as Record<string, unknown>;
+  const id = value.id;
+  const organizationId = value.organization_id;
+  const userId = value.user_id;
+  const createdAt = value.created_at;
+  const updatedAt = value.updated_at;
+
+  if (
+    typeof id !== "string" ||
+    typeof organizationId !== "string" ||
+    typeof userId !== "string" ||
+    typeof createdAt !== "string" ||
+    typeof updatedAt !== "string"
+  ) {
+    return null;
+  }
+
+  return { id, organizationId, userId, createdAt, updatedAt };
+}
+
+async function loadRecentSessions(
+  baseUrl: string,
+  serviceRoleKey: string
+): Promise<RinpoSessionInspection> {
+  const query = new URLSearchParams({
+    select: "id,organization_id,user_id,created_at,updated_at",
+    order: "updated_at.desc",
+    limit: String(SESSION_INSPECTION_LIMIT),
+  });
+
+  try {
+    const response = await fetchWithTimeout(
+      `${baseUrl}/rest/v1/rinpo_conversations?${query.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return {
+        state: "degraded",
+        detail: `Session metadata source returned HTTP ${response.status}. Transcript content was not requested.`,
+        sessions: [],
+      };
+    }
+
+    const payload: unknown = await response.json();
+    if (!Array.isArray(payload)) {
+      return {
+        state: "degraded",
+        detail: "Session metadata source returned an unexpected response. Transcript content was not requested.",
+        sessions: [],
+      };
+    }
+
+    const sessions = payload
+      .map(asSessionSummary)
+      .filter((session): session is RinpoSessionSummary => session !== null);
+    const skipped = payload.length - sessions.length;
+
+    return {
+      state: skipped > 0 ? "degraded" : "operational",
+      detail:
+        skipped > 0
+          ? `${sessions.length} recent sessions loaded; ${skipped} malformed rows were excluded. Transcript and context content remain private.`
+          : `${sessions.length} recent sessions loaded. Transcript and context content remain private and were not retrieved.`,
+      sessions,
+    };
+  } catch (error) {
+    return {
+      state: "unavailable",
+      detail: `Session metadata unavailable. Transcript content was not requested. ${
+        error instanceof Error ? error.message : "Source did not respond."
+      }`,
+      sessions: [],
+    };
+  }
+}
+
 function summarizeDataPlane(metrics: RinpoMetric[]): {
   state: ConnectionState;
   detail: string;
@@ -173,14 +274,24 @@ export async function loadRinpoControlSnapshot(): Promise<RinpoControlSnapshot> 
 
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const metrics =
-    rawUrl && serviceRoleKey
-      ? await Promise.all(
-          PROBES.map((probe) => runProbe(rawUrl.replace(/\/$/, ""), serviceRoleKey, probe))
-        )
-      : disconnectedMetrics(
-          "Live count unavailable until NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are configured server-side."
-        );
+
+  let metrics: RinpoMetric[];
+  let sessionInspection: RinpoSessionInspection;
+
+  if (rawUrl && serviceRoleKey) {
+    const baseUrl = rawUrl.replace(/\/$/, "");
+    [metrics, sessionInspection] = await Promise.all([
+      Promise.all(PROBES.map((probe) => runProbe(baseUrl, serviceRoleKey, probe))),
+      loadRecentSessions(baseUrl, serviceRoleKey),
+    ]);
+  } else {
+    const detail =
+      "Live data unavailable until NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are configured server-side.";
+    metrics = disconnectedMetrics(detail);
+    sessionInspection = disconnectedSessionInspection(
+      `${detail} Transcript and context content are never fetched by session inspection.`
+    );
+  }
 
   const dataPlane = summarizeDataPlane(metrics);
 
@@ -191,5 +302,6 @@ export async function loadRinpoControlSnapshot(): Promise<RinpoControlSnapshot> 
     metrics,
     dataPlaneState: dataPlane.state,
     dataPlaneDetail: dataPlane.detail,
+    sessionInspection,
   };
 }
