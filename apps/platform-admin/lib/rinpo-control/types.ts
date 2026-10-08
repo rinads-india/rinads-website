@@ -16,6 +16,20 @@ export type RinpoMetric = {
   detail: string;
 };
 
+export type RinpoSessionSummary = {
+  id: string;
+  organizationId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RinpoSessionInspection = {
+  state: ConnectionState;
+  detail: string;
+  sessions: RinpoSessionSummary[];
+};
+
 export type RinpoControlSnapshot = {
   checkedAt: string;
   runtime: SourceCheck;
@@ -23,4 +37,5 @@ export type RinpoControlSnapshot = {
   metrics: RinpoMetric[];
   dataPlaneState: ConnectionState;
   dataPlaneDetail: string;
+  sessionInspection: RinpoSessionInspection;
 };
