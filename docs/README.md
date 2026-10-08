@@ -26,6 +26,8 @@
 
 | Document | Purpose |
 |----------|---------|
+| [rglow/PRODUCTION-MVP-GAP-ANALYSIS.md](./rglow/PRODUCTION-MVP-GAP-ANALYSIS.md) | Detailed handoff parity, production MVP boundary, and launch evidence gates |
+| [rglow/PROTOTYPE-GAP.md](./rglow/PROTOTYPE-GAP.md) | Prototype-to-repository capability matrix |
 | [implementation/RGLOW-MVP-CLOSURE.md](./implementation/RGLOW-MVP-CLOSURE.md) | MVP operator journeys closed |
 | [implementation/RGLOW-PHASE-E-SLICE-2-DEFERRED.md](./implementation/RGLOW-PHASE-E-SLICE-2-DEFERRED.md) | E.2 items (loyalty/reviews/comms completed) |
 | [implementation/RGLOW-LOYALTY-OPERATIONS.md](./implementation/RGLOW-LOYALTY-OPERATIONS.md) | Loyalty ops |

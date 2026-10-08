@@ -98,6 +98,8 @@ export type SalonCustomer = {
   email?: string;
   notes?: string;
   marketingConsent: boolean;
+  marketingConsentAt?: string;
+  marketingConsentSource?: string;
   preferredChannel: PreferredChannel;
   optedOutAt?: string;
   createdAt?: string;
@@ -411,7 +413,11 @@ export type SegmentCriteria = {
   branchId?: string;
   minLoyaltyBalance?: number;
   loyaltyTier?: string;
-  /** Defaults to true: campaigns should never message a customer who opted out unless explicitly overridden (never recommended). */
+  /**
+   * Legacy saved-criteria flag. Campaign evaluation always requires
+   * affirmative marketing consent and honors opt-outs; this flag cannot
+   * override either safety rule.
+   */
   communicationOptIn?: boolean;
 };
 

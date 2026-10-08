@@ -52,6 +52,7 @@ export async function evaluateSegment(
         preferredServiceId: profileResult.data.preferredServiceId,
         // Best-effort: the branch of the customer's most recent visit — there is no separate "home branch" field on salon_customers.
         branchId: profileResult.data.history[0]?.branchId,
+        marketingConsent: customer.marketingConsent,
         optedOutAt: customer.optedOutAt,
         preferredChannel: customer.preferredChannel,
       };
@@ -65,6 +66,7 @@ export async function evaluateSegment(
         visitCount: spendResult.data.visitCount,
         lifetimeSpend: spendResult.data.totalSpend,
         lastVisitAt: spendResult.data.lastVisitAt,
+        marketingConsent: customer.marketingConsent,
         optedOutAt: customer.optedOutAt,
         preferredChannel: customer.preferredChannel,
       };

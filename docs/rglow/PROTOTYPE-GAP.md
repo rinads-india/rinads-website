@@ -1,8 +1,10 @@
 # R Glow prototype ↔ RINADS monorepo gap matrix
 
 Date: 2026-09-24  
-Source: R Glow Cursor Handoff zip (Ringlow / Store / Staff / Website / Brand Guidelines)  
+Source: R Glow Cursor Handoff zip, re-reviewed from the supplied prototypes on 2026-10-08
 Implementation: this monorepo (`apps/rinaglow`, `packages/salon*`, `apps/website`)
+
+Production scope, commercial contradictions, and launch gates: [`PRODUCTION-MVP-GAP-ANALYSIS.md`](./PRODUCTION-MVP-GAP-ANALYSIS.md).
 
 ## Non-goals (handoff vs reality)
 
@@ -29,15 +31,17 @@ Ops cutover (Twilio, `glow.rinads.com`, worker flags): see [`docs/deployment/RGL
 | Services | `/services` | Matched |
 | Staff & Roles | `/staff` | Partial — **admin roster**, not phone role UX |
 | WhatsApp Campaigns | `/campaigns` | Partial — campaigns exist; not WhatsApp-branded |
-| Growth | `/growth` | Matched |
-| Login | `/login` | Matched (+ logo) |
-| RINPO Studio | `RinpoCommandBar` | Partial — command bar + face asset |
+| Growth intelligence | `/growth` | Extra in code — the prototype “Grow” group is Campaigns + Add-ons + RINPO Studio |
+| Login | `/login` | Partial — auth exists; prototype role picker includes Telecaller |
+| RINPO Studio | `RinpoCommandBar` | Partial — command bar/tools exist; Phone/Apps/Actions/Alerts and voice simulation do not |
 | Skin & Hair Scan | — | Missing |
 | Inventory | — | Missing |
 | RINADS Add-ons marketplace | — | Missing |
 | Onboarding wizard | — | Missing / ops-adjacent |
 
 Extra in code (not in proto nav): `/communications`, `/settings`, `/feedback/[token]`.
+
+Additional prototype differences: no dedicated week/month calendar chrome, stock-transfer workflow, CRM scan/WhatsApp drawer, theme toggle, or prototype-specific “waiting / in chair” presentation. Multi-branch behavior exists in the data model and console filters, but the exact prototype store-switcher experience is not reproduced.
 
 ---
 
@@ -47,8 +51,11 @@ Customer-facing Home / Book / Shop / portal / cart / RINPO.
 
 | Slice | Status |
 |-------|--------|
-| Public booking | Partial — `apps/website/.../solutions/salon/book` |
-| Shop + cart + client portal | **Missing** (net-new customer surface — follow-up PR) |
+| Tenant-branded public booking | Partial — robust booking exists at `apps/website/.../solutions/salon/book`, not a full Digital Store tenant shell |
+| Shop + cart | **Missing** (net-new customer surface — follow-up PR) |
+| Client portal | **Missing** — bookings, orders/tracking, loyalty, profile, RINPO memory |
+| WhatsApp OTP / account auth | **Missing** |
+| Courier, social, gift-card surfaces | **Missing / commercial concept** |
 | `apps/storefront` | **Wrong product** (Ambady nursery) — do not reuse as R Glow store |
 
 ---
@@ -62,6 +69,8 @@ Phone dashboards for stylist / manager / front office.
 | Stylist / manager / FO phones | — | **Missing** as dedicated app |
 | Check-in / quick bill | `/calendar` actions + `/pos` | Partial (desktop) |
 | `/staff` in rinaglow | Admin HR CRUD | **Not** the Staff App |
+| Commission / rebooking targets | — | **Missing** |
+| Manager transfers / cross-store rating | — | **Missing** |
 
 Follow-up: role homes (e.g. `/today`) — separate PR.
 
@@ -71,7 +80,7 @@ Follow-up: role homes (e.g. `/today`) — separate PR.
 
 | Prototype | Status |
 |-----------|--------|
-| Dedicated R Glow marketing site | Partial — `/solutions/salon` + platform marketing |
+| Dedicated R Glow marketing site | Partial — `/solutions/salon` + platform marketing; no standalone pricing/setup-fee/FAQ funnel |
 | R Glow logo / RINPO art | Added under `public/assets/` (`rglow-logo`, `rinpo-face`, `rinpo-full3`) |
 | Booking chrome | Updated to R GLOW naming + logo |
 | Claim-safe pricing / metrics | Kept — no invented rates |
@@ -92,6 +101,11 @@ Console: Figtree via `next/font`, brand CSS vars (`--pur`, `--surf`, …), logo 
 
 ## Follow-up PRs
 
-1. Digital Store shell (website or new app — not Ambady storefront)
-2. Staff role phone dashboards
-3. Ops secrets / production cutover when provided
+1. Production MVP safety + evidence gates in [`PRODUCTION-MVP-GAP-ANALYSIS.md`](./PRODUCTION-MVP-GAP-ANALYSIS.md)
+2. Salon inventory and stock transfers
+3. GST invoice PDF/archive/delivery
+4. Assisted onboarding import tooling, then self-serve wizard
+5. Digital Store shell (website or new app — not Ambady storefront)
+6. Staff role phone dashboards
+7. Skin/hair scan only after image-consent, retention, storage, and model review
+8. Voice receptionist and add-ons marketplace as separately approved product slices

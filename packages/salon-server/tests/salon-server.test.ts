@@ -157,6 +157,21 @@ describe("SalonRepository", () => {
     if (result.ok) assert.ok(result.data.appointmentId);
   });
 
+  it("rejects malformed public booking phone numbers before calling the RPC", async () => {
+    const repo = new SalonRepository(createMockClient());
+    const result = await repo.createPublicBooking({
+      organizationId: orgId,
+      branchId: "branch_1",
+      staffId: "staff_1",
+      serviceIds: ["svc_1"],
+      startsAt: "2026-09-10T10:00:00.000Z",
+      customerPhone: "not-a-phone",
+      customerName: "Priya",
+    });
+    assert.ok(!result.ok);
+    if (!result.ok) assert.match(result.error.message, /8 to 15 digits/i);
+  });
+
   it("resolves the public org, branches, services, and staff for the booking widget", async () => {
     const client = createMockClient();
     const repo = new SalonRepository(client);
