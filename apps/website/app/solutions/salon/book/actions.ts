@@ -103,6 +103,7 @@ export async function createBookingAction(input: CreateBookingInput): Promise<Cr
     marketingConsent: input.marketingConsent ?? false,
     notes: input.notes || undefined,
     idempotencyKey: input.idempotencyKey,
+    rateLimitKey,
   });
   if (!result.ok) return { ok: false, error: result.error.message };
   return {

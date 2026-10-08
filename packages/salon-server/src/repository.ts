@@ -122,6 +122,8 @@ export type CreatePublicBookingInput = {
   marketingConsent?: boolean;
   notes?: string;
   idempotencyKey?: string;
+  /** Server-derived, privacy-preserving identifier used by the DB rate limiter. */
+  rateLimitKey?: string;
 };
 
 export type PublicBookingResult = {
