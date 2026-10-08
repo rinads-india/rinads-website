@@ -1,6 +1,9 @@
 import "server-only";
 
-import { loadFounderIntelligenceSnapshot } from "@/lib/founder-intelligence/adapters";
+import {
+  RinpoRuntimeStatusSource,
+  SupabaseStatusSource,
+} from "@/lib/founder-intelligence/adapters";
 import type { ConnectionState } from "@/lib/founder-intelligence/types";
 import type { RinpoControlSnapshot, RinpoMetric, RinpoMetricId } from "./types";
 
@@ -163,23 +166,10 @@ function summarizeDataPlane(metrics: RinpoMetric[]): {
 }
 
 export async function loadRinpoControlSnapshot(): Promise<RinpoControlSnapshot> {
-  const founderSnapshot = await loadFounderIntelligenceSnapshot();
-  const runtime =
-    founderSnapshot.sources.find((source) => source.id === "rinpo-runtime") ?? {
-      id: "rinpo-runtime",
-      label: "RINPO runtime",
-      state: "not_connected" as const,
-      detail: "RINPO runtime status source is not registered.",
-      checkedAt: null,
-    };
-  const intelligenceBackend =
-    founderSnapshot.sources.find((source) => source.id === "supabase") ?? {
-      id: "supabase",
-      label: "RINADS Intelligence backend",
-      state: "not_connected" as const,
-      detail: "Supabase status source is not registered.",
-      checkedAt: null,
-    };
+  const [runtime, intelligenceBackend] = await Promise.all([
+    new RinpoRuntimeStatusSource().check(),
+    new SupabaseStatusSource().check(),
+  ]);
 
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
