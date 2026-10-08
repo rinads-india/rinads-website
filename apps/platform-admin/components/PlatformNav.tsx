@@ -1,8 +1,7 @@
 import Link from "next/link";
 
-const links = [
+const standardLinks = [
   { href: "/", label: "Dashboard" },
-  { href: "/founder-intelligence", label: "Founder Intelligence" },
   { href: "/tenants", label: "Tenants" },
   { href: "/tenants/new", label: "Provision" },
   { href: "/templates", label: "Templates" },
@@ -14,7 +13,14 @@ const links = [
   { href: "/website/redirects", label: "Redirects" },
 ];
 
-export function PlatformNav() {
+const founderLinks = [
+  { href: "/founder-intelligence", label: "Founder Intelligence" },
+  { href: "/rinpo", label: "RINPO Control" },
+];
+
+export function PlatformNav({ showFounderControls = false }: { showFounderControls?: boolean }) {
+  const links = showFounderControls ? [...founderLinks, ...standardLinks] : standardLinks;
+
   return (
     <header className="border-b border-[color-mix(in_srgb,var(--rinads-primary)_15%,transparent)] bg-surface">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">

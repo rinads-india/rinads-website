@@ -13,9 +13,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     redirect("/forbidden");
   }
 
+  const showFounderControls =
+    access.tenancy.roleKey === "founder" || access.tenancy.roleKey === "super_admin";
+
   return (
     <>
-      <PlatformNav />
+      <PlatformNav showFounderControls={showFounderControls} />
       <div className="mx-auto flex max-w-6xl justify-end px-4 pt-3">
         <SignOutButton />
       </div>
