@@ -119,8 +119,11 @@ export type CreatePublicBookingInput = {
   customerPhone: string;
   customerName?: string;
   customerEmail?: string;
+  marketingConsent?: boolean;
   notes?: string;
   idempotencyKey?: string;
+  /** Server-derived, privacy-preserving identifier used by the DB rate limiter. */
+  rateLimitKey?: string;
 };
 
 export type PublicBookingResult = {
@@ -360,10 +363,20 @@ export class SalonRepository {
 
   async updateCustomerCommunicationPreferences(
     customerId: string,
-    input: { preferredChannel?: PreferredChannel; optedOutAt?: string | null }
+    input: {
+      preferredChannel?: PreferredChannel;
+      marketingConsent?: boolean;
+      marketingConsentSource?: string;
+      optedOutAt?: string | null;
+    }
   ): Promise<Result<true>> {
     const patch: SalonRow = {};
     if (input.preferredChannel) patch.preferred_channel = input.preferredChannel;
+    if (input.marketingConsent !== undefined) {
+      patch.marketing_consent = input.marketingConsent;
+      patch.marketing_consent_at = input.marketingConsent ? new Date().toISOString() : null;
+      patch.marketing_consent_source = input.marketingConsent ? input.marketingConsentSource ?? "operator" : null;
+    }
     if (input.optedOutAt !== undefined) patch.opted_out_at = input.optedOutAt;
     const { error } = await this.client.from("salon_customers").update(patch).eq("id", customerId);
     if (error) return fail("db_error", error.message);
@@ -1205,7 +1218,10 @@ export class SalonRepository {
   /** Anonymous booking — calls `create_public_salon_booking`, which enforces the double-booking guard server-side. */
   async createPublicBooking(input: CreatePublicBookingInput): Promise<Result<PublicBookingResult>> {
     if (!input.serviceIds.length) return fail("invalid_input", "At least one service is required.");
-    if (!input.customerPhone.trim()) return fail("invalid_input", "Phone number is required.");
+    const phone = input.customerPhone.trim();
+    if (!/^\+?[0-9]{8,15}$/.test(phone)) {
+      return fail("invalid_input", "Enter a valid phone number with 8 to 15 digits.");
+    }
 
     const { data, error } = await this.client.rpc("create_public_salon_booking", {
       p_organization_id: input.organizationId,
@@ -1213,11 +1229,13 @@ export class SalonRepository {
       p_staff_id: input.staffId,
       p_service_ids: input.serviceIds,
       p_starts_at: input.startsAt,
-      p_customer_phone: input.customerPhone.trim(),
+      p_customer_phone: phone,
       p_customer_name: input.customerName ?? null,
       p_customer_email: input.customerEmail ?? null,
       p_notes: input.notes ?? null,
       p_idempotency_key: input.idempotencyKey ?? null,
+      p_marketing_consent: input.marketingConsent ?? false,
+      p_rate_limit_key: input.rateLimitKey ?? null,
     });
     if (error) return fail("booking_failed", error.message);
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getSalonDeps } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { AddCustomerNoteForm } from "./AddCustomerNoteForm";
+import { updateCustomerCommunicationPreferencesAction } from "./actions";
 
 export const metadata = { title: "Client — R GLOW Console" };
 
@@ -73,6 +74,46 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           <p className="mt-1 text-sm font-medium text-foreground">{spend.lastVisitAt ? formatDateTime(spend.lastVisitAt) : "—"}</p>
         </Card>
       </div>
+
+      <Card>
+        <p className="section-title">Communication preferences</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Record marketing consent only when the client has explicitly agreed. Booking and receipt updates are transactional.
+        </p>
+        <form action={updateCustomerCommunicationPreferencesAction} className="mt-3 flex flex-wrap items-end gap-4">
+          <input type="hidden" name="customerId" value={customer.id} />
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted-foreground">Preferred channel</span>
+            <select
+              name="preferredChannel"
+              defaultValue={customer.preferredChannel}
+              className="rounded-lg border border-rinads-primary/20 bg-surface px-3 py-2"
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <input type="checkbox" name="marketingConsent" defaultChecked={customer.marketingConsent} />
+            Explicit marketing consent
+          </label>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <input type="checkbox" name="optedOut" defaultChecked={Boolean(customer.optedOutAt)} />
+            Opted out
+          </label>
+          <button type="submit" className="rounded-lg bg-rinads-primary px-4 py-2 text-sm font-semibold text-white">
+            Save preferences
+          </button>
+        </form>
+        {customer.marketingConsentAt ? (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Consent recorded {formatDateTime(customer.marketingConsentAt)}
+            {customer.marketingConsentSource ? ` via ${customer.marketingConsentSource.replaceAll("_", " ")}` : ""}.
+          </p>
+        ) : null}
+      </Card>
 
       <Card>
         <p className="section-title">Reviews &amp; recovery</p>

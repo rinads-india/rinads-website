@@ -1,6 +1,8 @@
 "use server";
 
 import type { BusyRange } from "@rinads/salon";
+import { createHash } from "node:crypto";
+import { headers } from "next/headers";
 import { getPublicSalonRepository } from "@/lib/salon-booking";
 
 export type GetBusySlotsResult = { ok: true; busy: BusyRange[] } | { ok: false; error: string };
@@ -48,6 +50,7 @@ export type CreateBookingInput = {
   customerPhone: string;
   customerName: string;
   customerEmail?: string;
+  marketingConsent?: boolean;
   notes?: string;
   /** Client-generated once per booking attempt — a resubmit (double-click, network retry) replays the same booking instead of double-booking. */
   idempotencyKey: string;
@@ -59,6 +62,13 @@ export type CreateBookingResult =
 
 export async function createBookingAction(input: CreateBookingInput): Promise<CreateBookingResult> {
   const repo = await getPublicSalonRepository();
+  const requestHeaders = await headers();
+  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const clientAddress = requestHeaders.get("x-real-ip") ?? forwardedFor;
+  const normalizedPhone = input.customerPhone.replace(/[\s()-]/g, "");
+  const rateLimitKey = createHash("sha256")
+    .update(`${input.organizationId}:${clientAddress ? `ip:${clientAddress}` : `phone:${normalizedPhone}`}`)
+    .digest("hex");
 
   // Pre-submit revalidation: re-check the slot is still free right before
   // writing, so a stale slot list (someone else booked it moments ago)
@@ -83,11 +93,13 @@ export async function createBookingAction(input: CreateBookingInput): Promise<Cr
     staffId: input.staffId,
     serviceIds: input.serviceIds,
     startsAt: input.startsAt,
-    customerPhone: input.customerPhone,
+    customerPhone: normalizedPhone,
     customerName: input.customerName || undefined,
     customerEmail: input.customerEmail || undefined,
+    marketingConsent: input.marketingConsent ?? false,
     notes: input.notes || undefined,
     idempotencyKey: input.idempotencyKey,
+    rateLimitKey,
   });
   if (!result.ok) return { ok: false, error: result.error.message };
   return {

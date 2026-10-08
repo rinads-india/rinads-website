@@ -147,6 +147,8 @@ export function mapCustomerRow(row: SalonRow): SalonCustomer {
     email: optStr(row, "email"),
     notes: optStr(row, "notes"),
     marketingConsent: Boolean(row.marketing_consent),
+    marketingConsentAt: optStr(row, "marketing_consent_at"),
+    marketingConsentSource: optStr(row, "marketing_consent_source"),
     preferredChannel: (optStr(row, "preferred_channel") as PreferredChannel | undefined) ?? "whatsapp",
     optedOutAt: optStr(row, "opted_out_at"),
     createdAt: optStr(row, "created_at"),

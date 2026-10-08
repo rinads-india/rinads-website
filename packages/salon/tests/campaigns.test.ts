@@ -46,6 +46,7 @@ const BASE_INPUT: SegmentMatchInput = {
   preferredStaffId: "staff_1",
   preferredServiceId: "svc_1",
   branchId: "branch_1",
+  marketingConsent: true,
   preferredChannel: "whatsapp",
 };
 
@@ -53,6 +54,12 @@ describe("matchesSegment", () => {
   it("matches everyone when criteria is empty", () => {
     const result = matchesSegment(BASE_INPUT, {});
     assert.equal(result.matches, true);
+  });
+
+  it("excludes a customer without affirmative marketing consent", () => {
+    const result = matchesSegment({ ...BASE_INPUT, marketingConsent: false }, {});
+    assert.equal(result.matches, false);
+    if (!result.matches) assert.match(result.excludeReason, /affirmative marketing consent/i);
   });
 
   it("excludes a customer who opted out, by default", () => {
@@ -67,12 +74,13 @@ describe("matchesSegment", () => {
     if (!result.matches) assert.match(result.excludeReason, /no preferred communication channel/i);
   });
 
-  it("includes an opted-out customer only when communicationOptIn is explicitly false", () => {
+  it("never lets legacy criteria override an explicit opt-out", () => {
     const result = matchesSegment(
       { ...BASE_INPUT, optedOutAt: new Date().toISOString() },
       { communicationOptIn: false }
     );
-    assert.equal(result.matches, true);
+    assert.equal(result.matches, false);
+    if (!result.matches) assert.match(result.excludeReason, /opted out/i);
   });
 
   it("excludes customers who never visited when lastVisitBeforeDays is set", () => {

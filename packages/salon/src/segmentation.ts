@@ -10,6 +10,7 @@ export type SegmentMatchInput = {
   branchId?: string;
   loyaltyBalance?: number;
   loyaltyTier?: string;
+  marketingConsent: boolean;
   optedOutAt?: string;
   preferredChannel: PreferredChannel;
 };
@@ -22,16 +23,18 @@ export type SegmentMatchResult = { matches: true } | { matches: false; excludeRe
  * tests, so "does this customer qualify" is one implementation checked
  * once, not re-derived at both preview and send time. Every criterion is
  * optional and AND-ed together; an unset criterion never excludes anyone.
- * Consent (`communicationOptIn`) defaults to `true` — a caller must
- * explicitly set it to `false` to include opted-out customers (never the
- * default, and never silently ignored).
+ * Campaign eligibility always requires affirmative marketing consent.
+ * `communicationOptIn` is retained for saved-criteria compatibility, but
+ * it can never override a missing consent record or an explicit opt-out.
  */
 export function matchesSegment(input: SegmentMatchInput, criteria: SegmentCriteria): SegmentMatchResult {
-  const requireOptIn = criteria.communicationOptIn ?? true;
-  if (requireOptIn && input.optedOutAt) {
+  if (!input.marketingConsent) {
+    return { matches: false, excludeReason: "Customer has not provided affirmative marketing consent." };
+  }
+  if (input.optedOutAt) {
     return { matches: false, excludeReason: "Customer has opted out of communications." };
   }
-  if (requireOptIn && input.preferredChannel === "none") {
+  if (input.preferredChannel === "none") {
     return { matches: false, excludeReason: "Customer has no preferred communication channel." };
   }
 

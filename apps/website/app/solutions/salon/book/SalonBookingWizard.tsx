@@ -56,6 +56,7 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CreateBookingResult | null>(null);
 
@@ -168,6 +169,7 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
       customerPhone: phone,
       customerName: name,
       customerEmail: email,
+      marketingConsent,
       idempotencyKey: idempotencyKeyRef.current,
     });
     setSubmitting(false);
@@ -315,6 +317,8 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
               className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
               placeholder="Phone number"
               required
+              inputMode="tel"
+              pattern="\\+?[0-9 ()-]{8,20}"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -325,6 +329,18 @@ export function SalonBookingWizard({ organizationId, organizationName, branches,
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <label className="flex items-start gap-2 text-xs leading-5 text-white/60 sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(event) => setMarketingConsent(event.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                I agree to receive offers and marketing from {organizationName}. This is optional and does not affect my
+                booking or transactional updates.
+              </span>
+            </label>
           </div>
           {totalDurationMin > 0 ? (
             <p className="mt-3 text-sm text-white/60">
