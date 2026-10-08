@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { OrderService, type CommerceContext, type Order } from "@rinads/commerce";
 import {
   createSupabaseCommerceRepository,
@@ -16,6 +17,14 @@ export type OwnerOrderRuntime = {
   persistOrder: (order: Order) => Promise<void>;
 };
 
+type PersistenceResult = Promise<{ error: { message: string } | null }>;
+type OrderPersistenceClient = {
+  from: (_table: string) => {
+    upsert: (rows: Record<string, unknown>[]) => PersistenceResult;
+    insert: (rows: Record<string, unknown>[]) => PersistenceResult;
+  };
+};
+
 function throwIfError(error: { message: string } | null, operation: string): void {
   if (error) {
     throw new Error(`${operation}: ${error.message}`);
@@ -23,7 +32,7 @@ function throwIfError(error: { message: string } | null, operation: string): voi
 }
 
 async function persistOrderToSupabase(
-  client: CommerceSupabaseClient,
+  client: OrderPersistenceClient,
   organizationId: string,
   order: Order
 ): Promise<void> {
@@ -50,17 +59,18 @@ async function persistOrderToSupabase(
   ]);
   throwIfError(orderError, "Failed to persist order status");
 
-  if (order.events.length > 0) {
-    const { error: eventsError } = await client.from("order_events").upsert(
-      order.events.map((event) => ({
-        id: event.id,
+  const latestEvent = order.events[order.events.length - 1];
+  if (latestEvent) {
+    const { error: eventError } = await client.from("order_events").insert([
+      {
+        id: randomUUID(),
         order_id: order.id,
-        event_type: event.eventType,
-        label: event.label,
-        occurred_at: event.occurredAt,
-      }))
-    );
-    throwIfError(eventsError, "Failed to persist order timeline");
+        event_type: latestEvent.eventType,
+        label: latestEvent.label,
+        occurred_at: latestEvent.occurredAt,
+      },
+    ]);
+    throwIfError(eventError, "Failed to persist order timeline");
   }
 }
 
@@ -75,22 +85,24 @@ export async function loadOwnerOrderRuntime(): Promise<OwnerOrderRuntime> {
 
   const supabase = await createOwnerServerClient();
   const ctx = await getCommerceContextFromTenancy(async () => supabase);
-  const client = supabase as unknown as CommerceSupabaseClient;
-  const store = await loadCommerceStoreFromSupabase(client, ctx.organizationId);
+  const commerceClient = supabase as unknown as CommerceSupabaseClient;
+  const persistenceClient = supabase as unknown as OrderPersistenceClient;
+  const store = await loadCommerceStoreFromSupabase(commerceClient, ctx.organizationId);
 
   if (!store) {
     throw new Error("Unable to load the active organization's commerce store.");
   }
 
+  // Keep mutation state local to this request. Only the explicitly authorized
+  // order + timeline records are persisted below; do not sync the full commerce store.
   const repo = createSupabaseCommerceRepository({
     organizationId: ctx.organizationId,
-    client,
     initialStore: store,
   });
 
   return {
     ctx,
     orders: new OrderService(repo),
-    persistOrder: (order) => persistOrderToSupabase(client, ctx.organizationId, order),
+    persistOrder: (order) => persistOrderToSupabase(persistenceClient, ctx.organizationId, order),
   };
 }
