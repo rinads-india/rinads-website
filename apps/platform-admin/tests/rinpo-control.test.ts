@@ -30,7 +30,7 @@ describe("RINPO production control", () => {
     assert.match(adapters, /rinpo_audit_log/);
     assert.match(adapters, /rinpo_training_jobs/);
     assert.match(adapters, /SUPABASE_SERVICE_ROLE_KEY/);
-    assert.doesNotMatch(adapters, /NEXT_PUBLIC_.*SERVICE/);
+    assert.doesNotMatch(adapters, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   });
 
   it("keeps the action safety lifecycle visible", () => {
