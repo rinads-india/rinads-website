@@ -56,3 +56,764 @@ th {
   border-radius: 0.75rem;
   padding: 1.25rem;
 }
+
+/* Founder Intelligence — isolated control-centre visual language. */
+.founder-intelligence-shell {
+  min-height: 100vh;
+  background: #8ba0ac;
+  color: #102018;
+  font-family: Figtree, ui-sans-serif, system-ui, sans-serif;
+}
+
+.fi-scene {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 1.25rem clamp(1rem, 3vw, 3rem) 7rem;
+}
+
+.fi-sky,
+.fi-hills {
+  position: absolute;
+  inset: 0;
+  z-index: -4;
+  pointer-events: none;
+}
+
+.fi-sky {
+  background:
+    radial-gradient(circle at 55% 20%, rgba(255, 255, 255, 0.54), transparent 22rem),
+    linear-gradient(180deg, #8fa8b9 0%, #c8d6d4 45%, #dce5cf 58%, #9fb666 100%);
+}
+
+.fi-hills {
+  top: 43%;
+  bottom: -5%;
+  filter: blur(0.4px);
+}
+
+.fi-hills-back {
+  background:
+    radial-gradient(ellipse at 12% 32%, #b7c78a 0 25%, transparent 26%),
+    radial-gradient(ellipse at 41% 37%, #c3ce96 0 31%, transparent 32%),
+    radial-gradient(ellipse at 82% 30%, #b6c780 0 34%, transparent 35%);
+  opacity: 0.92;
+}
+
+.fi-hills-front {
+  top: 56%;
+  background:
+    linear-gradient(165deg, transparent 0 12%, rgba(108, 137, 59, 0.35) 13% 25%, transparent 26%),
+    repeating-linear-gradient(83deg, rgba(70, 106, 44, 0.13) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #9db866, #719244 82%);
+}
+
+.fi-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(16, 32, 24, 0.03), rgba(16, 32, 24, 0.14));
+}
+
+.fi-topbar,
+.fi-intro,
+.fi-dashboard-grid,
+.fi-presence-dock {
+  width: min(1440px, 100%);
+  margin-inline: auto;
+}
+
+.fi-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fi-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.fi-brand-mark,
+.fi-system-orb {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  aspect-ratio: 1;
+  border-radius: 0.85rem 1.2rem 0.85rem 1.2rem;
+  color: white;
+  font-weight: 800;
+  font-size: 1.6rem;
+  font-style: italic;
+  background: linear-gradient(145deg, #6a2cff, var(--rinads-primary));
+  box-shadow: 0 10px 32px rgba(68, 21, 96, 0.28);
+}
+
+.fi-brand > span:last-child {
+  display: grid;
+}
+
+.fi-brand strong {
+  color: #8f28bd;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.fi-brand small {
+  font-size: 0.55rem;
+  margin-top: 0.18rem;
+  color: rgba(16, 32, 24, 0.65);
+}
+
+.fi-top-actions,
+.fi-view-switch {
+  display: flex;
+  align-items: center;
+}
+
+.fi-top-actions {
+  gap: 0.65rem;
+}
+
+.fi-top-actions > button,
+.fi-top-chip,
+.fi-view-switch {
+  min-height: 2.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(74, 91, 99, 0.18);
+  color: white;
+  backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fi-top-actions > button,
+.fi-top-chip {
+  padding: 0.65rem 1rem;
+  font-size: 0.72rem;
+}
+
+.fi-view-switch {
+  padding: 0.2rem;
+  gap: 0.15rem;
+  font-size: 0.7rem;
+}
+
+.fi-view-switch span,
+.fi-view-switch strong {
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+}
+
+.fi-view-switch strong {
+  color: #17221c;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.fi-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: clamp(2.25rem, 5vw, 4.5rem) 1.35rem;
+}
+
+.fi-kicker,
+.fi-eyebrow {
+  display: block;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(16, 32, 24, 0.55);
+}
+
+.fi-kicker {
+  font-size: 0.65rem;
+}
+
+.fi-eyebrow {
+  font-size: 0.57rem;
+}
+
+.fi-intro h1 {
+  margin: 0.3rem 0 0;
+  font-size: clamp(2.1rem, 4vw, 4.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.fi-intro p {
+  max-width: 39rem;
+  margin-top: 0.75rem;
+  font-size: clamp(0.78rem, 1vw, 0.95rem);
+  color: rgba(16, 32, 24, 0.72);
+}
+
+.fi-overall {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  max-width: 19rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(18px);
+}
+
+.fi-overall > span:last-child,
+.fi-rinpo-promise > span:last-child {
+  display: grid;
+}
+
+.fi-overall strong,
+.fi-rinpo-promise strong {
+  font-size: 0.72rem;
+}
+
+.fi-overall small,
+.fi-rinpo-promise small {
+  font-size: 0.58rem;
+  color: rgba(16, 32, 24, 0.58);
+}
+
+.fi-glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.69), rgba(239, 245, 239, 0.32));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 18px 50px rgba(48, 68, 57, 0.1);
+  backdrop-filter: blur(22px) saturate(115%);
+}
+
+.fi-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.85fr) minmax(17rem, 0.9fr) minmax(18rem, 1fr);
+  grid-template-areas:
+    "sources mascot workspaces"
+    "architecture architecture system"
+    "controls controls system";
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.fi-source-grid {
+  grid-area: sources;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fi-source-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 9.3rem;
+  padding: 1.15rem;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+a.fi-source-card:hover,
+.fi-workspace-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.fi-card-heading,
+.fi-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.fi-card-heading h2,
+.fi-section-heading h2,
+.fi-controls h2,
+.fi-architecture h2 {
+  margin-top: 0.2rem;
+  font-size: 0.95rem;
+  line-height: 1.05;
+}
+
+.fi-card-detail {
+  margin-top: 0.65rem;
+  font-size: 0.69rem;
+  line-height: 1.45;
+  color: rgba(16, 32, 24, 0.66);
+}
+
+.fi-checked {
+  margin-top: 0.75rem;
+  font-size: 0.57rem;
+  color: rgba(16, 32, 24, 0.47);
+}
+
+.fi-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  padding: 0.35rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.48);
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.fi-status-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #8b918d;
+  box-shadow: 0 0 0 3px rgba(139, 145, 141, 0.13);
+}
+
+.fi-status-operational .fi-status-dot,
+.fi-status-dot.fi-status-operational {
+  background: #2ec57a;
+  box-shadow: 0 0 0 3px rgba(46, 197, 122, 0.15);
+}
+
+.fi-status-degraded .fi-status-dot,
+.fi-status-dot.fi-status-degraded {
+  background: #d89b24;
+  box-shadow: 0 0 0 3px rgba(216, 155, 36, 0.15);
+}
+
+.fi-status-unavailable .fi-status-dot,
+.fi-status-dot.fi-status-unavailable {
+  background: #c84949;
+  box-shadow: 0 0 0 3px rgba(200, 73, 73, 0.15);
+}
+
+.fi-mascot-stage {
+  grid-area: mascot;
+  position: relative;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  min-height: 31rem;
+  margin-top: -4rem;
+}
+
+.fi-mascot-aura {
+  position: absolute;
+  top: 10%;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(159, 75, 199, 0.24), transparent 68%);
+  filter: blur(12px);
+}
+
+.fi-mascot {
+  position: relative;
+  width: auto;
+  height: clamp(29rem, 47vw, 45rem);
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 28px 28px rgba(32, 30, 40, 0.34));
+}
+
+.fi-rinpo-promise {
+  position: absolute;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(239, 244, 235, 0.68);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 30px rgba(44, 57, 48, 0.17);
+}
+
+.fi-workspaces {
+  grid-area: workspaces;
+}
+
+.fi-section-heading {
+  padding: 0.2rem 0.4rem 0.65rem;
+}
+
+.fi-count {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.52);
+  font-size: 0.68rem;
+}
+
+.fi-workspace-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.fi-workspace-card {
+  min-height: 11rem;
+  padding: 1rem;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.fi-workspace-state {
+  max-width: 4.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.25rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(150, 150, 150, 0.15);
+  font-size: 0.52rem;
+}
+
+.fi-workspace-state.is-active {
+  color: #16643b;
+  background: rgba(46, 197, 122, 0.14);
+}
+
+.fi-member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 2rem;
+  font-size: 0.58rem;
+  color: rgba(16, 32, 24, 0.58);
+}
+
+.fi-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 50%;
+  color: white;
+  background: #4d6255;
+  font-size: 0.59rem;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(19, 30, 23, 0.18);
+}
+
+.fi-avatar-purple {
+  background: linear-gradient(145deg, #5b2cff, var(--rinads-primary));
+}
+
+.fi-arrow {
+  margin-left: auto;
+  font-size: 0.9rem;
+}
+
+.fi-empty-card {
+  padding: 1.2rem;
+}
+
+.fi-empty-card strong {
+  font-size: 0.8rem;
+}
+
+.fi-empty-card p {
+  margin-top: 0.5rem;
+  font-size: 0.66rem;
+  color: rgba(16, 32, 24, 0.65);
+}
+
+.fi-architecture {
+  grid-area: architecture;
+  display: grid;
+  grid-template-columns: 0.7fr 2.3fr auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 9rem;
+  padding: 1.15rem;
+}
+
+.fi-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.fi-flow-node {
+  position: relative;
+  display: grid;
+  flex: 1;
+  min-height: 5rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.fi-flow-node > span:first-child {
+  font-size: 0.52rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(16, 32, 24, 0.53);
+}
+
+.fi-flow-node strong {
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+}
+
+.fi-flow-node small {
+  font-size: 0.5rem;
+  color: rgba(16, 32, 24, 0.58);
+}
+
+.fi-flow-node .fi-status-dot {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.fi-flow-arrow {
+  color: rgba(16, 32, 24, 0.4);
+}
+
+.fi-text-link {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #5d2675;
+}
+
+.fi-controls {
+  grid-area: controls;
+  display: grid;
+  grid-template-columns: 0.65fr 2.35fr;
+  gap: 1rem;
+  padding: 1.15rem;
+}
+
+.fi-control-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.fi-control-grid a {
+  display: grid;
+  min-height: 5.4rem;
+  padding: 0.7rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.34);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.fi-control-grid a:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.fi-control-grid a > span {
+  font-size: 1.05rem;
+  color: #6d2a8a;
+}
+
+.fi-control-grid strong {
+  align-self: end;
+  font-size: 0.62rem;
+}
+
+.fi-control-grid small {
+  font-size: 0.48rem;
+  color: rgba(16, 32, 24, 0.5);
+}
+
+.fi-system-card {
+  grid-area: system;
+  padding: 1.2rem;
+}
+
+.fi-system-orb {
+  width: 3.5rem;
+  border-radius: 50%;
+  background: transparent;
+  border: 3px solid rgba(159, 75, 199, 0.6);
+  color: #733090;
+  box-shadow: 0 0 28px rgba(159, 75, 199, 0.22);
+}
+
+.fi-system-list {
+  display: grid;
+  gap: 0.95rem;
+  margin-top: 2rem;
+}
+
+.fi-system-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(16, 32, 24, 0.1);
+  font-size: 0.65rem;
+}
+
+.fi-system-list strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.58rem;
+}
+
+.fi-system-card > p {
+  margin-top: 1.25rem;
+  font-size: 0.65rem;
+  color: rgba(16, 32, 24, 0.65);
+}
+
+.fi-presence-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(230, 237, 223, 0.52);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 16px 40px rgba(34, 48, 38, 0.18);
+}
+
+.fi-presence-dock .fi-avatar + .fi-avatar {
+  margin-left: -0.35rem;
+}
+
+.fi-presence-copy {
+  display: grid;
+  padding-inline: 0.8rem;
+}
+
+.fi-presence-copy strong {
+  font-size: 0.62rem;
+}
+
+.fi-presence-copy small {
+  font-size: 0.52rem;
+  color: rgba(16, 32, 24, 0.53);
+}
+
+@media (max-width: 1100px) {
+  .fi-dashboard-grid {
+    grid-template-columns: minmax(15rem, 0.8fr) minmax(18rem, 1fr);
+    grid-template-areas:
+      "sources mascot"
+      "workspaces workspaces"
+      "architecture architecture"
+      "controls controls"
+      "system system";
+  }
+
+  .fi-workspaces {
+    max-width: none;
+  }
+
+  .fi-workspace-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .fi-system-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fi-system-list > div {
+    display: grid;
+  }
+}
+
+@media (max-width: 760px) {
+  .fi-scene {
+    padding: 1rem 0.8rem 6.5rem;
+  }
+
+  .fi-top-actions .fi-top-chip,
+  .fi-view-switch span {
+    display: none;
+  }
+
+  .fi-view-switch strong {
+    padding-inline: 0.7rem;
+  }
+
+  .fi-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 2.5rem;
+  }
+
+  .fi-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "mascot"
+      "sources"
+      "workspaces"
+      "architecture"
+      "controls"
+      "system";
+  }
+
+  .fi-mascot-stage {
+    min-height: 29rem;
+    margin-top: -2rem;
+  }
+
+  .fi-mascot {
+    height: 31rem;
+  }
+
+  .fi-source-grid,
+  .fi-workspace-list {
+    grid-template-columns: 1fr;
+  }
+
+  .fi-architecture,
+  .fi-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .fi-flow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fi-flow-arrow {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+
+  .fi-control-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fi-system-list {
+    grid-template-columns: 1fr;
+  }
+
+  .fi-presence-dock .fi-avatar:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fi-source-card,
+  .fi-workspace-card,
+  .fi-control-grid a {
+    transition: none;
+  }
+}

@@ -8,6 +8,7 @@
 | Document | Purpose |
 |----------|---------|
 | [STATUS.md](./STATUS.md) | **End-to-end built vs pending** (current truth) |
+| [architecture/FOUNDER-INTELLIGENCE.md](./architecture/FOUNDER-INTELLIGENCE.md) | Founder-only control centre, live adapters, runtime map, and scaling boundaries |
 | [founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md](./founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md) | Latest live production gates |
 | [deployment/RGLOW_PRODUCTION_CUTOVER.md](./deployment/RGLOW_PRODUCTION_CUTOVER.md) | R GLOW go-live checklist |
 | [creative-os/GATE-A-CHECKLIST.md](./creative-os/GATE-A-CHECKLIST.md) | Creative OS Gate A / PR-C0 |
