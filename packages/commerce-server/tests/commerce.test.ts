@@ -7,7 +7,12 @@ import {
   PromotionService,
   TaxService,
 } from "@rinads/commerce";
-import { createInMemoryRepository, createAmbadySeedStore, AMBADY_ORG_ID } from "../src/index";
+import {
+  createInMemoryRepository,
+  createAmbadySeedStore,
+  createLegacyVariantStockInventoryPort,
+  AMBADY_ORG_ID,
+} from "../src/index";
 
 const ctx = { organizationId: AMBADY_ORG_ID, customerId: "cust_test" };
 
@@ -33,7 +38,8 @@ describe("CatalogService", () => {
 describe("CartService", () => {
   it("adds variant and validates stock", () => {
     const repo = createInMemoryRepository(createAmbadySeedStore());
-    const cartSvc = new CartService(repo);
+    const inventory = createLegacyVariantStockInventoryPort(repo);
+    const cartSvc = new CartService(repo, inventory);
     const cart = cartSvc.getOrCreate(ctx);
     const result = cartSvc.addLine(ctx, cart.id, "var_pebbles_500g", 2);
     assert.ok(result.ok);
@@ -62,10 +68,11 @@ describe("PromotionService", () => {
 });
 
 describe("CheckoutService", () => {
-  it("places order with server-side totals", () => {
+  it("places demo order only through an explicit inventory adapter", () => {
     const repo = createInMemoryRepository(createAmbadySeedStore());
-    const cartSvc = new CartService(repo);
-    const checkout = new CheckoutService(repo);
+    const inventory = createLegacyVariantStockInventoryPort(repo);
+    const cartSvc = new CartService(repo, inventory);
+    const checkout = new CheckoutService(repo, inventory);
     const cart = cartSvc.getOrCreate(ctx);
     cartSvc.addLine(ctx, cart.id, "var_pebbles_1kg", 1);
     const order = checkout.placeOrder(ctx, {
@@ -79,5 +86,24 @@ describe("CheckoutService", () => {
     assert.equal(order.data.paymentStatus, "paid");
     assert.ok(order.data.lines.length === 1);
     assert.ok(order.data.grandTotal > 0);
+  });
+
+  it("fails closed when authoritative checkout has no inventory provider", () => {
+    const repo = createInMemoryRepository(createAmbadySeedStore());
+    const cartSvc = new CartService(repo);
+    const checkout = new CheckoutService(repo);
+    const cart = cartSvc.getOrCreate(ctx);
+    cartSvc.addLine(ctx, cart.id, "var_pebbles_1kg", 1);
+
+    const order = checkout.placeOrder(ctx, {
+      cartId: cart.id,
+      customerId: ctx.customerId,
+      shippingMethodCode: "standard",
+      paymentProvider: "demo",
+      paymentReference: "demo_pay_should_not_run",
+    });
+
+    assert.equal(order.ok, false);
+    if (!order.ok) assert.equal(order.error.code, "INVENTORY_UNAVAILABLE");
   });
 });
