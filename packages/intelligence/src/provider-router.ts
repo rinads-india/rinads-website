@@ -5,6 +5,12 @@ export type RinpoModelRouteConfig = {
   apiKey?: string;
   baseUrl?: string;
   model?: string;
+  /**
+   * Keep legacy `RINADS_RINPO_LLM_API_KEY` compatibility for the selected
+   * provider. Registry/discovery callers can disable this to avoid treating
+   * one legacy credential as if it configured every provider.
+   */
+  allowLegacyApiKeyFallback?: boolean;
 };
 
 export type RinpoResolvedModelRoute = {
@@ -43,16 +49,22 @@ function trimBaseUrl(value: string | undefined): string {
  * RINPO's tenancy, permission, approval, or audit boundaries.
  */
 export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): RinpoResolvedModelRoute {
-  const providerSelector = config.provider ?? readEnv("RINADS_RINPO_LLM_PROVIDER");
+  const envProviderSelector = readEnv("RINADS_RINPO_LLM_PROVIDER");
+  const providerSelector = config.provider ?? envProviderSelector;
   const provider = normalizeProvider(providerSelector);
   const providerWasExplicit = Boolean(providerSelector);
 
+  const legacyFallbackApplies =
+    config.allowLegacyApiKeyFallback ??
+    (config.provider
+      ? envProviderSelector
+        ? config.provider === normalizeProvider(envProviderSelector)
+        : config.provider === "openai"
+      : true);
+  const legacyApiKey = legacyFallbackApplies ? readEnv("RINADS_RINPO_LLM_API_KEY") : undefined;
+
   if (provider === "xai") {
-    const apiKey =
-      config.apiKey ??
-      readEnv("RINADS_XAI_API_KEY") ??
-      readEnv("XAI_API_KEY") ??
-      readEnv("RINADS_RINPO_LLM_API_KEY");
+    const apiKey = config.apiKey ?? readEnv("RINADS_XAI_API_KEY") ?? readEnv("XAI_API_KEY") ?? legacyApiKey;
     const baseUrl = trimBaseUrl(
       config.baseUrl ??
         readEnv("RINADS_XAI_BASE_URL") ??
@@ -60,10 +72,7 @@ export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): Rinp
         "https://api.x.ai/v1"
     );
     const model =
-      config.model ??
-      readEnv("RINADS_XAI_MODEL") ??
-      readEnv("RINADS_RINPO_LLM_MODEL") ??
-      "grok-4.7";
+      config.model ?? readEnv("RINADS_XAI_MODEL") ?? readEnv("RINADS_RINPO_LLM_MODEL") ?? "grok-4.7";
 
     return {
       provider,
@@ -75,7 +84,7 @@ export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): Rinp
   }
 
   if (provider === "custom") {
-    const apiKey = config.apiKey ?? readEnv("RINADS_RINPO_LLM_API_KEY");
+    const apiKey = config.apiKey ?? legacyApiKey;
     const baseUrl = trimBaseUrl(config.baseUrl ?? readEnv("RINADS_RINPO_LLM_BASE_URL"));
     const model = config.model ?? readEnv("RINADS_RINPO_LLM_MODEL") ?? "";
 
@@ -91,7 +100,7 @@ export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): Rinp
   const apiKey =
     config.apiKey ??
     (providerWasExplicit ? readEnv("RINADS_OPENAI_API_KEY") : undefined) ??
-    readEnv("RINADS_RINPO_LLM_API_KEY");
+    legacyApiKey;
   const baseUrl = trimBaseUrl(
     config.baseUrl ??
       (providerWasExplicit ? readEnv("RINADS_OPENAI_BASE_URL") : undefined) ??
