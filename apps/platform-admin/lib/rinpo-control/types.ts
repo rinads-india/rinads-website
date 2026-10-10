@@ -16,11 +16,22 @@ export type RinpoMetric = {
   detail: string;
 };
 
+export type RinpoProviderId = "openai" | "xai" | "custom";
+
+export type RinpoProviderRouteStatus = {
+  provider: RinpoProviderId;
+  model: string;
+  baseUrl: string;
+  configured: boolean;
+  selectedByDefault: boolean;
+};
+
 export type RinpoControlSnapshot = {
   checkedAt: string;
   runtime: SourceCheck;
   intelligenceBackend: SourceCheck;
   metrics: RinpoMetric[];
+  providerRoutes: RinpoProviderRouteStatus[];
   dataPlaneState: ConnectionState;
   dataPlaneDetail: string;
 };

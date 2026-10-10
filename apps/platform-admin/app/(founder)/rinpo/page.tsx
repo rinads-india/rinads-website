@@ -24,7 +24,7 @@ const lifecycle = [
   ["Tenant", "Resolve organization/workspace scope before retrieval."],
   ["Authorization", "Evaluate role and explicit tool/data permission."],
   ["Context + memory", "Retrieve only permitted operational context with provenance."],
-  ["Model gateway", "Use a replaceable model adapter for structured reasoning."],
+  ["Model gateway", "Classify task/data sensitivity and route only to an approved configured provider."],
   ["Policy", "Classify risk and evaluate action policy."],
   ["Approval", "Require a human decision whenever policy demands it."],
   ["Execution", "Run the deterministic tool/runtime path, not model text."],
@@ -91,7 +91,7 @@ export default async function RinpoControlPage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">System of intelligence</p>
                 <h2 className="mt-3 text-3xl font-semibold tracking-tight">Govern RINPO from one truthful surface.</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-white/65">
-                  Live source health, canonical RINPO data, approval pressure and safety boundaries are shown here without demo counters or inferred operational status.
+                  Live source health, canonical RINPO data, model routing configuration, approval pressure and safety boundaries are shown here without demo counters or inferred operational status.
                 </p>
               </div>
               <StatusBadge state={overallState} />
@@ -153,6 +153,51 @@ export default async function RinpoControlPage() {
           </div>
         </section>
 
+        <section aria-labelledby="model-routing-title" className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">RINPO Network</p>
+              <h2 id="model-routing-title" className="mt-1 text-2xl font-semibold">Model routing configuration</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
+                Server-side configuration status only. No provider credentials are rendered here, and this surface does not make routing decisions.
+              </p>
+            </div>
+            <p className="text-xs text-white/45">Canonical routing: @rinads/intelligence</p>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            {snapshot.providerRoutes.map((route) => {
+              const routeState: ConnectionState = route.configured ? "operational" : "not_connected";
+              return (
+                <article key={route.provider} className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-white/45">Provider</p>
+                      <h3 className="mt-1 text-lg font-semibold uppercase">{route.provider}</h3>
+                    </div>
+                    <StatusBadge state={routeState} />
+                  </div>
+                  <dl className="mt-5 grid gap-3 text-sm">
+                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                      <dt className="text-xs uppercase tracking-wide text-white/40">Model</dt>
+                      <dd className="mt-1 break-all text-white/75">{route.model}</dd>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                      <dt className="text-xs uppercase tracking-wide text-white/40">Base URL</dt>
+                      <dd className="mt-1 break-all text-xs text-white/60">{route.baseUrl}</dd>
+                    </div>
+                  </dl>
+                  {route.selectedByDefault ? (
+                    <p className="mt-4 rounded-xl border border-violet-300/25 bg-violet-400/10 px-3 py-2 text-xs font-semibold text-violet-100">
+                      Selected default route
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">Execution governance</p>
@@ -199,7 +244,7 @@ export default async function RinpoControlPage() {
                   "Tool registry and permission scopes",
                   "Approval queue and policy decisions",
                   "Agent runs and evaluations",
-                  "Model/usage/cost observability",
+                  "Persisted model usage/cost telemetry",
                   "Release/version governance",
                 ].map((item) => (
                   <div key={item} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">{item}</div>
