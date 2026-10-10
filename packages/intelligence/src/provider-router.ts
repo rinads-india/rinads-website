@@ -33,15 +33,19 @@ function trimBaseUrl(value: string | undefined): string {
 /**
  * Resolve the OpenAI-compatible inference route used by RINPO NLU.
  *
- * Provider-specific environment variables are preferred over the legacy
- * RINADS_RINPO_LLM_* variables. The legacy variables remain supported so
- * existing deployments do not break while the intelligence gateway evolves.
+ * Backwards compatibility is deliberate: if no provider is explicitly
+ * selected, only the legacy RINADS_RINPO_LLM_API_KEY (or an explicit config
+ * key) activates LLM NLU. This prevents an unrelated OPENAI_API_KEY from
+ * silently changing the production-safe deterministic default.
  *
- * This resolver is server-side configuration only. It never exposes API keys
- * to browser code and it does not change tool authorization/approval rules.
+ * Provider-specific environment variables are used once a provider is
+ * explicitly selected. This resolver is server-side only and never changes
+ * RINPO's tenancy, permission, approval, or audit boundaries.
  */
 export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): RinpoResolvedModelRoute {
-  const provider = normalizeProvider(config.provider ?? readEnv("RINADS_RINPO_LLM_PROVIDER"));
+  const providerSelector = config.provider ?? readEnv("RINADS_RINPO_LLM_PROVIDER");
+  const provider = normalizeProvider(providerSelector);
+  const providerWasExplicit = Boolean(providerSelector);
 
   if (provider === "xai") {
     const apiKey =
@@ -86,18 +90,17 @@ export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): Rinp
 
   const apiKey =
     config.apiKey ??
-    readEnv("RINADS_OPENAI_API_KEY") ??
-    readEnv("OPENAI_API_KEY") ??
+    (providerWasExplicit ? readEnv("RINADS_OPENAI_API_KEY") : undefined) ??
     readEnv("RINADS_RINPO_LLM_API_KEY");
   const baseUrl = trimBaseUrl(
     config.baseUrl ??
-      readEnv("RINADS_OPENAI_BASE_URL") ??
+      (providerWasExplicit ? readEnv("RINADS_OPENAI_BASE_URL") : undefined) ??
       readEnv("RINADS_RINPO_LLM_BASE_URL") ??
       "https://api.openai.com/v1"
   );
   const model =
     config.model ??
-    readEnv("RINADS_OPENAI_MODEL") ??
+    (providerWasExplicit ? readEnv("RINADS_OPENAI_MODEL") : undefined) ??
     readEnv("RINADS_RINPO_LLM_MODEL") ??
     "gpt-4o-mini";
 
