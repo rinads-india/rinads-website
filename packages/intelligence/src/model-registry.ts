@@ -52,6 +52,13 @@ function selectedProvider(): RinpoLlmProvider {
   return resolveRinpoModelRoute().provider;
 }
 
+function resolveProviderForRegistry(provider: RinpoLlmProvider, selected: RinpoLlmProvider): RinpoResolvedModelRoute {
+  return resolveRinpoModelRoute({
+    provider,
+    allowLegacyApiKeyFallback: provider === selected,
+  });
+}
+
 function safeRoute(route: RinpoResolvedModelRoute): Omit<RinpoResolvedModelRoute, "apiKey"> {
   return {
     provider: route.provider,
@@ -72,7 +79,7 @@ function isAllowed(provider: RinpoLlmProvider, policy: RinpoRoutingPolicy): bool
 export function listRinpoModelRegistry(): RinpoModelRegistryEntry[] {
   const selected = selectedProvider();
   return PROVIDERS.map((provider) => {
-    const route = resolveRinpoModelRoute({ provider });
+    const route = resolveProviderForRegistry(provider, selected);
     return {
       provider,
       model: route.model,
@@ -108,7 +115,8 @@ export function selectRinpoModel(
     };
   }
 
-  const configured = PROVIDERS.map((provider) => resolveRinpoModelRoute({ provider })).filter(
+  const selected = selectedProvider();
+  const configured = PROVIDERS.map((provider) => resolveProviderForRegistry(provider, selected)).filter(
     (route) => route.configured && isAllowed(route.provider, policy)
   );
 
@@ -147,7 +155,6 @@ export function selectRinpoModel(
     }
   }
 
-  const selected = selectedProvider();
   const defaultRoute = configured.find((route) => route.provider === selected) ?? configured[0];
 
   return {
