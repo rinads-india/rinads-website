@@ -42,4 +42,15 @@ describe("RINPO production control", () => {
     assert.match(page, /Audit \+ learning/);
     assert.match(page, /No direct model-to-production mutation path/);
   });
+
+  it("shows provider routing configuration without rendering provider secrets", () => {
+    assert.match(page, /Model routing configuration/);
+    assert.match(page, /snapshot\.providerRoutes/);
+    assert.match(page, /Canonical routing: @rinads\/intelligence/);
+    assert.match(adapters, /RINADS_RINPO_LLM_PROVIDER/);
+    assert.match(adapters, /RINADS_XAI_API_KEY/);
+    assert.match(adapters, /RINADS_OPENAI_API_KEY/);
+    assert.match(adapters, /selectedByDefault/);
+    assert.doesNotMatch(page, /RINADS_XAI_API_KEY|RINADS_OPENAI_API_KEY|RINADS_RINPO_LLM_API_KEY/);
+  });
 });
