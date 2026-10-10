@@ -36,6 +36,7 @@ If service credentials or a source are unavailable, the UI shows `Not connected`
 4. No model output can directly mutate production data.
 5. Future write controls must use the existing proposal/approval/runtime/audit path.
 6. Tenant and actor authorization remain separate from memory retrieval.
+7. External model providers are inference dependencies only; they do not own RINPO identity, tenant state, permissions, memory, or execution policy.
 
 ## Canonical request lifecycle
 
@@ -47,7 +48,8 @@ User request
   -> working context
   -> permitted memory retrieval
   -> operational data
-  -> model gateway
+  -> RINADS Intelligence provider route
+  -> model inference
   -> structured result
   -> optional tool request
   -> policy/risk gate
@@ -70,6 +72,8 @@ Existing server-side configuration is reused:
 
 Founder Intelligence Vercel status remains controlled by its existing Vercel environment variables.
 
+Provider routing is documented in `docs/RINPO-NETWORK-PROVIDERS.md`. Provider keys must remain server-only. The first provider-aware slice supports OpenAI, xAI/Grok, and custom OpenAI-compatible endpoints while preserving the deterministic NLU fallback.
+
 ## Next implementation slices
 
 1. Session inspection with actor/tenant context and redacted transcript metadata.
@@ -77,8 +81,9 @@ Founder Intelligence Vercel status remains controlled by its existing Vercel env
 3. Tool registry with explicit permission/risk metadata.
 4. Unified action + runtime approval queue.
 5. Agent registry, runs, evaluation and cost budgets.
-6. Model routing, token/cost/latency observability.
+6. Persist provider/model/token/cost/latency observability and show founder-only routing health.
 7. Development -> evaluation -> founder approval -> production release governance.
 8. Rollback and kill-switch controls with immutable audit events.
+9. Task-aware routing (`reasoning`, `research`, `code`, `vision`, `voice`) plus tenant/provider allowlists.
 
 These slices must remain incremental. Do not create a second primary admin application, database, or model-specific business layer.
