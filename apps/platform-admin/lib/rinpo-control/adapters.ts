@@ -5,7 +5,13 @@ import {
   SupabaseStatusSource,
 } from "@/lib/founder-intelligence/adapters";
 import type { ConnectionState } from "@/lib/founder-intelligence/types";
-import type { RinpoControlSnapshot, RinpoMetric, RinpoMetricId } from "./types";
+import type {
+  RinpoControlSnapshot,
+  RinpoMetric,
+  RinpoMetricId,
+  RinpoProviderId,
+  RinpoProviderRouteStatus,
+} from "./types";
 
 const REQUEST_TIMEOUT_MS = 5_000;
 
@@ -60,6 +66,80 @@ const PROBES: Probe[] = [
 
 function now() {
   return new Date().toISOString();
+}
+
+function envValue(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value || undefined;
+}
+
+function normalizeProvider(value: string | undefined): RinpoProviderId {
+  if (value === "xai" || value === "custom") return value;
+  return "openai";
+}
+
+/**
+ * Read-only founder projection of the canonical RINPO provider environment
+ * contract. It intentionally returns no credential values and must never be
+ * used to make inference/routing decisions; canonical selection remains in
+ * `@rinads/intelligence`.
+ */
+function loadProviderRoutes(): RinpoProviderRouteStatus[] {
+  const selected = normalizeProvider(envValue("RINADS_RINPO_LLM_PROVIDER"));
+  const legacyKey = envValue("RINADS_RINPO_LLM_API_KEY");
+  const legacyBaseUrl = envValue("RINADS_RINPO_LLM_BASE_URL");
+  const legacyModel = envValue("RINADS_RINPO_LLM_MODEL");
+
+  const selectedLegacyKey = (provider: RinpoProviderId) =>
+    provider === selected ? legacyKey : undefined;
+  const selectedLegacyValue = (provider: RinpoProviderId, value: string | undefined) =>
+    provider === selected ? value : undefined;
+
+  const openaiModel =
+    envValue("RINADS_OPENAI_MODEL") ?? selectedLegacyValue("openai", legacyModel) ?? "gpt-4o-mini";
+  const openaiBaseUrl =
+    envValue("RINADS_OPENAI_BASE_URL") ?? selectedLegacyValue("openai", legacyBaseUrl) ?? "https://api.openai.com/v1";
+  const openaiConfigured = Boolean(
+    (envValue("RINADS_OPENAI_API_KEY") ?? selectedLegacyKey("openai")) && openaiModel && openaiBaseUrl
+  );
+
+  const xaiModel =
+    envValue("RINADS_XAI_MODEL") ?? selectedLegacyValue("xai", legacyModel) ?? "grok-4.7";
+  const xaiBaseUrl =
+    envValue("RINADS_XAI_BASE_URL") ?? selectedLegacyValue("xai", legacyBaseUrl) ?? "https://api.x.ai/v1";
+  const xaiConfigured = Boolean(
+    (envValue("RINADS_XAI_API_KEY") ?? envValue("XAI_API_KEY") ?? selectedLegacyKey("xai")) &&
+      xaiModel &&
+      xaiBaseUrl
+  );
+
+  const customModel = selectedLegacyValue("custom", legacyModel) ?? "";
+  const customBaseUrl = selectedLegacyValue("custom", legacyBaseUrl) ?? "";
+  const customConfigured = Boolean(selectedLegacyKey("custom") && customModel && customBaseUrl);
+
+  return [
+    {
+      provider: "openai",
+      model: openaiModel,
+      baseUrl: openaiBaseUrl,
+      configured: openaiConfigured,
+      selectedByDefault: selected === "openai",
+    },
+    {
+      provider: "xai",
+      model: xaiModel,
+      baseUrl: xaiBaseUrl,
+      configured: xaiConfigured,
+      selectedByDefault: selected === "xai",
+    },
+    {
+      provider: "custom",
+      model: customModel || "—",
+      baseUrl: customBaseUrl || "—",
+      configured: customConfigured,
+      selectedByDefault: selected === "custom",
+    },
+  ];
 }
 
 async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
@@ -189,6 +269,7 @@ export async function loadRinpoControlSnapshot(): Promise<RinpoControlSnapshot> 
     runtime,
     intelligenceBackend,
     metrics,
+    providerRoutes: loadProviderRoutes(),
     dataPlaneState: dataPlane.state,
     dataPlaneDetail: dataPlane.detail,
   };
