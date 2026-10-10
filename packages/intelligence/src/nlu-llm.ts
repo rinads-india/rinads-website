@@ -1,13 +1,14 @@
 import type { RinpoNluAdapter, RinpoNluContext, RinpoParsedIntent } from "./nlu-types";
 import type { RinpoToolInput } from "./types";
 import { deterministicRinpoNluAdapter } from "./nlu-deterministic";
-
-function readEnv(key: string): string | undefined {
-  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
-  return env?.[key];
-}
+import {
+  resolveRinpoModelRoute,
+  type RinpoLlmProvider,
+  type RinpoResolvedModelRoute,
+} from "./provider-router";
 
 export type LlmRinpoNluConfig = {
+  provider?: RinpoLlmProvider;
   apiKey?: string;
   baseUrl?: string;
   model?: string;
@@ -16,35 +17,50 @@ export type LlmRinpoNluConfig = {
   fetchImpl?: typeof fetch;
 };
 
+export type RinpoLlmRouteInfo = Omit<RinpoResolvedModelRoute, "apiKey">;
+
 /**
- * Optional OpenAI-compatible NLU adapter. Disabled unless
- * `RINADS_RINPO_LLM_API_KEY` (or an explicit apiKey) is set.
+ * Optional OpenAI-compatible NLU adapter.
  *
- * Without a key, `parse` clarifies that the LLM path is not configured —
- * callers should prefer `createRinpoNluAdapter()`, which keeps the
- * deterministic adapter as the default.
+ * Provider resolution lives in `provider-router.ts`. Existing
+ * `RINADS_RINPO_LLM_*` configuration remains supported; provider-specific
+ * variables can select xAI/Grok or OpenAI without changing RINPO's tool,
+ * tenancy, permission, approval, or audit boundaries.
  */
 export class LlmRinpoNluAdapter implements RinpoNluAdapter {
   private readonly apiKey: string | undefined;
   private readonly baseUrl: string;
   private readonly model: string;
+  private readonly provider: RinpoLlmProvider;
   private readonly fallback: RinpoNluAdapter;
   private readonly fetchImpl: typeof fetch;
 
   constructor(config: LlmRinpoNluConfig = {}) {
-    this.apiKey = config.apiKey ?? readEnv("RINADS_RINPO_LLM_API_KEY");
-    this.baseUrl = (config.baseUrl ?? readEnv("RINADS_RINPO_LLM_BASE_URL") ?? "https://api.openai.com/v1").replace(/\/$/, "");
-    this.model = config.model ?? readEnv("RINADS_RINPO_LLM_MODEL") ?? "gpt-4o-mini";
+    const route = resolveRinpoModelRoute(config);
+    this.apiKey = route.apiKey;
+    this.baseUrl = route.baseUrl;
+    this.model = route.model;
+    this.provider = route.provider;
     this.fallback = config.fallback ?? deterministicRinpoNluAdapter;
     this.fetchImpl = config.fetchImpl ?? fetch;
   }
 
+  /** Safe runtime metadata for observability/admin UI. Never returns the key. */
+  getRouteInfo(): RinpoLlmRouteInfo {
+    return {
+      provider: this.provider,
+      baseUrl: this.baseUrl,
+      model: this.model,
+      configured: Boolean(this.apiKey && this.baseUrl && this.model),
+    };
+  }
+
   async parse(text: string, context: RinpoNluContext): Promise<RinpoParsedIntent> {
-    if (!this.apiKey) {
+    if (!this.apiKey || !this.baseUrl || !this.model) {
       return {
         kind: "clarify",
         question:
-          "LLM NLU is not configured (set RINADS_RINPO_LLM_API_KEY). Use the deterministic command patterns, or configure an OpenAI-compatible key.",
+          `RINPO ${this.provider} NLU is not configured. Use deterministic command patterns or configure the server-side provider route.`,
       };
     }
 
@@ -108,13 +124,13 @@ export class LlmRinpoNluAdapter implements RinpoNluAdapter {
 }
 
 /**
- * Default NLU selection: LLM when `RINADS_RINPO_LLM_API_KEY` is set, otherwise
- * the deterministic pattern matcher (production default).
+ * Default NLU selection: configured provider route when available; otherwise
+ * deterministic parsing. This preserves the existing production-safe fallback.
  */
 export function createRinpoNluAdapter(config: LlmRinpoNluConfig = {}): RinpoNluAdapter {
-  const apiKey = config.apiKey ?? readEnv("RINADS_RINPO_LLM_API_KEY");
-  if (!apiKey) {
+  const route = resolveRinpoModelRoute(config);
+  if (!route.configured) {
     return config.fallback ?? deterministicRinpoNluAdapter;
   }
-  return new LlmRinpoNluAdapter({ ...config, apiKey });
+  return new LlmRinpoNluAdapter({ ...config, provider: route.provider, apiKey: route.apiKey, baseUrl: route.baseUrl, model: route.model });
 }

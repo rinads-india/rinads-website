@@ -18,5 +18,6 @@ export {
 } from "./observability";
 export * from "./nlu-types";
 export * from "./nlu-deterministic";
+export * from "./provider-router";
 export * from "./nlu-llm";
 export * from "./retrieval";
