@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, Card } from "@rinads/ui";
 import { operations, opsContext } from "@/lib/commerce";
+import { replayRuntimeDeadLetterAction } from "./actions";
 
 export default function RuntimeDashboardPage() {
   const ctx = opsContext();
@@ -14,7 +15,7 @@ export default function RuntimeDashboardPage() {
         <div>
           <h2 className="text-2xl font-semibold text-foreground">Runtime 2.0</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Durable workflows, jobs, and notification outbox for this tenant.
+            Durable workflows, jobs, verification, approvals, and recovery for this tenant.
           </p>
         </div>
         <div className="flex gap-3 text-sm">
@@ -77,6 +78,9 @@ export default function RuntimeDashboardPage() {
         <Card className="p-0 overflow-hidden">
           <div className="border-b border-border px-4 py-3">
             <h3 className="font-semibold">Dead letters</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Replay resets the original job and preserves its idempotency identity and audit history.
+            </p>
           </div>
           {deadLetters.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">No dead-letter items.</p>
@@ -84,8 +88,29 @@ export default function RuntimeDashboardPage() {
             <ul className="divide-y divide-border">
               {deadLetters.map((item) => (
                 <li key={item.id} className="px-4 py-3 text-sm">
-                  <p className="font-medium">{item.sourceType}</p>
-                  <p className="text-muted-foreground">{item.errorMessage}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{item.sourceType}</p>
+                        <Badge tone={item.status === "open" ? "danger" : "success"}>{item.status}</Badge>
+                      </div>
+                      <p className="mt-1 text-muted-foreground">{item.errorMessage}</p>
+                      <p className="mt-1 break-all text-xs text-muted-foreground">
+                        Source: {item.sourceId} · Replay count: {item.replayCount}
+                      </p>
+                    </div>
+                    {item.sourceType === "job" && item.status === "open" ? (
+                      <form action={replayRuntimeDeadLetterAction}>
+                        <input type="hidden" name="deadLetterId" value={item.id} />
+                        <button
+                          type="submit"
+                          className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+                        >
+                          Replay job
+                        </button>
+                      </form>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -95,7 +120,7 @@ export default function RuntimeDashboardPage() {
 
       <Card>
         <p className="text-sm text-muted-foreground">
-          Jobs queued: {dashboard.jobs.queued} · Dead-letter jobs: {dashboard.jobs.deadLetter}
+          Jobs queued: {dashboard.jobs.queued} · Open dead-letter jobs: {dashboard.jobs.deadLetter}
         </p>
       </Card>
     </div>
