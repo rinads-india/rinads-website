@@ -6,6 +6,17 @@
 
 RINPO remains an intelligence layer inside the RINADS platform. Supabase is the operational system of record, the separate RINPO runtime is the execution plane, and every consequential action remains subject to authorization, policy, approval when required, and audit.
 
+## Canonical references
+
+This control plane is governed by:
+
+- [`docs/rinpo/RINPO-CANON-V2.1.md`](./rinpo/RINPO-CANON-V2.1.md) — product/runtime/character authority and claim governance
+- [`docs/rinpo/RINPO-P0-LIVE-REPO-AUDIT.md`](./rinpo/RINPO-P0-LIVE-REPO-AUDIT.md) — current repository alignment and hardening gaps
+- [`docs/rinpo/RINPO-P1-RUNTIME-IMPLEMENTATION-PLAN.md`](./rinpo/RINPO-P1-RUNTIME-IMPLEMENTATION-PLAN.md) — assisted-mode implementation order
+- [`docs/rinpo/RINPO-STORY-CANON-V1.md`](./rinpo/RINPO-STORY-CANON-V1.md) — founder history/product truth/lore separation
+
+Security, authorization and deterministic system-of-record boundaries take precedence over marketing, character or story requirements.
+
 ## Access boundary
 
 The route is server-gated to the existing `founder` and `super_admin` role keys through `loadPlatformAccess()`.
