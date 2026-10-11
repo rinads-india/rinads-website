@@ -65,7 +65,10 @@ describe("Action registry", () => {
       riskLevel: "LOW",
       idempotencyRequired: true,
       handler: async () => ({ ok: true, data: { id: "created_2" } }),
-      verify: (_ctx, _input, output) => ({ ok: output?.id === "created_2" }),
+      verify: (_ctx, _input, output) =>
+        output?.id === "created_2"
+          ? { ok: true }
+          : { ok: false, error: "Created record missing" },
     });
 
     const result = await executeAction({ organizationId: "org_a" }, "test.verified", {});
