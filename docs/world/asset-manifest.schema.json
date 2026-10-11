@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rinads.com/schemas/world/asset-manifest.v1.json",
+  "title": "RINADS WORLD provenance-first asset manifest",
+  "description": "Import gate input for original and licensed assets; file upload is not rights approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "asset_id",
+    "sha256",
+    "filename",
+    "source_type",
+    "creator",
+    "captured_or_created_at",
+    "usage_status",
+    "intended_uses",
+    "rights_evidence",
+    "reviewed_by",
+    "reviewed_at",
+    "privacy_review",
+    "geography"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "world.asset.v1"
+    },
+    "asset_id": {
+      "type": "string",
+      "pattern": "^RW-[A-Z0-9][A-Z0-9-]{5,63}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "filename": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_type": {
+      "enum": [
+        "original_camera",
+        "commissioned_original",
+        "original_3d",
+        "approved_licensed_third_party",
+        "open_data",
+        "google_reference_only"
+      ]
+    },
+    "creator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "captured_or_created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "usage_status": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "restricted"
+      ]
+    },
+    "intended_uses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "internal_review",
+          "world_texture",
+          "world_geometry",
+          "world_cinematic",
+          "public_promotion",
+          "photogrammetry",
+          "ai_training",
+          "storefront_public"
+        ]
+      },
+      "minItems": 1
+    },
+    "rights_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_type",
+          "record_id"
+        ],
+        "properties": {
+          "evidence_type": {
+            "enum": [
+              "creator_contract",
+              "merchant_permission",
+              "property_permission",
+              "third_party_license",
+              "open_data_licence",
+              "privacy_release"
+            ]
+          },
+          "record_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "reviewed_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reviewed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "privacy_review": {
+      "enum": [
+        "pending",
+        "approved",
+        "redactions_required",
+        "rejected"
+      ]
+    },
+    "geography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verification"
+      ],
+      "properties": {
+        "verification": {
+          "enum": [
+            "unverified",
+            "exif_sample_only",
+            "field_surveyed",
+            "licensed_dataset"
+          ]
+        },
+        "survey_record_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "public_safe": {
+          "type": "boolean"
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "source_file_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "usage_status": {
+            "const": "approved"
+          }
+        },
+        "required": [
+          "usage_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reviewed_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewed_at": {
+            "type": "string"
+          },
+          "privacy_review": {
+            "const": "approved"
+          },
+          "rights_evidence": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_type": {
+            "const": "google_reference_only"
+          }
+        },
+        "required": [
+          "source_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "usage_status": {
+            "enum": [
+              "pending",
+              "restricted",
+              "rejected"
+            ]
+          },
+          "intended_uses": {
+            "type": "array",
+            "items": {
+              "const": "internal_review"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "usage_status": {
+            "const": "pending"
+          }
+        },
+        "required": [
+          "usage_status"
+        ]
+      },
+      "then": {
+        "not": {
+          "properties": {
+            "intended_uses": {
+              "contains": {
+                "const": "public_promotion"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
