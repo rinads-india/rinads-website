@@ -11,11 +11,18 @@ Deliver:
 - context envelope
 - correlation ID
 - request audit event
+- persistence-compatible runtime record identities — **IMPLEMENTED IN PR: RuntimeService memory-store IDs now use RFC 4122 UUIDs**
+
+Why the UUID change matters:
+- `business_events`, `runtime_jobs`, `runtime_dead_letters`, `runtime_approvals`, and other persistence tables use UUID identities/references;
+- prefixed in-memory IDs such as `job_*`, `evt_*`, and `dlq_*` were not valid values for those columns;
+- the runtime `nextId(prefix)` signature is retained for readable call sites, but the prefix no longer changes the persisted ID.
 
 Acceptance:
 - browser cannot override tenant
 - browser cannot override role
 - missing membership denies access
+- newly created runtime records are persistence-compatible UUIDs — **IMPLEMENTED IN PR + tested**
 
 ## Sprint 2 — Policy + Risk
 Deliver:
@@ -108,6 +115,7 @@ Deliver:
 - tenant/management authorization — **IMPLEMENTED IN PR**
 - replay actor/count/note/timestamp — **IMPLEMENTED IN PR**
 - service-role-only atomic Supabase replay RPC — **IMPLEMENTED IN PR**
+- server adapter for persisted replay — **IMPLEMENTED IN PR**
 - owner runtime control-plane replay action — **IMPLEMENTED IN PR for the current owner portal runtime path**
 - workflow/outbox DLQ replay — deferred beyond job replay v1
 
@@ -163,6 +171,7 @@ Default mode: **Assisted**
 - duplicate order/payment
 - model outage
 - queue retry
+- UUID persistence compatibility — **covered in PR**
 - failed verification — **covered in PR**
 - DLQ tenant/authorization/replay safety — **covered in PR**
 - audit immutability
@@ -179,9 +188,9 @@ P1 exits only after the Security Gate passes and one real tenant can:
 7. inspect the action in Activity/Audit.
 
 ### Remaining highest-priority gaps after current PR work
-1. Resolve runtime identifier consistency between in-memory/runtime IDs and UUID-backed persistence before calling the worker production-safe.
-2. Finish memory provenance/inspection/correction/deletion controls.
-3. Wire refund thresholds, evidence, and postcondition verification before enabling finance mutations.
-4. Add a canonical immutable RINPO action ledger/activity surface.
-5. Turn security tests into a release-blocking CI gate.
+1. Finish memory provenance/inspection/correction/deletion controls.
+2. Wire refund thresholds, evidence, approval, and postcondition verification before enabling finance mutations.
+3. Add a canonical immutable RINPO action ledger/activity surface.
+4. Turn security tests into a release-blocking CI gate.
+5. Validate the UUID identity change and both new migrations against staging Supabase, not only mocks.
 6. Run one real tenant end-to-end in Assisted mode before permitting any additional autonomy.
