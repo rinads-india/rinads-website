@@ -50,22 +50,27 @@ Phase 12 reports these as done:
 - owner runtime observability
 - event loop guard
 
-## Production-hardening gaps
+## P0 hardening completed in this branch
 
-### P0 blocker — append-only enforcement
-`business_events` is intended to be immutable, but the current security doc states there is **no database trigger enforcing INSERT-only** yet.
+### Append-only event enforcement — FIXED IN PR
+Migration `20261011100000_rinpo_event_immutability.sql` now:
+- rejects UPDATE/DELETE on canonical `business_events` at the database trigger level
+- keeps service-level append-only logic as defense in depth
+- adds an RLS-protected `business_event_consumptions` table for mutable per-consumer processing state
+- guards organization ownership between consumption rows and source events
 
-Action:
-- add DB-level immutable-event enforcement
-- test UPDATE/DELETE rejection
-- keep service-level append-only rules as defense in depth
+### Event processing state — RESOLVED BY DESIGN
+The legacy `business_events.processed_at` column is explicitly deprecated rather than mutated.
 
-### P0 blocker — event processing state
-`business_events.processed_at` exists but is not currently written.
+Per-consumer lifecycle now belongs in `business_event_consumptions` with:
+- `pending`
+- `processing`
+- `processed`
+- `failed`
 
-Action:
-- either implement the processing-state contract consistently or remove/re-design the field
-- prevent ambiguous event lifecycle semantics
+This preserves event immutability while allowing multiple consumers to track processing independently.
+
+## Remaining production-hardening gaps
 
 ### P1 — dead-letter replay
 Dead-letter visibility exists, but there is no replay API.
@@ -135,7 +140,7 @@ Proceed incrementally:
 
 ```text
 current Runtime 2.0
-  -> close DB immutability gaps
+  -> immutable canonical events [implemented in this PR]
   -> finish verification/replay/policy wiring
   -> complete memory provenance controls
   -> make approval + activity a unified surface
