@@ -6,6 +6,7 @@ import {
   loadRuntimeStoreFromSupabase,
   claimRuntimeJobs,
   enqueueRuntimeJobToSupabase,
+  replayRuntimeDeadLetterInSupabase,
   syncRuntimeArtifactsToSupabase,
   type RuntimeSupabaseClient,
 } from "../src/runtime-supabase";
@@ -64,6 +65,34 @@ function createMockRuntimeClient(): RuntimeSupabaseClient & {
           if (idx >= 0) all[idx] = row;
         }
         return { data: claimed, error: null };
+      }
+      if (fn === "replay_runtime_dead_letter") {
+        const orgId = String(args.p_org_id);
+        const deadLetterId = String(args.p_dead_letter_id);
+        const deadLetters = tables.get("runtime_dead_letters") ?? [];
+        const dlq = deadLetters.find(
+          (r) => String(r.id) === deadLetterId && String(r.organization_id) === orgId
+        );
+        if (!dlq) return { data: null, error: { message: "Dead letter not found for tenant" } };
+        const jobs = tables.get("runtime_jobs") ?? [];
+        const jobIndex = jobs.findIndex(
+          (r) => String(r.id) === String(dlq.source_id) && String(r.organization_id) === orgId
+        );
+        if (jobIndex < 0) return { data: null, error: { message: "Source job not found" } };
+        const replayed = {
+          ...jobs[jobIndex],
+          status: "queued",
+          attempts: 0,
+          last_error: null,
+        };
+        jobs[jobIndex] = replayed;
+        Object.assign(dlq, {
+          status: "replayed",
+          replay_count: Number(dlq.replay_count ?? 0) + 1,
+          replayed_by: args.p_replayed_by,
+          resolution_note: args.p_resolution_note,
+        });
+        return { data: [replayed], error: null };
       }
       if (fn === "reset_stale_runtime_jobs") {
         return { data: 0, error: null };
@@ -184,6 +213,54 @@ describe("Runtime Supabase persistence", () => {
     const partial = await loadRuntimeStoreFromSupabase(client, orgId);
     assert.equal(partial.jobs?.[0]?.status, "dead_letter");
     assert.equal(partial.deadLetters?.[0]?.status, "open");
+  });
+
+  it("replays a dead-letter job through the service-role RPC adapter", async () => {
+    const client = createMockRuntimeClient();
+    const orgId = "org_rpc_replay";
+    client.tables.set("runtime_jobs", [
+      {
+        id: "job_dead",
+        organization_id: orgId,
+        processor_key: "workflow_runner",
+        idempotency_key: "wf:dead",
+        payload: {},
+        status: "dead_letter",
+        attempts: 3,
+        max_attempts: 3,
+        run_after: "2026-10-11T00:00:00.000Z",
+        created_at: "2026-10-11T00:00:00.000Z",
+        updated_at: "2026-10-11T00:00:00.000Z",
+      },
+    ]);
+    client.tables.set("runtime_dead_letters", [
+      {
+        id: "dlq_dead",
+        organization_id: orgId,
+        source_type: "job",
+        source_id: "job_dead",
+        error_message: "terminal",
+        payload: {},
+        status: "open",
+        replay_count: 0,
+      },
+    ]);
+
+    const result = await replayRuntimeDeadLetterInSupabase(client, {
+      organizationId: orgId,
+      deadLetterId: "dlq_dead",
+      replayedBy: "founder_1",
+      resolutionNote: "Root cause fixed",
+    });
+
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.job.status, "queued");
+    assert.equal(result.job.attempts, 0);
+    assert.equal(client.rpcCalls.at(-1)?.fn, "replay_runtime_dead_letter");
+    const dlq = client.tables.get("runtime_dead_letters")?.[0];
+    assert.equal(dlq?.status, "replayed");
+    assert.equal(dlq?.replayed_by, "founder_1");
   });
 
   it("claims eligible jobs via rpc", async () => {
