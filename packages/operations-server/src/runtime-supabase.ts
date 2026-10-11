@@ -195,6 +195,40 @@ export async function claimRuntimeJobs(
   return [];
 }
 
+export type ReplayRuntimeDeadLetterResult =
+  | { ok: true; job: DurableJob }
+  | { ok: false; error: string };
+
+/**
+ * Server-side adapter for the service-role-only replay RPC.
+ * Authorization of the human actor must happen before this function is called.
+ */
+export async function replayRuntimeDeadLetterInSupabase(
+  client: RuntimeSupabaseClient,
+  input: {
+    organizationId: string;
+    deadLetterId: string;
+    replayedBy: string;
+    resolutionNote?: string;
+  }
+): Promise<ReplayRuntimeDeadLetterResult> {
+  if (!client.rpc) {
+    return { ok: false, error: "Runtime replay RPC is unavailable" };
+  }
+
+  const { data, error } = await client.rpc("replay_runtime_dead_letter", {
+    p_org_id: input.organizationId,
+    p_dead_letter_id: input.deadLetterId,
+    p_replayed_by: input.replayedBy,
+    p_resolution_note: input.resolutionNote ?? null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  const row = data?.[0];
+  if (!row) return { ok: false, error: "Replay RPC returned no runtime job" };
+  return { ok: true, job: mapRuntimeJobRow(row) };
+}
+
 export async function loadRuntimeStoreFromSupabase(
   client: RuntimeSupabaseClient,
   organizationId: string
