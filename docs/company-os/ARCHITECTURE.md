@@ -70,15 +70,24 @@ Legacy `/os/money`, `/os/automate`, `/os/rooms` keep working unchanged.
 
 | File | Content |
 |------|---------|
-| `…120000_company_os_permissions.sql` | new permission keys + role mappings (additive `ON CONFLICT DO NOTHING`) |
-| `…120100_company_os_crm_sales.sql` | `crm_companies`, `crm_contacts`, `crm_leads`, `crm_opportunities`, `crm_proposals`, `crm_contracts` |
-| `…120200_company_os_delivery_finance.sql` | `projects`, `project_milestones`, `deliverables`, `finance_invoices`, `finance_payments`; additive columns on `operational_tasks` |
-| `…120300_company_os_people_work.sql` | `people_profiles`, `work_assignment_decisions` |
-| `…120400_company_os_studio_growth.sql` | `studio_jobs`, `creative_assets`, `asset_publications`, `asset_performance`, `growth_campaigns`, `content_items`, `ad_campaigns`, `ad_metrics_daily` |
-| `…120500_company_os_comms_academy_ai.sql` | `comm_activities`, `academy_skills`, `academy_progress`, `ai_runs`, `ai_agent_profiles` |
-| `…120600_company_os_ledger_events.sql` | additive columns on `rinpo_actions` (+ unique idempotency index), narrow `business_events` member-insert policy |
+| `…120000_company_os_permissions.sql` | 23 new permission keys + role grants (explicit pairs, diffed against `ROLE_PERMISSION_GRANTS` in CI) |
+| `…120100_company_os_ledger_events.sql` | `rinpo_actions` extended as **the** approval ledger; ledger state-machine trigger; `company_os_is_approved_action()`; member-scoped `business_events` / `audit_logs` write guards |
+| `…120200_company_os_crm_sales.sql` | `crm_companies`, `crm_contacts`, `crm_opportunities`, `crm_leads`, `crm_proposals`, `crm_contracts` |
+| `…120300_company_os_delivery_finance.sql` | `projects`, `project_milestones`, `deliverables`, `finance_invoices`, `finance_payments`; additive columns + write policies on existing `operational_tasks` |
+| `…120400_company_os_people_work.sql` | `people_profiles`, `work_assignment_decisions` |
+| `…120500_company_os_studio_growth.sql` | `growth_campaigns`, `studio_jobs`, `creative_assets`, `content_items`, `asset_publications`, `asset_performance`, `ad_campaigns`, `ad_metrics_daily` |
+| `…120600_company_os_comms_academy_ai.sql` | `comm_activities`, `academy_skills`, `academy_progress`, `ai_runs`, `ai_agent_profiles` |
 
-Rules enforced by `apps/website/tests/company-os-migrations.test.ts`: every new table has `ENABLE ROW LEVEL SECURITY` and ≥1 policy; every policy is org-scoped via `private.is_org_member`/`private.has_permission`; no `SECURITY DEFINER`; no grant to `anon`; every statement is additive (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `ON CONFLICT DO NOTHING`); no `DROP`, no `TRUNCATE`, no data-destructive `DELETE`/`UPDATE` without `WHERE`.
+Rollback: `supabase/rollback/20261016120000_company_os_rollback.sql` (not in the migration chain; destructive; proven to restore the exact baseline by `tests/db/rollback.test.ts`).
+
+### Database-enforced guarantees (proved against the real migration chain in `packages/company-os/tests/db`)
+
+1. **Tenant isolation.** Every table is `organization_id NOT NULL`; every link is a composite `(organization_id, id)` FK, so a child row can never reference another tenant's parent. No DELETE/TRUNCATE for end users; anon has zero privileges.
+2. **Permission-scoped RLS.** Reads need the domain `*.read` permission, writes the `*.manage` permission (checked by `private.has_permission`). Clients/viewers see no Company OS data.
+3. **Approval is not an application convention.** The ledger trigger blocks self-approval, payload tampering, expiry, approver spoofing and non-admin approval of CRITICAL actions. `finance_payments` (insert-only), contract signature, invoice issue/void, proposal send, content publish and ad-budget changes each **require a matching approved ledger row**, checked in `WITH CHECK` / trigger.
+4. **No forged history.** Company OS events and audit rows can only be written as the caller (or an agent acting for the caller); Company OS payloads are invisible to members without `approvals.read`.
+5. **No SECURITY DEFINER.** Zero new SECURITY DEFINER functions and zero new anonymous exposure (asserted). Guard triggers are SECURITY INVOKER; schema `private` stays closed to end-user roles (the triggers inline the permission lookup instead).
+6. **Provenance as constraints.** AI assets must name provider + model; non-original sources need licence; variants need parent + channel; certified Academy rows need a timestamp.
 
 ## 5. Lifecycle (one connected graph)
 
