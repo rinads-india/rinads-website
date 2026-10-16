@@ -182,6 +182,16 @@ async function runTool(
     approvedBy,
   };
   const failedAt = nowOf(deps).toISOString();
+  // Rows written at execution time are authored by the executing session's user (the database
+  // only accepts audit/event rows authored as the caller). Who originally asked — possibly an AI
+  // role — is preserved in the payload and in the ledger row itself.
+  const recorder: Actor = { kind: "user", userId: executor.userId };
+  const requestedByInfo =
+    actor.kind === "agent"
+      ? { kind: "agent", agentRole: actor.agentRole, provider: actor.provider ?? null, model: actor.model ?? null, onBehalfOf: actor.onBehalfOfUserId }
+      : actor.kind === "user"
+        ? { kind: "user", userId: actor.userId }
+        : { kind: "system", system: actor.system };
 
   const fail = async (error: string, errorClass: string, uncertain: boolean, output: Record<string, unknown> | null = null): Promise<GovernedResult> => {
     await deps.ledger.update(record.organizationId, record.id, {
@@ -194,12 +204,12 @@ async function runTool(
     });
     await safeAudit(deps, {
       organizationId: record.organizationId,
-      actor,
+      actor: recorder,
       approvedBy,
       action: "company-os.action.failed",
       entity: record.actionKey,
       entityId: record.id,
-      after: { error, errorClass },
+      after: { error, errorClass, requestedBy: requestedByInfo },
       correlationId: record.correlationId,
     });
     if (actor.kind === "agent") {
@@ -210,8 +220,8 @@ async function runTool(
           type: "ai.action.failed.v1",
           aggregateType: "company_os_action",
           aggregateId: record.id,
-          payload: { actionKey: record.actionKey, errorClass },
-          actor,
+          payload: { actionKey: record.actionKey, errorClass, requestedBy: requestedByInfo },
+          actor: recorder,
           correlationId: record.correlationId,
           idempotencyKey: `ai.action.failed:${record.id}`,
         })
@@ -249,12 +259,12 @@ async function runTool(
   });
   await safeAudit(deps, {
     organizationId: record.organizationId,
-    actor,
+    actor: recorder,
     approvedBy,
     action: "company-os.action.executed",
     entity: record.actionKey,
     entityId: record.id,
-    after: result.output,
+    after: { output: result.output, requestedBy: requestedByInfo },
     correlationId: record.correlationId,
   });
   const events = tool.events?.(toolCtx, record.input, result.output) ?? [];
@@ -267,8 +277,8 @@ async function runTool(
         type: "ai.action.executed.v1",
         aggregateType: "company_os_action",
         aggregateId: record.id,
-        payload: { actionKey: record.actionKey, approvedBy },
-        actor,
+        payload: { actionKey: record.actionKey, approvedBy, requestedBy: requestedByInfo },
+        actor: recorder,
         correlationId: record.correlationId,
         idempotencyKey: `ai.action.executed:${record.id}`,
       })

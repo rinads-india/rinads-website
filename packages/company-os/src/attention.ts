@@ -503,10 +503,16 @@ export function buildAttention(facts: CompanyFacts, now: Date): AttentionItem[] 
   return sortAttention(items);
 }
 
+/**
+ * Order: severity first; within a severity, pending DECISIONS come first (they block other work and
+ * only a human can clear them), then oldest first, then larger groups.
+ */
 export function sortAttention(items: readonly AttentionItem[]): AttentionItem[] {
+  const decisionRank = (i: AttentionItem) => (i.category === "approvals" ? 0 : 1);
   return [...items].sort(
     (a, b) =>
       SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
+      decisionRank(a) - decisionRank(b) ||
       (a.oldestAt ?? "9999").localeCompare(b.oldestAt ?? "9999") ||
       b.count - a.count ||
       a.id.localeCompare(b.id)

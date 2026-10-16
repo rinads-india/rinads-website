@@ -276,7 +276,12 @@ describe("governed pipeline", () => {
     assert.equal(row.provider, "anthropic");
     const done = await decideGovernedAction(h.deps, { actionId: row.id, decision: "approve", approver: manager });
     assert.equal(done.status, "executed", "human who requested the agent may approve its proposal");
-    assert.ok(h.events.some((e) => e.event_type === "ai.action.executed.v1" && e.actor_type === "ai"));
+    const executed = h.events.find((e) => e.event_type === "ai.action.executed.v1");
+    assert.ok(executed, "ai.action.executed emitted");
+    assert.equal(executed!.actor_type, "user", "authored by the executing session user (what the database accepts)");
+    assert.equal(executed!.actor_id, "mgr-1");
+    assert.deepEqual((executed!.payload.requestedBy as { kind: string; agentRole: string }).agentRole, "operations_controller", "the AI requester is preserved in the payload");
+    assert.equal(h.audits.at(-1)?.actor.kind, "user");
   });
 
   it("an approver without approvals.decide cannot approve an agent proposal", async () => {
