@@ -4,6 +4,15 @@ export type ConnectionState =
   | "unavailable"
   | "not_connected";
 
+export type SourceCheckItem = {
+  id: string;
+  label: string;
+  state: ConnectionState;
+  detail: string;
+  href?: string;
+  metadata?: Record<string, string | number | boolean | null>;
+};
+
 export type SourceCheck = {
   id: string;
   label: string;
@@ -11,6 +20,7 @@ export type SourceCheck = {
   detail: string;
   checkedAt: string | null;
   href?: string;
+  items?: SourceCheckItem[];
 };
 
 export type StatusSource = {
