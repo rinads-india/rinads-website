@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 import { submitOsAction } from "@/lib/company-os/actions";
 import { IDLE, type OsActionState } from "@/lib/company-os/action-state";
 
-export type FieldKind = "text" | "number" | "date" | "textarea" | "select" | "checkbox" | "csv" | "lines" | "skills";
+export type FieldKind = "text" | "number" | "date" | "textarea" | "select" | "checkbox" | "csv" | "lines" | "skills" | "adrows";
 export type Field = {
   name: string;
   label: string;
@@ -25,6 +25,18 @@ function parseLines(text: string): { description: string; quantity: number; unit
     .map((l) => {
       const [description, qty, price] = l.split("|").map((s) => s.trim());
       return { description: description ?? "", quantity: Number(qty ?? 1), unitPrice: Number(price ?? 0) };
+    });
+}
+
+/** CSV lines: adId,adName,date,spend,impressions,clicks,conversions[,frequency,hook,audience,landingPage] */
+function parseAdRows(text: string): Record<string, unknown>[] {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const [adId, adName, date, spend, impressions, clicks, conversions, frequency, hook, audience, landingPage] = l.split(",").map((x) => x.trim());
+      return { adId, adName, date, spend: Number(spend), impressions: Number(impressions), clicks: Number(clicks), conversions: Number(conversions), ...(frequency ? { frequency: Number(frequency) } : {}), ...(hook ? { hook } : {}), ...(audience ? { audience } : {}), ...(landingPage ? { landingPage } : {}) };
     });
 }
 
@@ -51,6 +63,7 @@ function collect(fields: Field[], data: FormData, fixed: Record<string, unknown>
     if (kind === "number") input[f.name] = Number(raw);
     else if (kind === "csv") input[f.name] = raw.split(",").map((s) => s.trim()).filter(Boolean);
     else if (kind === "lines") input[f.name] = parseLines(raw);
+    else if (kind === "adrows") input[f.name] = parseAdRows(raw);
     else if (kind === "skills") input[f.name] = parseSkills(raw);
     else input[f.name] = raw;
   }
@@ -87,12 +100,14 @@ export function ActionForm({
 }) {
   const [state, dispatch, pending] = useActionState(submitOsAction, IDLE);
   const formRef = useRef<HTMLFormElement>(null);
-  const [key, setKey] = useState(() => globalThis.crypto.randomUUID());
+  // One idempotency key per intended submit: reused if the same request is retried, renewed after it completes.
+  const keyRef = useRef<string | null>(null);
 
   // The payload is built from the submitted FormData inside the action itself (never from stale state).
   function formAction(data: FormData) {
     data.set("input", JSON.stringify(collect(fields, data, fixed)));
-    data.set("idempotencyKey", key);
+    keyRef.current ??= globalThis.crypto.randomUUID();
+    data.set("idempotencyKey", keyRef.current);
     dispatch(data);
   }
 
@@ -100,11 +115,11 @@ export function ActionForm({
   useEffect(() => {
     if (state.status === "executed" || state.status === "approval_required") {
       formRef.current?.reset();
-      setKey(globalThis.crypto.randomUUID());
+      keyRef.current = null;
     }
   }, [state]);
 
-  const id = useMemo(() => `af-${actionKey.replace(/\W/g, "-")}-${Math.random().toString(36).slice(2, 7)}`, [actionKey]);
+  const id = `af-${actionKey.replace(/\W/g, "-")}-${useId().replace(/:/g, "")}`;
 
   return (
     <form
@@ -122,10 +137,10 @@ export function ActionForm({
           const common = { id: fid, name: f.name, required: f.required, placeholder: f.placeholder, defaultValue: f.defaultValue, "aria-describedby": f.help ? `${fid}-h` : undefined };
           const cls = "min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900";
           return (
-            <div key={f.name} className={kind === "textarea" || kind === "lines" ? "sm:col-span-2" : ""}>
+            <div key={f.name} className={kind === "textarea" || kind === "lines" || kind === "adrows" ? "sm:col-span-2" : ""}>
               {kind !== "checkbox" && <label htmlFor={fid} className="mb-1 block text-xs font-medium text-gray-700">{f.label}{f.required ? <span aria-hidden> *</span> : null}</label>}
-              {kind === "textarea" || kind === "lines" ? (
-                <textarea {...common} rows={kind === "lines" ? 4 : 3} className={cls} />
+              {kind === "textarea" || kind === "lines" || kind === "adrows" ? (
+                <textarea {...common} rows={kind === "lines" || kind === "adrows" ? 4 : 3} className={cls} />
               ) : kind === "select" ? (
                 <select {...common} className={cls}>
                   <option value="">{f.required ? "Select…" : "—"}</option>

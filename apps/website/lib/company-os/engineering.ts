@@ -17,3 +17,12 @@ export const getEngineeringFacts = unstable_cache(
   ["company-os-engineering-facts-v1"],
   { revalidate: 60 }
 );
+
+/** Which engineering integrations have a credential configured. Booleans only — never the values. */
+export function getEngineeringConfigState(): { github: boolean; vercel: boolean; supabase: boolean } {
+  return {
+    github: !!process.env.COMPANY_OS_GITHUB_TOKEN,
+    vercel: !!process.env.COMPANY_OS_VERCEL_TOKEN && !!process.env.COMPANY_OS_VERCEL_PROJECTS,
+    supabase: !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+}

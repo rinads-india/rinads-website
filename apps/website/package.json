@@ -21,6 +21,7 @@
     "@rinads/company-os": "workspace:*",
     "@rinads/company-os-server": "workspace:*",
     "@rinads/database": "workspace:*",
+    "@rinads/intelligence": "workspace:*",
     "@rinads/operations-server": "workspace:*",
     "@rinads/permissions": "workspace:*",
     "@rinads/platform": "workspace:*",
