@@ -20,6 +20,7 @@
     "@rinads/database": "workspace:*",
     "@rinads/tenancy": "workspace:*",
     "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.8",
     "@rinads/permissions": "workspace:*",
     "@rinads/ui": "workspace:*",
     "next": "16.1.6",
