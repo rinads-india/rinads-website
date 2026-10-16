@@ -8,6 +8,7 @@ import {
   resolveCompanyOsActiveNavId,
 } from "../lib/company-os-nav";
 import { canAccessFounderTower, resolveCompanyOsMode } from "../lib/company-os-mode";
+import { buildDemoRoleView } from "../lib/os-org-role";
 
 const websiteRoot = process.cwd();
 
@@ -44,6 +45,13 @@ describe("company-os-mode", () => {
     assert.equal(canAccessFounderTower("founder"), true);
     assert.equal(canAccessFounderTower("admin"), true);
     assert.equal(canAccessFounderTower("staff"), false);
+  });
+
+  it("maps demo admin roleKey so Founder Tower gate works offline", () => {
+    const view = buildDemoRoleView("admin");
+    assert.equal(view.roleKey, "admin");
+    assert.equal(view.tier, "admin");
+    assert.equal(canAccessFounderTower(view.roleKey), true);
   });
 
   it("resolves demo company mode when unenforced", () => {
