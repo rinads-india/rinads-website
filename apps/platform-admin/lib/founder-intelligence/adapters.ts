@@ -2,9 +2,11 @@ import "server-only";
 
 import { createPlatformServiceClient } from "@/lib/supabase/server";
 import type {
+  ConnectionState,
   FounderIntelligenceSnapshot,
   FounderWorkspace,
   SourceCheck,
+  SourceCheckItem,
   StatusSource,
   WorkspaceResult,
 } from "./types";
@@ -117,9 +119,45 @@ const VERCEL_PROJECTS: VercelProject[] = [
   },
 ];
 
-type VercelDeploymentResponse = {
-  deployments?: Array<{ state?: string; readyState?: string; url?: string; created?: number }>;
+type VercelDeployment = {
+  id?: string;
+  state?: string;
+  readyState?: string;
+  url?: string;
+  created?: number;
+  meta?: {
+    githubCommitSha?: string;
+    githubCommitRef?: string;
+    githubCommitMessage?: string;
+    githubRepo?: string;
+    githubOrg?: string;
+  };
 };
+
+type VercelDeploymentResponse = {
+  deployments?: VercelDeployment[];
+};
+
+function vercelProjectState(deploymentState: string): ConnectionState {
+  if (deploymentState === "READY") return "operational";
+  if (deploymentState === "none") return "unavailable";
+  return "degraded";
+}
+
+function deploymentDetail(deployment: VercelDeployment | undefined, state: string): string {
+  if (!deployment) return "No production deployment was returned by Vercel.";
+  const parts = [`Production ${state}.`];
+  if (deployment.meta?.githubCommitRef) parts.push(`Branch ${deployment.meta.githubCommitRef}.`);
+  if (deployment.meta?.githubCommitSha) parts.push(`Commit ${deployment.meta.githubCommitSha.slice(0, 7)}.`);
+  if (deployment.created) {
+    parts.push(
+      `Created ${new Date(deployment.created).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+      })}.`
+    );
+  }
+  return parts.join(" ");
+}
 
 export class VercelStatusSource implements StatusSource {
   readonly id = "vercel";
@@ -145,7 +183,7 @@ export class VercelStatusSource implements StatusSource {
     }
 
     try {
-      const results = await Promise.all(
+      const items: SourceCheckItem[] = await Promise.all(
         projects.map(async (project) => {
           const query = new URLSearchParams({
             projectId: project.id!,
@@ -157,24 +195,52 @@ export class VercelStatusSource implements StatusSource {
             `https://api.vercel.com/v6/deployments?${query.toString()}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          if (!response.ok) return { name: project.name, state: `HTTP ${response.status}` };
+          if (!response.ok) {
+            return {
+              id: project.envKey,
+              label: project.name,
+              state: "degraded",
+              detail: `Vercel returned HTTP ${response.status}.`,
+              href: project.href,
+            } satisfies SourceCheckItem;
+          }
+
           const payload = (await response.json()) as VercelDeploymentResponse;
           const deployment = payload.deployments?.[0];
+          const deploymentState = deployment?.readyState ?? deployment?.state ?? "none";
           return {
-            name: project.name,
-            state: deployment?.readyState ?? deployment?.state ?? "none",
-          };
+            id: project.envKey,
+            label: project.name,
+            state: vercelProjectState(deploymentState),
+            detail: deploymentDetail(deployment, deploymentState),
+            href: deployment?.url ? `https://${deployment.url}` : project.href,
+            metadata: {
+              deploymentState,
+              deploymentId: deployment?.id ?? null,
+              createdAt: deployment?.created ? new Date(deployment.created).toISOString() : null,
+              commitSha: deployment?.meta?.githubCommitSha ?? null,
+              commitRef: deployment?.meta?.githubCommitRef ?? null,
+              commitMessage: deployment?.meta?.githubCommitMessage ?? null,
+              githubRepo: deployment?.meta?.githubRepo ?? null,
+              githubOrg: deployment?.meta?.githubOrg ?? null,
+            },
+          } satisfies SourceCheckItem;
         })
       );
 
-      const ready = results.filter((result) => result.state === "READY").length;
+      const ready = items.filter((item) => item.state === "operational").length;
+      const exceptions = items.filter((item) => item.state !== "operational").map((item) => item.label);
       return {
         id: this.id,
         label: this.label,
-        state: ready === results.length ? "operational" : "degraded",
-        detail: `${ready}/${results.length} configured production projects report READY.`,
+        state: ready === items.length ? "operational" : "degraded",
+        detail:
+          exceptions.length === 0
+            ? `${ready}/${items.length} configured production projects report READY.`
+            : `${ready}/${items.length} configured production projects report READY. Attention: ${exceptions.join(", ")}.`,
         checkedAt: now(),
         href: "https://vercel.com/dashboard",
+        items,
       };
     } catch (error) {
       return unavailable(this.id, this.label, error);
