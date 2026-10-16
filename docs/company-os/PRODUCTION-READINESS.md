@@ -1,6 +1,6 @@
 # RINADS Company OS + Founder Control Tower — Production Readiness Report
 
-Issue: #127 · Draft PR: #128 · Branch: `claude/rinads-company-os-mvp-ipygn8` · Report date: 2026-10-16
+Issue: #127 · Draft PR #128 (head `claude-rinads-company-os-mvp`, still at the build-contract commit `4ec0f06`) · Work branch: `claude/rinads-company-os-mvp-ipygn8` (pushed; **no PR is open for it** and **no GitHub Actions run exists for it**) · Report date: 2026-10-16
 
 ## Recommendation
 
@@ -105,7 +105,7 @@ What they do **not** prove: behaviour on real Supabase, real auth cookies/org sw
 - Preview / staging deployment of this branch — **none**.
 - Authenticated UAT with founder, manager and staff personas — **none**.
 - Migrations applied to Supabase staging and RLS verified there — **none**.
-- CI status on PR #128 for the final commit — **not collected** (I do not have the CI result in this session).
+- CI — **has never run on this work.** No pull request targets the work branch and GitHub shows zero workflow runs for it. A PR (or mapping the work onto #128's branch) is a founder decision; I did not open one.
 - Accessibility audit beyond semantics (labelled forms, table captions, live regions; form and primary buttons are 44 px, row-level quick actions are 36 px) — **no automated or manual audit run**.
 - Console-error sweep of authenticated pages — **only written (founder-run spec), not executed**.
 - Public-site regression: the 277 existing website tests, the production build and the anonymous Playwright smoke (home, health, pricing, `/os` gating) pass; no public route, redirect, metadata or content file was changed. A visual diff against production was **not** performed.
@@ -140,7 +140,7 @@ Exact manual actions (none were performed automatically):
 
 ## 9. Gate to move from CONDITIONAL GO → GO
 
-- [ ] CI green on PR #128 final commit
+- [ ] A PR exists for the work branch (or #128 is updated by the founder) and CI is green on the final commit
 - [ ] Migrations applied to staging, DB tests re-run there, RLS cross-tenant checks pass
 - [ ] Authenticated founder / manager / staff UAT recorded (screenshots + spec output)
 - [ ] Console and server logs clean during UAT
