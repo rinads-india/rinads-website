@@ -133,7 +133,7 @@ describe("analytics wiring", () => {
         if (full.endsWith("/lib/ctas.ts")) continue;
         if (full.includes("/tests/")) continue;
         const text = await readFile(full, "utf8");
-        if (text.includes("Book a platform demo")) hits.push(full);
+        if (/book a platform demo/i.test(text)) hits.push(full);
       }
     }
 
