@@ -1,9 +1,12 @@
 import { isAvailable, type CompanyFacts } from "@rinads/company-os-engine";
 
-/** userId → display name, from people profiles the caller may read. Unknown ids stay unnamed (never guessed). */
+/** worker id or login id → display name, from people profiles the caller may read. Unknown ids stay unnamed (never guessed). */
 export function memberNames(facts: CompanyFacts): Map<string, string> {
   const map = new Map<string, string>();
-  if (isAvailable(facts.people)) for (const p of facts.people.data) map.set(p.userId, p.name);
+  if (isAvailable(facts.people)) for (const p of facts.people.data) {
+    map.set(p.userId, p.name);
+    if (p.loginUserId) map.set(p.loginUserId, p.name);
+  }
   return map;
 }
 

@@ -1,14 +1,15 @@
-import type { Db, Who } from "../../company-os/tests/db/harness";
-import { run } from "../../company-os/tests/db/harness";
+import type { Db, Who } from "../../company-os-engine/tests/db/harness";
+import { run } from "../../company-os-engine/tests/db/harness";
 import type { DbResult, Filter, Row, RowDb, SelectOptions } from "../src/db";
 import { assertIdent } from "../src/db";
+import { createCosRowDb } from "../src/cos-adapter";
 
 /**
  * RowDb over the in-process Postgres that has the REAL migration chain applied.
  * Each call runs as `who` (SET ROLE authenticated + JWT claims) so row-level security,
  * triggers and constraints are exactly what the production database enforces.
  */
-export function pgRowDb(db: Db, who: Who): RowDb {
+export function rawPgRowDb(db: Db, who: Who): RowDb {
   const kinds = new Map<string, Map<string, { json: boolean }>>();
 
   async function columnKinds(table: string) {
@@ -98,4 +99,9 @@ export function pgRowDb(db: Db, who: Who): RowDb {
       return exec(`update public.${table} set ${set} ${w} returning *`, params);
     },
   };
+}
+
+/** What production uses: the RLS-bound database seen through the Business Graph adapter (logical tables → cos_*). */
+export function pgRowDb(db: Db, who: Who): RowDb {
+  return createCosRowDb(rawPgRowDb(db, who));
 }

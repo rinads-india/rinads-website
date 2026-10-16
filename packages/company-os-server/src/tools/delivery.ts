@@ -10,6 +10,7 @@ import {
   readMany,
   updateOne,
   verifyRow,
+  workerIdForUser,
   type Env,
 } from "../kit";
 import { bool, compact, date, num, oneOf, reqStr, reqUuid, str, strArray, uuid, uuidArray } from "../validate";
@@ -43,7 +44,7 @@ export function deliveryTools(env: Env): DomainTool[] {
             description: str(input, "description", { optional: true, max: 4000 }),
             start_date: date(input, "startDate"),
             due_date: date(input, "dueDate"),
-            owner_id: uuid(input, "ownerId", true) ?? ctx.executorUserId,
+            owner_id: uuid(input, "ownerId", true) ?? (await workerIdForUser(env, ctx.organizationId, ctx.executorUserId)),
             budget: num(input, "budget", { optional: true, min: 0 }),
           });
           return { id: row.id, name: row.name, status: row.status };
@@ -155,7 +156,7 @@ export function deliveryTools(env: Env): DomainTool[] {
             const open = blockers.filter((b) => b.status !== "completed" && b.status !== "cancelled");
             if (open.length) throw new ToolError(`Blocked by ${open.length} unfinished task(s): ${open.map((b) => b.title).join(", ")}`, "dependency_open");
           }
-          await updateOne(env, "operational_tasks", ctx.organizationId, id, { status: to });
+          await updateOne(env, "operational_tasks", ctx.organizationId, id, compact({ status: to, completed_at: to === "completed" ? nowIso(env) : undefined }));
           return { id, from: task.status, status: to };
         },
         async verify(ctx, _i, out) {
@@ -178,13 +179,13 @@ export function deliveryTools(env: Env): DomainTool[] {
           if (!followed && !reason) throw new ToolError("A rationale is required when overriding the recommendation (or when no recommendation was used).");
           const task = await mustRead(env, "operational_tasks", ctx.organizationId, id, "Task");
           if (task.status === "completed" || task.status === "cancelled") throw new ToolError("A finished task cannot be reassigned.", "invalid_state");
-          const member = await readMany(env, "organization_members", { organization_id: ctx.organizationId, user_id: assigneeId, status: "active" }, "user_id", 1);
-          if (!member[0]) throw new ToolError("The assignee is not an active member of this organisation.");
+          const worker = await readMany(env, "people_profiles", { organization_id: ctx.organizationId, id: assigneeId, status: "active" }, "id", 1);
+          if (!worker[0]) throw new ToolError("The assignee is not an active team member of this organisation.");
           const decision = await insertOne(env, "work_assignment_decisions", {
             organization_id: ctx.organizationId,
             task_id: id,
-            recommended_user_id: uuid(input, "recommendedUserId", true),
-            chosen_user_id: assigneeId,
+            recommended_worker_id: uuid(input, "recommendedWorkerId", true),
+            chosen_worker_id: assigneeId,
             followed_recommendation: followed,
             override_reason: followed ? null : reason,
             confidence: oneOf(input, "confidence", ["high", "medium", "low"] as const, true),
@@ -195,7 +196,7 @@ export function deliveryTools(env: Env): DomainTool[] {
         },
         async verify(ctx, _i, out) {
           await verifyRow(env, "operational_tasks", ctx.organizationId, String(out.id), { assignee_id: out.assigneeId });
-          await verifyRow(env, "work_assignment_decisions", ctx.organizationId, String(out.decisionId), { chosen_user_id: out.assigneeId });
+          await verifyRow(env, "work_assignment_decisions", ctx.organizationId, String(out.decisionId), { chosen_worker_id: out.assigneeId });
         },
         events: (ctx, _i, out) => [evt(ctx, "task.assigned.v1", "operational_task", String(out.id), { assigneeId: out.assigneeId, previousAssigneeId: out.previousAssigneeId })],
       },

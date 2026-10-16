@@ -47,7 +47,7 @@ export default async function WorkPage() {
   if (!g.ok) return g.block;
   const { facts, snapshot: s, session, now } = g.data;
   const names = memberNames(facts);
-  const manageTasks = can(session.ctx, "tasks.manage");
+  const manageTasks = can(session.ctx, "work.write");
   const open = isAvailable(facts.tasks) ? facts.tasks.data.filter((t) => t.status === "todo" || t.status === "in_progress" || t.status === "blocked") : [];
 
   return (

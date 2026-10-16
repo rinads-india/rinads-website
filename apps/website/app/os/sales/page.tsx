@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 const FORWARD: OpportunityStage[] = ["solution", "proposal", "negotiation", "won"];
 
 export default async function SalesPage() {
-  const g = await guard("/os/sales", "crm.read", "Sales");
+  const g = await guard("/os/sales", "sales.read", "Sales");
   if (!g.ok) return g.block;
   const { facts, snapshot, session, now } = g.data;
-  const manage = can(session.ctx, "crm.manage");
+  const manage = can(session.ctx, "sales.write");
   const importAvailable = manage && !!createSiteLeadSource(session.ctx.organizationId);
   const pipeline = isAvailable(facts.opportunities) ? summarizePipeline(facts.opportunities.data, now) : null;
 

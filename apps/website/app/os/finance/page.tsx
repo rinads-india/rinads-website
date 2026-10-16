@@ -12,7 +12,7 @@ export default async function FinancePage() {
   const g = await guard("/os/finance", "finance.read", "Finance");
   if (!g.ok) return g.block;
   const { facts, snapshot, session } = g.data;
-  const manage = can(session.ctx, "finance.manage");
+  const manage = can(session.ctx, "finance.write");
 
   return (
     <OsPage

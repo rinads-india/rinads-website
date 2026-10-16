@@ -1,7 +1,7 @@
 import { isPrivilegedRoleKey, type RoleKey } from "@rinads/permissions";
 
 /**
- * Company OS permission keys. These are *additive* to the CORE/commerce keys.
+ * Company OS permission keys. These extend the keys seeded by the Company OS v1 kernel (founder.read, clients.*, sales.*, work.*, finance.read, people.*, approvals.decide) and are additive to the CORE/commerce keys.
  *
  * Source of truth for enforcement is the database (RLS via `private.has_permission`).
  * This module mirrors the grants so the UI can hide what a role cannot use and so a
@@ -9,15 +9,17 @@ import { isPrivilegedRoleKey, type RoleKey } from "@rinads/permissions";
  * (`apps/website/tests/company-os-migrations.test.ts`).
  */
 export const COMPANY_OS_PERMISSIONS = [
-  "company.founder.view",
-  "crm.read",
-  "crm.manage",
-  "projects.read",
-  "projects.manage",
+  "founder.read",
+  "clients.read",
+  "clients.write",
+  "sales.read",
+  "sales.write",
+  "work.read",
+  "work.write",
   "finance.read",
-  "finance.manage",
+  "finance.write",
   "people.read",
-  "people.manage",
+  "people.write",
   "studio.read",
   "studio.manage",
   "growth.read",
@@ -37,15 +39,17 @@ export const COMPANY_OS_PERMISSIONS = [
 export type CompanyOsPermission = (typeof COMPANY_OS_PERMISSIONS)[number];
 
 export const COMPANY_OS_PERMISSION_DESCRIPTIONS: Record<CompanyOsPermission, string> = {
-  "company.founder.view": "View the Founder Control Tower",
-  "crm.read": "Read leads, companies, contacts, opportunities, proposals and contracts",
-  "crm.manage": "Create and update CRM and sales objects",
-  "projects.read": "Read projects, milestones and deliverables",
-  "projects.manage": "Create and manage projects, milestones, deliverables and task allocation",
-  "finance.read": "Read invoices, payments and receivables",
-  "finance.manage": "Issue invoices and record payments (approval-gated)",
+  "founder.read": "View the Founder Control Tower",
+  "clients.read": "Read companies, contacts and contracts",
+  "clients.write": "Create and update companies, contacts and contracts",
+  "sales.read": "Read leads, opportunities and proposals",
+  "sales.write": "Create and update leads, opportunities and proposals",
+  "work.read": "Read projects, milestones, tasks and deliverables",
+  "work.write": "Create and manage projects, milestones, tasks, deliverables and allocation",
+  "finance.read": "Read invoices, payments, expenses and receivables",
+  "finance.write": "Issue invoices and record payments (approval-gated)",
   "people.read": "Read team skills and capacity",
-  "people.manage": "Manage team skills and capacity",
+  "people.write": "Manage team skills and capacity",
   "studio.read": "Read Studio jobs and creative assets",
   "studio.manage": "Run Studio production and register creative assets",
   "growth.read": "Read campaigns, content and ads performance",
@@ -70,13 +74,15 @@ export const ROLE_PERMISSION_GRANTS: Record<RoleKey, readonly CompanyOsPermissio
   super_admin: ALL,
   admin: ALL,
   manager: [
-    "crm.read",
-    "crm.manage",
-    "projects.read",
-    "projects.manage",
+    "clients.read",
+    "clients.write",
+    "sales.read",
+    "sales.write",
+    "work.read",
+    "work.write",
     "finance.read",
     "people.read",
-    "people.manage",
+    "people.write",
     "studio.read",
     "studio.manage",
     "growth.read",
@@ -92,8 +98,9 @@ export const ROLE_PERMISSION_GRANTS: Record<RoleKey, readonly CompanyOsPermissio
     "approvals.decide",
   ],
   staff: [
-    "crm.read",
-    "projects.read",
+    "clients.read",
+    "sales.read",
+    "work.read",
     "studio.read",
     "growth.read",
     "comms.read",

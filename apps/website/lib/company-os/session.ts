@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import type { OrgContext } from "@rinads/company-os-engine";
-import { createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
+import { createCosRowDb, createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { requireOsShellAccess } from "@/lib/os-shell-access";
@@ -39,7 +39,7 @@ export const getCompanyOsSession = cache(async (path: string = "/os"): Promise<C
 
   return {
     kind: "ready",
-    db: createSupabaseRowDb(client),
+    db: createCosRowDb(createSupabaseRowDb(client)),
     ctx: {
       organizationId: membership.organizationId,
       userId: data.user.id,

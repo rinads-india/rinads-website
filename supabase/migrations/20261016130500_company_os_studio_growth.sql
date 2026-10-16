@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.growth_campaigns (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (organization_id, id),
-  FOREIGN KEY (organization_id, company_id) REFERENCES public.crm_companies (organization_id, id)
+  FOREIGN KEY (organization_id, company_id) REFERENCES public.cos_companies (organization_id, id)
 );
 CREATE INDEX IF NOT EXISTS growth_campaigns_org_status_idx ON public.growth_campaigns (organization_id, status);
 
@@ -54,9 +54,9 @@ CREATE TABLE IF NOT EXISTS public.studio_jobs (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (organization_id, id),
-  FOREIGN KEY (organization_id, company_id) REFERENCES public.crm_companies (organization_id, id),
+  FOREIGN KEY (organization_id, company_id) REFERENCES public.cos_companies (organization_id, id),
   FOREIGN KEY (organization_id, campaign_id) REFERENCES public.growth_campaigns (organization_id, id),
-  FOREIGN KEY (organization_id, project_id) REFERENCES public.projects (organization_id, id)
+  FOREIGN KEY (organization_id, project_id) REFERENCES public.cos_projects (organization_id, id)
 );
 CREATE INDEX IF NOT EXISTS studio_jobs_org_status_stage_idx ON public.studio_jobs (organization_id, status, stage);
 
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS public.creative_assets (
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (organization_id, id),
   FOREIGN KEY (organization_id, studio_job_id) REFERENCES public.studio_jobs (organization_id, id),
-  FOREIGN KEY (organization_id, company_id) REFERENCES public.crm_companies (organization_id, id),
+  FOREIGN KEY (organization_id, company_id) REFERENCES public.cos_companies (organization_id, id),
   FOREIGN KEY (organization_id, campaign_id) REFERENCES public.growth_campaigns (organization_id, id),
-  FOREIGN KEY (organization_id, project_id) REFERENCES public.projects (organization_id, id),
+  FOREIGN KEY (organization_id, project_id) REFERENCES public.cos_projects (organization_id, id),
   FOREIGN KEY (organization_id, parent_asset_id) REFERENCES public.creative_assets (organization_id, id),
   CHECK (parent_asset_id IS NULL OR parent_asset_id <> id),
   -- Provenance is a database invariant, not a UI hint:

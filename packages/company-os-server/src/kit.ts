@@ -173,5 +173,14 @@ export async function verifyRow(env: Env, table: string, org: string, id: string
   return row;
 }
 
+/**
+ * The Business Graph identifies people by `cos_workers.id`. Resolve the worker row of a signed-in user so
+ * "owner defaults to me" works; null when the user has no worker profile (never a guess).
+ */
+export async function workerIdForUser(env: Env, org: string, userId: string): Promise<string | null> {
+  const rows = await readMany(env, "people_profiles", { organization_id: org, user_id: userId }, "id", 1);
+  return rows[0] ? String(rows[0].id) : null;
+}
+
 export const todayIso = (env: Env): string => env.now().toISOString().slice(0, 10);
 export const nowIso = (env: Env): string => env.now().toISOString();

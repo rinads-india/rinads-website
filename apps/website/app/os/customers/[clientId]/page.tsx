@@ -13,7 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 export default async function ClientWorkspacePage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId: companyId } = await params;
   if (!UUID.test(companyId)) notFound();
-  const g = await guard(`/os/customers/${companyId}`, "crm.read", "Client workspace");
+  const g = await guard(`/os/customers/${companyId}`, "clients.read", "Client workspace");
   if (!g.ok) return g.block;
   const { facts, session, now } = g.data;
   if (!isAvailable(facts.companies)) return <OsPage title="Client workspace"><Panel title="Unavailable"><p className="text-sm text-gray-600">{facts.companies.reason}</p></Panel></OsPage>;
@@ -99,7 +99,7 @@ export default async function ClientWorkspacePage({ params }: { params: Promise<
             ]}
           />
         )}
-        {can(session.ctx, "crm.manage") && (
+        {can(session.ctx, "clients.write") && (
           <div className="mt-4">
             <ActionForm actionKey="contact.create" title="Add a contact" submitLabel="Add contact" fixed={{ companyId }} fields={[{ name: "fullName", label: "Full name", required: true }, { name: "email", label: "Email" }, { name: "phone", label: "Phone" }, { name: "roleTitle", label: "Role" }]} />
           </div>

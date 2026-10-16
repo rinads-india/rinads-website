@@ -16,7 +16,7 @@ export default async function WorkProjectsPage() {
   if (!g.ok) return g.block;
   const { facts, session, now } = g.data;
   const readable = isAvailable(facts.projects);
-  const manage = can(session.ctx, "projects.manage");
+  const manage = can(session.ctx, "work.write");
   const companies = new Map(isAvailable(facts.companies) ? facts.companies.data.map((c) => [c.id, c.name]) : []);
   const signed = isAvailable(facts.contracts) ? facts.contracts.data.filter((c) => c.status === "signed").map((c) => ({ value: c.id, label: c.title })) : [];
 
@@ -86,7 +86,7 @@ export default async function WorkProjectsPage() {
                   header: "Actions",
                   cell: (d) => (
                     <div className="flex flex-wrap gap-2">
-                      {can(session.ctx, "tasks.manage") && (d.status === "draft" || d.status === "changes_requested") && <QuickAction actionKey="deliverable.submit" input={{ deliverableId: d.id }} label="Submit" />}
+                      {can(session.ctx, "work.write") && (d.status === "draft" || d.status === "changes_requested") && <QuickAction actionKey="deliverable.submit" input={{ deliverableId: d.id }} label="Submit" />}
                       {manage && (d.status === "submitted" || d.status === "in_review") && (
                         <>
                           <QuickAction actionKey="deliverable.review" input={{ deliverableId: d.id, decision: "approve" }} label="Approve" tone="primary" />

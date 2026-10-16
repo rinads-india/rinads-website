@@ -7,4 +7,4 @@ export const projectOptions = (f: CompanyFacts): Option[] => (isAvailable(f.proj
 export const opportunityOptions = (f: CompanyFacts): Option[] =>
   isAvailable(f.opportunities) ? f.opportunities.data.filter((o) => o.stage !== "won" && o.stage !== "lost").map((o) => ({ value: o.id, label: `${o.title}${o.companyName ? ` — ${o.companyName}` : ""}` })) : [];
 export const personOptions = (f: CompanyFacts): Option[] =>
-  isAvailable(f.people) ? f.people.data.filter((p) => !p.userId.startsWith("profile:") && p.status === "active").map((p) => ({ value: p.userId, label: `${p.name}${p.roleTitle ? ` (${p.roleTitle})` : ""}` })) : [];
+  isAvailable(f.people) ? f.people.data.filter((p) => p.status === "active").map((p) => ({ value: p.userId, label: `${p.name}${p.roleTitle ? ` (${p.roleTitle})` : ""}` })) : [];

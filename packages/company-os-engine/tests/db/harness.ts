@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const MIGRATIONS_DIR = join(here, "../../../../supabase/migrations");
-export const COMPANY_OS_PREFIX = "20261016120";
+export const COMPANY_OS_PREFIX = "20261016130";
 
 export const A = { org: "a0000000-0000-4000-8000-00000000000a" };
 export const B = { org: "b0000000-0000-4000-8000-00000000000b" };

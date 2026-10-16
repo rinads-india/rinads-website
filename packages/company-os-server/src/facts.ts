@@ -65,8 +65,21 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
   const asOf = now.toISOString();
   const notes: string[] = [];
 
-  async function section<T>(name: string, permission: string | null, fetch: () => Promise<DbResult | DbResult[]>, map: (rows: Row[]) => T): Promise<Section<T>> {
+  // The Business Graph tables exist from the Company OS v1 kernel, but this runtime needs the columns, policies and
+  // approval gates of the extension migrations. One cheap probe tells us whether they are applied; when they are not,
+  // every graph-backed section says so instead of showing half-mapped data.
+  const probe = await db.select("finance_invoices", { columns: "issue_action_id", limit: 1 });
+  const schemaReady = !probe.error || !isMissingSchema(probe.error);
+
+  async function section<T>(
+    name: string,
+    permission: string | null,
+    fetch: () => Promise<DbResult | DbResult[]>,
+    map: (rows: Row[]) => T,
+    options: { legacy?: boolean } = {}
+  ): Promise<Section<T>> {
     if (permission && !can(ctx, permission)) return unavailable(`Your role does not include ${permission}.`);
+    if (!schemaReady && !options.legacy) return unavailable(SCHEMA_PENDING);
     try {
       const results = await fetch();
       const list = Array.isArray(results) ? results : [results];
@@ -108,17 +121,21 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
       }))
   );
 
-  const alerts = await section<AlertFact[]>("Operational alerts", null, () => sel("operational_alerts", { acknowledged: false }), (rows) =>
-    rows.map((r) => ({ id: String(r.id), title: String(r.title), severity: r.severity as AlertFact["severity"], createdAt: iso(r.created_at) }))
+  const alerts = await section<AlertFact[]>(
+    "Operational alerts",
+    null,
+    () => sel("operational_alerts", { acknowledged: false }),
+    (rows) => rows.map((r) => ({ id: String(r.id), title: String(r.title), severity: r.severity as AlertFact["severity"], createdAt: iso(r.created_at) })),
+    { legacy: true }
   );
 
   // ── CRM / sales ───────────────────────────────────────────────────────────────
-  const companiesSection = await section<CompanyFact[]>("Companies", "crm.read", () => sel("crm_companies", {}), (rows) =>
+  const companiesSection = await section<CompanyFact[]>("Companies", "clients.read", () => sel("crm_companies", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), name: String(r.name), relationship: r.relationship as CompanyFact["relationship"], ownerId: strOrNull(r.owner_id), priority: r.priority as CompanyFact["priority"] }))
   );
   const companyNames = new Map(companiesSection.state === "available" ? companiesSection.data.map((c) => [c.id, c.name]) : []);
 
-  const leads = await section<LeadFact[]>("Leads", "crm.read", () => sel("crm_leads", {}), (rows) =>
+  const leads = await section<LeadFact[]>("Leads", "sales.read", () => sel("crm_leads", {}), (rows) =>
     rows.map((r) => ({
       id: String(r.id),
       name: String(r.name),
@@ -131,7 +148,7 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
       lastContactedAt: isoOrNull(r.last_contacted_at),
     }))
   );
-  const opportunities = await section<OpportunityFact[]>("Opportunities", "crm.read", () => sel("crm_opportunities", {}), (rows) =>
+  const opportunities = await section<OpportunityFact[]>("Opportunities", "sales.read", () => sel("crm_opportunities", {}), (rows) =>
     rows.map((r) => ({
       id: String(r.id),
       title: String(r.title),
@@ -146,21 +163,21 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
       updatedAt: iso(r.updated_at),
     }))
   );
-  const proposals = await section<ProposalFact[]>("Proposals", "crm.read", () => sel("crm_proposals", {}), (rows) =>
+  const proposals = await section<ProposalFact[]>("Proposals", "sales.read", () => sel("crm_proposals", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), title: String(r.title), opportunityId: strOrNull(r.opportunity_id), companyId: strOrNull(r.company_id), status: r.status as ProposalFact["status"], amount: numOrNull(r.amount), sentAt: isoOrNull(r.sent_at), validUntil: isoOrNull(r.valid_until) }))
   );
-  const contracts = await section<ContractFact[]>("Contracts", "crm.read", () => sel("crm_contracts", {}), (rows) =>
+  const contracts = await section<ContractFact[]>("Contracts", "clients.read", () => sel("crm_contracts", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), title: String(r.title), companyId: strOrNull(r.company_id), status: r.status as ContractFact["status"], value: numOrNull(r.contract_value), signedAt: isoOrNull(r.signed_at), endDate: isoOrNull(r.end_date) }))
   );
 
   // ── Delivery ──────────────────────────────────────────────────────────────────
-  const projects = await section<ProjectFact[]>("Projects", "projects.read", () => sel("projects", {}), (rows) =>
+  const projects = await section<ProjectFact[]>("Projects", "work.read", () => sel("projects", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), name: String(r.name), companyId: strOrNull(r.company_id), kind: r.kind as ProjectFact["kind"], status: r.status as ProjectFact["status"], dueDate: isoOrNull(r.due_date), ownerId: strOrNull(r.owner_id), updatedAt: iso(r.updated_at) }))
   );
-  const milestones = await section<MilestoneFact[]>("Milestones", "projects.read", () => sel("project_milestones", {}), (rows) =>
+  const milestones = await section<MilestoneFact[]>("Milestones", "work.read", () => sel("project_milestones", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), projectId: String(r.project_id), name: String(r.name), dueDate: isoOrNull(r.due_date), status: r.status as MilestoneFact["status"] }))
   );
-  const deliverables = await section<DeliverableFact[]>("Deliverables", "projects.read", () => sel("deliverables", {}), (rows) =>
+  const deliverables = await section<DeliverableFact[]>("Deliverables", "work.read", () => sel("deliverables", {}), (rows) =>
     rows.map((r) => ({ id: String(r.id), projectId: strOrNull(r.project_id), companyId: strOrNull(r.company_id), title: String(r.title), status: r.status as DeliverableFact["status"], dueDate: isoOrNull(r.due_date), submittedAt: isoOrNull(r.submitted_at), changeRequests: Number(r.change_requests ?? 0) }))
   );
 
@@ -214,19 +231,23 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
 
   const people = await section<PersonCapacity[]>("People", "people.read", () => sel("people_profiles", {}), (rows) =>
     rows.map<PersonCapacity>((r) => {
+      // Business Graph people are identified by their cos_workers id (tasks, owners and decisions all use it);
+      // the login (user_id) is only used to join Academy certification, which is recorded per user.
       const uid = strOrNull(r.user_id);
+      const workerId = String(r.id);
       const skills: Record<string, SkillLevel> = {};
       for (const [k, v] of Object.entries((r.skills as Record<string, number> | null) ?? {})) if ([1, 2, 3, 4, 5].includes(Number(v))) skills[k] = Number(v) as SkillLevel;
       return {
-        userId: uid ?? `profile:${String(r.id)}`,
+        userId: workerId,
+        loginUserId: uid,
         name: String(r.display_name),
         roleTitle: strOrNull(r.role_title),
         status: r.status as PersonCapacity["status"],
         skills,
         certifiedSkills: uid ? certified.get(uid) : undefined,
         weeklyCapacityHours: numOrNull(r.weekly_capacity_hours),
-        committedHours: uid ? (estimateByUser.get(uid) ?? 0) : 0,
-        openTaskCount: uid && openTasks ? openTasks.filter((t) => t.assigneeId === uid).length : 0,
+        committedHours: estimateByUser.get(workerId) ?? 0,
+        openTaskCount: openTasks ? openTasks.filter((t) => t.assigneeId === workerId).length : 0,
         // No independently verified delivery history source exists yet, so none is used.
         history: null,
       };
@@ -307,7 +328,8 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
       const shippedAt = r.shipped_at ? new Date(String(r.shipped_at)).getTime() : null;
       const stale = !delivered && shippedAt !== null && now.getTime() - shippedAt > SHIPMENT_STALE_DAYS * MS_PER_DAY;
       return { id: String(r.id), orderRef: strOrNull(r.order_id), status, carrier: strOrNull(r.carrier), trackingNumber: strOrNull(r.awb), expectedDelivery: null, delayed: stale, exception };
-    })
+    }),
+    { legacy: true }
   );
   const commExceptions = await section<CommExceptionFact[]>(
     "Communication",

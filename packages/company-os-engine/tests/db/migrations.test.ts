@@ -3,26 +3,36 @@ import { after, before, describe, it } from "node:test";
 import { COMPANY_OS_PERMISSIONS, ROLE_PERMISSION_GRANTS } from "../../src";
 import { applyCompanyOsMigrations, companyOsMigrationFiles, createDb, readCompanyOsSql, type Db } from "./harness";
 
+/** Tables this branch creates (the Business Graph tables are the kernel's, extended — see GRAPH_TABLES). */
 const EXPECTED_TABLES = [
   "academy_progress", "academy_skills", "ad_campaigns", "ad_metrics_daily", "ai_agent_profiles", "ai_runs",
   "asset_performance", "asset_publications", "comm_activities", "content_items", "creative_assets",
-  "crm_companies", "crm_contacts", "crm_contracts", "crm_leads", "crm_opportunities", "crm_proposals",
-  "deliverables", "finance_invoices", "finance_payments", "growth_campaigns", "people_profiles",
-  "project_milestones", "projects", "studio_jobs", "work_assignment_decisions",
+  "growth_campaigns", "studio_jobs", "work_assignment_decisions",
 ];
+
+/** Company OS v1 kernel tables (PR #129) that these migrations extend and tighten. */
+const GRAPH_TABLES = [
+  "cos_approval_items", "cos_attention_items", "cos_capacity_snapshots", "cos_companies", "cos_contacts",
+  "cos_contracts", "cos_daily_closings", "cos_deliverables", "cos_departments", "cos_expenses", "cos_invoices",
+  "cos_leads", "cos_milestones", "cos_opportunities", "cos_payments", "cos_projects", "cos_proposals",
+  "cos_tasks", "cos_workers",
+];
+
+/** The kernel's member-wide policies, the only ones these migrations are allowed to supersede. */
+const KERNEL_MEMBER_POLICY = /^cos_[a-z_]+_(select|insert|update)_member$/;
 
 describe("Company OS migrations — static safety rules", () => {
   const files = readCompanyOsSql();
 
-  it("ships the seven additive migrations in dependency order", () => {
+  it("ships the seven migrations after the kernel foundation, in dependency order", () => {
     assert.deepEqual(companyOsMigrationFiles(), [
-      "20261016120000_company_os_permissions.sql",
-      "20261016120100_company_os_ledger_events.sql",
-      "20261016120200_company_os_crm_sales.sql",
-      "20261016120300_company_os_delivery_finance.sql",
-      "20261016120400_company_os_people_work.sql",
-      "20261016120500_company_os_studio_growth.sql",
-      "20261016120600_company_os_comms_academy_ai.sql",
+      "20261016130000_company_os_permissions.sql",
+      "20261016130100_company_os_ledger_events.sql",
+      "20261016130200_company_os_cos_graph.sql",
+      "20261016130300_company_os_cos_gates.sql",
+      "20261016130400_company_os_work_decisions.sql",
+      "20261016130500_company_os_studio_growth.sql",
+      "20261016130600_company_os_comms_academy_ai.sql",
     ]);
   });
 
@@ -35,8 +45,22 @@ describe("Company OS migrations — static safety rules", () => {
       it("never grants anything to anon", () => {
         assert.doesNotMatch(code, /grant\b[^;]*\bto\b[^;]*\banon\b/i);
       });
-      it("is additive: no DROP TABLE/COLUMN/SCHEMA/CONSTRAINT/POLICY, no TRUNCATE, no unscoped DELETE/UPDATE", () => {
-        assert.doesNotMatch(code, /drop\s+(table|column|schema|constraint|policy|function|type|index)\b/i);
+      it("is additive: nothing dropped except the kernel's own member-wide policies and one superseded CHECK; no TRUNCATE, no unscoped DELETE/UPDATE", () => {
+        assert.doesNotMatch(code, /drop\s+(table|column|schema|function|type|index)\b/i);
+        // Policies: only the kernel's `<table>_{select,insert,update}_member` may be replaced.
+        for (const m of code.matchAll(/drop\s+policy\s+if\s+exists\s+([a-z_0-9]+)\s+on\b/gi)) assert.match(m[1], KERNEL_MEMBER_POLICY, `unexpected DROP POLICY ${m[1]}`);
+        for (const m of code.matchAll(/drop\s+policy\s+if\s+exists\s+%I/gi)) {
+          void m;
+          assert.ok(file.endsWith("_company_os_cos_graph.sql"), `dynamic DROP POLICY is only allowed in the graph migration (${file})`);
+        }
+        if (file.endsWith("_company_os_cos_graph.sql")) {
+          const suffixes = [...code.matchAll(/spec\.t\s*\|\|\s*'(_[a-z]+_member)'/gi)].map((m) => m[1]);
+          assert.deepEqual(new Set(suffixes), new Set(["_select_member", "_insert_member", "_update_member"]));
+        }
+        // Constraints: only the kernel's deliverable status CHECK is widened (graph migration).
+        for (const m of code.matchAll(/drop\s+constraint\s+([^\s;]+)/gi)) {
+          assert.ok(file.endsWith("_company_os_cos_graph.sql") && m[1].startsWith("%I"), `unexpected DROP CONSTRAINT ${m[1]} in ${file}`);
+        }
         assert.doesNotMatch(code, /\btruncate\s+(table\s+)?[a-z_."]+\s*;/i);
         assert.doesNotMatch(code, /\bdelete\s+from\b/i);
         assert.doesNotMatch(code, /\bupdate\s+public\.[a-z_]+\s+set\b/i);
@@ -53,7 +77,7 @@ describe("Company OS migrations — static safety rules", () => {
     });
   }
 
-  it("every table is organisation-scoped (organization_id NOT NULL referencing organizations)", () => {
+  it("every table created here is organisation-scoped (organization_id NOT NULL referencing organizations)", () => {
     const all = files.map((f) => f.sql).join("\n");
     for (const table of EXPECTED_TABLES) {
       const m = new RegExp(`create table if not exists public\\.${table}\\s*\\(([\\s\\S]*?)\\n\\);`, "i").exec(all);
@@ -94,8 +118,8 @@ describe("Company OS migrations — applied to the real migration chain", () => 
     assert.deepEqual(created, [...EXPECTED_TABLES].sort());
   });
 
-  it("enables RLS and defines at least one policy on every new table; anon has zero privileges", async () => {
-    for (const table of EXPECTED_TABLES) {
+  it("enables RLS and defines at least one policy on every new and graph table; anon has zero privileges", async () => {
+    for (const table of [...EXPECTED_TABLES, ...GRAPH_TABLES]) {
       const rls = await db.query<{ relrowsecurity: boolean }>("select relrowsecurity from pg_class where oid = ('public.' || $1)::regclass", [table]);
       assert.equal(rls.rows[0].relrowsecurity, true, `${table}: RLS must be enabled`);
       const pol = await db.query<{ n: number }>("select count(*)::int as n from pg_policies where schemaname='public' and tablename=$1", [table]);
@@ -124,7 +148,7 @@ describe("Company OS migrations — applied to the real migration chain", () => 
     const rows = await db.query<{ policyname: string; cmd: string; qual: string | null; with_check: string | null }>(
       "select policyname, cmd, qual, with_check from pg_policies where schemaname='public' and cmd in ('INSERT','UPDATE') and policyname like 'cos\\_%'"
     );
-    const memberOnly = new Set(["cos_ai_runs_insert", "cos_business_events_insert", "cos_audit_logs_insert_guard", "cos_rinpo_actions_update", "cos_rinpo_actions_insert_guard"]);
+    const memberOnly = new Set(["cos_ai_runs_insert", "cos_business_events_insert", "cos_audit_logs_insert_guard", "cos_rinpo_actions_update", "cos_rinpo_actions_insert_guard", "cos_daily_closings_insert", "cos_daily_closings_update"]);
     for (const r of rows.rows) {
       if (memberOnly.has(r.policyname)) continue;
       const text = `${r.qual ?? ""} ${r.with_check ?? ""}`;
@@ -137,9 +161,22 @@ describe("Company OS migrations — applied to the real migration chain", () => 
     assert.deepEqual([...after_.anonDefiner].sort(), [...before_.anonDefiner].sort());
   });
 
-  it("preserves every pre-existing table and policy (purely additive)", () => {
+  it("preserves every pre-existing table and policy except the kernel's superseded member-wide policies", () => {
     for (const t of before_.tables) assert.ok(after_.tables.has(t), `lost table ${t}`);
-    for (const p of before_.policies) assert.ok(after_.policies.has(p), `lost policy ${p}`);
+    const lost = [...before_.policies].filter((p) => !after_.policies.has(p));
+    for (const p of lost) assert.match(p.split(".")[1] ?? p, KERNEL_MEMBER_POLICY, `lost policy ${p}`);
+    assert.ok(lost.length >= 50, "the kernel member-wide policies should have been replaced");
+  });
+
+  it("no graph table keeps a permissive member-wide policy (membership alone never grants access)", async () => {
+    const rows = await db.query<{ tablename: string; policyname: string; qual: string | null; with_check: string | null; cmd: string }>(
+      "select tablename, policyname, qual, with_check, cmd from pg_policies where schemaname='public' and tablename = any($1) and permissive = 'PERMISSIVE'",
+      [GRAPH_TABLES]
+    );
+    for (const r of rows.rows) {
+      const text = `${r.qual ?? ""} ${r.with_check ?? ""}`;
+      assert.match(text, /has_permission|auth\.uid\(\)/, `${r.tablename}.${r.policyname} (${r.cmd}) is membership-only`);
+    }
   });
 
   it("DB role grants for Company OS permissions match packages/company-os ROLE_PERMISSION_GRANTS exactly", async () => {
@@ -156,12 +193,23 @@ describe("Company OS migrations — applied to the real migration chain", () => 
     assert.equal(seeded.rows.length, COMPANY_OS_PERMISSIONS.length);
   });
 
-  it("every cross-table link is a composite (organization_id, id) FK — a child can never reference another tenant's parent", async () => {
-    const rows = await db.query<{ conrelid: string; def: string }>(
-      "select conrelid::regclass::text as conrelid, pg_get_constraintdef(oid) as def from pg_constraint where contype='f' and connamespace='public'::regnamespace and conrelid::regclass::text = any($1)",
-      [EXPECTED_TABLES]
+  it("every cross-link on the graph is also a composite (organization_id, id) FK — a child can never reference another tenant's parent", async () => {
+    const rows = await db.query<{ child: string; def: string }>(
+      "select conrelid::regclass::text as child, pg_get_constraintdef(oid) as def from pg_constraint where contype='f' and connamespace='public'::regnamespace and (conrelid::regclass::text = any($1) or conrelid::regclass::text = any($2))",
+      [GRAPH_TABLES, EXPECTED_TABLES]
     );
-    const single = rows.rows.filter((r) => /REFERENCES (public\.)?(crm_|projects|project_|growth_|studio_|creative_|content_|asset_|ad_|finance_|deliverables|academy_skills)/.test(r.def) && !/\(organization_id/.test(r.def));
-    assert.deepEqual(single, [], "cross-links must be composite");
+    const composite = new Set<string>();
+    const single: { child: string; col: string; parent: string }[] = [];
+    for (const r of rows.rows) {
+      const comp = /FOREIGN KEY \(organization_id, ([a-z_]+)\) REFERENCES (?:public\.)?([a-z_]+)\(organization_id, id\)/.exec(r.def);
+      if (comp) {
+        composite.add(`${r.child}.${comp[1]}`);
+        continue;
+      }
+      const one = /FOREIGN KEY \(([a-z_]+)\) REFERENCES (?:public\.)?(cos_[a-z_]+|studio_[a-z_]+|creative_assets|content_items|growth_campaigns|ad_campaigns)\(id\)/.exec(r.def);
+      if (one) single.push({ child: r.child, col: one[1], parent: one[2] });
+    }
+    const unguarded = single.filter((x) => !composite.has(`${x.child}.${x.col}`)).map((x) => `${x.child}.${x.col} → ${x.parent}`);
+    assert.deepEqual(unguarded, []);
   });
 });

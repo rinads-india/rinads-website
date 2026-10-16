@@ -10,12 +10,12 @@ import { getCustomersModuleDestinations } from "@/lib/os-module-destinations";
 export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
-  // Customers stays reachable for every member (legacy bridge below); the CRM workspace needs crm.read.
+  // Customers stays reachable for every member (legacy bridge below); the CRM workspace needs clients.read.
   const g = await guard("/os/customers", null, "Customers", { business: <OsModuleBridge config={getCustomersModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { facts, now, session } = g.data;
-  const canRead = session.ctx.permissions.includes("crm.read") || session.ctx.roleKey === "founder" || session.ctx.roleKey === "super_admin";
-  const canManage = session.ctx.permissions.includes("crm.manage") || session.ctx.roleKey === "founder" || session.ctx.roleKey === "super_admin";
+  const canRead = session.ctx.permissions.includes("clients.read") || session.ctx.roleKey === "founder" || session.ctx.roleKey === "super_admin";
+  const canManage = session.ctx.permissions.includes("clients.write") || session.ctx.roleKey === "founder" || session.ctx.roleKey === "super_admin";
 
   const recv = isAvailable(facts.invoices) && isAvailable(facts.payments) ? summarizeReceivables(facts.invoices.data, facts.payments.data, now) : null;
 
@@ -77,7 +77,7 @@ export default async function CustomersPage() {
           )}
         </>
       ) : (
-        <Panel title="CRM workspace"><p className="text-sm text-gray-700">Your role does not include <code>crm.read</code>, so company records are not shown. The tools below remain available.</p></Panel>
+        <Panel title="CRM workspace"><p className="text-sm text-gray-700">Your role does not include <code>clients.read</code>, so company records are not shown. The tools below remain available.</p></Panel>
       )}
       <OsModuleBridge config={getCustomersModuleDestinations()} />
     </OsPage>

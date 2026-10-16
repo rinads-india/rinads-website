@@ -13,7 +13,7 @@ export async function HomeAttention() {
   const data = await loadCompanyData("/os");
   if (data.kind !== "ready") return null;
   const { snapshot, facts, session } = data;
-  const founderView = can(session.ctx, "company.founder.view");
+  const founderView = can(session.ctx, "founder.read");
   return (
     <Panel
       id="company-attention"

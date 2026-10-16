@@ -30,7 +30,10 @@ export type AllocationTask = {
 export type SkillLevel = 1 | 2 | 3 | 4 | 5;
 
 export type PersonCapacity = {
+  /** Stable person id used for assignment (the Business Graph worker id). */
   userId: string;
+  /** The person's login, when they have one — used to join records kept per user (e.g. Academy, approvals). */
+  loginUserId?: string | null;
   name: string;
   roleTitle: string | null;
   status: "active" | "on_leave" | "inactive";

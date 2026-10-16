@@ -11,6 +11,7 @@ import {
   readMany,
   updateOne,
   verifyRow,
+  workerIdForUser,
   type Env,
 } from "../kit";
 import { compact, date, num, oneOf, reqStr, reqUuid, str, uuid } from "../validate";
@@ -144,7 +145,7 @@ export function crmTools(env: Env): DomainTool[] {
             currency: str(input, "currency", { optional: true, max: 3 }) ?? "INR",
             probability: num(input, "probability", { optional: true, min: 0, max: 100, int: true }),
             expected_close_date: date(input, "expectedCloseDate"),
-            owner_id: uuid(input, "ownerId", true) ?? ctx.executorUserId,
+            owner_id: uuid(input, "ownerId", true) ?? (await workerIdForUser(env, ctx.organizationId, ctx.executorUserId)),
           });
           return { id: row.id, title: row.title, stage: row.stage };
         },
@@ -209,7 +210,7 @@ export function crmTools(env: Env): DomainTool[] {
           let companyId = lead.converted_company_id as string | null;
           if (!companyId) {
             const found = await readMany(env, "crm_companies", { organization_id: ctx.organizationId, name: companyName }, "id", 1);
-            companyId = found[0] ? String(found[0].id) : String((await insertOne(env, "crm_companies", { organization_id: ctx.organizationId, name: companyName, relationship: "prospect", owner_id: (lead.owner_id as string | null) ?? ctx.executorUserId })).id);
+            companyId = found[0] ? String(found[0].id) : String((await insertOne(env, "crm_companies", { organization_id: ctx.organizationId, name: companyName, relationship: "prospect", owner_id: (lead.owner_id as string | null) ?? (await workerIdForUser(env, ctx.organizationId, ctx.executorUserId)) })).id);
             await updateOne(env, "crm_leads", ctx.organizationId, leadId, { converted_company_id: companyId });
           }
           const cid = companyId;
@@ -234,7 +235,7 @@ export function crmTools(env: Env): DomainTool[] {
               contact_id: contact,
               title: opportunityTitle,
               amount: num(input, "amount", { optional: true, min: 0 }),
-              owner_id: (lead.owner_id as string | null) ?? ctx.executorUserId,
+              owner_id: (lead.owner_id as string | null) ?? (await workerIdForUser(env, ctx.organizationId, ctx.executorUserId)),
             });
             await updateOne(env, "crm_leads", ctx.organizationId, leadId, { converted_opportunity_id: opp.id, status: "converted" });
             return String(opp.id);

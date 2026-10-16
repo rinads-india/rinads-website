@@ -181,12 +181,12 @@ describe("database-enforced approval gates for high-risk writes", () => {
   let invoiceId: string;
   let companyId: string;
   before(async () => {
-    companyId = (await admin<{ id: string }>(db, "insert into crm_companies (organization_id, name) values ($1,'Gate Co') returning id", [A.org]))[0].id;
-    invoiceId = (await admin<{ id: string }>(db, "insert into finance_invoices (organization_id, number, company_id, total, status, issue_date, due_date, issue_action_id) values ($1,'G-1',$2,1000,'draft', current_date, current_date + 30, null) returning id", [A.org, companyId]))[0].id;
+    companyId = (await admin<{ id: string }>(db, "insert into cos_companies (organization_id, name) values ($1,'Gate Co') returning id", [A.org]))[0].id;
+    invoiceId = (await admin<{ id: string }>(db, "insert into cos_invoices (organization_id, number, company_id, amount, status, issued_at, due_at, issue_action_id) values ($1,'G-1',$2,1000,'draft', current_date, current_date + 30, null) returning id", [A.org, companyId]))[0].id;
   });
 
   const pay = (who: Who, action: string | null, ref = `r-${++seq}`) =>
-    denied(db, who, "insert into finance_payments (organization_id, invoice_id, amount, approved_action_id, reference) values ($1,$2,100,$3,$4)", [A.org, invoiceId, action, ref]);
+    denied(db, who, "insert into cos_payments (organization_id, invoice_id, amount, approved_action_id, reference) values ($1,$2,100,$3,$4)", [A.org, invoiceId, action, ref]);
 
   it("a payment cannot be recorded without an approved payment.record ledger row", async () => {
     assert.ok(await pay(as.adminA, null));
@@ -206,21 +206,21 @@ describe("database-enforced approval gates for high-risk writes", () => {
   it("with a genuine approval the payment is recorded exactly once and is immutable", async () => {
     const id = await propose({ type: "payment.record", who: as.adminA });
     await approve(id, as.adminA2);
-    const rows = await run<{ id: string }>(db, as.adminA, "insert into finance_payments (organization_id, invoice_id, amount, approved_action_id, reference) values ($1,$2,100,$3,'real-1') returning id", [A.org, invoiceId, id]);
+    const rows = await run<{ id: string }>(db, as.adminA, "insert into cos_payments (organization_id, invoice_id, amount, approved_action_id, reference) values ($1,$2,100,$3,'real-1') returning id", [A.org, invoiceId, id]);
     assert.equal(rows.length, 1);
     assert.match((await pay(as.adminA, id, "real-2")) ?? "FAIL", /duplicate key|unique/i, "one approval authorises one payment");
-    assert.match((await denied(db, as.adminA, "update finance_payments set amount = 1")) ?? "FAIL", /permission denied/i);
-    assert.match((await denied(db, as.adminA, "delete from finance_payments")) ?? "FAIL", /permission denied/i);
-    assert.match((await denied(db, as.managerA, "insert into finance_payments (organization_id, invoice_id, amount, approved_action_id) values ($1,$2,1,$3)", [A.org, invoiceId, id])) ?? "FAIL", /row-level security/i, "managers lack finance.manage");
+    assert.match((await denied(db, as.adminA, "update cos_payments set amount = 1")) ?? "FAIL", /permission denied/i);
+    assert.match((await denied(db, as.adminA, "delete from cos_payments")) ?? "FAIL", /permission denied/i);
+    assert.match((await denied(db, as.managerA, "insert into cos_payments (organization_id, invoice_id, amount, approved_action_id) values ($1,$2,1,$3)", [A.org, invoiceId, id])) ?? "FAIL", /row-level security/i, "managers lack finance.write");
   });
 
   it("an invoice cannot leave draft, and an issued invoice cannot be voided, without the matching approvals", async () => {
     const upd = (who: Who, status: string, issue: string | null, voidA: string | null = null) =>
-      denied(db, who, "update finance_invoices set status=$2, issue_action_id=$3, void_action_id=$4 where id=$1", [invoiceId, status, issue, voidA]);
-    assert.match((await upd(as.adminA, "issued", null)) ?? "FAIL", /row-level security/i);
+      denied(db, who, "update cos_invoices set status=$2, issue_action_id=$3, void_action_id=$4 where id=$1", [invoiceId, status, issue, voidA]);
+    assert.match((await upd(as.adminA, "sent", null)) ?? "FAIL", /row-level security/i);
     const issue = await propose({ type: "invoice.issue", who: as.adminA });
     await approve(issue, as.adminA2);
-    await run(db, as.adminA, "update finance_invoices set status='issued', issue_action_id=$2 where id=$1", [invoiceId, issue]);
+    await run(db, as.adminA, "update cos_invoices set status='sent', issue_action_id=$2 where id=$1", [invoiceId, issue]);
     assert.match((await upd(as.adminA, "void", issue)) ?? "FAIL", /row-level security/i, "void needs its own approval");
     const voidId = await propose({ type: "invoice.void", who: as.adminA });
     await approve(voidId, as.adminA2);
@@ -228,10 +228,10 @@ describe("database-enforced approval gates for high-risk writes", () => {
   });
 
   it("a contract cannot be marked signed without an approved contract.sign (CRITICAL) action", async () => {
-    const contract = (await admin<{ id: string }>(db, "insert into crm_contracts (organization_id, company_id, title, status) values ($1,$2,'MSA','sent') returning id", [A.org, companyId]))[0].id;
+    const contract = (await admin<{ id: string }>(db, "insert into cos_contracts (organization_id, company_id, title, status) values ($1,$2,'MSA','sent') returning id", [A.org, companyId]))[0].id;
     const sign = async (who: Who, action: string | null): Promise<string | null> => {
       try {
-        const rows = await peek(db, who, "update crm_contracts set status='signed', signed_at=now(), sign_action_id=$2 where id=$1 returning id", [contract, action]);
+        const rows = await peek(db, who, "update cos_contracts set status='signed', signed_at=now(), sign_action_id=$2 where id=$1 returning id", [contract, action]);
         return rows.length === 0 ? "0 rows (row-level security hides it)" : null;
       } catch (e) {
         return (e as Error).message;
@@ -242,16 +242,16 @@ describe("database-enforced approval gates for high-risk writes", () => {
     assert.match((await sign(as.adminA, pending)) ?? "FAIL", /row-level security/i);
     await approve(pending, as.founderA);
     assert.equal(await sign(as.adminA, pending), null);
-    assert.match((await sign(as.staffA, pending)) ?? "FAIL", /0 rows|row-level security/i, "an approved action does not let a user without crm.manage write");
-    assert.equal(await sign(as.managerA, pending), null, "approval gates the action; crm.manage gates who may perform it");
+    assert.match((await sign(as.staffA, pending)) ?? "FAIL", /0 rows|row-level security/i, "an approved action does not let a user without clients.write write");
+    assert.equal(await sign(as.managerA, pending), null, "approval gates the action; clients.write gates who may perform it");
   });
 
   it("a proposal cannot be sent and content cannot be published without approved actions", async () => {
-    const prop = (await admin<{ id: string }>(db, "insert into crm_proposals (organization_id, company_id, title) values ($1,$2,'P1') returning id", [A.org, companyId]))[0].id;
-    assert.match((await denied(db, as.managerA, "update crm_proposals set status='sent', sent_at=now() where id=$1", [prop])) ?? "FAIL", /row-level security/i);
+    const prop = (await admin<{ id: string }>(db, "insert into cos_proposals (organization_id, company_id, title) values ($1,$2,'P1') returning id", [A.org, companyId]))[0].id;
+    assert.match((await denied(db, as.managerA, "update cos_proposals set status='sent', sent_at=now() where id=$1", [prop])) ?? "FAIL", /row-level security/i);
     const send = await propose({ type: "proposal.send", who: as.managerA, risk: "HIGH" });
     await approve(send, as.adminA);
-    assert.equal(await denied(db, as.managerA, "update crm_proposals set status='sent', sent_at=now(), sent_action_id=$2 where id=$1", [prop, send]), null);
+    assert.equal(await denied(db, as.managerA, "update cos_proposals set status='sent', sent_at=now(), sent_action_id=$2 where id=$1", [prop, send]), null);
 
     const idea = (await admin<{ id: string }>(db, "insert into content_items (organization_id, source_idea_id, channel, title) values ($1, gen_random_uuid(), 'instagram', 'Teaser') returning id", [A.org]))[0].id;
     assert.match((await denied(db, as.managerA, "update content_items set status='published', published_at=now() where id=$1", [idea])) ?? "FAIL", /row-level security/i);

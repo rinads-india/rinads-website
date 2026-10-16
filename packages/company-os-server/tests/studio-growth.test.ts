@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { decideGovernedAction, runGovernedAction, type GovernedDeps, type GovernedResult, type OrgContext } from "@rinads/company-os-engine";
-import { A, B, U, admin, as, createDb, seed, type Db, type Who } from "../../company-os/tests/db/harness";
+import { decideGovernedAction, runGovernedAction, type GovernedDeps, type GovernedResult, type OrgContext, ROLE_PERMISSION_GRANTS } from "@rinads/company-os-engine";
+import { A, B, U, admin, as, createDb, seed, type Db, type Who } from "../../company-os-engine/tests/db/harness";
 import { createGovernedDeps, loadCompanyFacts } from "../src";
 import { pgRowDb } from "./pg-rowdb";
 
@@ -12,7 +12,7 @@ before(async () => {
 });
 after(async () => db.close());
 
-const MANAGER_PERMS = ["crm.read", "crm.manage", "projects.read", "projects.manage", "studio.read", "studio.manage", "growth.read", "growth.manage", "people.read", "people.manage", "academy.read", "academy.manage", "comms.read", "comms.manage", "approvals.read", "approvals.decide", "tasks.manage", "ai.read"];
+const MANAGER_PERMS = [...ROLE_PERMISSION_GRANTS.manager];
 
 class P {
   deps: GovernedDeps;
@@ -160,7 +160,7 @@ describe("Ads: metrics, explainable signals, governed budget changes", () => {
     assert.equal(Number((await admin(db, "select daily_budget from ad_campaigns where id=$1", [adId]))[0].daily_budget), 500);
     // direct SQL attempt re-using the same approval for a second change must fail
     await assert.rejects(
-      () => import("../../company-os/tests/db/harness").then(({ run }) => run(db, as.managerA, "update ad_campaigns set daily_budget = 9000, budget_action_id = $2 where id = $1", [adId, req])),
+      () => import("../../company-os-engine/tests/db/harness").then(({ run }) => run(db, as.managerA, "update ad_campaigns set daily_budget = 9000, budget_action_id = $2 where id = $1", [adId, req])),
       /requires a new approved/i
     );
   });
@@ -174,7 +174,7 @@ describe("People, Academy and Communication", () => {
     const r = ok(await m.run("people.update_profile", { userId: U.staffA, displayName: "Sam Staff", roleTitle: "Designer", skills: { design: 4, motion: 2 }, weeklyCapacityHours: 32 }));
     const again = ok(await m.run("people.update_profile", { userId: U.staffA, displayName: "Sam Staff", roleTitle: "Senior Designer", skills: { design: 5 }, weeklyCapacityHours: 30 }));
     assert.equal(again.id, r.id, "upsert, not duplicate");
-    assert.deepEqual((await admin(db, "select skills, weekly_capacity_hours::float as h from people_profiles where id=$1", [String(r.id)]))[0], { skills: { design: 5 }, h: 30 });
+    assert.deepEqual((await admin(db, "select skill_levels as skills, available_hours_week::float as h from cos_workers where id=$1", [String(r.id)]))[0], { skills: { design: 5 }, h: 30 });
   });
 
   it("Academy: evidence is required to certify; certification is advisory evidence only", async () => {
@@ -189,7 +189,7 @@ describe("People, Academy and Communication", () => {
     assert.deepEqual(row, { stage: "certified", certified: true, n: 2 });
     // certification surfaces as evidence for allocation, never as an employment decision
     const { facts } = await loadCompanyFacts({ db: pgRowDb(db, as.managerA), ctx: mgr().ctx, organizationName: "RINADS", now: new Date() });
-    assert.equal(facts.people.state === "available" && facts.people.data.find((p) => p.userId === U.staffA)?.certifiedSkills?.[0], "design");
+    assert.equal(facts.people.state === "available" && facts.people.data.find((p) => p.loginUserId === U.staffA)?.certifiedSkills?.[0], "design");
   });
 
   it("communication activity must link to a real object in the same organisation", async () => {
@@ -197,7 +197,7 @@ describe("People, Academy and Communication", () => {
     const co = String(ok(await m.run("company.create", { name: "Comm Co" })).id);
     ok(await m.run("comm.log_activity", { channel: "whatsapp", direction: "inbound", subject: "Asked about pricing", linkedType: "company", linkedId: co }));
     assert.equal(failedWith(await m.run("comm.log_activity", { channel: "email", direction: "outbound", linkedType: "company", linkedId: "00000000-0000-4000-8000-0000000000ff" })), "not_found");
-    const foreign = (await admin<{ id: string }>(db, "insert into crm_companies (organization_id, name) values ($1,'Foreign Co') returning id", [B.org]))[0].id;
+    const foreign = (await admin<{ id: string }>(db, "insert into cos_companies (organization_id, name) values ($1,'Foreign Co') returning id", [B.org]))[0].id;
     assert.equal(failedWith(await m.run("comm.log_activity", { channel: "call", direction: "inbound", linkedType: "company", linkedId: foreign })), "not_found", "cannot attach activity to another tenant's record");
     assert.equal(failedWith(await m.run("comm.log_activity", { channel: "call", direction: "inbound", linkedType: "company" })), "validation_error");
     ok(await m.run("comm.log_activity", { channel: "email", direction: "outbound", status: "failed", subject: "Bounced proposal", linkedType: "company", linkedId: co }));

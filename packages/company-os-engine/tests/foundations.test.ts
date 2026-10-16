@@ -66,19 +66,19 @@ describe("permissions", () => {
   });
 
   it("founder/super_admin pass every permission; others only what they hold", () => {
-    assert.equal(can({ roleKey: "founder", permissions: [] }, "finance.manage"), true);
+    assert.equal(can({ roleKey: "founder", permissions: [] }, "finance.write"), true);
     assert.equal(can({ roleKey: "super_admin", permissions: [] }, "ai.manage"), true);
-    assert.equal(can({ roleKey: "staff", permissions: ["crm.read"] }, "crm.read"), true);
-    assert.equal(can({ roleKey: "staff", permissions: ["crm.read"] }, "crm.manage"), false);
-    assert.equal(can({ roleKey: null, permissions: [] }, "crm.read"), false);
+    assert.equal(can({ roleKey: "staff", permissions: ["clients.read"] }, "clients.read"), true);
+    assert.equal(can({ roleKey: "staff", permissions: ["clients.read"] }, "clients.write"), false);
+    assert.equal(can({ roleKey: null, permissions: [] }, "clients.read"), false);
   });
 
   it("clients and viewers get no Company OS permissions; managers cannot see the founder tower or manage finance", () => {
     assert.deepEqual(ROLE_PERMISSION_GRANTS.client, []);
     assert.deepEqual(ROLE_PERMISSION_GRANTS.viewer, []);
-    assert.ok(!ROLE_PERMISSION_GRANTS.manager.includes("company.founder.view"));
-    assert.ok(!ROLE_PERMISSION_GRANTS.manager.includes("finance.manage"));
-    assert.ok(ROLE_PERMISSION_GRANTS.admin.includes("company.founder.view"));
+    assert.ok(!ROLE_PERMISSION_GRANTS.manager.includes("founder.read"));
+    assert.ok(!ROLE_PERMISSION_GRANTS.manager.includes("finance.write"));
+    assert.ok(ROLE_PERMISSION_GRANTS.admin.includes("founder.read"));
     assert.ok(!ROLE_PERMISSION_GRANTS.staff.includes("approvals.decide"));
   });
 });

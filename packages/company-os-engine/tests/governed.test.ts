@@ -22,10 +22,10 @@ import {
 import { NOW, ORG, OTHER_ORG } from "./fixtures";
 
 const ctx = (userId: string, roleKey: string, permissions: string[] = []): OrgContext => ({ organizationId: ORG, userId, roleKey, permissions });
-const staff = ctx("staff-1", "staff", ["tasks.manage", "crm.read"]);
-const manager = ctx("mgr-1", "manager", ["tasks.manage", "crm.manage", "projects.manage", "approvals.decide", "finance.read", "studio.manage", "growth.manage"]);
-const finance = ctx("fin-1", "admin", ["finance.manage", "crm.manage", "approvals.decide"]);
-const admin2 = ctx("adm-2", "admin", ["approvals.decide", "crm.manage", "finance.manage"]);
+const staff = ctx("staff-1", "staff", ["work.write", "clients.read"]);
+const manager = ctx("mgr-1", "manager", ["work.write", "people.write", "sales.write", "clients.write", "approvals.decide", "finance.read", "studio.manage", "growth.manage"]);
+const finance = ctx("fin-1", "admin", ["finance.write", "sales.write", "clients.write", "approvals.decide"]);
+const admin2 = ctx("adm-2", "admin", ["approvals.decide", "sales.write", "clients.write", "finance.write"]);
 
 class MemoryLedger implements LedgerPort {
   rows: LedgerRecord[] = [];
@@ -115,7 +115,7 @@ describe("policy engine", () => {
   it("allows LOW risk with permission; HIGH/CRITICAL always require approval even for admins and founders", () => {
     assert.equal(evaluateAction({ actionKey: "task.create", payload: {}, actor: { kind: "user", userId: "s" }, ctx: staff }).decision, "ALLOW");
     for (const [key, role, perms] of [
-      ["invoice.issue", "admin", ["finance.manage"]],
+      ["invoice.issue", "admin", ["finance.write"]],
       ["payment.record", "founder", []],
       ["contract.sign", "founder", []],
     ] as const) {
@@ -286,7 +286,7 @@ describe("governed pipeline", () => {
 
   it("an approver without approvals.decide cannot approve an agent proposal", async () => {
     const h = harness();
-    const mgrWithoutDecide = ctx("mgr-2", "manager", ["projects.manage", "tasks.manage"]);
+    const mgrWithoutDecide = ctx("mgr-2", "manager", ["work.write", "work.write"]);
     const agent = { kind: "agent" as const, agentRole: "operations_controller", onBehalfOfUserId: "mgr-2" };
     const r = await runGovernedAction(h.deps, { actionKey: "task.assign", input: {}, actor: agent, ctx: mgrWithoutDecide, idempotencyKey: "k10" });
     const id = r.status === "approval_required" ? r.actionId : "";

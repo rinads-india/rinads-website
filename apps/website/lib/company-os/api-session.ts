@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { ACTIVE_ORG_COOKIE, loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
 import type { OrgContext } from "@rinads/company-os-engine";
-import { createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
+import { createCosRowDb, createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
 import { resolveCompanyOsMode } from "@/lib/company-os-mode";
 import { resolveActiveOrganizationId } from "@/lib/post-auth-destination";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
@@ -41,7 +41,7 @@ export async function getApiCompanyOsSession(): Promise<ApiCompanyOsSession> {
 
   return {
     kind: "ready",
-    db: createSupabaseRowDb(client),
+    db: createCosRowDb(createSupabaseRowDb(client)),
     ctx: { organizationId: membership.organizationId, userId: data.user.id, roleKey: membership.roleKey, permissions: [...membership.permissions] },
     organizationName: membership.organizationName,
   };

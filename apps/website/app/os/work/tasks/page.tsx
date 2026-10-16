@@ -17,7 +17,7 @@ export default async function WorkTasksPage() {
   return (
     <OsPage title="Tasks" eyebrow="Work" summary="Open tasks plus anything completed in the last two days. Starting or completing a task is checked against its dependencies." actions={<LinkButton href="/os/work">Back to Work</LinkButton>}>
       <Panel title="All tasks">
-        <SectionGate section={facts.tasks} label="Tasks">{() => <TaskTable tasks={tasks} names={names} now={now} manage={can(session.ctx, "tasks.manage")} />}</SectionGate>
+        <SectionGate section={facts.tasks} label="Tasks">{() => <TaskTable tasks={tasks} names={names} now={now} manage={can(session.ctx, "work.write")} />}</SectionGate>
       </Panel>
     </OsPage>
   );

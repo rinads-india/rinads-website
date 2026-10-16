@@ -51,10 +51,10 @@ export type OsArea = {
 
 export const OS_AREAS: readonly OsArea[] = [
   { id: "home", label: "Home", href: "/os", group: "company", summary: "Today, attention and your daily brief", requires: "member" },
-  { id: "founder", label: "Founder", href: "/os/founder", group: "company", summary: "Company pulse, risks, decisions and daily close", requires: "company.founder.view" },
+  { id: "founder", label: "Founder", href: "/os/founder", group: "company", summary: "Company pulse, risks, decisions and daily close", requires: "founder.read" },
   { id: "approvals", label: "Approvals", href: "/os/approvals", group: "company", summary: "Decisions waiting on a human", requires: "approvals.read" },
   { id: "customers", label: "Customers", href: "/os/customers", group: "revenue", summary: "Companies, contacts and client workspaces", requires: "member" },
-  { id: "sales", label: "Sales", href: "/os/sales", group: "revenue", summary: "Leads, pipeline, proposals and contracts", requires: "crm.read" },
+  { id: "sales", label: "Sales", href: "/os/sales", group: "revenue", summary: "Leads, pipeline, proposals and contracts", requires: "sales.read" },
   { id: "finance", label: "Finance", href: "/os/finance", group: "revenue", summary: "Invoices, receivables and cash", requires: "finance.read" },
   { id: "work", label: "Work", href: "/os/work", group: "delivery", summary: "Projects, tasks and allocation", requires: "member" },
   { id: "people", label: "People", href: "/os/people", group: "delivery", summary: "Skills and capacity", requires: "people.read" },

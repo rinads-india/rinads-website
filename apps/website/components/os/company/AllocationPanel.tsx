@@ -12,7 +12,7 @@ export function AllocationPanel({ facts, ctx, now }: { facts: CompanyFacts; ctx:
     return <Empty title="Recommendations unavailable" hint={rec.reason} />;
   }
   if (rec.items.length === 0) return <Empty title="No unassigned or high-priority work needs allocation" />;
-  const manage = can(ctx, "projects.manage");
+  const manage = can(ctx, "people.write");
   const people = personOptions(facts);
 
   return (
@@ -59,7 +59,7 @@ export function AllocationPanel({ facts, ctx, now }: { facts: CompanyFacts; ctx:
                           actionKey="task.assign"
                           tone="primary"
                           label={`Assign to ${r.name}`}
-                          input={{ taskId: task.id, assigneeId: r.userId, recommendedUserId: top.userId, followedRecommendation: true, confidence: result.confidence, factorSnapshot: r.factors }}
+                          input={{ taskId: task.id, assigneeId: r.userId, recommendedWorkerId: top.userId, followedRecommendation: true, confidence: result.confidence, factorSnapshot: r.factors }}
                         />
                       </div>
                     )}
@@ -74,7 +74,7 @@ export function AllocationPanel({ facts, ctx, now }: { facts: CompanyFacts; ctx:
                   actionKey="task.assign"
                   title="Assign someone else (rationale required)"
                   submitLabel="Assign with rationale"
-                  fixed={{ taskId: task.id, recommendedUserId: top?.userId, followedRecommendation: false, confidence: result.confidence }}
+                  fixed={{ taskId: task.id, recommendedWorkerId: top?.userId, followedRecommendation: false, confidence: result.confidence }}
                   fields={[
                     { name: "assigneeId", label: "Assign to", kind: "select", required: true, options: people },
                     { name: "overrideReason", label: "Why this person?", required: true, help: "Recorded with the recommendation so overrides stay explainable." },

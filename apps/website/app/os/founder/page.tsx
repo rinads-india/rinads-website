@@ -10,7 +10,7 @@ import { memberNames, nameOf } from "@/lib/company-os/names";
 export const dynamic = "force-dynamic";
 
 export default async function FounderPage() {
-  const g = await guard("/os/founder", "company.founder.view", "Founder Control Tower");
+  const g = await guard("/os/founder", "founder.read", "Founder Control Tower");
   if (!g.ok) return g.block;
   const { snapshot: s, facts, session, notes, now } = g.data;
   const names = memberNames(facts);

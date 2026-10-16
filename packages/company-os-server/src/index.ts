@@ -1,4 +1,5 @@
 export * from "./db";
+export { createCosRowDb, COS_ENTITIES } from "./cos-adapter";
 export * from "./validate";
 export * from "./kit";
 export * from "./ports";

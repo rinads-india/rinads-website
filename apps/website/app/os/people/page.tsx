@@ -10,7 +10,7 @@ export default async function PeoplePage() {
   const g = await guard("/os/people", "people.read", "People");
   if (!g.ok) return g.block;
   const { facts, snapshot, session } = g.data;
-  const manage = can(session.ctx, "people.manage");
+  const manage = can(session.ctx, "people.write");
 
   return (
     <OsPage
