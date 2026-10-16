@@ -38,6 +38,19 @@ describe("Founder Intelligence", () => {
     assert.match(page, /Founder control tower/);
   });
 
+  it("reads canonical operational tasks and alerts into Today and Attention", () => {
+    assert.match(adapters, /operational_tasks/);
+    assert.match(adapters, /operational_alerts/);
+    assert.match(adapters, /loadFounderWork/);
+    assert.match(adapters, /SUPABASE_SERVICE_ROLE_KEY/);
+    assert.match(page, /Open work/);
+    assert.match(page, /Due today/);
+    assert.match(page, /Work pulse/);
+    assert.match(page, /Overdue work/);
+    assert.match(page, /Blocked work/);
+    assert.match(page, /Operational alerts/);
+  });
+
   it("exposes per-project deployment truth and deterministic parity detection", () => {
     assert.match(adapters, /githubCommitSha/);
     assert.match(adapters, /githubCommitRef/);
