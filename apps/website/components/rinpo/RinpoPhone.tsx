@@ -15,7 +15,6 @@ import {
   QuickActionsScreen,
   NotificationsScreen,
   ProfileMemoryScreen,
-  type PhoneScreenId,
 } from "./RinpoPhoneScreens";
 import { RinpoModePlaceholder } from "./RinpoPhoneScreens/RinpoModePlaceholder";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";

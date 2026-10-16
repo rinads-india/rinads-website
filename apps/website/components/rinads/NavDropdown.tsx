@@ -22,7 +22,7 @@ function ItemContent({ item }: { item: NavLink }) {
         {item.status ? (
           <span
             className={
-              item.status === "Available" || item.status === "Available configuration"
+              item.status === "Available" || item.status === "Pilot"
                 ? "rounded-full bg-[var(--status-success-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--status-success-fg)]"
                 : "rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]"
             }

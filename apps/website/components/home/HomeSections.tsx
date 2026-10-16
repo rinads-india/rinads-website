@@ -206,7 +206,7 @@ export function HomeSections() {
       </section>
 
       <CTASection
-        title={POSITIONING.closing}
+        headline={POSITIONING.closing}
         summary="Talk to RINPO, explore the platform, or book a demo with the team."
         primaryHref={CTAS.bookDemo.href}
         primaryLabel={CTAS.bookDemo.label}

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { PlatformPillarPage } from "@/components/system/PlatformPillarPage";
 import { pillarBulletsFromOs, pillarFromCatalog } from "@/lib/content/platform-pillars";
 import { getOsPage } from "@/lib/content/platform-os";
-import { CTAS } from "@/lib/ctas";
 import { metadataFromRegistry } from "@/lib/route-registry";
 
 const PATH = "/platform/commerce";

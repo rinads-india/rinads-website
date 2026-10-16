@@ -25,8 +25,7 @@ export function VerticalSolutionPage({
   const config = getSolutionExperience(vertical.slug);
   const availability = getVerticalAvailability(vertical.slug);
   const configurable =
-    availability.status === "available_configuration" ||
-    availability.status === "generally_available";
+    availability.status === "pilot" || availability.status === "available";
   const primaryHref = configurable ? CTAS.bookDemo.href : CTAS.startProject.href;
   const primaryLabel = configurable ? CTAS.bookDemo.label : "Plan this solution";
 

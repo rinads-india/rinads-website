@@ -139,7 +139,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Payments",
     summary: "Checkout and payment capture for supported commerce and services flows.",
     status: "live",
-    productStatus: "generally_available",
+    productStatus: "available",
     href: "/integrations/razorpay",
   },
   {
@@ -148,7 +148,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Communications",
     summary: "Business messaging workflows where provider credentials and templates are configured.",
     status: "private_preview",
-    productStatus: "private_preview",
+    productStatus: "preview",
     href: "/integrations/whatsapp",
   },
   {
@@ -157,7 +157,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Marketing",
     summary: "Campaign connection paths for Marketing OS — availability depends on organisation setup.",
     status: "planned",
-    productStatus: "coming_soon",
+    productStatus: "roadmap",
     href: "/integrations/meta-ads",
   },
 ];
