@@ -8,9 +8,22 @@ import {
   resolveOsActiveNavId,
   type OsNavItem,
 } from "@/lib/os-nav";
+import {
+  getCompanyOsDesktopNavItems,
+  getCompanyOsMoreNavItems,
+  resolveCompanyOsActiveNavId,
+  type CompanyOsNavItem,
+} from "@/lib/company-os-nav";
 import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
+import { useCompanyOsMode } from "@/components/os/CompanyOsModeContext";
 
-function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
+function NavLink({
+  item,
+  active,
+}: {
+  item: OsNavItem | CompanyOsNavItem;
+  active: boolean;
+}) {
   const Icon = item.icon;
   return (
     <Link
@@ -28,11 +41,56 @@ function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
 
 export function OsNavPanel() {
   const pathname = usePathname() ?? "/os";
-  const activeId = resolveOsActiveNavId(pathname);
+  const companyOsMode = useCompanyOsMode();
   const { tier } = useOsOrgRole();
+
+  if (companyOsMode) {
+    const activeId = resolveCompanyOsActiveNavId(pathname);
+    const primary = getCompanyOsDesktopNavItems(tier);
+    const more = getCompanyOsMoreNavItems(tier);
+
+    return (
+      <nav
+        aria-label="Company OS primary"
+        data-os-guide="dashboard"
+        className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-60"
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
+            COMPANY OS
+          </p>
+          <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">
+            RINADS Company OS
+          </h2>
+        </div>
+
+        <ul className="flex flex-col gap-1">
+          {primary.map((item) => (
+            <li key={item.id}>
+              <NavLink item={item} active={item.id === activeId} />
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-auto border-t border-black/5 pt-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+            Workspaces
+          </p>
+          <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto">
+            {more.map((item) => (
+              <li key={item.id}>
+                <NavLink item={item} active={item.id === activeId} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+    );
+  }
+
+  const activeId = resolveOsActiveNavId(pathname);
   const primary = getOsDesktopNavItems(tier);
   const utility = getOsSidebarUtilityItems(tier);
-
   const primaryItems = primary.filter((item) => item.id !== "rooms");
   const roomsItem = primary.find((item) => item.id === "rooms");
 
@@ -58,25 +116,18 @@ export function OsNavPanel() {
       </ul>
 
       {roomsItem && (
-        <div className="border-t border-white/40 pt-3">
-          <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
-            Collaboration
-          </p>
+        <div className="border-t border-black/5 pt-3">
           <NavLink item={roomsItem} active={roomsItem.id === activeId} />
         </div>
       )}
 
-      {utility.length > 0 && (
-        <div className="mt-auto border-t border-white/40 pt-3">
-          <ul className="flex flex-col gap-1">
-            {utility.map((item) => (
-              <li key={item.id}>
-                <NavLink item={item} active={item.id === activeId} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ul className="mt-auto flex flex-col gap-1 border-t border-black/5 pt-3">
+        {utility.map((item) => (
+          <li key={item.id}>
+            <NavLink item={item} active={item.id === activeId} />
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }
