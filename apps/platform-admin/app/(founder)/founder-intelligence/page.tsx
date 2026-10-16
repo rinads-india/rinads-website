@@ -359,124 +359,119 @@ export default async function FounderIntelligencePage() {
       </section>
 
       <div className="fi-dashboard-grid">
-        <section className="fi-glass-card fi-system-card" aria-labelledby="today-title">
-          <div className="fi-card-heading">
-            <div>
-              <span className="fi-eyebrow">Founder control tower</span>
-              <h2 id="today-title">Today</h2>
+        <section className="fi-source-grid" aria-label="Founder Today and live platform status">
+          <section className="fi-glass-card fi-system-card" aria-labelledby="today-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Founder control tower</span>
+                <h2 id="today-title">Today</h2>
+              </div>
+              <span className="fi-system-orb">R</span>
             </div>
-            <span className="fi-system-orb">R</span>
-          </div>
-          <div className="fi-system-list">
-            <div>
-              <span>Open work</span>
-              <strong>{work.state === "operational" ? work.counts.open : "—"}</strong>
-            </div>
-            <div>
-              <span>Due today</span>
-              <strong>{work.state === "operational" ? work.counts.dueToday : "—"}</strong>
-            </div>
-            <div>
-              <span>Overdue / blocked</span>
-              <strong>
-                {work.state === "operational" ? `${work.counts.overdue} / ${work.counts.blocked}` : "—"}
-              </strong>
-            </div>
-            <div>
-              <span>Pending approvals</span>
-              <strong>{pendingApprovals?.value ?? "—"}</strong>
-            </div>
-            <div>
-              <span>Pending RINPO actions</span>
-              <strong>{pendingActions?.value ?? "—"}</strong>
-            </div>
-            <div>
-              <span>RINPO provider</span>
-              <strong>
-                {selectedProvider
-                  ? `${selectedProvider.provider.toUpperCase()} · ${selectedProvider.model}`
-                  : "—"}
-              </strong>
-            </div>
-          </div>
-          <p>Direct production facts only. No model-generated urgency or invented health score.</p>
-        </section>
-
-        <section className="fi-glass-card fi-system-card" aria-labelledby="attention-title">
-          <div className="fi-card-heading">
-            <div>
-              <span className="fi-eyebrow">Exceptions first</span>
-              <h2 id="attention-title">Attention</h2>
-            </div>
-            <span className="fi-count">{attention.length}</span>
-          </div>
-          {attention.length === 0 ? (
-            <p>No exceptions were returned by the connected control-plane sources.</p>
-          ) : (
             <div className="fi-system-list">
-              {attention.slice(0, 8).map((item) => {
-                const content = (
-                  <>
-                    <span>{item.label}</span>
+              <div>
+                <span>Open work</span>
+                <strong>{work.state === "operational" ? work.counts.open : "—"}</strong>
+              </div>
+              <div>
+                <span>Due today</span>
+                <strong>{work.state === "operational" ? work.counts.dueToday : "—"}</strong>
+              </div>
+              <div>
+                <span>Overdue / blocked</span>
+                <strong>
+                  {work.state === "operational" ? `${work.counts.overdue} / ${work.counts.blocked}` : "—"}
+                </strong>
+              </div>
+              <div>
+                <span>Pending approvals</span>
+                <strong>{pendingApprovals?.value ?? "—"}</strong>
+              </div>
+              <div>
+                <span>Pending RINPO actions</span>
+                <strong>{pendingActions?.value ?? "—"}</strong>
+              </div>
+              <div>
+                <span>RINPO provider</span>
+                <strong>
+                  {selectedProvider
+                    ? `${selectedProvider.provider.toUpperCase()} · ${selectedProvider.model}`
+                    : "—"}
+                </strong>
+              </div>
+            </div>
+            <p>Direct production facts only. No model-generated urgency or invented health score.</p>
+          </section>
+
+          <section className="fi-glass-card fi-system-card" aria-labelledby="attention-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Exceptions first</span>
+                <h2 id="attention-title">Attention</h2>
+              </div>
+              <span className="fi-count">{attention.length}</span>
+            </div>
+            {attention.length === 0 ? (
+              <p>No exceptions were returned by the connected control-plane sources.</p>
+            ) : (
+              <div className="fi-system-list">
+                {attention.slice(0, 8).map((item) => (
+                  <div key={item.id} title={item.detail}>
+                    {item.href ? (
+                      item.href.startsWith("http") ? (
+                        <a href={item.href} target="_blank" rel="noreferrer">
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link href={item.href}>{item.label}</Link>
+                      )
+                    ) : (
+                      <span>{item.label}</span>
+                    )}
                     <strong>
                       <StatusDot state={item.state} />
                       {stateLabels[item.state]}
                     </strong>
-                  </>
-                );
-                return item.href ? (
-                  item.href.startsWith("http") ? (
-                    <a href={item.href} key={item.id} target="_blank" rel="noreferrer" title={item.detail}>
-                      {content}
-                    </a>
-                  ) : (
-                    <Link href={item.href} key={item.id} title={item.detail}>
-                      {content}
-                    </Link>
-                  )
-                ) : (
-                  <div key={item.id} title={item.detail}>
-                    {content}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </section>
 
-        <section className="fi-glass-card fi-system-card" aria-labelledby="work-title">
-          <div className="fi-card-heading">
-            <div>
-              <span className="fi-eyebrow">Canonical operations</span>
-              <h2 id="work-title">Work pulse</h2>
+          <section className="fi-glass-card fi-system-card" aria-labelledby="work-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Canonical operations</span>
+                <h2 id="work-title">Work pulse</h2>
+              </div>
+              <span className={`fi-status-pill fi-status-${work.state}`}>
+                <StatusDot state={work.state} />
+                {stateLabels[work.state]}
+              </span>
             </div>
-            <span className={`fi-status-pill fi-status-${work.state}`}>
-              <StatusDot state={work.state} />
-              {stateLabels[work.state]}
-            </span>
-          </div>
-          {work.state !== "operational" ? (
-            <p>{work.detail}</p>
-          ) : work.tasks.length === 0 ? (
-            <p>No open operational tasks were returned.</p>
-          ) : (
-            <div className="fi-system-list">
-              {work.tasks.slice(0, 8).map((task) => (
-                <Link href={`/tenants/${task.organizationId}`} key={task.id}>
-                  <span title={task.title}>{task.organizationName} · {task.title}</span>
-                  <strong>{task.priority} · {task.status.replaceAll("_", " ")}</strong>
-                </Link>
-              ))}
-            </div>
-          )}
-          {work.state === "operational" ? (
-            <p>
-              Urgent {work.counts.urgent} · Unacknowledged alerts {work.counts.unacknowledgedAlerts}
-            </p>
-          ) : null}
-        </section>
+            {work.state !== "operational" ? (
+              <p>{work.detail}</p>
+            ) : work.tasks.length === 0 ? (
+              <p>No open operational tasks were returned.</p>
+            ) : (
+              <div className="fi-system-list">
+                {work.tasks.slice(0, 8).map((task) => (
+                  <div key={task.id}>
+                    <Link href={`/tenants/${task.organizationId}`} title={task.title}>
+                      {task.organizationName} · {task.title}
+                    </Link>
+                    <strong>{task.priority} · {task.status.replaceAll("_", " ")}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+            {work.state === "operational" ? (
+              <p>
+                Urgent {work.counts.urgent} · Unacknowledged alerts {work.counts.unacknowledgedAlerts}
+              </p>
+            ) : null}
+          </section>
 
-        <section className="fi-source-grid" aria-label="Live platform status">
           {snapshot.sources.map((source) => (
             <SourceCard source={source} key={source.id} />
           ))}
