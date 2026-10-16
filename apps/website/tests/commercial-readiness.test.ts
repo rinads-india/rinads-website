@@ -133,9 +133,10 @@ describe("commercial readiness QA gate", () => {
     }
   });
 
-  it("does not allow contact to be a non-destination", () => {
+  it("keeps legacy /contact as a redirect to company contact", () => {
     const contact = getRouteDefinition("/contact");
-    assert.equal(contact?.indexable, true);
+    assert.equal(contact?.indexable, false);
+    assert.equal(contact?.canonical, "/company/contact");
     assert.equal(contact?.pageType, "form");
   });
 
@@ -219,7 +220,8 @@ describe("commercial readiness QA gate", () => {
         /VerticalSolutionRoute/.test(blob) ||
         /AcademyProgramPage/.test(blob) ||
         /ServiceLinePage/.test(blob) ||
-        /HomeClient|PlatformClient|SolutionsClient|RinpoClient|PricingClient|IntelligenceClient|CloudClient/.test(blob);
+        /SecurityMarketingPage/.test(blob) ||
+        /HomeClient|PlatformClient|SolutionsClient|RinpoClient|PricingClient|IntelligenceClient|CloudClient|AcademyClient|DevelopersPage/.test(blob);
       if (!hasH1) missing.push(`${route.path} (${relative(WEBSITE_ROOT, file)})`);
     }
     assert.deepEqual(missing, [], `Missing H1 contract:\n${missing.join("\n")}`);
@@ -228,12 +230,13 @@ describe("commercial readiness QA gate", () => {
   it("crawls marketing nav hrefs against known routes and redirects", () => {
     const known = knownPathsAndRedirects();
     const unknown: string[] = [];
+    const navPath = (href: string) => href.split("?")[0].split("#")[0];
     for (const group of NAV_GROUPS) {
-      if (group.href && !known.has(group.href.split("?")[0])) {
+      if (group.href && !known.has(navPath(group.href))) {
         unknown.push(`nav group ${group.label}: ${group.href}`);
       }
       for (const item of group.items) {
-        const path = item.href.split("?")[0];
+        const path = navPath(item.href);
         if (!known.has(path)) unknown.push(`nav item ${item.label}: ${item.href}`);
       }
     }
@@ -309,7 +312,7 @@ describe("commercial readiness QA gate", () => {
   it("lazy-loads RINPO character / phone islands", () => {
     const src = readFileSync(join(COMPONENTS_ROOT, "rinpo/RinpoProvider.tsx"), "utf8");
     assert.match(src, /dynamic\(/);
-    assert.match(src, /RinpoCharacter/);
+    assert.match(src, /RinpoPresence/);
     assert.match(src, /RinpoPhone/);
   });
 

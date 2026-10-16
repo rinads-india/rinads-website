@@ -24,7 +24,7 @@ const BASE_SECTIONS = [
     items: [
       {
         label: "Business Readiness Assessment",
-        href: "/resources/business-readiness",
+        href: "/business-readiness",
         description: "Practical pathway guidance — not a certification.",
       },
       {

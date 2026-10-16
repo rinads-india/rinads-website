@@ -15,132 +15,93 @@ export type CatalogProduct = {
   description: string;
   status: ProductStatusValue;
   commercialPriority: ProductCommercialPriority;
-  /** Homepage "Available / Configurable Now" vs preview group */
+  /** Homepage "now" vs roadmap/preview group */
   availabilityGroup: "now" | "preview";
-  /** Outcome card mapping on homepage */
-  outcomeId?:
-    | "run-business"
-    | "sell-more"
-    | "grow-customers"
-    | "automate-work"
-    | "build-software"
-    | "train-team";
+  outcomeId?: "run" | "sell" | "grow" | "automate" | "build";
 };
 
 export const PRODUCT_CATALOG: CatalogProduct[] = [
   {
-    id: "business-os",
-    slug: "business-os",
-    name: "Business OS",
-    href: "/platform/business-os",
-    description: "Customers, tasks, teams, money and daily operations.",
-    status: "available_configuration",
+    id: "business",
+    slug: "business",
+    name: "Business",
+    href: "/platform/business",
+    description: "Customers, CRM, projects, finance and people.",
+    status: "pilot",
     commercialPriority: "primary",
     availabilityGroup: "now",
-    outcomeId: "run-business",
+    outcomeId: "run",
   },
   {
-    id: "commerce-os",
-    slug: "commerce-os",
-    name: "Commerce OS",
-    href: "/platform/commerce-os",
-    description: "Products, orders, customers, payments and fulfilment.",
-    status: "available_configuration",
+    id: "commerce",
+    slug: "commerce",
+    name: "Commerce",
+    href: "/platform/commerce",
+    description: "Products, orders, payments and fulfilment.",
+    status: "pilot",
     commercialPriority: "primary",
     availabilityGroup: "now",
-    outcomeId: "sell-more",
+    outcomeId: "sell",
   },
   {
-    id: "marketing-os",
-    slug: "marketing-os",
-    name: "Marketing OS",
-    href: "/platform/marketing-os",
-    description: "Campaigns, leads, follow-ups and CRM.",
-    status: "prototype_demo",
+    id: "growth",
+    slug: "growth",
+    name: "Growth",
+    href: "/platform/growth",
+    description: "Leads, marketing, content and campaigns.",
+    status: "preview",
     commercialPriority: "primary",
     availabilityGroup: "preview",
-    outcomeId: "grow-customers",
+    outcomeId: "grow",
   },
   {
-    id: "automation-os",
-    slug: "automation-os",
-    name: "Automation OS",
-    href: "/platform/automation-os",
-    description: "Reduce repetitive tasks with controlled workflows.",
-    status: "prototype_demo",
+    id: "automation",
+    slug: "automation",
+    name: "Automation",
+    href: "/platform/automation",
+    description: "Workflows, agents, approvals and integrations.",
+    status: "preview",
     commercialPriority: "secondary",
     availabilityGroup: "preview",
-    outcomeId: "automate-work",
-  },
-  {
-    id: "logistics-os",
-    slug: "logistics-os",
-    name: "Logistics OS",
-    href: "/platform/logistics-os",
-    description: "Move, track, and resolve delivery operations.",
-    status: "prototype_demo",
-    commercialPriority: "secondary",
-    availabilityGroup: "preview",
-  },
-  {
-    id: "creative-os",
-    slug: "creative-os",
-    name: "Creative OS",
-    href: "/platform/creative-os",
-    description: "Create content, image, video, and film.",
-    status: "coming_soon",
-    commercialPriority: "secondary",
-    availabilityGroup: "preview",
-  },
-  {
-    id: "build-os",
-    slug: "build-os",
-    name: "Build OS",
-    href: "/platform/build-os",
-    description: "Turn operational requirements into maintainable systems.",
-    status: "prototype_demo",
-    commercialPriority: "secondary",
-    availabilityGroup: "preview",
-    outcomeId: "build-software",
-  },
-  {
-    id: "academy-os",
-    slug: "academy-os",
-    name: "Academy OS",
-    href: "/platform/academy-os",
-    description: "Practical capability connected to real work.",
-    status: "prototype_demo",
-    commercialPriority: "secondary",
-    availabilityGroup: "preview",
-    outcomeId: "train-team",
+    outcomeId: "automate",
   },
   {
     id: "rinpo",
     slug: "rinpo",
     name: "RINPO",
     href: "/rinpo",
-    description: "The persistent AI interface across RINADS.",
-    status: "available_configuration",
+    description: "The persistent AI Business Intelligence Character.",
+    status: "pilot",
     commercialPriority: "foundation",
     availabilityGroup: "now",
   },
   {
-    id: "rinads-intelligence",
-    slug: "rinads-intelligence",
+    id: "intelligence",
+    slug: "intelligence",
     name: "RINADS Intelligence",
-    href: "/platform/rinads-intelligence",
-    description: "Context, recommendations, and governed AI behaviour.",
-    status: "available_configuration",
+    href: "/platform/intelligence",
+    description: "Understand, reason, recommend, and orchestrate — providers remain replaceable.",
+    status: "pilot",
     commercialPriority: "foundation",
     availabilityGroup: "now",
   },
   {
-    id: "rinads-cloud",
-    slug: "rinads-cloud",
+    id: "rinpo-runtime",
+    slug: "rinpo-runtime",
+    name: "RINPO Runtime",
+    href: "/platform/rinpo-runtime",
+    description: "Governed execution: agents, tools, workflows, permissions, approvals, audit.",
+    status: "pilot",
+    commercialPriority: "foundation",
+    availabilityGroup: "now",
+  },
+  {
+    id: "cloud",
+    slug: "cloud",
     name: "RINADS Cloud",
-    href: "/platform/rinads-cloud",
-    description: "The connected platform foundation.",
-    status: "available_configuration",
+    href: "/platform/cloud",
+    description: "Identity, tenant data, storage, APIs, events and infrastructure.",
+    status: "pilot",
     commercialPriority: "foundation",
     availabilityGroup: "now",
   },
@@ -160,12 +121,10 @@ export function getProductsByPriority(
   return PRODUCT_CATALOG.filter((item) => item.commercialPriority === priority);
 }
 
-/** Nav-compatible status label from catalog status. */
 export function navStatusFromProduct(status: ProductStatusValue): string {
   return PRODUCT_STATUS_META[status].label;
 }
 
-/** Legacy OS_AVAILABILITY shape for gradual migration. */
 export type OperatingSystemAvailability = {
   slug: string;
   name: string;

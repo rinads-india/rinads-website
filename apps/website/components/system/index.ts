@@ -39,3 +39,7 @@ export { RinpoDemo } from "./RinpoDemo";
 export { BusinessAssessment } from "./BusinessAssessment";
 export { OsMarketingRoute } from "./OsMarketingRoute";
 export { VerticalSolutionRoute } from "./VerticalSolutionRoute";
+export { PlatformPillarPage } from "./PlatformPillarPage";
+export { RinpoRuntimeDiagram } from "./RinpoRuntimeDiagram";
+export { UseCaseStubPage } from "./UseCaseStubPage";
+export { SecurityMarketingPage } from "./SecurityMarketingPage";

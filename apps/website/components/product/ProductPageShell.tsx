@@ -1,20 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Navbar } from "@/components/rinads/Navbar";
-import { Footer } from "@/components/rinads/Footer";
+import { AppShell } from "@/components/system/AppShell";
 
 type ProductPageShellProps = {
   children: ReactNode;
   className?: string;
 };
 
+/** @deprecated Prefer AppShell — thin re-export for migration. */
 export function ProductPageShell({ children, className = "" }: ProductPageShellProps) {
-  return (
-    <main id="main" className={`bg-surface font-inter ${className}`}>
-      <Navbar />
-      {children}
-      <Footer />
-    </main>
-  );
+  return <AppShell className={className}>{children}</AppShell>;
 }

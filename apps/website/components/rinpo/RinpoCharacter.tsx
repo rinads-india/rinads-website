@@ -86,7 +86,12 @@ const stateLabels: Record<RinpoState, string> = {
   floating: "Chat • Voice • Always here",
 };
 
-export function RinpoCharacter() {
+type RinpoCharacterProps = {
+  /** Overrides hover label — e.g. RINPO • Ready from RinpoPresence */
+  presenceLabel?: string;
+};
+
+export function RinpoCharacter({ presenceLabel }: RinpoCharacterProps = {}) {
   const {
     togglePhone,
     rinpoState,
@@ -140,6 +145,7 @@ export function RinpoCharacter() {
         isListening={isListening}
         isSpeaking={isSpeaking}
         isPhoneOut={isPhoneOut}
+        presenceLabel={presenceLabel}
       />
     </>
   );
@@ -368,6 +374,7 @@ function RinpoFloatingWidget({
   isListening,
   isSpeaking,
   isPhoneOut,
+  presenceLabel,
 }: {
   hidden: boolean;
   togglePhone: () => void;
@@ -376,6 +383,7 @@ function RinpoFloatingWidget({
   isListening: boolean;
   isSpeaking: boolean;
   isPhoneOut: boolean;
+  presenceLabel?: string;
 }) {
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
@@ -495,7 +503,7 @@ function RinpoFloatingWidget({
       </motion.button>
       {/* Label blends into the background — no boxy pill, just soft text that appears on intent. */}
       <p className="hidden max-w-[9.5rem] text-right text-[11px] font-medium leading-tight text-white/0 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] transition-colors duration-200 group-hover:text-white/90 group-focus-within:text-white/90 sm:block sm:text-xs">
-        {stateLabels[rinpoState]}
+        {presenceLabel ?? stateLabels[rinpoState]}
       </p>
     </motion.div>
   );

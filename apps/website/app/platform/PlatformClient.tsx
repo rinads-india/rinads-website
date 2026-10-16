@@ -296,7 +296,7 @@ export function PlatformClient() {
               <p className="mt-5 text-white/60">
                 RINADS keeps identity, organisation context, permissions and business workflows on a shared foundation so different operating systems can work from the same source of truth.
               </p>
-              <Link href="/platform/rinads-cloud" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline">
+              <Link href="/platform/cloud" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline">
                 Explore RINADS Cloud
                 <ArrowRight size={15} aria-hidden />
               </Link>
@@ -341,7 +341,7 @@ export function PlatformClient() {
           </div>
 
           <Link
-            href="/platform/rinads-intelligence"
+            href="/platform/intelligence"
             className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline"
           >
             Explore RINADS Intelligence

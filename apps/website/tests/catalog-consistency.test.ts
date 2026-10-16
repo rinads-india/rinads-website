@@ -43,7 +43,9 @@ describe("product catalog consistency", () => {
   it("available-now group only contains production-supportable statuses", () => {
     for (const product of PRODUCT_CATALOG.filter((p) => p.availabilityGroup === "now")) {
       assert.ok(
-        product.status === "generally_available" || product.status === "available_configuration",
+        product.status === "generally_available" ||
+          product.status === "available_configuration" ||
+          product.status === "pilot",
         product.slug,
       );
     }

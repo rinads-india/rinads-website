@@ -1,3 +1,5 @@
+import { getSolution } from "@/lib/content/solutionCatalog";
+
 export type RinpoExperienceState =
   | "closed"
   | "open"
@@ -12,10 +14,23 @@ export type RinpoExperienceState =
   | "failure"
   | "audited";
 
+export type RinpoSolutionIndustry =
+  | "salon"
+  | "jewellery"
+  | "commerce"
+  | "retail"
+  | "landscape"
+  | "automotive"
+  | "logistics"
+  | null;
+
 export type RinpoPageContext = {
   area: string;
   prompt: string;
   suggestions: readonly string[];
+  industry?: RinpoSolutionIndustry;
+  /** Product / edition hints for solution routes */
+  productHints?: readonly string[];
 };
 
 export const RINPO_STATE_LABELS: Record<RinpoExperienceState, string> = {
@@ -42,6 +57,18 @@ const DEFAULT_CONTEXT: RinpoPageContext = {
     "Build something",
     "Automate a workflow",
   ],
+  industry: null,
+};
+
+const SOLUTION_INDUSTRY_BY_SLUG: Record<string, RinpoSolutionIndustry> = {
+  salon: "salon",
+  jewellery: "jewellery",
+  retail: "retail",
+  landscape: "landscape",
+  nursery: "landscape",
+  automotive: "automotive",
+  logistics: "logistics",
+  healthcare: null,
 };
 
 const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: RinpoPageContext }> = [
@@ -233,7 +260,38 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
   },
 ];
 
+function enrichSolutionContext(pathname: string, base: RinpoPageContext): RinpoPageContext {
+  const match = /^\/solutions\/([^/]+)/.exec(pathname);
+  if (!match) return base;
+  const slug = match[1];
+  const industry = SOLUTION_INDUSTRY_BY_SLUG[slug] ?? null;
+  const solution = getSolution(slug);
+  const productHints = solution?.poweredBy;
+  const industryLabel = solution?.industry ?? slug;
+  return {
+    ...base,
+    industry,
+    productHints,
+    area: solution ? `${solution.editionName}` : base.area,
+    prompt: industry
+      ? `Tell me how ${industryLabel} operations map to RINADS — I'll use ${solution?.editionName ?? "this edition"} context.`
+      : base.prompt,
+    suggestions: industry
+      ? [
+          `Map RINADS to my ${industryLabel} workflow`,
+          "What modules are live vs roadmap?",
+          "Show a sample day with RINPO",
+          "Explain custom configuration",
+        ]
+      : base.suggestions,
+  };
+}
+
 export function getRinpoPageContext(pathname: string | null | undefined): RinpoPageContext {
   const value = pathname ?? "/";
-  return CONTEXT_RULES.find((rule) => rule.test(value))?.context ?? DEFAULT_CONTEXT;
+  const base = CONTEXT_RULES.find((rule) => rule.test(value))?.context ?? DEFAULT_CONTEXT;
+  if (value.startsWith("/solutions")) {
+    return enrichSolutionContext(value, base);
+  }
+  return base;
 }

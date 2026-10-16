@@ -11,14 +11,40 @@ assertProductionEnvContract();
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: "/business-os", destination: "/platform/business-os", permanent: true },
-      { source: "/rinpo-intelligence", destination: "/platform/rinads-intelligence", permanent: true },
-      { source: "/cloud", destination: "/platform/rinads-cloud", permanent: true },
-      { source: "/rinads-cloud", destination: "/platform/rinads-cloud", permanent: true },
-      // Narrative owns /company/rinpo-story; product stays at /rinpo.
+      // Legacy → platform pillars
+      { source: "/business-os", destination: "/platform/business", permanent: true },
+      { source: "/platform/business-os", destination: "/platform/business", permanent: true },
+      { source: "/platform/commerce-os", destination: "/platform/commerce", permanent: true },
+      { source: "/platform/marketing-os", destination: "/platform/growth", permanent: true },
+      { source: "/platform/creative-os", destination: "/platform/growth", permanent: true },
+      { source: "/platform/automation-os", destination: "/platform/automation", permanent: true },
+      { source: "/platform/logistics-os", destination: "/platform/automation", permanent: true },
+      { source: "/platform/people-os", destination: "/platform/business", permanent: true },
+      { source: "/platform/build-os", destination: "/platform/business", permanent: true },
+      { source: "/platform/academy-os", destination: "/resources/academy", permanent: true },
+      { source: "/platform/rinads-intelligence", destination: "/platform/intelligence", permanent: true },
+      { source: "/platform/rinads-cloud", destination: "/platform/cloud", permanent: true },
+      { source: "/rinpo-intelligence", destination: "/platform/intelligence", permanent: true },
+      { source: "/cloud", destination: "/platform/cloud", permanent: true },
+      { source: "/rinads-cloud", destination: "/platform/cloud", permanent: true },
+      { source: "/grow", destination: "/platform/growth", permanent: true },
+      // Company / about
+      { source: "/about", destination: "/company", permanent: true },
+      { source: "/contact", destination: "/company/contact", permanent: true },
+      { source: "/careers", destination: "/company/careers", permanent: true },
+      // Trust
+      { source: "/security", destination: "/trust/security", permanent: true },
+      { source: "/status", destination: "/trust/status", permanent: true },
+      // Resources
+      { source: "/resources/business-readiness", destination: "/business-readiness", permanent: true },
+      { source: "/academy", destination: "/resources/academy", permanent: true },
+      { source: "/docs", destination: "/resources/docs", permanent: true },
+      { source: "/developers", destination: "/resources/developers", permanent: true },
+      // Editions
+      { source: "/solutions/nursery", destination: "/solutions/landscape", permanent: true },
+      // Narrative
       { source: "/rinpo-story", destination: "/company/rinpo-story", permanent: true },
       { source: "/rinpo/story", destination: "/company/rinpo-story", permanent: true },
-      { source: "/grow", destination: "/platform/marketing-os", permanent: true },
       // Business OS alias — temporary until /bos IA is fully adopted.
       { source: "/bos", destination: "/os", permanent: false },
       { source: "/bos/home", destination: "/os", permanent: false },

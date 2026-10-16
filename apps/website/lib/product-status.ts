@@ -1,16 +1,23 @@
 /**
  * Product availability states for OS, verticals, integrations, and pricing.
- * Never invent production readiness — only these five labels are allowed.
+ * Exactly four public readiness states — never invent production readiness.
  */
 export const PRODUCT_STATUS_VALUES = [
-  "generally_available",
-  "available_configuration",
-  "private_preview",
-  "prototype_demo",
-  "coming_soon",
+  "available",
+  "pilot",
+  "preview",
+  "roadmap",
 ] as const;
 
 export type ProductStatusValue = (typeof PRODUCT_STATUS_VALUES)[number];
+
+/** @deprecated Legacy five-state values — mapped via migrateLegacyStatus. */
+export type LegacyProductStatusValue =
+  | "generally_available"
+  | "available_configuration"
+  | "private_preview"
+  | "prototype_demo"
+  | "coming_soon";
 
 export type ProductStatusMeta = {
   value: ProductStatusValue;
@@ -21,65 +28,81 @@ export type ProductStatusMeta = {
 };
 
 export const PRODUCT_STATUS_META: Record<ProductStatusValue, ProductStatusMeta> = {
-  generally_available: {
-    value: "generally_available",
+  available: {
+    value: "available",
     label: "Available",
     shortLabel: "Available",
     description: "Available for production use under normal subscription terms.",
     tone: "success",
   },
-  available_configuration: {
-    value: "available_configuration",
-    label: "Available configuration",
-    shortLabel: "Config",
-    description: "Can be configured for an organisation; may require implementation support.",
+  pilot: {
+    value: "pilot",
+    label: "Pilot",
+    shortLabel: "Pilot",
+    description:
+      "Can be configured for an organisation; may require implementation support or pilot scope.",
     tone: "info",
   },
-  private_preview: {
-    value: "private_preview",
-    label: "Private preview",
+  preview: {
+    value: "preview",
+    label: "Preview",
     shortLabel: "Preview",
-    description: "Limited access for invited organisations. Not general production availability.",
+    description:
+      "Limited access or demonstrative sample/synthetic experiences. Not general production availability.",
     tone: "warning",
   },
-  prototype_demo: {
-    value: "prototype_demo",
-    label: "Prototype",
-    shortLabel: "Prototype",
-    description: "Demonstrates product direction with sample or synthetic data. Not a production workspace.",
-    tone: "neutral",
-  },
-  coming_soon: {
-    value: "coming_soon",
-    label: "Coming soon",
-    shortLabel: "Soon",
+  roadmap: {
+    value: "roadmap",
+    label: "Roadmap",
+    shortLabel: "Roadmap",
     description: "Planned capability. Not available for purchase or production use yet.",
     tone: "muted",
   },
 };
 
+export function migrateLegacyStatus(
+  status: ProductStatusValue | LegacyProductStatusValue | string,
+): ProductStatusValue {
+  switch (status) {
+    case "available":
+    case "generally_available":
+      return "available";
+    case "pilot":
+    case "available_configuration":
+      return "pilot";
+    case "preview":
+    case "private_preview":
+    case "prototype_demo":
+      return "preview";
+    case "roadmap":
+    case "coming_soon":
+      return "roadmap";
+    default:
+      return "roadmap";
+  }
+}
+
 /** CSS custom property token name for product status (never colour-only). */
 export function statusTokenFor(status: ProductStatusValue): string {
   switch (status) {
-    case "generally_available":
-    case "available_configuration":
+    case "available":
       return "available";
-    case "private_preview":
+    case "pilot":
+      return "pilot";
+    case "preview":
       return "preview";
-    case "prototype_demo":
-      return "prototype";
-    case "coming_soon":
-      return "soon";
+    case "roadmap":
+      return "roadmap";
   }
 }
 
 /** Map legacy two-state vertical flags onto the product status standard. */
 export function fromLegacyAvailability(
-  status: "available" | "coming" | ProductStatusValue,
+  status: "available" | "coming" | ProductStatusValue | LegacyProductStatusValue,
 ): ProductStatusValue {
-  if (status === "available") return "available_configuration";
-  if (status === "coming") return "coming_soon";
-  return status;
+  if (status === "available") return "pilot";
+  if (status === "coming") return "roadmap";
+  return migrateLegacyStatus(status);
 }
 
 export function isProductStatusValue(value: string): value is ProductStatusValue {

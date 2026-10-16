@@ -26,6 +26,11 @@ function enrichMessage(payload: LeadPayload): string | null {
   if (payload.phone) parts.push(`Phone: ${payload.phone}`);
   if (payload.websiteUrl) parts.push(`Website: ${payload.websiteUrl}`);
   if (payload.stage) parts.push(`Stage: ${payload.stage}`);
+  if (payload.structured?.industry) parts.push(`Industry: ${payload.structured.industry}`);
+  if (payload.structured?.captureSource) parts.push(`Capture: ${payload.structured.captureSource}`);
+  if (payload.structured?.currentTools?.length) {
+    parts.push(`Tools: ${payload.structured.currentTools.join(", ")}`);
+  }
   if (payload.message) parts.push(payload.message);
   return parts.length ? parts.join("\n") : null;
 }

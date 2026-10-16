@@ -69,6 +69,18 @@ export const TIMELINES = [
 
 export type LeadStage = "step1" | "complete";
 
+/** Optional structured fields for conversational / CRM-later capture. */
+export type StructuredLead = {
+  company?: string;
+  industry?: string;
+  problem?: string;
+  primaryOutcome?: string;
+  teamSize?: string;
+  currentTools?: string[];
+  rinpoSessionId?: string;
+  captureSource?: "rinpo_chat" | "contact" | "assessment" | "project" | "other";
+};
+
 export type LeadPayload = {
   outcome: string;
   name: string;
@@ -91,6 +103,7 @@ export type LeadPayload = {
   sourcePath?: string;
   honeypot?: string;
   stage?: LeadStage;
+  structured?: StructuredLead;
 };
 
 export type LeadValidationError = { field: string; message: string };
@@ -193,6 +206,7 @@ export function validateLeadPayload(input: Partial<LeadPayload>): {
       plan: input.plan,
       sourcePath: input.sourcePath,
       stage,
+      structured: input.structured,
     },
   };
 }

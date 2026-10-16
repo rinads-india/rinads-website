@@ -15,4 +15,13 @@ export type PhoneScreenId =
   | "portal"
   | "services"
   | "support"
-  | "plans";
+  | "plans"
+  | "today"
+  | "ask"
+  | "actions"
+  | "approvals"
+  | "work"
+  | "customers"
+  | "money"
+  | "growth"
+  | "apps";

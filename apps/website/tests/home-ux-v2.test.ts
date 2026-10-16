@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { HERO_COMMANDS, PLATFORM_OS, NAV_GROUPS, CTAS, POSITIONING } from "../lib/product-ia";
+import { HERO_COMMANDS, PLATFORM_OS, NAV_GROUPS, POSITIONING } from "../lib/product-ia";
+import { NAV_CTAS } from "../lib/ctas";
 import { VERTICALS } from "../lib/content/verticals";
 import { VERTICAL_AVAILABILITY } from "../lib/content/leads";
 import { getIndexableRoutes, getRouteDefinition } from "../lib/route-registry";
@@ -14,7 +15,7 @@ describe("Homepage UX V2 contracts", () => {
   });
 
   it("uses outcome-led positioning copy", () => {
-    assert.match(POSITIONING.hero, /intelligent platform/i);
+    assert.match(POSITIONING.hero, /intelligence/i);
     assert.ok(POSITIONING.support.includes("RINPO"));
   });
 
@@ -22,45 +23,41 @@ describe("Homepage UX V2 contracts", () => {
     const operatingSystems = PLATFORM_OS.filter((item) => item.section !== "Core");
     const core = PLATFORM_OS.filter((item) => item.section === "Core");
 
-    assert.equal(operatingSystems.length, 8);
-    assert.ok(core.some((item) => item.label === "RINPO"));
+    assert.equal(operatingSystems.length, 5);
     assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
+    assert.ok(core.some((item) => item.label === "RINPO Runtime"));
     assert.ok(core.some((item) => item.label === "RINADS Cloud"));
   });
 
-  it("uses conversion navigation with RINPO and without empty Customers", () => {
+  it("uses conversion navigation with RINPO and customer evidence anchors", () => {
     const labels = NAV_GROUPS.map((group) => group.label);
     assert.deepEqual(labels, [
       "Platform",
-      "Solutions",
       "RINPO",
+      "Solutions",
       "Services",
-      "Academy",
+      "Customers",
       "Resources",
-      "Company",
     ]);
-    assert.equal(CTAS.primary.label, "Book a demo");
-    assert.equal(CTAS.secondary.label, "Explore Business OS");
-    assert.equal(CTAS.rinpo.label, "Try RINPO");
+    assert.equal(NAV_CTAS.primary.label, "Book a Demo");
+    assert.equal(NAV_CTAS.secondary.label, "Explore RINADS");
+    assert.match(NAV_CTAS.rinpo.label, /RINPO/i);
   });
 
-  it("keeps salon as the available configuration vertical in legacy flags", () => {
+  it("keeps salon as the pilot edition in solution availability", () => {
     const available = VERTICALS.filter((vertical) => vertical.status === "available").map(
       (vertical) => vertical.slug,
     );
     assert.deepEqual(available, ["salon"]);
-    assert.equal(
-      VERTICAL_AVAILABILITY.find((item) => item.slug === "salon")?.status,
-      "available_configuration",
-    );
+    assert.equal(VERTICAL_AVAILABILITY.find((item) => item.slug === "salon")?.status, "pilot");
   });
 
-  it("registers contact as an indexable destination", () => {
-    const contact = getRouteDefinition("/contact");
+  it("registers company contact and trust destinations", () => {
+    const contact = getRouteDefinition("/company/contact");
     assert.ok(contact);
     assert.equal(contact?.indexable, true);
     assert.ok(getIndexableRoutes().some((route) => route.path === "/pricing"));
-    assert.ok(getIndexableRoutes().some((route) => route.path === "/security"));
+    assert.ok(getIndexableRoutes().some((route) => route.path === "/trust/security"));
   });
 
   it("keeps home hero brand-first with RINPO demo surface", async () => {
@@ -77,9 +74,10 @@ describe("Homepage UX V2 contracts", () => {
 
     assert.match(hero, /Logo/);
     assert.match(hero, /RINADS TECHNOLOGIES/);
-    assert.match(hero, /RinpoDemo/);
-    assert.match(sections, /What do you want to improve/);
-    assert.match(sections, /Demo workspace · Synthetic data|Configured pricing|Available \/ configurable now/i);
+    assert.match(hero, /openPhoneScreen/);
+    assert.match(sections, /Customer evidence/);
+    assert.match(sections, /Business Readiness/);
+    assert.match(sections, /business_readiness_started/);
     assert.match(footer, /Meet RINPO\./);
     assert.doesNotMatch(footer, /Meet RINPO\?/);
     assert.doesNotMatch(footer, /href:\s*"https:\/\/www\.rinads\.com"/);

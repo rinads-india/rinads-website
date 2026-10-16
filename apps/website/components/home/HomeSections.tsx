@@ -1,227 +1,218 @@
 "use client";
 
 import Link from "next/link";
-import {
-  CTASection,
-  OutcomeGrid,
-  IndustryCard,
-  ProductStatus,
-  ProofBlock,
-  TrustBar,
-} from "@/components/system";
-import { getProductsByGroup } from "@/lib/content/productCatalog";
-import { getSolutionsSortedByDepth } from "@/lib/content/solutionCatalog";
-import {
-  COMMERCIAL_CONFIG,
-  PRICE_APPROVED,
-  PRICING_PLANS,
-} from "@/lib/content/commercialConfig";
+import { BusinessPulse } from "@/components/system/BusinessPulse";
+import { BusinessGraph } from "@/components/system/BusinessGraph";
+import { OutcomeGrid } from "@/components/system/OutcomeGrid";
+import { IndustryEditionCard } from "@/components/system/IndustryEditionCard";
+import { CTASection } from "@/components/system/CTASection";
+import { ARCHITECTURE_LAYERS, POSITIONING } from "@/lib/product-ia";
+import { CTAS } from "@/lib/ctas";
+import { getPublicEditions } from "@/lib/content/solutionCatalog";
+import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { trackMarketing } from "@/lib/analytics";
 
-const RINPO_STEPS = ["ASK", "UNDERSTAND", "RECOMMEND", "APPROVE", "ACT", "AUDIT"] as const;
-
 export function HomeSections() {
-  const availableNow = getProductsByGroup("now");
-  const preview = getProductsByGroup("preview");
-  const depthSolutions = getSolutionsSortedByDepth();
+  const { openPhoneScreen } = useRinpo();
+  const editions = getPublicEditions();
 
   return (
-    <>
-      {/* Section 2 — Business outcomes */}
-      <section className="border-t border-white/10 px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">What do you want to improve?</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Start from the outcome — then open the RINADS system that fits.
-          </p>
-          <div className="mt-10">
-            <OutcomeGrid />
-          </div>
+    <div className="relative z-10 space-y-24 bg-black pb-24 pt-16 text-white md:space-y-28 md:pt-20">
+      <BusinessPulse />
+
+      <BusinessGraph />
+
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="outcomes-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
+          Outcome architecture
+        </p>
+        <h2 id="outcomes-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          Four primary business outcomes
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
+          Replace the wall of operating systems with how work actually moves: RUN · SELL · GROW ·
+          AUTOMATE.
+        </p>
+        <div className="mt-8">
+          <OutcomeGrid />
         </div>
       </section>
 
-      {/* Section 3 — How RINPO works */}
-      <section className="border-t border-white/10 bg-white/[0.02] px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">How RINPO works</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            RINPO is the persistent AI interface across RINADS. It can understand permitted business
-            context, explain what matters, prepare next steps and route supported actions through the
-            appropriate permissions and approval paths.
-          </p>
-          <ol className="mt-10 flex flex-wrap items-center gap-2 md:gap-3" aria-label="RINPO process">
-            {RINPO_STEPS.map((step, index) => (
-              <li key={step} className="inline-flex items-center gap-2 md:gap-3">
-                {index > 0 ? (
-                  <span aria-hidden className="text-rinads-primary">
-                    →
-                  </span>
-                ) : null}
-                <span className="rounded-md border border-white/15 px-3 py-2 text-xs font-bold tracking-[0.12em] text-foreground sm:text-sm">
-                  {step}
-                </span>
-              </li>
-            ))}
-          </ol>
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="rinpo-exp-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">RINPO</p>
+        <h2 id="rinpo-exp-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          The persistent AI Business Intelligence Character
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
+          RINPO communicates. RINADS Intelligence understands. RINPO Runtime executes — with
+          permissions, approvals and audit.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              trackMarketing("rinpo_opened", { source: "home_rinpo_section" });
+              openPhoneScreen("chat");
+            }}
+            className="min-h-12 rounded-xl bg-rinads-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+          >
+            {CTAS.talkToRinpo.label}
+          </button>
           <Link
             href="/rinpo"
-            className="mt-8 inline-flex min-h-11 items-center text-sm font-semibold text-rinads-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            className="inline-flex min-h-12 items-center rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           >
-            See how RINPO works →
+            Explore RINPO
           </Link>
         </div>
       </section>
 
-      {/* Section 4 — Product availability */}
-      <section className="border-t border-white/10 px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">What is available now</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Production-supportable products stay clearly separated from preview and roadmap work.
-          </p>
-
-          <div className="mt-10">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-              Available / configurable now
-            </h3>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {availableNow.map((product) => (
-                <Link
-                  key={product.id}
-                  href={product.href}
-                  onClick={() =>
-                    trackMarketing("platform_card_clicked", { product: product.slug, group: "now" })
-                  }
-                  className="flex items-start justify-between gap-3 rounded-xl border border-white/10 p-4 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
-                >
-                  <div>
-                    <p className="font-semibold text-foreground">{product.name}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{product.description}</p>
-                  </div>
-                  <ProductStatus status={product.status} />
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-12">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Preview & roadmap
-            </h3>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {preview.map((product) => (
-                <Link
-                  key={product.id}
-                  href={product.href}
-                  onClick={() =>
-                    trackMarketing("platform_card_clicked", {
-                      product: product.slug,
-                      group: "preview",
-                    })
-                  }
-                  className="flex items-start justify-between gap-3 rounded-xl border border-dashed border-white/10 p-4 opacity-90 transition hover:border-rinads-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
-                >
-                  <div>
-                    <p className="font-semibold text-foreground">{product.name}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{product.description}</p>
-                  </div>
-                  <ProductStatus status={product.status} />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 5 — Industry solutions */}
-      <section className="border-t border-white/10 bg-white/[0.02] px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Configured around how your business works.
-          </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Shared RINADS core + operating systems + industry configuration + RINPO context.
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {depthSolutions.map((solution) => (
-              <IndustryCard key={solution.slug} solution={solution} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 6 — Proof */}
-      <section className="border-t border-white/10 px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">Implementation, not theatre</h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            We publish customer stories only after approval. Until then, we stand behind platform honesty.
-          </p>
-          <div className="mt-8">
-            <ProofBlock
-              fallback={{
-                headline: "Built for real operating workflows",
-                body: "RINADS is designed and delivered from Thrissur, Kerala, for growing businesses that need connected customers, work, commerce and automation — with RINPO as a governed AI interface, not a marketing chatbot.",
-                ctaHref: "/contact?intent=implementation",
-                ctaLabel: "Talk implementation",
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Section 7 — Pricing entry */}
-      <section className="border-t border-white/10 px-6 py-16 md:px-12 md:py-20 lg:px-20">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            {COMMERCIAL_CONFIG.homepageTeaser}
-          </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            {PRICE_APPROVED
-              ? "Approved plan rates are shown on the pricing page."
-              : COMMERCIAL_CONFIG.configuredPricingExplanation}
-          </p>
-          <div className="mt-8">
-            <TrustBar className="justify-start" />
-          </div>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {PRICING_PLANS.map((plan) => (
-              <Link
-                key={plan.id}
-                href="/pricing"
-                onClick={() => trackMarketing("pricing_plan_selected", { plan: plan.id, source: "home" })}
-                className="rounded-xl border border-white/10 p-4 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
-              >
-                <p className="font-bold text-foreground">{plan.name}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {PRICE_APPROVED && typeof plan.monthlyPrice === "number"
-                    ? `Starting at ₹${plan.monthlyPrice.toLocaleString("en-IN")}/month`
-                    : COMMERCIAL_CONFIG.configuredPricingLabel}
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">{plan.targetCustomer}</p>
-              </Link>
-            ))}
-          </div>
+      <section
+        className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20"
+        aria-labelledby="intel-runtime-heading"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
+          Intelligence + Runtime
+        </p>
+        <h2 id="intel-runtime-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          Understand, then execute under governance
+        </h2>
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           <Link
-            href={COMMERCIAL_CONFIG.estimateCta.href}
-            onClick={() => trackMarketing("pricing_estimate_started", { source: "home" })}
-            className="mt-8 inline-flex min-h-12 items-center rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            href="/platform/intelligence"
+            className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           >
-            {COMMERCIAL_CONFIG.estimateCta.label}
+            <h3 className="text-xl font-bold">RINADS Intelligence</h3>
+            <p className="mt-2 text-sm leading-6 text-white/65">
+              Understand · Reason · Recommend · Orchestrate. Model providers are routed behind
+              Intelligence and remain replaceable.
+            </p>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">
+              Explore Intelligence →
+            </p>
+          </Link>
+          <Link
+            href="/platform/rinpo-runtime"
+            className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+          >
+            <h3 className="text-xl font-bold">RINPO Runtime</h3>
+            <p className="mt-2 text-sm leading-6 text-white/65">
+              Agents, tools, workflows, triggers, permissions, approvals, execution and audit. AI
+              must not receive unrestricted control over the business.
+            </p>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">
+              Explore Runtime →
+            </p>
+          </Link>
+        </div>
+        <ul className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {ARCHITECTURE_LAYERS.map((layer) => (
+            <li
+              key={layer.id}
+              className="rounded-xl border border-white/10 px-3 py-3 text-xs text-white/70"
+            >
+              <span className="font-semibold text-white">{layer.label}</span>
+              <span className="mt-1 block leading-5">{layer.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="editions-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
+          Industry editions
+        </p>
+        <h2 id="editions-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          RINADS Editions
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
+          Industry depth on the shared operating core. Availability badges tell the truth — see{" "}
+          <Link href="/trust/availability" className="text-rinads-primary underline-offset-4 hover:underline">
+            /trust/availability
+          </Link>
+          .
+        </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {editions.map((edition) => (
+            <IndustryEditionCard key={edition.slug} edition={edition} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="evidence-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
+          Customer evidence
+        </p>
+        <h2 id="evidence-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          Verified proof only
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
+          We do not invent testimonials, ROI percentages or deployment claims. Browse evidence classes
+          when approved material exists.
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { id: "stories", label: "Customer Stories" },
+            { id: "deployments", label: "Deployments" },
+            { id: "demonstrations", label: "Product Demonstrations" },
+            { id: "labs", label: "RINADS Labs" },
+          ].map((item) => (
+            <Link
+              key={item.id}
+              href={`/customers#${item.id}`}
+              className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-sm font-semibold transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            >
+              {item.label}
+              <span className="mt-2 block text-xs font-normal text-white/50">No unverified claims</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="trust-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
+          Security & governance
+        </p>
+        <h2 id="trust-heading" className="mt-2 text-2xl font-bold md:text-3xl">
+          Identity, isolation, approvals and audit
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
+          Every material AI action passes through RINPO Runtime policies. We do not claim
+          certifications the company has not received.
+        </p>
+        <Link
+          href="/trust/security"
+          className="mt-6 inline-flex min-h-12 items-center rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold transition hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+        >
+          View Security →
+        </Link>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20">
+        <div className="rounded-3xl border border-rinads-primary/30 bg-rinads-primary/10 p-8 md:p-10">
+          <h2 className="text-2xl font-bold md:text-3xl">Business Readiness</h2>
+          <p className="mt-2 max-w-2xl text-sm text-white/70 md:text-base">
+            Assess how your operations are connected today. Receive a Business Operating Score and a
+            suitable RINADS configuration — contact details only after meaningful value.
+          </p>
+          <Link
+            href={CTAS.businessReadiness.href}
+            onClick={() => trackMarketing("business_readiness_started", { source: "home" })}
+            className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-rinads-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            {CTAS.businessReadiness.label}
           </Link>
         </div>
       </section>
 
-      {/* Section 8 — Final CTA */}
       <CTASection
-        headline="Ready to see RINADS on your workflow?"
-        summary="Try RINPO, explore Business OS, or book a demo — pick the path that matches your intent."
-        primaryHref="/contact?intent=demo"
-        primaryLabel="Book a demo"
-        secondaryHref="/platform/business-os"
-        secondaryLabel="Explore Business OS"
-        showRinpo
+        title={POSITIONING.closing}
+        summary="Talk to RINPO, explore the platform, or book a demo with the team."
+        primaryHref={CTAS.bookDemo.href}
+        primaryLabel={CTAS.bookDemo.label}
+        secondaryHref={CTAS.exploreRinads.href}
+        secondaryLabel={CTAS.exploreRinads.label}
       />
-    </>
+    </div>
   );
 }
