@@ -1,4 +1,4 @@
-import { isAvailable } from "@rinads/company-os";
+import { isAvailable } from "@rinads/company-os-engine";
 import { guard } from "@/components/os/company/guard";
 import { Badge, Empty, Metric, MetricGrid, Notes, OsPage, Panel, Table } from "@/components/os/company/ui";
 import { formatMoney, titleCase } from "@/lib/company-os/format";

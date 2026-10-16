@@ -1,5 +1,5 @@
 {
-  "name": "@rinads/company-os",
+  "name": "@rinads/company-os-engine",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "echo 'lint: @rinads/company-os ok'",
+    "lint": "echo 'lint: @rinads/company-os-engine ok'",
     "typecheck": "tsc --noEmit",
-    "build": "echo 'build: @rinads/company-os (source package)'",
+    "build": "echo 'build: @rinads/company-os-engine (source package)'",
     "test": "node --import tsx --test tests/*.test.ts tests/db/*.test.ts"
   },
   "dependencies": {

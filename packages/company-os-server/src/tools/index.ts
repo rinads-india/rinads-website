@@ -1,4 +1,4 @@
-import type { DomainTool } from "@rinads/company-os";
+import type { DomainTool } from "@rinads/company-os-engine";
 import type { Env } from "../kit";
 import { crmTools } from "./crm";
 import { deliveryTools } from "./delivery";

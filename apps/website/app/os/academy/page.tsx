@@ -1,4 +1,4 @@
-import { can, isAvailable } from "@rinads/company-os";
+import { can, isAvailable } from "@rinads/company-os-engine";
 import { loadAcademyDetail } from "@rinads/company-os-server";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";

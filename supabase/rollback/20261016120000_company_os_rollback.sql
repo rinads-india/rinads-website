@@ -3,7 +3,7 @@
 -- DESTRUCTIVE: drops every Company OS table and all data in them. This file is deliberately NOT
 -- in supabase/migrations/. Run it only on a non-production database, or on production after a
 -- verified backup and an explicit founder decision. Order matters (reverse of creation).
--- Verified by packages/company-os/tests/db/rollback.test.ts: apply → rollback → identical baseline → re-apply.
+-- Verified by packages/company-os-engine/tests/db/rollback.test.ts: apply → rollback → identical baseline → re-apply.
 
 BEGIN;
 

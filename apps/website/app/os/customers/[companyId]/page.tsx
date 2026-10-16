@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LIFECYCLE_STAGES, isAvailable, isClient, summarizeReceivables, can } from "@rinads/company-os";
+import { LIFECYCLE_STAGES, isAvailable, isClient, summarizeReceivables, can } from "@rinads/company-os-engine";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";
 import { Badge, Empty, LinkButton, Metric, MetricGrid, OsPage, Panel, SectionGate, Table } from "@/components/os/company/ui";

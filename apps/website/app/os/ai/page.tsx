@@ -1,4 +1,4 @@
-import { AGENT_ROLES, can, isAvailable, type AgentRoleProfile } from "@rinads/company-os";
+import { AGENT_ROLES, can, isAvailable, type AgentRoleProfile } from "@rinads/company-os-engine";
 import { loadAiDetail } from "@rinads/company-os-server";
 import { listRinpoModelRegistry, selectRinpoModel } from "@rinads/intelligence/model-registry";
 import { guard } from "@/components/os/company/guard";

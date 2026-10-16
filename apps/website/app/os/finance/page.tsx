@@ -1,4 +1,4 @@
-import { can, isAvailable, type ReceivableRow } from "@rinads/company-os";
+import { can, isAvailable, type ReceivableRow } from "@rinads/company-os-engine";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";
 import { QuickAction } from "@/components/os/company/QuickAction";

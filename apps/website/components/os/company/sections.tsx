@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { can, type ApprovalFact, type AttentionItem, type OrgContext } from "@rinads/company-os";
+import { can, type ApprovalFact, type AttentionItem, type OrgContext } from "@rinads/company-os-engine";
 import { formatDateTime, titleCase } from "@/lib/company-os/format";
 import { nameOf } from "@/lib/company-os/names";
 import { ApprovalControls } from "./ApprovalControls";

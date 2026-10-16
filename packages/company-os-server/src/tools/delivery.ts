@@ -1,4 +1,4 @@
-import { DELIVERABLE_MACHINE, MILESTONE_MACHINE, TASK_MACHINE, canTransition, type DomainTool } from "@rinads/company-os";
+import { DELIVERABLE_MACHINE, MILESTONE_MACHINE, TASK_MACHINE, canTransition, type DomainTool } from "@rinads/company-os-engine";
 import {
   ToolError,
   afterWrite,

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, it } from "node:test";
-import { OS_AREAS } from "@rinads/company-os";
+import { OS_AREAS } from "@rinads/company-os-engine";
 import { getOsAreaNavGroups, getOsMobileMoreAreaItems } from "../lib/os-nav";
 
 const root = process.cwd();

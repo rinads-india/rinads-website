@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { can } from "@rinads/company-os";
+import { can } from "@rinads/company-os-engine";
 import { loadCompanyData } from "@/lib/company-os/load";
 import { memberNames } from "@/lib/company-os/names";
 import { AttentionList } from "./sections";

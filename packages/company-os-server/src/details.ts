@@ -1,4 +1,4 @@
-import { available, can, notConnected, unavailable, type OrgContext, type Section } from "@rinads/company-os";
+import { available, can, notConnected, unavailable, type OrgContext, type Section } from "@rinads/company-os-engine";
 import { SCHEMA_PENDING, summariseAction } from "./facts";
 import { isMissingSchema, type Filter, type Row, type RowDb } from "./db";
 
@@ -137,7 +137,7 @@ export async function loadLogisticsDetail(db: RowDb, ctx: OrgContext): Promise<L
 
 export const notConnectedSection = <T>(reason: string): Section<T> => notConnected(reason);
 
-import type { AdDay } from "@rinads/company-os";
+import type { AdDay } from "@rinads/company-os-engine";
 
 /** Raw ad_metrics_daily rows → the AdDay shape used by `detectAdSignals`. */
 export function rowsToAdDays(rows: readonly Row[]): AdDay[] {

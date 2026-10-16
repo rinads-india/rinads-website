@@ -1,4 +1,4 @@
-import { can, isAvailable } from "@rinads/company-os";
+import { can, isAvailable } from "@rinads/company-os-engine";
 import { guard } from "@/components/os/company/guard";
 import { OsPage, Panel, SectionGate, LinkButton } from "@/components/os/company/ui";
 import { memberNames } from "@/lib/company-os/names";

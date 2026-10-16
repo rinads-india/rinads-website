@@ -20,7 +20,7 @@ Nothing here is marked ready by inference. Where evidence is missing it says so.
 ## 1. What shipped (in the branch)
 
 ### One shell, 21 areas
-Home, Founder, Customers, Sales, Work, Studio, Growth, Ads, Engineering, AI, Commerce, Finance, People, Logistics, Communication, Academy, Platforms, Assets, Approvals, Reports, Settings. Navigation is permission-aware (`packages/company-os/src/modules.ts`), grouped, and collapses into the existing mobile bottom bar + More sheet. Legacy routes (`/os/money`, `/os/automate`, `/os/rooms`, `/os/work/*`) still work and are bridged into the new areas. Every area has a real page (asserted by a test); 30 `/os` routes build.
+Home, Founder, Customers, Sales, Work, Studio, Growth, Ads, Engineering, AI, Commerce, Finance, People, Logistics, Communication, Academy, Platforms, Assets, Approvals, Reports, Settings. Navigation is permission-aware (`packages/company-os-engine/src/modules.ts`), grouped, and collapses into the existing mobile bottom bar + More sheet. Legacy routes (`/os/money`, `/os/automate`, `/os/rooms`, `/os/work/*`) still work and are bridged into the new areas. Every area has a real page (asserted by a test); 30 `/os` routes build.
 
 | Area | What it does | Data source |
 |---|---|---|
@@ -47,7 +47,7 @@ Home, Founder, Customers, Sales, Work, Studio, Growth, Ads, Engineering, AI, Com
 Request → context → permission → risk classification → approval policy → typed domain tool → postcondition `verify` → audit + canonical `….v1` event → result. ~48 catalogued actions. Agents are always propose-only. HIGH/CRITICAL always need a distinct approver; CRITICAL needs an admin/founder. Idempotency keys are enforced end to end. Production deploy, secret rotation, database migration, permission change and refund are in the catalogue as **non-executable**.
 
 ### AI workforce
-12 roles as configuration (`packages/company-os/src/agents.ts`) beneath a provider-neutral `AgentWorker` port. Routing authority stays in `@rinads/intelligence` (`selectRinpoModel`); Grok, Claude, OpenAI or Google are replaceable workers. No provider is wired as an executor in this release.
+12 roles as configuration (`packages/company-os-engine/src/agents.ts`) beneath a provider-neutral `AgentWorker` port. Routing authority stays in `@rinads/intelligence` (`selectRinpoModel`); Grok, Claude, OpenAI or Google are replaceable workers. No provider is wired as an executor in this release.
 
 ---
 

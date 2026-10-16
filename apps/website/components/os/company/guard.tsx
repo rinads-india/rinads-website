@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { can } from "@rinads/company-os";
+import { can } from "@rinads/company-os-engine";
 import { loadCompanyData, type CompanyData } from "@/lib/company-os/load";
 import { NoAccess, NotReady } from "./ui";
 

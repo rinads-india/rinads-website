@@ -1,4 +1,4 @@
-import { assetProblems, can, canPublishAsset, isAvailable } from "@rinads/company-os";
+import { assetProblems, can, canPublishAsset, isAvailable } from "@rinads/company-os-engine";
 import { loadStudioDetail, rowToAsset } from "@rinads/company-os-server";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";

@@ -1,4 +1,4 @@
-import { isAvailable, type CompanyFacts } from "@rinads/company-os";
+import { isAvailable, type CompanyFacts } from "@rinads/company-os-engine";
 
 /** userId → display name, from people profiles the caller may read. Unknown ids stay unnamed (never guessed). */
 export function memberNames(facts: CompanyFacts): Map<string, string> {

@@ -32,7 +32,7 @@ import {
   type OsAreaGroup,
   type OsAreaId,
   type VisibleMember,
-} from "@rinads/company-os";
+} from "@rinads/company-os-engine";
 import type { OsCapabilityTier } from "@/lib/os-org-role";
 import { tierAtLeast } from "@/lib/os-org-role";
 

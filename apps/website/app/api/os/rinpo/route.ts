@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { answerCompanyQuestion, buildFounderSnapshot, can, detectBriefingIntent } from "@rinads/company-os";
+import { answerCompanyQuestion, buildFounderSnapshot, can, detectBriefingIntent } from "@rinads/company-os-engine";
 import { loadCompanyFacts } from "@rinads/company-os-server";
 import { getApiCompanyOsSession } from "@/lib/company-os/api-session";
 import { getEngineeringFacts } from "@/lib/company-os/engineering";

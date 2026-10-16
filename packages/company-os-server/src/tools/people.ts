@@ -1,4 +1,4 @@
-import type { DomainTool } from "@rinads/company-os";
+import type { DomainTool } from "@rinads/company-os-engine";
 import { ToolError, defineTool, insertOne, mustRead, nowIso, readMany, updateOne, verifyRow, type Env } from "../kit";
 import { InputError, num, oneOf, reqStr, reqUuid, str, uuid, type Input } from "../validate";
 

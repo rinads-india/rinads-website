@@ -1,4 +1,4 @@
-import { INVOICE_MACHINE, canTransition, round2, type DomainTool } from "@rinads/company-os";
+import { INVOICE_MACHINE, canTransition, round2, type DomainTool } from "@rinads/company-os-engine";
 import { ToolError, afterWrite, defineTool, evt, insertOne, mustRead, nowIso, readMany, todayIso, updateOne, verifyRow, type Env } from "../kit";
 import { InputError, date, num, oneOf, reqStr, reqUuid, str, uuid, type Input } from "../validate";
 

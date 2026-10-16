@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { answerCompanyQuestion, buildFounderSnapshot, type OrgContext } from "@rinads/company-os";
+import { answerCompanyQuestion, buildFounderSnapshot, type OrgContext } from "@rinads/company-os-engine";
 import { A, B, U, admin, as, createDb, seed, type Db, type Who } from "../../company-os/tests/db/harness";
 import { SCHEMA_PENDING, loadCompanyFacts } from "../src";
 import { pgRowDb } from "./pg-rowdb";

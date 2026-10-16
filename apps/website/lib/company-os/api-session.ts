@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { ACTIVE_ORG_COOKIE, loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
-import type { OrgContext } from "@rinads/company-os";
+import type { OrgContext } from "@rinads/company-os-engine";
 import { createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
 import { resolveActiveOrganizationId } from "@/lib/post-auth-destination";
 import { createWebsiteServerClient } from "@/lib/supabase/server";

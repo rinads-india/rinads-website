@@ -71,7 +71,7 @@ const nextConfig: NextConfig = {
     "@rinads/ui",
     "@rinads/salon",
     "@rinads/salon-server",
-    "@rinads/company-os",
+    "@rinads/company-os-engine",
     "@rinads/company-os-server",
     "@rinads/intelligence",
   ],

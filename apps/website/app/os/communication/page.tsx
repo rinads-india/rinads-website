@@ -1,4 +1,4 @@
-import { can } from "@rinads/company-os";
+import { can } from "@rinads/company-os-engine";
 import { loadCommDetail } from "@rinads/company-os-server";
 import { OsRoomsContent } from "@/components/os/OsRoomsContent";
 import { ActionForm } from "@/components/os/company/ActionForm";

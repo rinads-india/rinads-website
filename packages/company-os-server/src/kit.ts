@@ -4,7 +4,7 @@ import {
   type CompanyOsEventType,
   type DomainTool,
   type ToolContext,
-} from "@rinads/company-os";
+} from "@rinads/company-os-engine";
 import { isMissingSchema, type Filter, type Row, type RowDb } from "./db";
 import { InputError, type Input } from "./validate";
 

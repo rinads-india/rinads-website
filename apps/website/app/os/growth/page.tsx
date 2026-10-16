@@ -1,4 +1,4 @@
-import { CHANNEL_LABEL, CONTENT_CHANNELS, can, groupByIdea, isAvailable, type ContentChannel, type ContentItem, type ContentStatus } from "@rinads/company-os";
+import { CHANNEL_LABEL, CONTENT_CHANNELS, can, groupByIdea, isAvailable, type ContentChannel, type ContentItem, type ContentStatus } from "@rinads/company-os-engine";
 import { loadGrowthDetail } from "@rinads/company-os-server";
 import { OsModuleBridge } from "@/components/os/OsModuleBridge";
 import { ActionForm } from "@/components/os/company/ActionForm";

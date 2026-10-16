@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { STUDIO_STAGES, STUDIO_STAGE_LABEL, can, isAvailable, type StudioStage } from "@rinads/company-os";
+import { STUDIO_STAGES, STUDIO_STAGE_LABEL, can, isAvailable, type StudioStage } from "@rinads/company-os-engine";
 import { loadStudioDetail } from "@rinads/company-os-server";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";

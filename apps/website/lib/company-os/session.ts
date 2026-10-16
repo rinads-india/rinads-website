@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import type { OrgContext } from "@rinads/company-os";
+import type { OrgContext } from "@rinads/company-os-engine";
 import { createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";

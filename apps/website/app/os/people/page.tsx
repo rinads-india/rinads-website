@@ -1,4 +1,4 @@
-import { can, isAvailable } from "@rinads/company-os";
+import { can, isAvailable } from "@rinads/company-os-engine";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";
 import { Badge, LinkButton, Metric, MetricGrid, OsPage, Panel, SectionGate, Table } from "@/components/os/company/ui";

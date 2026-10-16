@@ -1,4 +1,4 @@
-import { OPPORTUNITY_MACHINE, can, canTransition, isAvailable, summarizePipeline, type OpportunityStage } from "@rinads/company-os";
+import { OPPORTUNITY_MACHINE, can, canTransition, isAvailable, summarizePipeline, type OpportunityStage } from "@rinads/company-os-engine";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { guard } from "@/components/os/company/guard";
 import { QuickAction } from "@/components/os/company/QuickAction";

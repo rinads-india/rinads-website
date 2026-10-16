@@ -1,4 +1,4 @@
-import { isAvailable } from "@rinads/company-os";
+import { isAvailable } from "@rinads/company-os-engine";
 import { loadActionHistory } from "@rinads/company-os-server";
 import { guard } from "@/components/os/company/guard";
 import { PendingApprovals } from "@/components/os/company/sections";

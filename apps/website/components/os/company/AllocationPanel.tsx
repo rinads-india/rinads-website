@@ -1,4 +1,4 @@
-import { can, recommendForOpenTasks, type OrgContext, type CompanyFacts } from "@rinads/company-os";
+import { can, recommendForOpenTasks, type OrgContext, type CompanyFacts } from "@rinads/company-os-engine";
 import { personOptions } from "@/lib/company-os/options";
 import { formatDate, titleCase } from "@/lib/company-os/format";
 import { ActionForm } from "./ActionForm";

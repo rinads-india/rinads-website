@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isAvailable } from "@rinads/company-os";
+import { isAvailable } from "@rinads/company-os-engine";
 import { AskRinpo } from "@/components/os/company/AskRinpo";
 import { guard } from "@/components/os/company/guard";
 import { AttentionList, PendingApprovals } from "@/components/os/company/sections";

@@ -1,4 +1,4 @@
-import { CONTRACT_MACHINE, LEAD_MACHINE, OPPORTUNITY_MACHINE, PROPOSAL_MACHINE, canTransition, type DomainTool } from "@rinads/company-os";
+import { CONTRACT_MACHINE, LEAD_MACHINE, OPPORTUNITY_MACHINE, PROPOSAL_MACHINE, canTransition, type DomainTool } from "@rinads/company-os-engine";
 import {
   PartialWriteError,
   ToolError,

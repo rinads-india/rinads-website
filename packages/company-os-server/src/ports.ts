@@ -9,7 +9,7 @@ import {
   type LedgerRecord,
   type LedgerStatus,
   type NewLedgerRecord,
-} from "@rinads/company-os";
+} from "@rinads/company-os-engine";
 import { isUniqueViolation, type Row, type RowDb } from "./db";
 
 /**

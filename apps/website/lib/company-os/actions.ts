@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { decideGovernedAction, getActionSpec, runGovernedAction, type GovernedResult } from "@rinads/company-os";
+import { decideGovernedAction, getActionSpec, runGovernedAction, type GovernedResult } from "@rinads/company-os-engine";
 import { createGovernedDeps, loadActionPolicy } from "@rinads/company-os-server";
 import type { OsActionState } from "./action-state";
 import { createSiteLeadSource } from "./site-leads";

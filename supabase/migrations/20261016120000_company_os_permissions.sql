@@ -1,8 +1,8 @@
 -- Company OS (issue #127) — 1/7: permissions.
 -- Additive only. Nothing here is applied automatically; see docs/company-os/ARCHITECTURE.md.
 --
--- Grants mirror packages/company-os/src/permissions.ts ROLE_PERMISSION_GRANTS. A test
--- (packages/company-os/tests/db/migrations.test.ts) proves the two never drift.
+-- Grants mirror packages/company-os-engine/src/permissions.ts ROLE_PERMISSION_GRANTS. A test
+-- (packages/company-os-engine/tests/db/migrations.test.ts) proves the two never drift.
 
 INSERT INTO public.permissions (key, description) VALUES
   ('company.founder.view', 'View the Founder Control Tower'),

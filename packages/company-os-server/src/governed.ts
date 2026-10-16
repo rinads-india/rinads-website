@@ -1,4 +1,4 @@
-import { DEFAULT_ACTION_POLICY, type GovernedDeps, type TenantActionPolicy } from "@rinads/company-os";
+import { DEFAULT_ACTION_POLICY, type GovernedDeps, type TenantActionPolicy } from "@rinads/company-os-engine";
 import type { RowDb } from "./db";
 import type { SiteLeadSource } from "./kit";
 import { createAuditPort, createEventPort, createLedgerPort } from "./ports";

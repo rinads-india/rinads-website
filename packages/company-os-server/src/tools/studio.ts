@@ -10,7 +10,7 @@ import {
   type ContentItem,
   type DomainTool,
   type StudioStage,
-} from "@rinads/company-os";
+} from "@rinads/company-os-engine";
 import { ToolError, afterWrite, defineTool, evt, insertOne, mustRead, nowIso, readMany, updateOne, verifyRow, type Env } from "../kit";
 import { InputError, bool, compact, date, num, oneOf, reqStr, reqUuid, str, uuid, type Input } from "../validate";
 import type { Row } from "../db";

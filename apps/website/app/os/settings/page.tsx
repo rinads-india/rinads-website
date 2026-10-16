@@ -1,4 +1,4 @@
-import { ACTION_CATALOG, can } from "@rinads/company-os";
+import { ACTION_CATALOG, can } from "@rinads/company-os-engine";
 import { loadActionPolicy } from "@rinads/company-os-server";
 import { OsModuleBridge } from "@/components/os/OsModuleBridge";
 import { guard } from "@/components/os/company/guard";

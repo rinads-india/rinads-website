@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Section } from "@rinads/company-os";
+import type { Section } from "@rinads/company-os-engine";
 
 export function OsPage({ title, eyebrow, summary, actions, children }: { title: string; eyebrow?: string; summary?: string; actions?: ReactNode; children: ReactNode }) {
   return (

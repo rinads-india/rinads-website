@@ -1,4 +1,4 @@
-import { available, notConnected, unavailable, type EngineeringFacts, type Section } from "@rinads/company-os";
+import { available, notConnected, unavailable, type EngineeringFacts, type Section } from "@rinads/company-os-engine";
 
 /**
  * Engineering signals from GitHub, Vercel and Supabase.

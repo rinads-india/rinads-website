@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { buildFounderSnapshot, can, type CompanyFacts, type FounderSnapshot } from "@rinads/company-os";
+import { buildFounderSnapshot, can, type CompanyFacts, type FounderSnapshot } from "@rinads/company-os-engine";
 import { loadCompanyFacts } from "@rinads/company-os-server";
 import { getEngineeringFacts } from "./engineering";
 import { getCompanyOsSession } from "./session";

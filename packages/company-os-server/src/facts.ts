@@ -37,7 +37,7 @@ import {
   type AssetRecord,
   type ExpenseFact,
   type AlertFact,
-} from "@rinads/company-os";
+} from "@rinads/company-os-engine";
 import { isMissingSchema, type DbResult, type Filter, type Row, type RowDb } from "./db";
 
 export const SCHEMA_PENDING =

@@ -8,11 +8,11 @@ Companion to [IMPLEMENTATION-MATRIX.md](./IMPLEMENTATION-MATRIX.md). Tracking is
 RINPO (interface)  ── /os shell + dock + POST /api/os/rinpo
       │
 RINADS Intelligence ── @rinads/intelligence  (selectRinpoModel routing; providers are replaceable workers)
-      │                 @rinads/company-os   (deterministic briefing / attention / recommendations)
+      │                 @rinads/company-os-engine   (deterministic briefing / attention / recommendations)
       │
 RINPO Runtime (governed actions) ── Request → Context → Permission → Risk → Approval → Domain tool
       │                              → Execution → Postcondition verify → Audit/Event → Result
-      │                              (@rinads/company-os `governed` pipeline, injected ports;
+      │                              (@rinads/company-os-engine `governed` pipeline, injected ports;
       │                               ledger = existing `rinpo_actions`; audit = `audit_logs`; events = `business_events`)
       │
 Business Graph / domain services ── Supabase tables (RLS) read/written only through the user's session
@@ -33,10 +33,10 @@ Invariants
 
 | Package | Role | IO |
 |---------|------|----|
-| `@rinads/company-os` (new) | Pure domain: module registry, permissions, lifecycle state machines, pipeline math, finance/receivables, work-allocation scoring, attention aggregation, founder snapshot + briefing, studio/asset provenance rules, growth/ads signal engine, agent role profiles, governed-action policy + pipeline, canonical events | none (ports injected) |
+| `@rinads/company-os-engine` (new) | Pure domain: module registry, permissions, lifecycle state machines, pipeline math, finance/receivables, work-allocation scoring, attention aggregation, founder snapshot + briefing, studio/asset provenance rules, growth/ads signal engine, agent role profiles, governed-action policy + pipeline, canonical events | none (ports injected) |
 | `apps/website/lib/company-os/*` | Supabase loaders (RLS session) producing `CompanyFacts`; server actions; engineering adapters; RINPO endpoint | Supabase, fetch |
 
-`@rinads/company-os` depends only on `@rinads/permissions` (types) so it stays unit-testable with `node --test`.
+`@rinads/company-os-engine` depends only on `@rinads/permissions` (types) so it stays unit-testable with `node --test`.
 
 ## 3. Route map (`/os`, one shell, role-aware)
 
@@ -66,7 +66,7 @@ Invariants
 
 Legacy `/os/money`, `/os/automate`, `/os/rooms` keep working unchanged.
 
-Navigation visibility (`packages/company-os/src/modules.ts`) is only a convenience. Every page re-checks on the server with `guard()` and every query runs on the caller's RLS session, so a hidden link and a forbidden URL behave the same. Detail rows for area pages are read by `packages/company-os-server/src/details.ts`, permission-gated and returning explicit unavailable states.
+Navigation visibility (`packages/company-os-engine/src/modules.ts`) is only a convenience. Every page re-checks on the server with `guard()` and every query runs on the caller's RLS session, so a hidden link and a forbidden URL behave the same. Detail rows for area pages are read by `packages/company-os-server/src/details.ts`, permission-gated and returning explicit unavailable states.
 
 ## 4. Additive migrations (all `20261016…`, none applied automatically)
 
@@ -82,7 +82,7 @@ Navigation visibility (`packages/company-os/src/modules.ts`) is only a convenien
 
 Rollback: `supabase/rollback/20261016120000_company_os_rollback.sql` (not in the migration chain; destructive; proven to restore the exact baseline by `tests/db/rollback.test.ts`).
 
-### Database-enforced guarantees (proved against the real migration chain in `packages/company-os/tests/db`)
+### Database-enforced guarantees (proved against the real migration chain in `packages/company-os-engine/tests/db`)
 
 1. **Tenant isolation.** Every table is `organization_id NOT NULL`; every link is a composite `(organization_id, id)` FK, so a child row can never reference another tenant's parent. No DELETE/TRUNCATE for end users; anon has zero privileges.
 2. **Permission-scoped RLS.** Reads need the domain `*.read` permission, writes the `*.manage` permission (checked by `private.has_permission`). Clients/viewers see no Company OS data.

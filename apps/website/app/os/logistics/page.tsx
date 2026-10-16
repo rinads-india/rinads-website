@@ -1,4 +1,4 @@
-import { isAvailable } from "@rinads/company-os";
+import { isAvailable } from "@rinads/company-os-engine";
 import { loadLogisticsDetail } from "@rinads/company-os-server";
 import { OsModuleBridge } from "@/components/os/OsModuleBridge";
 import { guard } from "@/components/os/company/guard";

@@ -18,7 +18,7 @@
     "@rinads/brand": "workspace:*",
     "@rinads/cms": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
-    "@rinads/company-os": "workspace:*",
+    "@rinads/company-os-engine": "workspace:*",
     "@rinads/company-os-server": "workspace:*",
     "@rinads/database": "workspace:*",
     "@rinads/intelligence": "workspace:*",

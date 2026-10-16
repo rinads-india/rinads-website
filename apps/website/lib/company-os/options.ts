@@ -1,4 +1,4 @@
-import { isAvailable, type CompanyFacts } from "@rinads/company-os";
+import { isAvailable, type CompanyFacts } from "@rinads/company-os-engine";
 
 export type Option = { value: string; label: string };
 

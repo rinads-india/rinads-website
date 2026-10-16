@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { can, isAvailable, type TaskFact } from "@rinads/company-os";
+import { can, isAvailable, type TaskFact } from "@rinads/company-os-engine";
 import { OsModuleBridge } from "@/components/os/OsModuleBridge";
 import { ActionForm } from "@/components/os/company/ActionForm";
 import { AllocationPanel } from "@/components/os/company/AllocationPanel";

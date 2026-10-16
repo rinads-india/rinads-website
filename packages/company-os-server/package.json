@@ -16,7 +16,7 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@rinads/company-os": "workspace:*"
+    "@rinads/company-os-engine": "workspace:*"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
