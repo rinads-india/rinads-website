@@ -284,3 +284,11 @@ describe("attention ordering", () => {
     assert.deepEqual(sortAttention(items).map((i) => i.id), sortAttention([...items].reverse()).map((i) => i.id));
   });
 });
+
+import { detectBriefingIntent as detectIntentForRouting } from "../src/briefing";
+it("founder questions route to the intended section (invoices, due today, campaigns)", () => {
+  assert.equal(detectIntentForRouting("What invoices are overdue?"), "receivables");
+  assert.equal(detectIntentForRouting("What is due today?"), "work");
+  assert.equal(detectIntentForRouting("How are campaigns performing?"), "growth");
+  assert.equal(detectIntentForRouting("What work is overdue?"), "work");
+});

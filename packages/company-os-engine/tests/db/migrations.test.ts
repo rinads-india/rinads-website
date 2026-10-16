@@ -148,7 +148,7 @@ describe("Company OS migrations — applied to the real migration chain", () => 
     const rows = await db.query<{ policyname: string; cmd: string; qual: string | null; with_check: string | null }>(
       "select policyname, cmd, qual, with_check from pg_policies where schemaname='public' and cmd in ('INSERT','UPDATE') and policyname like 'cos\\_%'"
     );
-    const memberOnly = new Set(["cos_ai_runs_insert", "cos_business_events_insert", "cos_audit_logs_insert_guard", "cos_rinpo_actions_update", "cos_rinpo_actions_insert_guard", "cos_daily_closings_insert", "cos_daily_closings_update"]);
+    const memberOnly = new Set(["cos_ai_runs_insert", "cos_business_events_insert", "cos_audit_logs_insert_guard", "cos_rinpo_actions_update", "cos_rinpo_actions_insert_guard", "cos_daily_closings_insert", "cos_daily_closings_update", "cos_tasks_update_assignee" /* own assigned tasks only; WITH CHECK keeps the row theirs */]);
     for (const r of rows.rows) {
       if (memberOnly.has(r.policyname)) continue;
       const text = `${r.qual ?? ""} ${r.with_check ?? ""}`;

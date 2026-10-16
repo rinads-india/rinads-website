@@ -22,6 +22,7 @@ export type BriefingIntent =
   | "engineering"
   | "ai"
   | "studio"
+  | "growth"
   | "tomorrow"
   | "work"
   | "unknown";
@@ -66,16 +67,17 @@ export type Briefing = {
 
 const INTENT_RULES: { intent: BriefingIntent; test: RegExp }[] = [
   { intent: "clients_at_risk", test: /(client|customer|account)s?\b.*\b(risk|churn|unhappy|trouble)|\b(risk|churn)\b.*\b(client|customer|account)/i },
-  { intent: "receivables", test: /receivable|overdue invoice|unpaid|owe[sd]?\b|collect(ion)?s?\b|outstanding/i },
+  { intent: "receivables", test: /receivable|overdue invoice|invoices?\b.*\b(overdue|late|unpaid|outstanding)|unpaid|owe[sd]?\b|collect(ion)?s?\b|outstanding/i },
   { intent: "cash", test: /\bcash\b|revenue|income|money in|paid this|takings/i },
   { intent: "pipeline", test: /pipeline|deal|forecast|opportunit|proposal|\bsales\b|leads?\b/i },
   { intent: "capacity", test: /capacity|workload|utili[sz]ation|overload|overbooked|who.*(free|available)|team load/i },
   { intent: "approvals", test: /approval|decision|waiting on me|sign.?off|need my/i },
   { intent: "engineering", test: /engineering|deploy|release|build|\bci\b|vercel|github|supabase|incident|outage/i },
   { intent: "ai", test: /\bai\b|model|provider|grok|claude|openai|llm|token|ai cost|ai spend/i },
+  { intent: "growth", test: /campaign|\bads?\b|advertis|\bctr\b|\bcpl\b|youtube|marketing|growth|content (calendar|performance)/i },
   { intent: "studio", test: /studio|creative|asset|production pipeline|video|design job/i },
   { intent: "tomorrow", test: /tomorrow|next day|plan (for )?(the )?day|prepare for/i },
-  { intent: "work", test: /\btasks?\b|\bwork\b|overdue|blocked|backlog/i },
+  { intent: "work", test: /\btasks?\b|\bwork\b|overdue|blocked|backlog|\bdue\b/i },
   { intent: "attention", test: /attention|urgent|focus|priorit|what.*(wrong|matters|need)|exception/i },
   { intent: "company_status", test: /how is|how are|how's|status|pulse|overview|today|doing|summary|brief/i },
 ];
@@ -98,7 +100,8 @@ const CATEGORY_FOR_INTENT: Partial<Record<BriefingIntent, AttentionCategory[]>> 
   approvals: ["approvals"],
   engineering: ["engineering"],
   ai: ["ai"],
-  studio: ["studio", "growth"],
+  studio: ["studio"],
+  growth: ["growth"],
   work: ["work", "delivery"],
 };
 
@@ -271,6 +274,17 @@ export function answerCompanyQuestion(
         for (const [stage, n] of Object.entries(s.byStage)) whatHappened.push(`${stage}: ${n}`);
         if (s.assetsMissingProvenance) whyItMatters.push(`${plural(s.assetsMissingProvenance, "asset")} lack complete provenance and cannot be published.`);
       } else headline = "Studio health cannot be summarised.";
+      break;
+    }
+    case "growth": {
+      const g = snapshot.growth;
+      if (g.activeCampaigns.state === "available") {
+        headline = `${plural(g.activeCampaigns.data, "campaign")} active.`;
+        if (g.adSignals.state === "available") {
+          headline += ` ${g.adSignals.data.total === 0 ? "No ad performance signals detected." : `${plural(g.adSignals.data.total, "ad signal")} detected (${g.adSignals.data.critical} critical).`}`;
+          whyItMatters.push("Ad signals are derived from recorded daily metrics against stated thresholds; budget changes need approval.");
+        } else whatHappened.push(`Ad performance: ${g.adSignals.reason}`);
+      } else headline = "Campaign performance cannot be summarised: growth records are not available.";
       break;
     }
     case "tomorrow": {
