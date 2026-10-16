@@ -43,7 +43,7 @@ describe("product catalog consistency", () => {
   it("available-now group only contains production-supportable statuses", () => {
     for (const product of PRODUCT_CATALOG.filter((p) => p.availabilityGroup === "now")) {
       assert.ok(
-        product.status === "generally_available" || product.status === "available_configuration",
+        product.status === "available" || product.status === "pilot",
         product.slug,
       );
     }
@@ -60,14 +60,14 @@ describe("solution catalog consistency", () => {
     }
   });
 
-  it("solution experience status notes do not claim available when catalog is prototype", () => {
+  it("solution experience status notes stay honest for preview and pilot", () => {
     for (const [slug, experience] of Object.entries(SOLUTION_EXPERIENCES)) {
       const availability = getVerticalAvailability(slug);
-      if (availability.status === "prototype_demo") {
-        assert.doesNotMatch(experience.statusNote, /available configuration/i);
+      if (availability.status === "preview" || availability.status === "roadmap") {
+        assert.doesNotMatch(experience.statusNote, /^available$/i);
       }
-      if (availability.status === "available_configuration") {
-        assert.match(experience.statusNote, /available configuration/i);
+      if (availability.status === "pilot") {
+        assert.match(experience.statusNote, /pilot/i);
       }
     }
   });

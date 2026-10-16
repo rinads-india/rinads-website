@@ -1,5 +1,76 @@
 import type { ServiceLine } from "./types";
 
+export type ServiceImplementationGroupId =
+  | "software-implementation"
+  | "system-integration"
+  | "ai-automation"
+  | "migration"
+  | "business-transformation"
+  | "growth-systems"
+  | "creative-systems"
+  | "training";
+
+export type ServiceImplementationGroup = {
+  id: ServiceImplementationGroupId;
+  title: string;
+  summary: string;
+  /** Existing service line slugs mapped into this group */
+  serviceSlugs: string[];
+};
+
+export const SERVICE_IMPLEMENTATION_TITLE = "RINADS Implementation Services";
+
+export const SERVICE_IMPLEMENTATION_GROUPS: ServiceImplementationGroup[] = [
+  {
+    id: "software-implementation",
+    title: "Software Implementation",
+    summary: "Web, mobile, commerce, and business systems delivered on the RINADS platform.",
+    serviceSlugs: ["software"],
+  },
+  {
+    id: "system-integration",
+    title: "System Integration",
+    summary: "Connect POS, payments, messaging, and legacy systems with governed data flow.",
+    serviceSlugs: ["automation"],
+  },
+  {
+    id: "ai-automation",
+    title: "AI & Automation",
+    summary: "RINPO-assisted workflows, agents, and automation with permissions and approvals.",
+    serviceSlugs: ["ai", "automation"],
+  },
+  {
+    id: "migration",
+    title: "Migration",
+    summary: "Move from scattered tools to a connected operating model without losing operational truth.",
+    serviceSlugs: ["transformation"],
+  },
+  {
+    id: "business-transformation",
+    title: "Business Transformation",
+    summary: "Operating model redesign, vertical configuration, and change programs on RINADS.",
+    serviceSlugs: ["transformation"],
+  },
+  {
+    id: "growth-systems",
+    title: "Growth Systems",
+    summary: "SEO, paid media, CRM programs, and follow-up connected to Business OS.",
+    serviceSlugs: ["marketing"],
+  },
+  {
+    id: "creative-systems",
+    title: "Creative Systems",
+    summary: "Brand, AI media, and campaign production pipelines on Creative OS.",
+    serviceSlugs: ["creative"],
+  },
+  {
+    id: "training",
+    title: "Training",
+    summary: "Academy programmes, certification, and team enablement with RINPO tutoring.",
+    serviceSlugs: ["training"],
+  },
+];
+
 export const SERVICE_LINES: ServiceLine[] = [
   {
     slug: "software",

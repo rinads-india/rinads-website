@@ -19,10 +19,11 @@ describe("RINPO public experience context", () => {
     assert.ok(context.suggestions.length >= 3);
   });
 
-  it("keeps industry solution guidance generic across vertical routes", () => {
+  it("enriches industry solution routes with edition context", () => {
     const context = getRinpoPageContext("/solutions/jewellery");
-    assert.equal(context.area, "Industry Solutions");
-    assert.match(context.prompt, /industry/i);
+    assert.equal(context.industry, "jewellery");
+    assert.ok(context.productHints?.length);
+    assert.match(context.prompt, /jewellery|RINADS/i);
   });
 
   it("falls back to the RINADS context for unknown public routes", () => {

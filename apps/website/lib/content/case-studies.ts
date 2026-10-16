@@ -2,6 +2,8 @@ import type { ProductStatusValue } from "@/lib/product-status";
 
 export type CaseStudyApproval = "approved" | "draft" | "internal_only";
 
+export type CustomerEvidenceClass = "stories" | "deployments" | "demonstrations" | "labs";
+
 export type CaseStudy = {
   slug: string;
   customerName: string;
@@ -11,6 +13,9 @@ export type CaseStudy = {
   problem: string;
   previousWorkflow: string;
   rinadsSolution: string;
+  /** How RINPO participated — only when verified and approved. */
+  rinpoRole?: string;
+  workflow?: string;
   operatingSystems: string[];
   implementationScope: string;
   timeline: string;
@@ -20,8 +25,75 @@ export type CaseStudy = {
   verifiedMetrics: { label: string; value: string }[];
   quote?: { text: string; attribution: string };
   approvalStatus: CaseStudyApproval;
+  evidenceClass?: CustomerEvidenceClass;
   productStatusNote?: string;
 };
+
+export type EvidenceEmptyState = {
+  title: string;
+  body: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+};
+
+/** Honest empty states — shown when no approved evidence exists in a class. */
+export const EVIDENCE_EMPTY_STATES: Record<CustomerEvidenceClass, EvidenceEmptyState> = {
+  stories: {
+    title: "No approved customer stories yet",
+    body:
+      "Published narratives appear here only after the customer approves wording, metrics, and attribution. We do not invent logos, ROI figures, or testimonials.",
+    ctaHref: "/contact?intent=sales",
+    ctaLabel: "Talk to sales",
+  },
+  deployments: {
+    title: "No verified deployment evidence yet",
+    body:
+      "Deployment write-ups — scope, systems live, and verified outcomes — are added when organisations approve publication. Until then, ask us what we can stand behind for your industry.",
+    ctaHref: "/contact?intent=demo",
+    ctaLabel: "Book a demo",
+  },
+  demonstrations: {
+    title: "No product demonstrations catalogued yet",
+    body:
+      "Curated demos and sample experiences will be listed when they are reviewed for accuracy. Live product tours are available through RINPO and scheduled demos.",
+    ctaHref: "/contact?intent=demo",
+    ctaLabel: "Request a demo",
+  },
+  labs: {
+    title: "RINADS Labs is not publishing externally yet",
+    body:
+      "Internal experiments and previews stay out of marketing until they are stable enough to describe honestly. Check product availability for what is generally available today.",
+    ctaHref: "/trust/availability",
+    ctaLabel: "View availability",
+  },
+};
+
+export const CUSTOMER_EVIDENCE_SECTIONS: {
+  id: CustomerEvidenceClass;
+  heading: string;
+  summary: string;
+}[] = [
+  {
+    id: "stories",
+    heading: "Customer stories",
+    summary: "Approved narratives with verified results — never fabricated quotes.",
+  },
+  {
+    id: "deployments",
+    heading: "Deployments",
+    summary: "What went live, how it was implemented, and what changed operationally.",
+  },
+  {
+    id: "demonstrations",
+    heading: "Product demonstrations",
+    summary: "Reviewed demos and sample flows — not implied production claims.",
+  },
+  {
+    id: "labs",
+    heading: "RINADS Labs",
+    summary: "Experiments and previews when we can describe them truthfully.",
+  },
+];
 
 /**
  * Public case studies. Never invent customers or metrics.
@@ -31,6 +103,14 @@ export const CASE_STUDIES: CaseStudy[] = [];
 
 export function getPublishedCaseStudies(): CaseStudy[] {
   return CASE_STUDIES.filter((study) => study.approvalStatus === "approved");
+}
+
+export function getPublishedCaseStudiesByClass(
+  evidenceClass: CustomerEvidenceClass,
+): CaseStudy[] {
+  return getPublishedCaseStudies().filter(
+    (study) => (study.evidenceClass ?? "stories") === evidenceClass,
+  );
 }
 
 export function getCaseStudy(slug: string): CaseStudy | null {
@@ -59,7 +139,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Payments",
     summary: "Checkout and payment capture for supported commerce and services flows.",
     status: "live",
-    productStatus: "generally_available",
+    productStatus: "available",
     href: "/integrations/razorpay",
   },
   {
@@ -68,7 +148,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Communications",
     summary: "Business messaging workflows where provider credentials and templates are configured.",
     status: "private_preview",
-    productStatus: "private_preview",
+    productStatus: "preview",
     href: "/integrations/whatsapp",
   },
   {
@@ -77,7 +157,7 @@ export const INTEGRATIONS: Integration[] = [
     category: "Marketing",
     summary: "Campaign connection paths for Marketing OS — availability depends on organisation setup.",
     status: "planned",
-    productStatus: "coming_soon",
+    productStatus: "roadmap",
     href: "/integrations/meta-ads",
   },
 ];

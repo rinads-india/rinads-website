@@ -352,7 +352,7 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
               <p className="max-w-sm text-xs leading-5 text-[var(--text-muted)]">
                 This page is a product-direction preview. Coming-soon visuals do not imply production availability.
               </p>
-            ) : getVerticalAvailability(vertical.slug).status === "prototype_demo" ? (
+            ) : getVerticalAvailability(vertical.slug).status === "preview" ? (
               <p className="max-w-sm text-xs leading-5 text-[var(--text-muted)]">
                 Demo / sample configuration — not a claim that a production vertical is generally available.
               </p>

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/rinads/Logo";
-import { RinpoDemo } from "@/components/system/RinpoDemo";
-import { POSITIONING, CTAS } from "@/lib/product-ia";
+import { POSITIONING } from "@/lib/product-ia";
+import { CTAS } from "@/lib/ctas";
 import { COMPANY_CONFIG } from "@/lib/content/companyConfig";
 import { trackMarketing } from "@/lib/analytics";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
@@ -48,7 +48,7 @@ export function HomeHero() {
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black" aria-hidden />
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-16 pt-32 md:px-12 lg:grid-cols-2 lg:items-center lg:gap-12 lg:px-20 lg:pb-24 lg:pt-36">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-16 pt-32 md:px-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12 lg:px-20 lg:pb-24 lg:pt-36">
         <div>
           <motion.div {...enter(0.05)} className="flex flex-col items-start gap-4">
             <Logo tone="onDark" priority className="h-12 w-auto md:h-14 lg:h-16" />
@@ -78,20 +78,27 @@ export function HomeHero() {
             <button
               type="button"
               onClick={() => {
+                trackMarketing("rinpo_opened", { source: "home_hero" });
                 trackMarketing("hero_try_rinpo", { source: "home_hero" });
                 openPhoneScreen("chat");
-                document.getElementById("ask-rinpo")?.scrollIntoView({ behavior: "smooth" });
               }}
               className="min-h-12 rounded-xl bg-rinads-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
-              {CTAS.rinpo.label}
+              {CTAS.talkToRinpo.label}
             </button>
             <Link
-              href={CTAS.primary.href}
-              onClick={() => trackMarketing("hero_book_demo", { source: "home_hero" })}
+              href={CTAS.exploreRinads.href}
+              onClick={() => trackMarketing("homepage_view", { cta: "explore_rinads" })}
               className="inline-flex min-h-12 items-center rounded-xl border border-white/20 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
-              {CTAS.primary.label}
+              {CTAS.exploreRinads.label}
+            </Link>
+            <Link
+              href={CTAS.bookDemo.href}
+              onClick={() => trackMarketing("hero_book_demo", { source: "home_hero" })}
+              className="inline-flex min-h-12 items-center rounded-xl px-4 py-3 text-sm font-semibold text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            >
+              {CTAS.bookDemo.label}
             </Link>
           </motion.div>
 
@@ -101,17 +108,22 @@ export function HomeHero() {
           >
             {COMPANY_CONFIG.location.trustLine}
           </motion.p>
-
-          {/* Mobile: RINPO immediately after CTA */}
-          <motion.div {...enter(0.55)} className="mt-8 lg:hidden" id="ask-rinpo">
-            <RinpoDemo />
-          </motion.div>
         </div>
 
-        <motion.div {...enter(0.35)} className="hidden lg:block" aria-label="RINPO demo">
-          <div id="ask-rinpo-desktop">
-            <RinpoDemo />
-          </div>
+        <motion.div {...enter(0.35)} className="relative mx-auto w-full max-w-md lg:mx-0" aria-label="RINPO">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/rinpo-full-body-transparent-v2.png"
+            alt="RINPO — the RINADS AI assistant"
+            width={420}
+            height={520}
+            className="mx-auto h-auto w-full max-w-[280px] object-contain md:max-w-[340px]"
+            loading="eager"
+            decoding="async"
+          />
+          <p className="mt-3 text-center text-xs font-medium text-white/50">
+            RINPO · Demo character asset · Talk to open the Phone experience
+          </p>
         </motion.div>
       </div>
     </section>

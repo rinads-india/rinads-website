@@ -16,7 +16,11 @@ import {
   ServiceCard,
   CTASection,
 } from "@/components/system";
-import { SERVICE_LINES } from "@/lib/content/services";
+import {
+  SERVICE_IMPLEMENTATION_GROUPS,
+  SERVICE_IMPLEMENTATION_TITLE,
+  SERVICE_LINES,
+} from "@/lib/content/services";
 import { getServiceExperience } from "@/lib/service-experience";
 import type { ServiceCatalogItem } from "@/lib/services/types";
 import { formatServicePrice } from "@/lib/services/types";
@@ -50,9 +54,9 @@ export function ServicesClient({ catalog }: Props) {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="RINADS Services"
+        eyebrow={SERVICE_IMPLEMENTATION_TITLE}
         headline="Implementation capability around the RINADS platform."
-        summary="Build software, grow brands, apply intelligence, automate operations, create media, transform systems, and train people — with delivery anchored to the same platform architecture."
+        summary="Software, integration, AI, migration, transformation, growth, creative, and training — grouped by outcome and anchored to the same platform architecture."
         primaryHref="/projects"
         primaryLabel="Start a project"
         secondaryHref="/platform"
@@ -89,13 +93,13 @@ export function ServicesClient({ catalog }: Props) {
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-                Seven service lines
+                {SERVICE_IMPLEMENTATION_TITLE}
               </p>
               <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
                 Choose the outcome. Keep the platform connected.
               </h2>
               <p className="mt-4 max-w-2xl text-[var(--text-muted)]">
-                Each service line has a different delivery discipline, but all can connect back to RINADS rather than becoming standalone agency work.
+                Eight implementation groups map to our delivery disciplines — each can connect back to RINADS rather than becoming standalone agency work.
               </p>
             </div>
             <button
@@ -103,7 +107,7 @@ export function ServicesClient({ catalog }: Props) {
               onClick={() =>
                 openPhoneScreen(
                   "chat",
-                  "Help me choose the right RINADS service for what I want to build, grow, automate, create, transform, or train."
+                  "Help me choose the right RINADS implementation service for what I want to build, grow, automate, create, transform, or train."
                 )
               }
               className="inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
@@ -113,17 +117,35 @@ export function ServicesClient({ catalog }: Props) {
             </button>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICE_LINES.map((service) => {
-              const experience = getServiceExperience(service.slug);
+          <div className="mt-14 space-y-16">
+            {SERVICE_IMPLEMENTATION_GROUPS.map((group) => {
+              const lines = SERVICE_LINES.filter((line) => group.serviceSlugs.includes(line.slug));
               return (
-                <ServiceCard
-                  key={service.slug}
-                  name={experience?.publicName ?? service.name}
-                  verb={experience?.publicVerb ?? service.verb}
-                  summary={experience?.outcome ?? service.summary}
-                  href={`/services/${service.slug}`}
-                />
+                <section
+                  key={group.id}
+                  id={group.id}
+                  className="scroll-mt-28"
+                  aria-labelledby={`${group.id}-title`}
+                >
+                  <h3 id={`${group.id}-title`} className="text-2xl font-bold text-[var(--text-primary)]">
+                    {group.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">{group.summary}</p>
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {lines.map((service) => {
+                      const experience = getServiceExperience(service.slug);
+                      return (
+                        <ServiceCard
+                          key={`${group.id}-${service.slug}`}
+                          name={experience?.publicName ?? service.name}
+                          verb={experience?.publicVerb ?? service.verb}
+                          summary={experience?.outcome ?? service.summary}
+                          href={`/services/${service.slug}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
               );
             })}
           </div>

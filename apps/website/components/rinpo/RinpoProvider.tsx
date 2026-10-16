@@ -17,15 +17,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { RinpoGuideId } from "@/hooks/useRinpoGuide";
 import { RinpoMemoryProvider } from "@/hooks/useRinpoMemory";
 import type { PhoneScreenId } from "./RinpoPhoneScreens";
+import { normalizePhoneScreen } from "@/lib/rinpo-phone-modes";
 import {
   getRinpoPageContext,
   type RinpoExperienceState,
   type RinpoPageContext,
 } from "@/lib/rinpo-experience";
+import { trackMarketing } from "@/lib/analytics";
 
 /** Defer heavy RINPO client islands until after hydration / interaction. */
-const RinpoCharacter = dynamic(
-  () => import("./RinpoCharacter").then((m) => m.RinpoCharacter),
+const RinpoPresence = dynamic(
+  () => import("./RinpoPresence").then((m) => m.RinpoPresence),
   { ssr: false },
 );
 const RinpoPhone = dynamic(() => import("./RinpoPhone").then((m) => m.RinpoPhone), {
@@ -87,7 +89,7 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginModalMode, setLoginModalMode] = useState<"login" | "signup">("login");
   const [navMenuOpen, setNavMenuOpen] = useState(false);
-  const [phoneScreen, setPhoneScreen] = useState<PhoneScreenId>("chat");
+  const [phoneScreen, setPhoneScreen] = useState<PhoneScreenId>("ask");
   const [pendingChatPrompt, setPendingChatPrompt] = useState<string | null>(null);
 
   const isIntroMode = (pathname === "/" || pathname == null) && !introComplete;
@@ -122,11 +124,13 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openPhoneScreen = useCallback((screen: PhoneScreenId, prompt?: string) => {
-    setPhoneScreen(screen);
+    const normalized = normalizePhoneScreen(screen);
+    setPhoneScreen(normalized);
     if (prompt) setPendingChatPrompt(prompt);
     setPhoneOpenState(true);
     setInteractionState("open");
     setRinpoState("phone-out");
+    trackMarketing("rinpo_opened", { screen: normalized });
   }, []);
 
   const clearPendingChatPrompt = useCallback(() => setPendingChatPrompt(null), []);
@@ -174,7 +178,7 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
     >
       <RinpoMemoryProvider key={user?.username ?? "Guest"}>
         {children}
-        {!isOsRoute && <RinpoCharacter />}
+        {!isOsRoute && <RinpoPresence />}
         {!isOsRoute && phoneOpen && <RinpoPhone />}
         <LoginModal
           isOpen={loginModalOpen}

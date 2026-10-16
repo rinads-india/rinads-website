@@ -16,7 +16,7 @@ export function VerticalCard({
   type,
   summary,
   href,
-  status = "coming_soon",
+  status = "roadmap",
 }: VerticalCardProps) {
   const normalized = fromLegacyAvailability(status);
 

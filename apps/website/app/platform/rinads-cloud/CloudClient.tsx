@@ -95,7 +95,7 @@ export function CloudClient() {
         summary="RINADS Cloud connects identity, tenancy, domain services, runtime, data, APIs, integrations, and infrastructure so multiple business experiences can operate on one platform core."
         primaryHref="/platform"
         primaryLabel="Explore platform"
-        secondaryHref="/platform/rinads-intelligence"
+        secondaryHref="/platform/intelligence"
         secondaryLabel="RINADS Intelligence"
       />
 

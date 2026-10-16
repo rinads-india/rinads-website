@@ -11,6 +11,7 @@ import {
   FOOTER_PLATFORM,
   FOOTER_RESOURCES,
   FOOTER_SOLUTIONS,
+  FOOTER_TRUST,
 } from "@/lib/product-ia";
 import { COMPANY_CONFIG } from "@/lib/content/companyConfig";
 
@@ -172,6 +173,14 @@ export function Footer() {
               <div className="footer-col">
                 <p className="footer-col-title">Company</p>
                 {FOOTER_COMPANY.map((link) => (
+                  <Link key={link.label} href={link.href}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="footer-col">
+                <p className="footer-col-title">Trust</p>
+                {FOOTER_TRUST.map((link) => (
                   <Link key={link.label} href={link.href}>
                     {link.label}
                   </Link>

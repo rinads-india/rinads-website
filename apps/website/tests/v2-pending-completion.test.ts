@@ -61,15 +61,23 @@ describe("footer and dead destinations", () => {
     assert.doesNotMatch(footer, /href:\s*"https:\/\/www\.rinads\.com"/);
   });
 
-  it("does not promote empty Customers from primary nav or Resources hub", async () => {
+  it("surfaces customer evidence with honest empty states when no stories exist", async () => {
     assert.equal(getPublishedCaseStudies().length, 0);
-    assert.ok(!NAV_GROUPS.some((g) => g.label === "Customers"));
+    const customersNav = NAV_GROUPS.find((g) => g.label === "Customers");
+    assert.ok(customersNav);
+    assert.ok(customersNav!.items.some((item) => item.href.includes("#stories")));
+    const customersPage = await readFile(
+      new URL("../app/customers/page.tsx", import.meta.url),
+      "utf8",
+    );
+    assert.match(customersPage, /EVIDENCE_EMPTY_STATES/);
+    assert.match(customersPage, /CUSTOMER_EVIDENCE_SECTIONS/);
+    assert.match(customersPage, /scroll-mt-28/);
     const resources = await readFile(
       new URL("../app/resources/ResourcesClient.tsx", import.meta.url),
       "utf8",
     );
     assert.match(resources, /business-readiness/);
-    // Customer stories only render when approved case studies exist
     assert.match(resources, /getPublishedCaseStudies/);
     assert.match(resources, /hasStories/);
   });
@@ -98,7 +106,7 @@ describe("breadcrumbs and automotive", () => {
     const solution = getSolution("automotive");
     assert.ok(solution);
     assert.equal(solution!.href, "/solutions/automotive");
-    assert.equal(solution!.status, "coming_soon");
+    assert.equal(solution!.status, "roadmap");
     assert.ok(getVertical("automotive"));
     assert.ok(getRouteDefinition("/solutions/automotive"));
   });
