@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Briefcase,
+  Gem,
   Home,
   Layers,
   MoreHorizontal,
@@ -17,6 +18,7 @@ export type OsPrimaryNavId =
   | "home"
   | "customers"
   | "work"
+  | "jewellery"
   | "money"
   | "growth"
   | "automate"
@@ -47,6 +49,7 @@ export function getOsDesktopNavItems(tier: OsCapabilityTier | null = null): OsNa
     { id: "home", label: "Home", icon: Home, href: "/os" },
     { id: "customers", label: "Customers", icon: Users, href: "/os/customers" },
     { id: "work", label: "Work", icon: Briefcase, href: "/os/work" },
+    { id: "jewellery", label: "Jewellery", icon: Gem, href: "/os/jewellery", minTier: "staff" },
     { id: "money", label: "Money", icon: Wallet, href: "/os/money", minTier: "staff" },
     { id: "growth", label: "Growth", icon: Sparkles, href: "/os/growth" },
     { id: "automate", label: "Automate", icon: Workflow, href: "/os/automate" },
@@ -70,6 +73,7 @@ export function getOsMobilePrimaryNavItems(_tier: OsCapabilityTier | null = null
 /** Items inside mobile More sheet. */
 export function getOsMobileMoreNavItems(tier: OsCapabilityTier | null = null): OsNavItem[] {
   const items: OsNavItem[] = [
+    { id: "jewellery", label: "Jewellery", icon: Gem, href: "/os/jewellery", minTier: "staff" },
     { id: "money", label: "Money", icon: Wallet, href: "/os/money", minTier: "staff" },
     { id: "automate", label: "Automate", icon: Workflow, href: "/os/automate" },
     { id: "rooms", label: "Rooms", icon: Layers, href: "/os/rooms" },
@@ -96,6 +100,7 @@ export function resolveOsActiveNavId(pathname: string): OsPrimaryNavId | OsUtili
   if (path === "/os" || path === "/os/home") return "home";
   if (path.startsWith("/os/customers")) return "customers";
   if (path.startsWith("/os/work")) return "work";
+  if (path.startsWith("/os/jewellery")) return "jewellery";
   if (path.startsWith("/os/money")) return "money";
   if (path.startsWith("/os/growth")) return "growth";
   if (path.startsWith("/os/automate")) return "automate";
