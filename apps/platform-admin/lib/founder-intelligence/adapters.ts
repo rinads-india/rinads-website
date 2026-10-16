@@ -521,8 +521,7 @@ export async function loadFounderWork(): Promise<WorkResult> {
         }),
         restCount(baseUrl, serviceRoleKey, "operational_tasks", {
           status: openStatus,
-          due_at: `gte.${start}`,
-          "due_at.lt": end,
+          and: `(due_at.gte.${start},due_at.lt.${end})`,
         }),
         restCount(baseUrl, serviceRoleKey, "operational_tasks", {
           status: openStatus,
