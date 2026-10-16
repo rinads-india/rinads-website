@@ -38,7 +38,7 @@ async function liveDbContext() {
     throw new Error("Jewellery write actions require a live Supabase tenant.");
   }
   const supabase = await createOwnerServerClient();
-  const ctx = await getCommerceContextFromTenancy();
+  const ctx = await getCommerceContextFromTenancy(async () => supabase);
   return { db: asJewelleryDb(supabase), ctx };
 }
 
