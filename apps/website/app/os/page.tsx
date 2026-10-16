@@ -1,5 +1,5 @@
 import { selectOsHomeData } from "@/lib/os-home/select-home-data";
-import { OsHomeContent } from "@/components/os/OsHomeContent";
+import { OsHomePageSwitch } from "@/components/os/OsHomePageSwitch";
 
 /**
  * Home landing — command centre. Auth + tenant destination resolution run in layout.
@@ -9,7 +9,7 @@ export default async function OsHomePage() {
 
   return (
     <main id="main">
-      <OsHomeContent data={data} />
+      <OsHomePageSwitch data={data} />
     </main>
   );
 }

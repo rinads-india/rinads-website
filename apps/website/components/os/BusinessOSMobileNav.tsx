@@ -8,7 +8,13 @@ import {
   getOsMobilePrimaryNavItems,
   resolveOsActiveNavId,
 } from "@/lib/os-nav";
+import {
+  getCompanyOsMobilePrimaryNavItems,
+  getCompanyOsMoreNavItems,
+  resolveCompanyOsActiveNavId,
+} from "@/lib/company-os-nav";
 import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
+import { useCompanyOsMode } from "@/components/os/CompanyOsModeContext";
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const nodes = container.querySelectorAll<HTMLElement>(
@@ -21,15 +27,22 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 
 export function BusinessOSMobileNav() {
   const pathname = usePathname() ?? "/os";
-  const activeId = resolveOsActiveNavId(pathname);
+  const companyOsMode = useCompanyOsMode();
   const { tier } = useOsOrgRole();
+  const activeId = companyOsMode
+    ? resolveCompanyOsActiveNavId(pathname)
+    : resolveOsActiveNavId(pathname);
   const [moreOpen, setMoreOpen] = useState(false);
   const titleId = useId();
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const primary = getOsMobilePrimaryNavItems(tier);
-  const moreItems = getOsMobileMoreNavItems(tier);
+  const primary = companyOsMode
+    ? getCompanyOsMobilePrimaryNavItems(tier)
+    : getOsMobilePrimaryNavItems(tier);
+  const moreItems = companyOsMode
+    ? getCompanyOsMoreNavItems(tier)
+    : getOsMobileMoreNavItems(tier);
 
   const navPath = pathname;
   const [lastPath, setLastPath] = useState(navPath);
@@ -101,17 +114,18 @@ export function BusinessOSMobileNav() {
     };
   }, [moreOpen, closeMore]);
 
-  const moreActive =
-    activeId === "money" ||
-    activeId === "automate" ||
-    activeId === "rooms" ||
-    activeId === "settings" ||
-    activeId === "integrations";
+  const moreActive = companyOsMode
+    ? moreItems.some((item) => item.id === activeId)
+    : activeId === "money" ||
+      activeId === "automate" ||
+      activeId === "rooms" ||
+      activeId === "settings" ||
+      activeId === "integrations";
 
   return (
     <>
       <nav
-        aria-label="Business OS mobile"
+        aria-label={companyOsMode ? "Company OS mobile" : "Business OS mobile"}
         className="os-glass fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-stretch gap-1 rounded-2xl p-1.5 shadow-lg lg:hidden"
       >
         {primary.map((item) => {
