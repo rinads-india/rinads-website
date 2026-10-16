@@ -175,7 +175,8 @@ export default async function FounderIntelligencePage() {
       : [];
   const allConnected =
     snapshot.sources.every((source) => source.state === "operational") &&
-    snapshot.workspaceResult.state === "operational";
+    snapshot.workspaceResult.state === "operational" &&
+    snapshot.workResult.state === "operational";
   const connectedCount = snapshot.sources.filter(
     (source) => source.state !== "not_connected"
   ).length;
@@ -188,6 +189,7 @@ export default async function FounderIntelligencePage() {
   const adminDeployment = vercel?.items?.find((item) => item.label === "Platform admin");
   const websiteSha = websiteDeployment?.metadata?.commitSha;
   const adminSha = adminDeployment?.metadata?.commitSha;
+  const work = snapshot.workResult;
 
   const attention: FounderAttentionItem[] = [];
 
@@ -224,6 +226,48 @@ export default async function FounderIntelligencePage() {
       detail: snapshot.workspaceResult.detail,
       state: snapshot.workspaceResult.state,
     });
+  }
+
+  if (work.state !== "operational") {
+    attention.push({
+      id: "work-intelligence",
+      label: "Operational work intelligence",
+      detail: work.detail,
+      state: work.state,
+    });
+  } else {
+    if (work.counts.overdue > 0) {
+      attention.push({
+        id: "overdue-work",
+        label: "Overdue work",
+        detail: `${work.counts.overdue} open task${work.counts.overdue === 1 ? " is" : "s are"} past due.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.blocked > 0) {
+      attention.push({
+        id: "blocked-work",
+        label: "Blocked work",
+        detail: `${work.counts.blocked} task${work.counts.blocked === 1 ? " is" : "s are"} blocked.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.urgent > 0) {
+      attention.push({
+        id: "urgent-work",
+        label: "Urgent work",
+        detail: `${work.counts.urgent} open task${work.counts.urgent === 1 ? " is" : "s are"} marked urgent.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.unacknowledgedAlerts > 0) {
+      attention.push({
+        id: "operational-alerts",
+        label: "Operational alerts",
+        detail: `${work.counts.unacknowledgedAlerts} alert${work.counts.unacknowledgedAlerts === 1 ? " requires" : "s require"} acknowledgement.`,
+        state: "degraded",
+      });
+    }
   }
 
   if ((pendingApprovals?.value ?? 0) > 0) {
@@ -325,19 +369,26 @@ export default async function FounderIntelligencePage() {
           </div>
           <div className="fi-system-list">
             <div>
+              <span>Open work</span>
+              <strong>{work.state === "operational" ? work.counts.open : "—"}</strong>
+            </div>
+            <div>
+              <span>Due today</span>
+              <strong>{work.state === "operational" ? work.counts.dueToday : "—"}</strong>
+            </div>
+            <div>
+              <span>Overdue / blocked</span>
+              <strong>
+                {work.state === "operational" ? `${work.counts.overdue} / ${work.counts.blocked}` : "—"}
+              </strong>
+            </div>
+            <div>
               <span>Pending approvals</span>
               <strong>{pendingApprovals?.value ?? "—"}</strong>
             </div>
             <div>
               <span>Pending RINPO actions</span>
               <strong>{pendingActions?.value ?? "—"}</strong>
-            </div>
-            <div>
-              <span>RINPO runtime</span>
-              <strong>
-                <StatusDot state={rinpo.runtime.state} />
-                {stateLabels[rinpo.runtime.state]}
-              </strong>
             </div>
             <div>
               <span>RINPO provider</span>
@@ -374,9 +425,15 @@ export default async function FounderIntelligencePage() {
                   </>
                 );
                 return item.href ? (
-                  <a href={item.href} key={item.id} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noreferrer" : undefined}>
-                    {content}
-                  </a>
+                  item.href.startsWith("http") ? (
+                    <a href={item.href} key={item.id} target="_blank" rel="noreferrer" title={item.detail}>
+                      {content}
+                    </a>
+                  ) : (
+                    <Link href={item.href} key={item.id} title={item.detail}>
+                      {content}
+                    </Link>
+                  )
                 ) : (
                   <div key={item.id} title={item.detail}>
                     {content}
@@ -385,6 +442,38 @@ export default async function FounderIntelligencePage() {
               })}
             </div>
           )}
+        </section>
+
+        <section className="fi-glass-card fi-system-card" aria-labelledby="work-title">
+          <div className="fi-card-heading">
+            <div>
+              <span className="fi-eyebrow">Canonical operations</span>
+              <h2 id="work-title">Work pulse</h2>
+            </div>
+            <span className={`fi-status-pill fi-status-${work.state}`}>
+              <StatusDot state={work.state} />
+              {stateLabels[work.state]}
+            </span>
+          </div>
+          {work.state !== "operational" ? (
+            <p>{work.detail}</p>
+          ) : work.tasks.length === 0 ? (
+            <p>No open operational tasks were returned.</p>
+          ) : (
+            <div className="fi-system-list">
+              {work.tasks.slice(0, 8).map((task) => (
+                <Link href={`/tenants/${task.organizationId}`} key={task.id}>
+                  <span title={task.title}>{task.organizationName} · {task.title}</span>
+                  <strong>{task.priority} · {task.status.replaceAll("_", " ")}</strong>
+                </Link>
+              ))}
+            </div>
+          )}
+          {work.state === "operational" ? (
+            <p>
+              Urgent {work.counts.urgent} · Unacknowledged alerts {work.counts.unacknowledgedAlerts}
+            </p>
+          ) : null}
         </section>
 
         <section className="fi-source-grid" aria-label="Live platform status">
@@ -475,6 +564,13 @@ export default async function FounderIntelligencePage() {
                 </strong>
               </div>
             ))}
+            <div>
+              <span>Operational work</span>
+              <strong>
+                <StatusDot state={work.state} />
+                {stateLabels[work.state]}
+              </strong>
+            </div>
           </div>
           <p>
             {allConnected
