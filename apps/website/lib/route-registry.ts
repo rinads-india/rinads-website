@@ -322,6 +322,14 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     pageType: "resource",
   },
   {
+    path: "/resources/business-readiness",
+    indexable: true,
+    title: "Business Readiness Assessment | RINADS",
+    description:
+      "RINADS Business Readiness Assessment — practical pathway guidance for growing businesses. Not a certification.",
+    pageType: "resource",
+  },
+  {
     path: "/changelog",
     indexable: true,
     title: "Changelog | RINADS",

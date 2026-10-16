@@ -4,16 +4,17 @@ import { HERO_COMMANDS, PLATFORM_OS, NAV_GROUPS, CTAS, POSITIONING } from "../li
 import { VERTICALS } from "../lib/content/verticals";
 import { VERTICAL_AVAILABILITY } from "../lib/content/leads";
 import { getIndexableRoutes, getRouteDefinition } from "../lib/route-registry";
+import { PRICE_APPROVED } from "../lib/content/commercialConfig";
 
 describe("Homepage UX V2 contracts", () => {
-  it("keeps the hero focused on four RINPO entry prompts", () => {
-    assert.equal(HERO_COMMANDS.length, 4);
-    assert.ok(HERO_COMMANDS.includes("Build something"));
-    assert.ok(HERO_COMMANDS.includes("Automate a workflow"));
+  it("keeps RINPO hero prompts outcome-led", () => {
+    assert.ok(HERO_COMMANDS.length >= 4);
+    assert.ok(HERO_COMMANDS.some((c) => /attention/i.test(c)));
+    assert.ok(HERO_COMMANDS.some((c) => /automate/i.test(c)));
   });
 
   it("uses outcome-led positioning copy", () => {
-    assert.match(POSITIONING.hero, /AI operating platform/i);
+    assert.match(POSITIONING.hero, /intelligent platform/i);
     assert.ok(POSITIONING.support.includes("RINPO"));
   });
 
@@ -27,23 +28,26 @@ describe("Homepage UX V2 contracts", () => {
     assert.ok(core.some((item) => item.label === "RINADS Cloud"));
   });
 
-  it("uses commercial navigation without top-level RINPO complexity", () => {
+  it("uses conversion navigation with RINPO and without empty Customers", () => {
     const labels = NAV_GROUPS.map((group) => group.label);
     assert.deepEqual(labels, [
-      "Product",
+      "Platform",
       "Solutions",
-      "Customers",
-      "Pricing",
-      "Resources",
+      "RINPO",
       "Services",
       "Academy",
+      "Resources",
+      "Company",
     ]);
-    assert.equal(CTAS.primary.label, "Book a platform demo");
+    assert.equal(CTAS.primary.label, "Book a demo");
     assert.equal(CTAS.secondary.label, "Explore Business OS");
+    assert.equal(CTAS.rinpo.label, "Try RINPO");
   });
 
   it("keeps salon as the available configuration vertical in legacy flags", () => {
-    const available = VERTICALS.filter((vertical) => vertical.status === "available").map((vertical) => vertical.slug);
+    const available = VERTICALS.filter((vertical) => vertical.status === "available").map(
+      (vertical) => vertical.slug,
+    );
     assert.deepEqual(available, ["salon"]);
     assert.equal(
       VERTICAL_AVAILABILITY.find((item) => item.slug === "salon")?.status,
@@ -59,15 +63,29 @@ describe("Homepage UX V2 contracts", () => {
     assert.ok(getIndexableRoutes().some((route) => route.path === "/security"));
   });
 
-  it("keeps home hero brand-first without embedding the command bar", async () => {
+  it("keeps home hero brand-first with RINPO demo surface", async () => {
     const { readFile } = await import("node:fs/promises");
     const hero = await readFile(new URL("../components/home/HomeHero.tsx", import.meta.url), "utf8");
-    const sections = await readFile(new URL("../components/home/HomeSections.tsx", import.meta.url), "utf8");
+    const sections = await readFile(
+      new URL("../components/home/HomeSections.tsx", import.meta.url),
+      "utf8",
+    );
+    const footer = await readFile(
+      new URL("../components/rinads/Footer.tsx", import.meta.url),
+      "utf8",
+    );
 
     assert.match(hero, /Logo/);
     assert.match(hero, /RINADS TECHNOLOGIES/);
-    assert.doesNotMatch(hero, /CommandBar/);
-    assert.match(sections, /id="ask-rinpo"/);
-    assert.match(sections, /CommandBar/);
+    assert.match(hero, /RinpoDemo/);
+    assert.match(sections, /What do you want to improve/);
+    assert.match(sections, /Demo workspace · Synthetic data|Configured pricing|Available \/ configurable now/i);
+    assert.match(footer, /Meet RINPO\./);
+    assert.doesNotMatch(footer, /Meet RINPO\?/);
+    assert.doesNotMatch(footer, /href:\s*"https:\/\/www\.rinads\.com"/);
+  });
+
+  it("keeps pricing unapproved until commercial sign-off", () => {
+    assert.equal(PRICE_APPROVED, false);
   });
 });

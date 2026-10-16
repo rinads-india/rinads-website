@@ -116,7 +116,7 @@ export const NAV_RINPO: NavGroup = {
   items: [
     { label: "Meet RINPO", href: "/rinpo", description: "The AI interface across RINADS." },
     { label: "How RINPO works", href: "/rinpo", description: "Ask, understand, recommend, approve, act, audit." },
-    { label: "Try RINPO", href: "/#ask-rinpo", description: "Open the demo workspace." },
+    { label: "Try RINPO", href: "/", description: "Open the homepage demo workspace." },
   ],
 };
 
@@ -223,6 +223,12 @@ export const NAV_RESOURCES: NavGroup = {
   href: "/resources",
   items: [
     { label: "Resources Hub", href: "/resources", description: "Guides and product resources." },
+    {
+      label: "Business Readiness",
+      href: "/resources/business-readiness",
+      description: "Practical pathway assessment — not a certification.",
+    },
+    { label: "Pricing", href: "/pricing", description: "Operating coverage and configured pricing." },
     { label: "Documentation", href: "/docs", description: "Platform documentation foundation." },
     { label: "Developers", href: "/developers", description: "APIs, auth, webhooks, and events." },
     { label: "Integrations", href: "/integrations", description: "Connect tools with explicit availability." },

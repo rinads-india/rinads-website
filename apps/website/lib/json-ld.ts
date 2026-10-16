@@ -20,13 +20,26 @@ export type JsonLdObject = Record<string, unknown>;
 
 export function buildOrganizationJsonLd(baseUrl?: string): JsonLdObject {
   const url = siteUrl(baseUrl);
+  const sameAs = [
+    process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN,
+    process.env.NEXT_PUBLIC_SOCIAL_X,
+    process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK,
+  ].filter((value): value is string => Boolean(value?.trim()));
+
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "RINADS",
+    legalName: "RINADS Technologies",
     url,
     logo: `${url}/assets/rinads-logo.png`,
-    sameAs: [url],
+    ...(sameAs.length ? { sameAs } : {}),
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Thrissur",
+      addressRegion: "Kerala",
+      addressCountry: "IN",
+    },
   };
 }
 
@@ -102,6 +115,44 @@ export function buildSoftwareApplicationJsonLd(input?: {
     offers: {
       "@type": "Offer",
       url: input?.offerUrl ?? `${root}/contact?intent=demo`,
+    },
+  };
+}
+
+export function buildFAQPageJsonLd(
+  items: Array<{ question: string; answer: string }>,
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+export function buildLocalBusinessJsonLd(input: {
+  name: string;
+  url: string;
+  city: string;
+  region: string;
+  country: string;
+}): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: input.name,
+    url: input.url,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: input.city,
+      addressRegion: input.region,
+      addressCountry: input.country,
     },
   };
 }

@@ -15,7 +15,7 @@ export const CTAS = {
   explorePlatform: { label: "Explore the platform", href: "/platform" },
   exploreSolution: { label: "Explore solution", href: "/solutions" },
   seeRinpo: { label: "See how RINPO works", href: "/rinpo" },
-  tryRinpo: { label: "Try RINPO", href: "/#ask-rinpo", action: "rinpo" as const },
+  tryRinpo: { label: "Try RINPO", href: "/", action: "rinpo" as const },
   tryRinpoDemo: { label: "Try RINPO", action: "rinpo_demo" as const },
   pricingEstimate: {
     label: "Get my pricing estimate",
