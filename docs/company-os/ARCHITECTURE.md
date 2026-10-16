@@ -70,17 +70,11 @@ Navigation visibility (`packages/company-os-engine/src/modules.ts`) is only a co
 
 ## 4. Additive migrations (all `20261016…`, none applied automatically)
 
-| File | Content |
-|------|---------|
-| `…120000_company_os_permissions.sql` | 23 new permission keys + role grants (explicit pairs, diffed against `ROLE_PERMISSION_GRANTS` in CI) |
-| `…120100_company_os_ledger_events.sql` | `rinpo_actions` extended as **the** approval ledger; ledger state-machine trigger; `company_os_is_approved_action()`; member-scoped `business_events` / `audit_logs` write guards |
-| `…120200_company_os_crm_sales.sql` | `crm_companies`, `crm_contacts`, `crm_opportunities`, `crm_leads`, `crm_proposals`, `crm_contracts` |
-| `…120300_company_os_delivery_finance.sql` | `projects`, `project_milestones`, `deliverables`, `finance_invoices`, `finance_payments`; additive columns + write policies on existing `operational_tasks` |
-| `…120400_company_os_people_work.sql` | `people_profiles`, `work_assignment_decisions` |
-| `…120500_company_os_studio_growth.sql` | `growth_campaigns`, `studio_jobs`, `creative_assets`, `content_items`, `asset_publications`, `asset_performance`, `ad_campaigns`, `ad_metrics_daily` |
-| `…120600_company_os_comms_academy_ai.sql` | `comm_activities`, `academy_skills`, `academy_progress`, `ai_runs`, `ai_agent_profiles` |
+Baseline (main, PR #129): `20261016120000_company_os_foundation.sql` — the 19-table `cos_*` Business Graph kernel. This branch adds `…130000_company_os_permissions`, `…130100_company_os_ledger_events`, `…130200_company_os_cos_graph` (tightens kernel RLS, composite FKs), `…130300_company_os_cos_gates` (approval gates), `…130400_company_os_work_decisions`, `…130500_company_os_studio_growth`, `…130600_company_os_comms_academy_ai`.
 
-Rollback: `supabase/rollback/20261016120000_company_os_rollback.sql` (not in the migration chain; destructive; proven to restore the exact baseline by `tests/db/rollback.test.ts`).
+Logical entity → physical table (via `cos-adapter.ts`): `crm_companies`→`cos_companies`, `crm_contacts`→`cos_contacts`, `crm_leads`→`cos_leads`, `crm_opportunities`→`cos_opportunities`, `crm_proposals`→`cos_proposals`, `crm_contracts`→`cos_contracts`, `projects`→`cos_projects`, `deliverables`→`cos_deliverables`, `finance_invoices`→`cos_invoices`, `finance_payments`→`cos_payments`, `operational_tasks`→`cos_tasks`, `people_profiles`→`cos_workers`.
+
+Rollback: `supabase/rollback/20261016130000_company_os_rollback.sql` (not in the migration chain; destructive; proven to restore the exact baseline by `tests/db/rollback.test.ts`).
 
 ### Database-enforced guarantees (proved against the real migration chain in `packages/company-os-engine/tests/db`)
 
@@ -94,7 +88,7 @@ Rollback: `supabase/rollback/20261016120000_company_os_rollback.sql` (not in the
 ## 5. Lifecycle (one connected graph)
 
 ```text
-crm_leads ─► crm_companies + crm_contacts ─► crm_opportunities ─► crm_proposals ─► crm_contracts
+cos_leads ─► cos_companies + cos_contacts ─► cos_opportunities ─► cos_proposals ─► cos_contracts
                                                                                 │ (signed ⇒ client)
                                                                                 ▼
                                               projects(kind=project|retainer) ─► project_milestones

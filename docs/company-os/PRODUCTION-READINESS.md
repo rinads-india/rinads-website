@@ -6,6 +6,8 @@ Issue: #127 · Draft PR #128 (head `claude-rinads-company-os-mvp`, still at the 
 
 **CONDITIONAL GO for staging. NO-GO for production until the founder-only steps below are done and their evidence is attached to this report.**
 
+Update 2026-10-16 (preview slice): main's PR #129 landed an overlapping Company OS foundation (`cos_*` Business Graph, dual-mode shell). This branch was **reconciled onto it** (founder decision: port onto main's `cos_*`), then extended. A synthetic, test-proven demo organisation and seed exist (`docs/company-os/PREVIEW-ENVIRONMENT.md`), but the **isolated Supabase environment could not be created** (cost confirmation is a human step), so there is still no authenticated preview.
+
 Why not production today:
 
 1. **No Company OS migration has been applied to any database**, so every claim about live behaviour is proven only against an in-process Postgres (PGlite) running the real 44-migration chain, not against Supabase staging.
@@ -53,26 +55,28 @@ Request → context → permission → risk classification → approval policy �
 
 ## 2. Schema, migrations and RLS
 
-Seven additive migrations, none applied anywhere, none destructive, none touching existing tables except additive `rinpo_actions` / `operational_tasks` columns and policies:
+Baseline: main's `20261016120000_company_os_foundation` (PR #129: 19 `cos_*` Business Graph tables, applied out-of-band to production, **empty**). This branch adds seven additive migrations on top; **none applied anywhere**:
 
 | Migration | Contents |
 |---|---|
-| `20261016120000_company_os_permissions` | permission keys + role grants |
-| `…120100_company_os_ledger_events` | `rinpo_actions` columns, helpers, ledger state-machine trigger, restrictive/select/update policies, event + audit guards |
-| `…120200_company_os_crm_sales` | companies, contacts, opportunities, leads, proposals, contracts |
-| `…120300_company_os_delivery_finance` | projects, milestones, deliverables, invoices, payments; task columns + write policies |
-| `…120400_company_os_people_work` | people profiles, work assignment decisions |
-| `…120500_company_os_studio_growth` | campaigns, studio jobs, assets, content, publications, performance, ad campaigns, daily metrics, ad-budget trigger |
-| `…120600_company_os_comms_academy_ai` | comms, academy, `ai_runs`, `ai_agent_profiles` |
+| `20261016130000_company_os_permissions` | permission keys + role grants |
+| `…130100_company_os_ledger_events` | `rinpo_actions` as the approval ledger: columns, state-machine trigger, helpers, restrictive/select/update policies, event + audit guards |
+| `…130200_company_os_cos_graph` | **tightens the kernel's member-wide RLS** to permission-scoped policies; composite `(organization_id, id)` FKs; assignee/submit policies |
+| `…130300_company_os_cos_gates` | DB-enforced approval gates on `cos_*` (proposal send, contract sign, invoice issue/void, payments immutable) |
+| `…130400_company_os_work_decisions` | work-assignment decisions |
+| `…130500_company_os_studio_growth` | campaigns, studio jobs, creative assets, content items, publications, performance, ad campaigns, daily metrics, ad-budget trigger |
+| `…130600_company_os_comms_academy_ai` | comm activities, academy skills/progress, `ai_runs`, `ai_agent_profiles` |
 
-- 26 new tenant tables, each with deliberate RLS (select / insert / update by permission; composite `(organization_id, id)` foreign keys prevent cross-tenant links).
-- **Zero `SECURITY DEFINER` functions added** (the two textual matches are comments); helpers are `SECURITY INVOKER`. This deliberately avoids the PR #115 privilege-drift class.
-- DB-enforced approval gates (`private.company_os_is_approved_action`) on: proposal send, contract signature, invoice issue / void, payment record, content publish, asset publication, and ad budget changes (trigger). A payment/publication row cannot exist without an approved ledger row of the right type, and one approval authorises exactly one payment.
-- Rollback: `supabase/rollback/20261016120000_company_os_rollback.sql` (deliberately outside `migrations/`). Tested: apply → rollback → identical baseline → re-apply.
+- 14 net-new tenant tables + the 19 kernel tables, every one with deliberate permission-scoped RLS; composite FKs prevent cross-tenant links.
+- **Zero `SECURITY DEFINER` functions added.**
+- DB-enforced approval gates (`private.company_os_is_approved_action`) in `WITH CHECK`/triggers: a payment/publication row cannot exist without an approved ledger row of the right type; one approval authorises exactly one payment.
+- The engine's logical model (`crm_*`, `finance_*`, `operational_tasks`, …) binds to `cos_*` through `createCosRowDb` (`packages/company-os-server/src/cos-adapter.ts`); people are `cos_workers`.
+- Rollback: `supabase/rollback/20261016130000_company_os_rollback.sql` (outside `migrations/`; fingerprint-tested).
+- **Security finding F-9 (new):** production already carries the kernel `cos_*` tables with member-wide read/write RLS. They are empty and no organisation is a platform operator, so there is no exposure today, but migration `…130200` must be applied (after founder approval) **before** any operator organisation is enabled.
 
 ## 3. Permission changes
 
-23 new permission keys (`company.founder.view`, `crm.read|manage`, `projects.read|manage`, `finance.read|manage`, `people.read|manage`, `studio.read|manage`, `growth.read|manage`, `engineering.read`, `ai.read|manage`, `comms.read|manage`, `academy.read|manage`, `reports.read`, `approvals.read|decide`). Founder / super_admin / admin hold all; manager holds the operating subset (not `finance.manage`, `company.founder.view`, `ai.manage`); staff holds read-only on CRM/projects/Studio/Growth/comms/academy/approvals; client and viewer hold none. **No existing role loses a permission.**
+Permission keys (reconciled with main's vocabulary): `founder.read`, `clients.read|write`, `sales.read|write`, `work.read|write`, `finance.read|write`, `people.read|write`, `studio.read|manage`, `growth.read|manage`, `engineering.read`, `ai.read|manage`, `comms.read|manage`, `academy.read|manage`, `reports.read`, `approvals.read|decide`. Founder / super_admin / admin hold all; manager holds the operating subset (not `finance.write`, `founder.read`, `ai.manage`); staff holds read-only on CRM/projects/Studio/Growth/comms/academy/approvals; client and viewer hold none. **No existing role loses a permission.**
 
 Documented widening to review: `operational_tasks` write policies now also admit holders of `tasks.manage` (needed for governed task creation/updates).
 
