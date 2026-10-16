@@ -14,6 +14,22 @@ function hasSupabaseServiceRole(): boolean {
   );
 }
 
+/** Map phone-only leads onto NOT NULL work_email column without inventing a mailbox. */
+function persistenceEmail(payload: LeadPayload): string {
+  if (payload.workEmail) return payload.workEmail;
+  const digits = (payload.phone ?? "").replace(/\D/g, "");
+  return digits ? `phone:${digits}@lead.pending` : "unknown@lead.pending";
+}
+
+function enrichMessage(payload: LeadPayload): string | null {
+  const parts: string[] = [];
+  if (payload.phone) parts.push(`Phone: ${payload.phone}`);
+  if (payload.websiteUrl) parts.push(`Website: ${payload.websiteUrl}`);
+  if (payload.stage) parts.push(`Stage: ${payload.stage}`);
+  if (payload.message) parts.push(payload.message);
+  return parts.length ? parts.join("\n") : null;
+}
+
 async function storeLeadViaWebhook(payload: LeadPayload, webhook: string): Promise<StoreResult> {
   const res = await fetch(webhook, {
     method: "POST",
@@ -50,16 +66,16 @@ async function storeLeadViaSupabase(payload: LeadPayload): Promise<StoreResult> 
     .insert({
       outcome: payload.outcome,
       name: payload.name,
-      work_email: payload.workEmail,
+      work_email: persistenceEmail(payload),
       company: payload.company,
       role: payload.role,
-      company_size: payload.companySize,
-      industry: payload.industry,
+      company_size: payload.companySize || "unspecified",
+      industry: payload.industry || "unspecified",
       current_tools: payload.currentTools ?? null,
       problem: payload.problem,
-      timeline: payload.timeline,
+      timeline: payload.timeline || "unspecified",
       budget: payload.budget ?? null,
-      message: payload.message ?? null,
+      message: enrichMessage(payload),
       intent: payload.intent ?? null,
       plan: payload.plan ?? null,
       source_path: payload.sourcePath ?? null,
@@ -75,10 +91,6 @@ async function storeLeadViaSupabase(payload: LeadPayload): Promise<StoreResult> 
   return { stored: true, id: data?.id };
 }
 
-/**
- * Persist lead when a webhook or service role path is configured.
- * Order: LEAD_WEBHOOK_URL → site_leads via service role → honest ack (stored: false).
- */
 async function storeLead(payload: LeadPayload): Promise<StoreResult> {
   const webhook = process.env.LEAD_WEBHOOK_URL;
   if (webhook) {
@@ -96,7 +108,8 @@ const recentFingerprints = new Map<string, number>();
 const DEDUPE_WINDOW_MS = 5 * 60 * 1000;
 
 function fingerprint(payload: LeadPayload) {
-  return `${payload.workEmail}|${payload.outcome}|${payload.company}`.toLowerCase();
+  const contact = payload.workEmail || payload.phone || "";
+  return `${contact}|${payload.outcome}|${payload.company}|${payload.stage ?? "complete"}`.toLowerCase();
 }
 
 export async function POST(request: Request) {
@@ -119,21 +132,30 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       duplicate: true,
-      message: "We already received this enquiry. Our team will follow up.",
+      message:
+        validated.value.stage === "step1"
+          ? "We already captured this lead. Continue with optional details."
+          : "We already received this enquiry. Our team will follow up.",
     });
   }
   recentFingerprints.set(fp, now);
 
   try {
     const result = await storeLead(validated.value);
+    const isStep1 = validated.value.stage === "step1";
     return NextResponse.json({
       ok: true,
       stored: result.stored,
       duplicate: result.duplicate ?? false,
       id: result.id,
+      stage: validated.value.stage,
       message: result.stored
-        ? "Thanks — your enquiry was saved. Our team will follow up."
-        : "Thanks — your enquiry was accepted. Persistence is pending configuration; our team can still follow up from this receipt.",
+        ? isStep1
+          ? "Thanks — your lead was saved. Add optional details to help us prepare."
+          : "Thanks — your enquiry was saved. Our team will follow up."
+        : isStep1
+          ? "Thanks — your lead was accepted. Persistence is pending configuration."
+          : "Thanks — your enquiry was accepted. Persistence is pending configuration; our team can still follow up from this receipt.",
     });
   } catch {
     return NextResponse.json(

@@ -3,6 +3,7 @@ export { typography } from "./typography";
 export {
   semanticColors,
   statusColors,
+  productStatusTokens,
   spacing,
   radii,
   shadows,

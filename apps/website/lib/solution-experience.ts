@@ -28,7 +28,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
     demoLabel: "Retail configuration demo",
     demoSummary: "A retail configuration that connects products, stock, orders, customers, and growth on the shared RINADS core.",
     rinpoPrompt: "Show me how RINADS can connect inventory, orders, customers, and marketing for a retail business.",
-    statusNote: "Available configuration",
+    statusNote: "Prototype",
   },
   nursery: {
     slug: "nursery",
@@ -39,7 +39,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
     demoLabel: "Landscape & Nursery demo",
     demoSummary: "A shared-core configuration for nursery inventory, customer work, projects, fulfilment, and field operations.",
     rinpoPrompt: "Show me how RINADS can run nursery inventory, landscaping projects, customers, and delivery workflows.",
-    statusNote: "Available configuration",
+    statusNote: "Prototype",
   },
   salon: {
     slug: "salon",
@@ -52,7 +52,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
       "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
     rinpoPrompt:
       "Show me how R GLOW handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
-    statusNote: "Product code built · production cutover still requires deployment and live credentials",
+    statusNote: "Available configuration",
   },
   jewellery: {
     slug: "jewellery",
@@ -85,7 +85,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
     demoLabel: "Healthcare operations concept",
     demoSummary: "A planned operational configuration for scheduling, team workflows, follow-ups, and practice administration. It is not presented as a clinical decision system.",
     rinpoPrompt: "Show me how RINADS could support non-clinical healthcare operations such as scheduling, follow-ups, and team workflows.",
-    statusNote: "Coming soon · non-clinical operations scope",
+    statusNote: "Private preview · non-clinical operations scope",
   },
 };
 

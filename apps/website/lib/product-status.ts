@@ -23,8 +23,8 @@ export type ProductStatusMeta = {
 export const PRODUCT_STATUS_META: Record<ProductStatusValue, ProductStatusMeta> = {
   generally_available: {
     value: "generally_available",
-    label: "Generally available",
-    shortLabel: "GA",
+    label: "Available",
+    shortLabel: "Available",
     description: "Available for production use under normal subscription terms.",
     tone: "success",
   },
@@ -44,8 +44,8 @@ export const PRODUCT_STATUS_META: Record<ProductStatusValue, ProductStatusMeta> 
   },
   prototype_demo: {
     value: "prototype_demo",
-    label: "Prototype / demo",
-    shortLabel: "Demo",
+    label: "Prototype",
+    shortLabel: "Prototype",
     description: "Demonstrates product direction with sample or synthetic data. Not a production workspace.",
     tone: "neutral",
   },
@@ -57,6 +57,21 @@ export const PRODUCT_STATUS_META: Record<ProductStatusValue, ProductStatusMeta> 
     tone: "muted",
   },
 };
+
+/** CSS custom property token name for product status (never colour-only). */
+export function statusTokenFor(status: ProductStatusValue): string {
+  switch (status) {
+    case "generally_available":
+    case "available_configuration":
+      return "available";
+    case "private_preview":
+      return "preview";
+    case "prototype_demo":
+      return "prototype";
+    case "coming_soon":
+      return "soon";
+  }
+}
 
 /** Map legacy two-state vertical flags onto the product status standard. */
 export function fromLegacyAvailability(

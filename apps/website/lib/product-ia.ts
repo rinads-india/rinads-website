@@ -1,8 +1,8 @@
 export type NavStatus =
-  | "Generally available"
+  | "Available"
   | "Available configuration"
   | "Private preview"
-  | "Prototype / demo"
+  | "Prototype"
   | "Coming soon";
 
 export type NavLink = {
@@ -22,12 +22,12 @@ export type NavGroup = {
 };
 
 export const POSITIONING = {
-  hero: "Run your business with one AI operating platform.",
+  hero: "Run your business with one intelligent platform.",
   support:
-    "Connect customers, work, commerce, marketing and automation on one shared business foundation. RINPO helps your team understand what needs attention, prepare the next step and move supported actions through the right permissions and approvals.",
+    "Customers, work, commerce, growth and automation — connected through RINADS, with RINPO helping your team understand what needs attention and what to do next.",
   closing: "One connected platform. Powered by RINPO — with human control where it matters.",
   equation: "RUN · BUILD · GROW · LEARN · AUTOMATE",
-  category: "AI operating system for growing businesses",
+  category: "AI Operating Platform for Business",
 } as const;
 
 /**
@@ -89,19 +89,19 @@ export const PRODUCT_HIERARCHY = {
 export const PLATFORM_OS: NavLink[] = [
   { label: "Business OS", href: "/platform/business-os", description: "Run customers, work, money, and operations.", section: "Run", status: "Available configuration" },
   { label: "Commerce OS", href: "/platform/commerce-os", description: "Sell, transact, and fulfil.", section: "Run", status: "Available configuration" },
-  { label: "Marketing OS", href: "/platform/marketing-os", description: "Plan, launch, and measure growth.", section: "Grow", status: "Prototype / demo" },
+  { label: "Marketing OS", href: "/platform/marketing-os", description: "Plan, launch, and measure growth.", section: "Grow", status: "Prototype" },
   { label: "Creative OS", href: "/platform/creative-os", description: "Create content, image, video, and film.", section: "Grow", status: "Coming soon" },
-  { label: "Logistics OS", href: "/platform/logistics-os", description: "Move, track, and resolve delivery operations.", section: "Operate", status: "Prototype / demo" },
-  { label: "Automation OS", href: "/platform/automation-os", description: "Connect workflows, approvals, and actions.", section: "Operate", status: "Prototype / demo" },
-  { label: "Build OS", href: "/platform/build-os", description: "Turn requirements into shipped software.", section: "Build & learn", status: "Prototype / demo" },
-  { label: "Academy OS", href: "/platform/academy-os", description: "Train people through real work.", section: "Build & learn", status: "Prototype / demo" },
+  { label: "Logistics OS", href: "/platform/logistics-os", description: "Move, track, and resolve delivery operations.", section: "Operate", status: "Prototype" },
+  { label: "Automation OS", href: "/platform/automation-os", description: "Connect workflows, approvals, and actions.", section: "Operate", status: "Prototype" },
+  { label: "Build OS", href: "/platform/build-os", description: "Turn requirements into shipped software.", section: "Build & learn", status: "Prototype" },
+  { label: "Academy OS", href: "/platform/academy-os", description: "Train people through real work.", section: "Build & learn", status: "Prototype" },
   { label: "RINPO", href: "/rinpo", description: "The persistent AI interface across RINADS.", section: "Core", status: "Available configuration" },
   { label: "RINADS Intelligence", href: "/platform/rinads-intelligence", description: "The intelligence layer behind the platform.", section: "Core", status: "Available configuration" },
   { label: "RINADS Cloud", href: "/platform/rinads-cloud", description: "The connected platform foundation.", section: "Core", status: "Available configuration" },
 ];
 
 export const NAV_PRODUCT: NavGroup = {
-  label: "Product",
+  label: "Platform",
   href: "/platform",
   items: PLATFORM_OS,
   variant: "mega",
@@ -109,6 +109,16 @@ export const NAV_PRODUCT: NavGroup = {
 
 /** @deprecated Prefer NAV_PRODUCT */
 export const NAV_PLATFORM = NAV_PRODUCT;
+
+export const NAV_RINPO: NavGroup = {
+  label: "RINPO",
+  href: "/rinpo",
+  items: [
+    { label: "Meet RINPO", href: "/rinpo", description: "The AI interface across RINADS." },
+    { label: "How RINPO works", href: "/rinpo", description: "Ask, understand, recommend, approve, act, audit." },
+    { label: "Try RINPO", href: "/#ask-rinpo", description: "Open the demo workspace." },
+  ],
+};
 
 export const NAV_SOLUTIONS: NavGroup = {
   label: "Solutions",
@@ -120,14 +130,14 @@ export const NAV_SOLUTIONS: NavGroup = {
       href: "/solutions/retail",
       description: "Catalogue, inventory, storefront, orders, and customer growth.",
       section: "Commercial",
-      status: "Prototype / demo",
+      status: "Prototype",
     },
     {
       label: "Landscape & Nursery",
       href: "/solutions/nursery",
       description: "Inventory, project work, field operations, and customer management.",
       section: "Commercial",
-      status: "Prototype / demo",
+      status: "Prototype",
     },
     {
       label: "Salon / R GLOW",
@@ -235,15 +245,18 @@ export const NAV_COMPANY: NavGroup = {
   ],
 };
 
-/** Primary marketing navigation — RINPO lives inside Product, not as a top-level item. */
+/**
+ * Primary marketing navigation.
+ * Customers omitted while approved case studies are empty.
+ */
 export const NAV_GROUPS: NavGroup[] = [
   NAV_PRODUCT,
   NAV_SOLUTIONS,
-  NAV_CUSTOMERS,
-  NAV_PRICING,
-  NAV_RESOURCES,
+  NAV_RINPO,
   NAV_SERVICES,
   NAV_ACADEMY,
+  NAV_RESOURCES,
+  NAV_COMPANY,
 ];
 
 export const FOOTER_PLATFORM: NavLink[] = [
@@ -254,20 +267,31 @@ export const FOOTER_PLATFORM: NavLink[] = [
   { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
   { label: "RINPO", href: "/rinpo" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Security", href: "/security" },
+];
+
+export const FOOTER_SOLUTIONS: NavLink[] = [
+  { label: "Salon / R GLOW", href: "/solutions/salon" },
+  { label: "Retail", href: "/solutions/retail" },
+  { label: "Landscape & Nursery", href: "/solutions/nursery" },
+  { label: "All solutions", href: "/solutions" },
 ];
 
 export const FOOTER_COMPANY: NavLink[] = [
   { label: "About", href: "/about" },
-  { label: "Customers", href: "/customers" },
+  { label: "Company", href: "/company" },
   { label: "Contact", href: "/contact" },
   { label: "Careers", href: "/careers" },
+  { label: "Status", href: "/status" },
+];
+
+export const FOOTER_RESOURCES: NavLink[] = [
+  { label: "Resources Hub", href: "/resources" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Security", href: "/security" },
+  { label: "Documentation", href: "/docs" },
+  { label: "Business Readiness", href: "/resources/business-readiness" },
   { label: "Academy", href: "/academy" },
   { label: "Services", href: "/services" },
-  { label: "Solutions", href: "/solutions" },
-  { label: "Resources", href: "/resources" },
-  { label: "Developers", href: "/developers" },
-  { label: "Status", href: "/status" },
 ];
 
 export const FOOTER_LEGAL: NavLink[] = [
@@ -291,10 +315,12 @@ export const BRAND_EQUATION = {
 } as const;
 
 export const HERO_COMMANDS = [
-  "What's happening in my business?",
-  "Find what needs attention",
-  "Build something",
-  "Automate a workflow",
+  "What needs my attention today?",
+  "Which leads need follow-up?",
+  "Show overdue payments.",
+  "What should my team focus on?",
+  "Help me automate a workflow.",
+  "Which RINADS system fits my business?",
 ] as const;
 
 /** Re-export navbar-shaped CTAs from the single taxonomy in lib/ctas.ts */
