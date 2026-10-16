@@ -198,7 +198,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "Can I try RINADS before buying?",
     answer:
-      "Yes. You can try RINPO on the website with a demo workspace, and you can book a platform demo to walk through workflows that match your business.",
+      "Yes. You can try RINPO on the website with a demo workspace, and you can book a demo to walk through workflows that match your business.",
   },
   {
     question: "What is a RINADS Operating System?",
