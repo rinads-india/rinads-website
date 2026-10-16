@@ -26,13 +26,13 @@ describe("Company OS navigation", () => {
     const all = getOsAreaNavGroups(founder).flatMap((g) => g.items);
     assert.equal(all.length, 21);
     assert.deepEqual(new Set(all.map((i) => i.id)), new Set(OS_AREAS.map((a) => a.id)));
-    const staffIds = getOsAreaNavGroups(staff).flatMap((g) => g.items.map((i) => i.id));
+    const staffIds: string[] = getOsAreaNavGroups(staff).flatMap((g) => g.items.map((i) => i.id));
     for (const hidden of ["founder", "finance", "engineering", "ai", "settings"]) assert.ok(!staffIds.includes(hidden), `${hidden} must be hidden for staff`);
     for (const shown of ["home", "customers", "work", "studio"]) assert.ok(staffIds.includes(shown), `${shown} should be visible to staff`);
   });
 
   it("the mobile More sheet never repeats the bottom-bar destinations", () => {
-    const more = getOsMobileMoreAreaItems(founder).map((i) => i.id);
+    const more: string[] = getOsMobileMoreAreaItems(founder).map((i) => i.id);
     for (const primary of ["home", "customers", "work", "growth"]) assert.ok(!more.includes(primary));
   });
 

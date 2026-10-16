@@ -8,7 +8,9 @@ import {
   buildFounderSnapshot,
   detectBriefingIntent,
   notConnected,
+  sortAttention,
   unavailable,
+  type AttentionItem,
   type CompanyFacts,
 } from "../src";
 import { NOW, daysAgo, daysAhead, emptyFacts } from "./fixtures";
@@ -249,5 +251,36 @@ describe("RINPO briefing — How is RINADS today?", () => {
     const b = answerCompanyQuestion("how is rinads today", buildFounderSnapshot(busyFacts(), NOW));
     assert.doesNotMatch(b.text, /\b(I have|I've) (sent|paid|deployed|approved|issued)/i);
     assert.match(b.text, /I prepare actions; a permitted person decides\./);
+  });
+});
+
+describe("attention ordering", () => {
+  const item = (id: string, category: AttentionItem["category"], severity: AttentionItem["severity"], oldestAt: string | null): AttentionItem => ({
+    id,
+    category,
+    severity,
+    title: id,
+    why: "",
+    evidence: [],
+    count: 1,
+    ownerIds: [],
+    href: "/os",
+    nextAction: { label: "", executable: false, requiresApproval: false },
+    oldestAt,
+    source: "fact",
+  });
+
+  it("severity wins, then pending decisions come before other work of the same severity", () => {
+    const sorted = sortAttention([
+      item("old-work", "work", "attention", "2026-01-01T00:00:00Z"),
+      item("approval", "approvals", "attention", "2026-09-01T00:00:00Z"),
+      item("critical-work", "work", "critical", "2026-10-01T00:00:00Z"),
+    ]);
+    assert.deepEqual(sorted.map((i) => i.id), ["critical-work", "approval", "old-work"]);
+  });
+
+  it("is deterministic regardless of input order", () => {
+    const items = [item("b", "sales", "info", null), item("a", "sales", "info", null), item("c", "approvals", "info", "2026-10-01T00:00:00Z")];
+    assert.deepEqual(sortAttention(items).map((i) => i.id), sortAttention([...items].reverse()).map((i) => i.id));
   });
 });

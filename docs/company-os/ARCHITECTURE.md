@@ -44,27 +44,29 @@ Invariants
 |------|-------|-----------------|-------|
 | Home | `/os` | any member | existing command centre, extended |
 | Founder | `/os/founder` | `company.founder.view` | Control Tower |
-| Customers | `/os/customers`, `/os/customers/[companyId]` | `crm.read` | client workspace aggregate |
+| Customers | `/os/customers`, `/os/customers/[companyId]` | member (workspace data: `crm.read`) | client workspace aggregate; legacy bridge stays for everyone |
 | Sales | `/os/sales` | `crm.read` | pipeline, proposals, contracts |
 | Work | `/os/work` (+ `/tasks`, `/projects`, `/teams`, `/calendar` existing) | `projects.read` / member | in-shell board, allocation |
 | Studio | `/os/studio` | `studio.read` | pipeline jobs |
-| Growth | `/os/growth` | `growth.read` | campaigns, content variants |
+| Growth | `/os/growth` | member (workspace data: `growth.read`) | campaigns, content variants; legacy bridge stays |
 | Ads | `/os/ads` | `growth.read` | signals, `not_connected` states |
 | Engineering | `/os/engineering` | `engineering.read` | GitHub / Vercel / Supabase |
 | AI | `/os/ai` | `ai.read` | providers, runs, cost, roles |
-| Commerce | `/os/commerce` (+ legacy `/os/money`) | `commerce.order.read` | summary + deep links |
+| Commerce | `/os/commerce` (+ legacy `/os/money`) | nav: `commerce.order.read`; page: member (orders need `commerce.order.read`) | read of existing orders + bridge to portals |
 | Finance | `/os/finance` | `finance.read` | invoices, receivables, cash |
 | People | `/os/people` | `people.read` | skills, capacity |
 | Logistics | `/os/logistics` | `commerce.order.read` | order→shipment→exception |
-| Communication | `/os/communication` | `comms.read` | activity + exceptions |
-| Academy | `/os/academy` | member | skill→certification |
-| Platforms | `/os/platforms` | `org.read` | verticals |
+| Communication | `/os/communication` | nav: `comms.read`; page: member (activity log needs `comms.read`, rooms for all) | activity linked to records + existing Rooms |
+| Academy | `/os/academy` | `academy.read` | skill→certification (advisory) |
+| Platforms | `/os/platforms` | nav: `org.read`; page: bridge filtered by existing tier rules | connected products + runtime boundary |
 | Assets | `/os/assets` | `studio.read` | provenance library |
-| Approvals | `/os/approvals` | member (decide: `approvals.decide`) | unified ledger |
+| Approvals | `/os/approvals` | `approvals.read` (decide: `approvals.decide`) | unified ledger + history |
 | Reports | `/os/reports` | `reports.read` | computed reports |
-| Settings | `/os/settings` | `org.manage` | existing + policies |
+| Settings | `/os/settings` | nav: `org.manage`; page: member (policy, integrations, catalogue shown only to org admins) | existing bridge + read-only policy/catalogue |
 
 Legacy `/os/money`, `/os/automate`, `/os/rooms` keep working unchanged.
+
+Navigation visibility (`packages/company-os/src/modules.ts`) is only a convenience. Every page re-checks on the server with `guard()` and every query runs on the caller's RLS session, so a hidden link and a forbidden URL behave the same. Detail rows for area pages are read by `packages/company-os-server/src/details.ts`, permission-gated and returning explicit unavailable states.
 
 ## 4. Additive migrations (all `20261016…`, none applied automatically)
 
