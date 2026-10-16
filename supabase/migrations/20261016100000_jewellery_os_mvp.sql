@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS public.jewellery_job_orders (
   supplier_id UUID REFERENCES public.suppliers(id) ON DELETE SET NULL,
   job_number TEXT NOT NULL,
   description TEXT,
-  metal_type TEXT NOT NULL DEFAULT 'gold',
+  metal_type TEXT NOT NULL DEFAULT 'gold' CHECK (metal_type IN ('gold', 'silver', 'platinum', 'palladium', 'other')),
   purity TEXT NOT NULL DEFAULT '22K',
   issued_weight_grams NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (issued_weight_grams >= 0),
   received_weight_grams NUMERIC(14,3) NOT NULL DEFAULT 0 CHECK (received_weight_grams >= 0),
@@ -151,6 +151,8 @@ CREATE INDEX IF NOT EXISTS idx_jewellery_job_orders_org_status
 -- ---------------------------------------------------------------------------
 -- Row-level security. Reads require active org membership. Mutations use the
 -- existing platform permission model; Jewellery OS does not invent a second RBAC.
+-- Operational records deliberately have no DELETE policies: corrections are made
+-- by status transitions / updates so the business history remains recoverable.
 -- ---------------------------------------------------------------------------
 
 ALTER TABLE public.jewellery_item_profiles ENABLE ROW LEVEL SECURITY;
@@ -159,14 +161,32 @@ ALTER TABLE public.jewellery_appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.jewellery_old_gold_exchanges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.jewellery_job_orders ENABLE ROW LEVEL SECURITY;
 
+-- Jewellery item profiles -----------------------------------------------------
 DROP POLICY IF EXISTS jewellery_item_profiles_select_member ON public.jewellery_item_profiles;
+DROP POLICY IF EXISTS jewellery_item_profiles_manage ON public.jewellery_item_profiles;
+DROP POLICY IF EXISTS jewellery_item_profiles_insert ON public.jewellery_item_profiles;
+DROP POLICY IF EXISTS jewellery_item_profiles_update ON public.jewellery_item_profiles;
+
 CREATE POLICY jewellery_item_profiles_select_member ON public.jewellery_item_profiles
   FOR SELECT TO authenticated
   USING (private.is_org_member(organization_id));
 
-DROP POLICY IF EXISTS jewellery_item_profiles_manage ON public.jewellery_item_profiles;
-CREATE POLICY jewellery_item_profiles_manage ON public.jewellery_item_profiles
-  FOR ALL TO authenticated
+CREATE POLICY jewellery_item_profiles_insert ON public.jewellery_item_profiles
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    (private.has_permission(organization_id, 'commerce.catalog.write')
+      OR private.has_permission(organization_id, 'org.manage'))
+    AND EXISTS (
+      SELECT 1
+      FROM public.product_variants v
+      WHERE v.id = variant_id
+        AND v.product_id = product_id
+        AND v.organization_id = jewellery_item_profiles.organization_id
+    )
+  );
+
+CREATE POLICY jewellery_item_profiles_update ON public.jewellery_item_profiles
+  FOR UPDATE TO authenticated
   USING (
     private.has_permission(organization_id, 'commerce.catalog.write')
     OR private.has_permission(organization_id, 'org.manage')
@@ -183,14 +203,33 @@ CREATE POLICY jewellery_item_profiles_manage ON public.jewellery_item_profiles
     )
   );
 
+-- Metal rate book -------------------------------------------------------------
 DROP POLICY IF EXISTS jewellery_metal_rates_select_member ON public.jewellery_metal_rates;
+DROP POLICY IF EXISTS jewellery_metal_rates_manage ON public.jewellery_metal_rates;
+DROP POLICY IF EXISTS jewellery_metal_rates_insert ON public.jewellery_metal_rates;
+DROP POLICY IF EXISTS jewellery_metal_rates_update ON public.jewellery_metal_rates;
+
 CREATE POLICY jewellery_metal_rates_select_member ON public.jewellery_metal_rates
   FOR SELECT TO authenticated
   USING (private.is_org_member(organization_id));
 
-DROP POLICY IF EXISTS jewellery_metal_rates_manage ON public.jewellery_metal_rates;
-CREATE POLICY jewellery_metal_rates_manage ON public.jewellery_metal_rates
-  FOR ALL TO authenticated
+CREATE POLICY jewellery_metal_rates_insert ON public.jewellery_metal_rates
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    (private.has_permission(organization_id, 'commerce.catalog.write')
+      OR private.has_permission(organization_id, 'org.manage'))
+    AND (
+      location_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM public.locations l
+        WHERE l.id = location_id
+          AND l.organization_id = jewellery_metal_rates.organization_id
+      )
+    )
+  );
+
+CREATE POLICY jewellery_metal_rates_update ON public.jewellery_metal_rates
+  FOR UPDATE TO authenticated
   USING (
     private.has_permission(organization_id, 'commerce.catalog.write')
     OR private.has_permission(organization_id, 'org.manage')
@@ -208,14 +247,33 @@ CREATE POLICY jewellery_metal_rates_manage ON public.jewellery_metal_rates
     )
   );
 
+-- Appointments ----------------------------------------------------------------
 DROP POLICY IF EXISTS jewellery_appointments_select_member ON public.jewellery_appointments;
+DROP POLICY IF EXISTS jewellery_appointments_manage ON public.jewellery_appointments;
+DROP POLICY IF EXISTS jewellery_appointments_insert ON public.jewellery_appointments;
+DROP POLICY IF EXISTS jewellery_appointments_update ON public.jewellery_appointments;
+
 CREATE POLICY jewellery_appointments_select_member ON public.jewellery_appointments
   FOR SELECT TO authenticated
   USING (private.is_org_member(organization_id));
 
-DROP POLICY IF EXISTS jewellery_appointments_manage ON public.jewellery_appointments;
-CREATE POLICY jewellery_appointments_manage ON public.jewellery_appointments
-  FOR ALL TO authenticated
+CREATE POLICY jewellery_appointments_insert ON public.jewellery_appointments
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    (private.has_permission(organization_id, 'commerce.order.manage')
+      OR private.has_permission(organization_id, 'org.manage'))
+    AND (workspace_id IS NULL OR EXISTS (
+      SELECT 1 FROM public.workspaces w
+      WHERE w.id = workspace_id AND w.organization_id = jewellery_appointments.organization_id
+    ))
+    AND (location_id IS NULL OR EXISTS (
+      SELECT 1 FROM public.locations l
+      WHERE l.id = location_id AND l.organization_id = jewellery_appointments.organization_id
+    ))
+  );
+
+CREATE POLICY jewellery_appointments_update ON public.jewellery_appointments
+  FOR UPDATE TO authenticated
   USING (
     private.has_permission(organization_id, 'commerce.order.manage')
     OR private.has_permission(organization_id, 'org.manage')
@@ -233,14 +291,25 @@ CREATE POLICY jewellery_appointments_manage ON public.jewellery_appointments
     ))
   );
 
+-- Old-gold exchange -----------------------------------------------------------
 DROP POLICY IF EXISTS jewellery_old_gold_select_member ON public.jewellery_old_gold_exchanges;
+DROP POLICY IF EXISTS jewellery_old_gold_manage ON public.jewellery_old_gold_exchanges;
+DROP POLICY IF EXISTS jewellery_old_gold_insert ON public.jewellery_old_gold_exchanges;
+DROP POLICY IF EXISTS jewellery_old_gold_update ON public.jewellery_old_gold_exchanges;
+
 CREATE POLICY jewellery_old_gold_select_member ON public.jewellery_old_gold_exchanges
   FOR SELECT TO authenticated
   USING (private.is_org_member(organization_id));
 
-DROP POLICY IF EXISTS jewellery_old_gold_manage ON public.jewellery_old_gold_exchanges;
-CREATE POLICY jewellery_old_gold_manage ON public.jewellery_old_gold_exchanges
-  FOR ALL TO authenticated
+CREATE POLICY jewellery_old_gold_insert ON public.jewellery_old_gold_exchanges
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    private.has_permission(organization_id, 'commerce.order.manage')
+    OR private.has_permission(organization_id, 'org.manage')
+  );
+
+CREATE POLICY jewellery_old_gold_update ON public.jewellery_old_gold_exchanges
+  FOR UPDATE TO authenticated
   USING (
     private.has_permission(organization_id, 'commerce.order.manage')
     OR private.has_permission(organization_id, 'org.manage')
@@ -250,14 +319,25 @@ CREATE POLICY jewellery_old_gold_manage ON public.jewellery_old_gold_exchanges
     OR private.has_permission(organization_id, 'org.manage')
   );
 
+-- Goldsmith / karigar job work -----------------------------------------------
 DROP POLICY IF EXISTS jewellery_job_orders_select_member ON public.jewellery_job_orders;
+DROP POLICY IF EXISTS jewellery_job_orders_manage ON public.jewellery_job_orders;
+DROP POLICY IF EXISTS jewellery_job_orders_insert ON public.jewellery_job_orders;
+DROP POLICY IF EXISTS jewellery_job_orders_update ON public.jewellery_job_orders;
+
 CREATE POLICY jewellery_job_orders_select_member ON public.jewellery_job_orders
   FOR SELECT TO authenticated
   USING (private.is_org_member(organization_id));
 
-DROP POLICY IF EXISTS jewellery_job_orders_manage ON public.jewellery_job_orders;
-CREATE POLICY jewellery_job_orders_manage ON public.jewellery_job_orders
-  FOR ALL TO authenticated
+CREATE POLICY jewellery_job_orders_insert ON public.jewellery_job_orders
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    private.has_permission(organization_id, 'procurement.approve')
+    OR private.has_permission(organization_id, 'org.manage')
+  );
+
+CREATE POLICY jewellery_job_orders_update ON public.jewellery_job_orders
+  FOR UPDATE TO authenticated
   USING (
     private.has_permission(organization_id, 'procurement.approve')
     OR private.has_permission(organization_id, 'org.manage')
@@ -267,5 +347,6 @@ CREATE POLICY jewellery_job_orders_manage ON public.jewellery_job_orders
     OR private.has_permission(organization_id, 'org.manage')
   );
 
--- Intentionally no anonymous policies. Customer-facing appointment creation can
--- be added through a validated server endpoint without opening direct table writes.
+-- Intentionally no anonymous or DELETE policies. Customer-facing appointment
+-- creation can be added through a validated server endpoint without opening
+-- direct table writes.
