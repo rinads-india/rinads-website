@@ -1,38 +1,15 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BarChart3,
-  Boxes,
-  Bot,
   Briefcase,
-  CheckSquare,
-  Clapperboard,
-  Code2,
-  Crown,
-  GraduationCap,
   Home,
-  Images,
   Layers,
-  Megaphone,
-  MessageSquare,
   MoreHorizontal,
   Settings,
-  ShoppingBag,
   Sparkles,
-  TrendingUp,
-  Truck,
-  UserCog,
   Users,
   Wallet,
   Workflow,
 } from "lucide-react";
-import {
-  groupAreas,
-  resolveAreaFromPath,
-  visibleAreas,
-  type OsAreaGroup,
-  type OsAreaId,
-  type VisibleMember,
-} from "@rinads/company-os-engine";
 import type { OsCapabilityTier } from "@/lib/os-org-role";
 import { tierAtLeast } from "@/lib/os-org-role";
 
@@ -43,8 +20,7 @@ export type OsPrimaryNavId =
   | "money"
   | "growth"
   | "automate"
-  | "rooms"
-  | OsAreaId;
+  | "rooms";
 
 export type OsUtilityNavId = "settings" | "more" | "integrations";
 
@@ -125,63 +101,10 @@ export function resolveOsActiveNavId(pathname: string): OsPrimaryNavId | OsUtili
   if (path.startsWith("/os/automate")) return "automate";
   if (path.startsWith("/os/rooms")) return "rooms";
   if (path.startsWith("/os/settings")) return "settings";
-  // Company OS areas (founder, sales, finance, studio, …) resolve through the shared registry.
-  const area = resolveAreaFromPath(path);
-  return area && area !== "settings" ? area : null;
+  return null;
 }
 
 /** True if any nav label is the forbidden duplicate "Dashboard". */
 export function osNavContainsDashboardLabel(items: OsNavItem[]): boolean {
   return items.some((item) => item.label.toLowerCase() === "dashboard");
 }
-
-// ── Company OS: one shell, 21 role-aware areas ───────────────────────────────
-
-const AREA_ICON: Record<OsAreaId, LucideIcon> = {
-  home: Home,
-  founder: Crown,
-  approvals: CheckSquare,
-  customers: Users,
-  sales: TrendingUp,
-  finance: Wallet,
-  work: Briefcase,
-  people: UserCog,
-  studio: Clapperboard,
-  assets: Images,
-  growth: Sparkles,
-  ads: Megaphone,
-  commerce: ShoppingBag,
-  logistics: Truck,
-  communication: MessageSquare,
-  academy: GraduationCap,
-  engineering: Code2,
-  ai: Bot,
-  platforms: Boxes,
-  reports: BarChart3,
-  settings: Settings,
-};
-
-export type OsAreaNavGroup = { group: OsAreaGroup; label: string; items: OsNavItem[] };
-
-/**
- * Grouped navigation for the signed-in member. Visibility is a UI convenience: every route
- * re-checks on the server and RLS decides what data is returned.
- */
-export function getOsAreaNavGroups(member: VisibleMember | null): OsAreaNavGroup[] {
-  return groupAreas(visibleAreas(member)).map((g) => ({
-    group: g.group,
-    label: g.label,
-    items: g.areas.map<OsNavItem>((a) => ({ id: a.id, label: a.label, icon: AREA_ICON[a.id], href: a.href })),
-  }));
-}
-
-const MOBILE_PRIMARY_AREAS: ReadonlySet<string> = new Set(["home", "customers", "work", "growth"]);
-
-/** Everything the member can see that is not already on the mobile bottom bar. */
-export function getOsMobileMoreAreaItems(member: VisibleMember | null): OsNavItem[] {
-  return getOsAreaNavGroups(member)
-    .flatMap((g) => g.items)
-    .filter((item) => !MOBILE_PRIMARY_AREAS.has(item.id));
-}
-
-export { resolveAreaFromPath as resolveOsActiveAreaId };

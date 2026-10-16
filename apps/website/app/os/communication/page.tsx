@@ -13,7 +13,7 @@ const LINKS = ["lead", "company", "contact", "opportunity", "project", "ticket",
 
 export default async function CommunicationPage() {
   // Rooms (team chat) stays available to every member; the activity log needs comms.read.
-  const g = await guard("/os/communication", null, "Communication");
+  const g = await guard("/os/communication", null, "Communication", { business: <OsRoomsContent /> });
   if (!g.ok) return g.block;
   const { session } = g.data;
   const canRead = can(session.ctx, "comms.read");

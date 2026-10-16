@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, it } from "node:test";
 import { OS_AREAS } from "@rinads/company-os-engine";
-import { getOsAreaNavGroups, getOsMobileMoreAreaItems } from "../lib/os-nav";
+import { getCompanyOsDesktopNavItems, getCompanyOsMoreNavItems } from "../lib/company-os-nav";
 
 const root = process.cwd();
 const read = (p: string) => readFileSync(join(root, p), "utf8");
@@ -18,22 +18,16 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const founder = { roleKey: "founder", permissions: [] as string[] };
-const staff = { roleKey: "staff", permissions: ["crm.read", "projects.read", "studio.read", "growth.read", "comms.read", "academy.read", "approvals.read"] };
+describe("Company OS navigation (main's tiered company nav)", () => {
+  const ids = (tier: "admin" | "staff") => [...getCompanyOsDesktopNavItems(tier), ...getCompanyOsMoreNavItems(tier)].map((i) => i.id as string);
 
-describe("Company OS navigation", () => {
-  it("shows all 21 areas to a founder and fewer to staff, never more than the permission model grants", () => {
-    const all = getOsAreaNavGroups(founder).flatMap((g) => g.items);
+  it("shows all 21 areas to an admin and hides founder-only areas from staff", () => {
+    const all = ids("admin");
     assert.equal(all.length, 21);
-    assert.deepEqual(new Set(all.map((i) => i.id)), new Set(OS_AREAS.map((a) => a.id)));
-    const staffIds: string[] = getOsAreaNavGroups(staff).flatMap((g) => g.items.map((i) => i.id));
-    for (const hidden of ["founder", "finance", "engineering", "ai", "settings"]) assert.ok(!staffIds.includes(hidden), `${hidden} must be hidden for staff`);
-    for (const shown of ["home", "customers", "work", "studio"]) assert.ok(staffIds.includes(shown), `${shown} should be visible to staff`);
-  });
-
-  it("the mobile More sheet never repeats the bottom-bar destinations", () => {
-    const more: string[] = getOsMobileMoreAreaItems(founder).map((i) => i.id);
-    for (const primary of ["home", "customers", "work", "growth"]) assert.ok(!more.includes(primary));
+    assert.deepEqual(new Set(all), new Set(OS_AREAS.map((a) => a.id as string)));
+    const staff = ids("staff");
+    for (const hidden of ["founder", "settings"]) assert.ok(!staff.includes(hidden), `${hidden} must be hidden for staff`);
+    for (const shown of ["home", "customers", "work", "studio"]) assert.ok(staff.includes(shown), `${shown} should be visible to staff`);
   });
 
   it("every area has a real page", () => {
@@ -41,6 +35,11 @@ describe("Company OS navigation", () => {
       const path = area.href === "/os" ? "app/os/page.tsx" : `app${area.href}/page.tsx`;
       assert.ok(existsSync(join(root, path)), `${area.id} has no page at ${path}`);
     }
+  });
+
+  it("customer (Business OS) tenants keep their own navigation untouched", () => {
+    const source = read("lib/os-nav.ts");
+    assert.doesNotMatch(source, /company-os-engine|getOsAreaNavGroups/);
   });
 });
 

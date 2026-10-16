@@ -60,8 +60,17 @@ export function buildMembershipRoleView(roleKey: RoleKey | null, permissions: re
 
 export function buildDemoRoleView(demoRole: string | null | undefined): OsOrgRoleView {
   const tier = capabilityTierFromDemoRole(demoRole);
+  /** Map demo login role onto a RoleKey for gates that check roleKey (e.g. Founder Tower). */
+  const roleKey: RoleKey | null =
+    demoRole === "admin"
+      ? "admin"
+      : demoRole === "staff"
+        ? "staff"
+        : demoRole === "client"
+          ? "client"
+          : null;
   return {
-    roleKey: null,
+    roleKey,
     tier,
     source: tier ? "demo" : "unresolved",
     permissions: [],

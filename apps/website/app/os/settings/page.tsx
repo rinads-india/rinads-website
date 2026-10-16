@@ -13,7 +13,7 @@ const RISK = { LOW: "neutral", MEDIUM: "info", HIGH: "warn", CRITICAL: "bad" } a
 
 export default async function SettingsPage() {
   // Settings stays reachable for every member (legacy bridge below); policy and catalogue need org.manage.
-  const g = await guard("/os/settings", null, "Settings");
+  const g = await guard("/os/settings", null, "Settings", { business: <OsModuleBridge config={getSettingsModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { session } = g.data;
   const admin = can(session.ctx, "org.manage") || can(session.ctx, "org.members.manage");

@@ -8,6 +8,7 @@ import { getCompanyOsSession } from "./session";
 export type CompanyData =
   | { kind: "demo" }
   | { kind: "no-org" }
+  | { kind: "business" }
   | {
       kind: "ready";
       session: Extract<Awaited<ReturnType<typeof getCompanyOsSession>>, { kind: "ready" }>;

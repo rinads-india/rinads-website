@@ -34,7 +34,7 @@ function toItem(r: Record<string, unknown>): ContentItem {
 
 export default async function GrowthPage() {
   // Growth stays reachable for every member (legacy bridge below); the campaign workspace needs growth.read.
-  const g = await guard("/os/growth", null, "Growth");
+  const g = await guard("/os/growth", null, "Growth", { business: <OsModuleBridge config={getGrowthModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { session, facts } = g.data;
   const canRead = can(session.ctx, "growth.read");

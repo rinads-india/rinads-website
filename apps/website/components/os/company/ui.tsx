@@ -99,14 +99,16 @@ export function Empty({ title, hint, action }: { title: string; hint?: string; a
   );
 }
 
-export function NotReady({ kind }: { kind: "demo" | "no-org" }) {
+export function NotReady({ kind }: { kind: "demo" | "no-org" | "business" }) {
   return (
     <OsPage title="Company OS needs a live organisation" eyebrow="Not available">
-      <Panel title={kind === "demo" ? "Demo mode" : "No active organisation"}>
+      <Panel title={kind === "demo" ? "Demo mode" : kind === "business" ? "Company OS is not enabled for this organisation" : "No active organisation"}>
         <p className="text-sm text-gray-700">
           {kind === "demo"
             ? "This site is running in demo-auth mode. The Company OS never shows invented data, so these workspaces only render for a signed-in member of a real organisation (Supabase mode)."
-            : "Your account has no active organisation yet. Create or join one to use the Company OS."}
+            : kind === "business"
+              ? "The Company OS runs for operator organisations only. Your organisation keeps the Business OS; nothing from the Company OS is shown here."
+              : "Your account has no active organisation yet. Create or join one to use the Company OS."}
         </p>
         <Link href="/os" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-black px-4 text-sm font-semibold text-white">Back to Home</Link>
       </Panel>

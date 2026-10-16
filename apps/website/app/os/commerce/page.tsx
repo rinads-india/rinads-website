@@ -10,7 +10,7 @@ import { getMoneyModuleDestinations } from "@/lib/os-module-destinations";
 export const dynamic = "force-dynamic";
 
 export default async function CommercePage() {
-  const g = await guard("/os/commerce", null, "Commerce");
+  const g = await guard("/os/commerce", null, "Commerce", { business: <OsModuleBridge config={getMoneyModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { session } = g.data;
   const canRead = session.ctx.permissions.includes("commerce.order.read") || ["founder", "super_admin", "admin"].includes(session.ctx.roleKey ?? "");

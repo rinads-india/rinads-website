@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
   if (session.kind === "unauthenticated") return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   if (session.kind === "demo") return NextResponse.json({ available: false, reason: "demo_mode" });
   if (session.kind === "no-org") return NextResponse.json({ available: false, reason: "no_organisation" });
+  if (session.kind === "business") return NextResponse.json({ available: false, reason: "not_company_os_tenant" });
 
   const rate = limiter.check(`${session.ctx.organizationId}:${session.ctx.userId}`);
   if (!rate.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSec) } });

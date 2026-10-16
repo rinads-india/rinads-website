@@ -2,11 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Layers } from "lucide-react";
-import { getOsAreaNavGroups, resolveOsActiveAreaId, type OsNavItem } from "@/lib/os-nav";
+import {
+  getOsDesktopNavItems,
+  getOsSidebarUtilityItems,
+  resolveOsActiveNavId,
+  type OsNavItem,
+} from "@/lib/os-nav";
+import {
+  getCompanyOsDesktopNavItems,
+  getCompanyOsMoreNavItems,
+  resolveCompanyOsActiveNavId,
+  type CompanyOsNavItem,
+} from "@/lib/company-os-nav";
 import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
+import { useCompanyOsMode } from "@/components/os/CompanyOsModeContext";
 
-function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
+function NavLink({
+  item,
+  active,
+}: {
+  item: OsNavItem | CompanyOsNavItem;
+  active: boolean;
+}) {
   const Icon = item.icon;
   return (
     <Link
@@ -24,43 +41,93 @@ function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
 
 export function OsNavPanel() {
   const pathname = usePathname() ?? "/os";
-  const activeId = resolveOsActiveAreaId(pathname);
-  const { roleKey, permissions, tier } = useOsOrgRole();
-  // Live members: real role + permissions. Demo / unresolved sessions fall back to member-level areas only.
-  const groups = getOsAreaNavGroups(roleKey || tier ? { roleKey, permissions } : null);
+  const companyOsMode = useCompanyOsMode();
+  const { tier } = useOsOrgRole();
 
-  return (
-    <nav
-      aria-label="Business OS primary"
-      data-os-guide="dashboard"
-      className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-60"
-    >
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
-          COMPANY OS
-        </p>
-        <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">RINADS Business OS</h2>
-      </div>
+  if (companyOsMode) {
+    const activeId = resolveCompanyOsActiveNavId(pathname);
+    const primary = getCompanyOsDesktopNavItems(tier);
+    const more = getCompanyOsMoreNavItems(tier);
 
-      {groups.map((group, index) => (
-        <div key={group.group} className={index === 0 ? "" : "border-t border-white/40 pt-3"}>
-          {index > 0 && (
-            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">{group.label}</p>
-          )}
-          <ul className="flex flex-col gap-1">
-            {group.items.map((item) => (
+    return (
+      <nav
+        aria-label="Company OS primary"
+        data-os-guide="dashboard"
+        className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-60"
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
+            COMPANY OS
+          </p>
+          <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">
+            RINADS Company OS
+          </h2>
+        </div>
+
+        <ul className="flex flex-col gap-1">
+          {primary.map((item) => (
+            <li key={item.id}>
+              <NavLink item={item} active={item.id === activeId} />
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-auto border-t border-black/5 pt-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+            Workspaces
+          </p>
+          <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto">
+            {more.map((item) => (
               <li key={item.id}>
                 <NavLink item={item} active={item.id === activeId} />
               </li>
             ))}
           </ul>
         </div>
-      ))}
+      </nav>
+    );
+  }
 
-      <div className="border-t border-white/40 pt-3">
-        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Collaboration</p>
-        <NavLink item={{ id: "rooms", label: "Rooms", icon: Layers, href: "/os/rooms" }} active={pathname.startsWith("/os/rooms")} />
+  const activeId = resolveOsActiveNavId(pathname);
+  const primary = getOsDesktopNavItems(tier);
+  const utility = getOsSidebarUtilityItems(tier);
+  const primaryItems = primary.filter((item) => item.id !== "rooms");
+  const roomsItem = primary.find((item) => item.id === "rooms");
+
+  return (
+    <nav
+      aria-label="Business OS primary"
+      data-os-guide="dashboard"
+      className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-56"
+    >
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
+          BUSINESS OS
+        </p>
+        <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">RINADS Business OS</h2>
       </div>
+
+      <ul className="flex flex-col gap-1">
+        {primaryItems.map((item) => (
+          <li key={item.id}>
+            <NavLink item={item} active={item.id === activeId} />
+          </li>
+        ))}
+      </ul>
+
+      {roomsItem && (
+        <div className="border-t border-black/5 pt-3">
+          <NavLink item={roomsItem} active={roomsItem.id === activeId} />
+        </div>
+      )}
+
+      <ul className="mt-auto flex flex-col gap-1 border-t border-black/5 pt-3">
+        {utility.map((item) => (
+          <li key={item.id}>
+            <NavLink item={item} active={item.id === activeId} />
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }

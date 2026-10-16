@@ -400,6 +400,9 @@ importers:
       '@rinads/commerce-server':
         specifier: workspace:*
         version: link:../../packages/commerce-server
+      '@rinads/company-os':
+        specifier: workspace:*
+        version: link:../../packages/company-os
       '@rinads/company-os-engine':
         specifier: workspace:*
         version: link:../../packages/company-os-engine
@@ -561,6 +564,19 @@ importers:
       '@rinads/commerce':
         specifier: workspace:*
         version: link:../commerce
+    devDependencies:
+      tsx:
+        specifier: ^4.19.4
+        version: 4.23.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/company-os:
+    dependencies:
+      '@rinads/permissions':
+        specifier: workspace:*
+        version: link:../permissions
     devDependencies:
       tsx:
         specifier: ^4.19.4

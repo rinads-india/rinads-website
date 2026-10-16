@@ -1,13 +1,14 @@
 import { can, isAvailable } from "@rinads/company-os-engine";
 import { guard } from "@/components/os/company/guard";
 import { OsPage, Panel, SectionGate, LinkButton } from "@/components/os/company/ui";
+import { BusinessTasksBridge } from "@/components/os/company/BusinessTasksBridge";
 import { memberNames } from "@/lib/company-os/names";
 import { TaskTable } from "../page";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorkTasksPage() {
-  const g = await guard("/os/work/tasks", null, "Tasks");
+  const g = await guard("/os/work/tasks", null, "Tasks", { business: <BusinessTasksBridge /> });
   if (!g.ok) return g.block;
   const { facts, session, now } = g.data;
   const names = memberNames(facts);

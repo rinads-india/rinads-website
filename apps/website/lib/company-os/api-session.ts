@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ACTIVE_ORG_COOKIE, loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
 import type { OrgContext } from "@rinads/company-os-engine";
 import { createSupabaseRowDb, type RowDb } from "@rinads/company-os-server";
+import { resolveCompanyOsMode } from "@/lib/company-os-mode";
 import { resolveActiveOrganizationId } from "@/lib/post-auth-destination";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
@@ -11,6 +12,7 @@ export type ApiCompanyOsSession =
   | { kind: "demo" }
   | { kind: "unauthenticated" }
   | { kind: "no-org" }
+  | { kind: "business" }
   | { kind: "ready"; db: RowDb; ctx: OrgContext; organizationName: string };
 
 /**
@@ -31,6 +33,11 @@ export async function getApiCompanyOsSession(): Promise<ApiCompanyOsSession> {
   );
   const membership = organizationId ? memberships.find((m) => m.organizationId === organizationId) : undefined;
   if (!membership) return { kind: "no-org" };
+
+  // Same dual-mode rule as the shell: only operator tenants (or the explicit feature flag) use the Company OS.
+  const { data: orgRow } = await client.from("organizations").select("is_platform_operator").eq("id", membership.organizationId).maybeSingle();
+  const operator = Boolean((orgRow as { is_platform_operator?: boolean } | null)?.is_platform_operator);
+  if (!resolveCompanyOsMode({ enforced: true, isPlatformOperator: operator, roleKey: membership.roleKey })) return { kind: "business" };
 
   return {
     kind: "ready",

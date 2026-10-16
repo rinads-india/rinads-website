@@ -43,7 +43,7 @@ export function TaskTable({ tasks, names, now, manage }: { tasks: readonly TaskF
 }
 
 export default async function WorkPage() {
-  const g = await guard("/os/work", null, "Work");
+  const g = await guard("/os/work", null, "Work", { business: <OsModuleBridge config={getWorkModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { facts, snapshot: s, session, now } = g.data;
   const names = memberNames(facts);

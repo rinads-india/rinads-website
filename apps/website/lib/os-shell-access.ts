@@ -17,6 +17,7 @@ import {
   resolveActiveOrganizationId,
   sanitizeNextPath,
 } from "@/lib/post-auth-destination";
+import { resolveCompanyOsMode } from "@/lib/company-os-mode";
 
 export type OsShellAccessResult = {
   /** True when Supabase mode ran the full membership gate. */
@@ -25,6 +26,9 @@ export type OsShellAccessResult = {
   /** Trusted org role for the active organisation, or null when unresolved. */
   roleKey: RoleKey | null;
   organizationId: string | null;
+  /** When true, /os renders Company OS shell instead of Business OS. */
+  companyOsMode: boolean;
+  isPlatformOperator: boolean;
 };
 
 /**
@@ -58,11 +62,14 @@ export async function requireOsShellAccess(
   requestedPath?: string
 ): Promise<OsShellAccessResult> {
   if (!isSupabaseMode()) {
+    const roleKey = null;
     return {
       enforced: false,
       memberships: [],
-      roleKey: null,
+      roleKey,
       organizationId: null,
+      isPlatformOperator: false,
+      companyOsMode: resolveCompanyOsMode({ enforced: false, roleKey }),
     };
   }
 
@@ -106,10 +113,30 @@ export async function requireOsShellAccess(
     ? memberships.find((m) => m.organizationId === organizationId)
     : undefined;
 
+  let isPlatformOperator = false;
+  if (organizationId) {
+    const { data: orgRow } = await supabase
+      .from("organizations")
+      .select("is_platform_operator")
+      .eq("id", organizationId)
+      .maybeSingle();
+    isPlatformOperator = Boolean(
+      (orgRow as { is_platform_operator?: boolean } | null)?.is_platform_operator,
+    );
+  }
+
+  const roleKey = activeMembership?.roleKey ?? null;
+
   return {
     enforced: true,
     memberships,
-    roleKey: activeMembership?.roleKey ?? null,
+    roleKey,
     organizationId,
+    isPlatformOperator,
+    companyOsMode: resolveCompanyOsMode({
+      enforced: true,
+      isPlatformOperator,
+      roleKey,
+    }),
   };
 }

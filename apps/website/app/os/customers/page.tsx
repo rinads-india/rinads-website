@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
   // Customers stays reachable for every member (legacy bridge below); the CRM workspace needs crm.read.
-  const g = await guard("/os/customers", null, "Customers");
+  const g = await guard("/os/customers", null, "Customers", { business: <OsModuleBridge config={getCustomersModuleDestinations()} /> });
   if (!g.ok) return g.block;
   const { facts, now, session } = g.data;
   const canRead = session.ctx.permissions.includes("crm.read") || session.ctx.roleKey === "founder" || session.ctx.roleKey === "super_admin";

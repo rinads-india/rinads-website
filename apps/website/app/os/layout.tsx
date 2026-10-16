@@ -9,8 +9,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Shared Business OS shell. Every nested `/os/*` route runs the shared access resolver
- * (auth, membership, active org, salon→Rinaglow / onboarding destinations).
+ * Shared OS shell. Every nested `/os/*` route runs the shared access resolver.
+ * Operator tenants render Company OS; customer tenants keep Business OS.
  */
 export default async function OsLayout({ children }: { children: React.ReactNode }) {
   const pathname = await readOsRequestPathname();
@@ -22,6 +22,7 @@ export default async function OsLayout({ children }: { children: React.ReactNode
       membershipRoleKey={access.roleKey as RoleKey | null}
       membershipResolved={access.enforced}
       membershipPermissions={membership ? [...membership.permissions] : []}
+      companyOsMode={access.companyOsMode}
     >
       {children}
     </OsShellLayout>

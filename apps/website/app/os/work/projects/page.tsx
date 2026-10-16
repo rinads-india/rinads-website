@@ -12,7 +12,7 @@ import { getWorkProjectsDestinations } from "@/lib/os-module-destinations";
 export const dynamic = "force-dynamic";
 
 export default async function WorkProjectsPage() {
-  const g = await guard("/os/work/projects", null, "Projects");
+  const g = await guard("/os/work/projects", null, "Projects", { business: <OsModuleBridge config={getWorkProjectsDestinations()} /> });
   if (!g.ok) return g.block;
   const { facts, session, now } = g.data;
   const readable = isAvailable(facts.projects);
