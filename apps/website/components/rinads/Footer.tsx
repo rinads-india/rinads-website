@@ -58,11 +58,7 @@ export function Footer() {
   }, [fitWatermark]);
 
   useEffect(() => {
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setPlayVideo(false);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
     const timer = window.setTimeout(() => setPlayVideo(true), 400);

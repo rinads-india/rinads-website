@@ -19,7 +19,6 @@ import type { VerticalContent } from "@/lib/content/types";
 import { getVerticalAvailability } from "@/lib/content/leads";
 import {
   getSolutionExperience,
-  type SolutionExperienceConfig,
   type SolutionExperienceKey,
 } from "@/lib/solution-experience";
 
