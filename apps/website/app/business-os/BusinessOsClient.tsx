@@ -35,7 +35,7 @@ export function BusinessOsClient() {
               href="/contact?intent=demo"
               className="inline-flex items-center gap-2 rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white"
             >
-              Book a platform demo
+              Book a demo
               <ArrowRight size={16} aria-hidden />
             </Link>
             <Link

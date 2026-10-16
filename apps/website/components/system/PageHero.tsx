@@ -8,6 +8,8 @@ type PageHeroProps = {
   primaryLabel?: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  /** Use when MarketingPageShell already rendered breadcrumbs above the hero. */
+  compactTop?: boolean;
 };
 
 export function PageHero({
@@ -18,9 +20,13 @@ export function PageHero({
   primaryLabel,
   secondaryHref,
   secondaryLabel,
+  compactTop = false,
 }: PageHeroProps) {
+  const topClass = compactTop
+    ? "pt-6 md:pt-8"
+    : "pt-28 md:pt-36";
   return (
-    <section className="relative overflow-hidden px-6 pb-16 pt-28 md:px-12 md:pb-20 md:pt-36 lg:px-20">
+    <section className={`relative overflow-hidden px-6 pb-16 md:px-12 md:pb-20 lg:px-20 ${topClass}`}>
       <div className="pointer-events-none absolute inset-0 rinads-aurora opacity-40" aria-hidden />
       <div className="relative mx-auto max-w-7xl">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-rinads-primary">{eyebrow}</p>

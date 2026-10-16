@@ -27,7 +27,7 @@ export default function CustomersPage() {
           headline="How organisations run on RINADS."
           summary="Published stories appear here only after customer approval. We do not invent logos, metrics, or testimonials."
           primaryHref="/contact?intent=demo"
-          primaryLabel="Book a platform demo"
+          primaryLabel="Book a demo"
         />
 
         <section className="px-6 pb-24 md:px-12 lg:px-20">

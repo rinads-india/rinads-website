@@ -214,10 +214,12 @@ describe("commercial readiness QA gate", () => {
         /HomeHero/.test(blob) ||
         /LegalPage/.test(blob) ||
         /OsMarketingPage/.test(blob) ||
+        /OsMarketingRoute/.test(blob) ||
         /VerticalSolutionPage/.test(blob) ||
+        /VerticalSolutionRoute/.test(blob) ||
         /AcademyProgramPage/.test(blob) ||
         /ServiceLinePage/.test(blob) ||
-        /HomeClient|PlatformClient|SolutionsClient|RinpoClient|PricingClient/.test(blob);
+        /HomeClient|PlatformClient|SolutionsClient|RinpoClient|PricingClient|IntelligenceClient|CloudClient/.test(blob);
       if (!hasH1) missing.push(`${route.path} (${relative(WEBSITE_ROOT, file)})`);
     }
     assert.deepEqual(missing, [], `Missing H1 contract:\n${missing.join("\n")}`);

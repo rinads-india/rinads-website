@@ -15,7 +15,7 @@ export function ContactClient() {
       sourcePath="/contact"
       heading={
         intent === "demo"
-          ? "Book a platform demo"
+          ? "Book a demo"
           : intent === "sales"
             ? "Talk to sales"
             : intent === "implementation"

@@ -36,7 +36,7 @@ export default async function CustomerStoryPage({ params }: PageProps) {
         headline={study.customerName}
         summary={study.problem}
         primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
+        primaryLabel="Book a demo"
         secondaryHref="/customers"
         secondaryLabel="All customers"
       />

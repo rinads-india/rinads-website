@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getPageMetadata } from "@/lib/cms";
-import { getOsPage } from "@/lib/content/platform-os";
-import { OsMarketingPage } from "@/components/system/OsMarketingPage";
+import { OsMarketingRoute } from "@/components/system/OsMarketingRoute";
 
 const SLUG = "commerce-os";
 
@@ -11,7 +9,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  const content = getOsPage(SLUG);
-  if (!content) notFound();
-  return <OsMarketingPage content={content} />;
+  return <OsMarketingRoute slug={SLUG} />;
 }

@@ -264,6 +264,32 @@ function HealthcareDemo() {
   );
 }
 
+function AutomotiveDemo() {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        Automotive · synthetic concept
+      </p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {[
+          ["12", "Open jobs"],
+          ["4", "Parts on order"],
+          ["9", "Follow-ups due"],
+        ].map(([value, label]) => (
+          <div key={label} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{value}</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">{label}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-5 text-sm leading-6 text-[var(--text-muted)]">
+        Coming-soon concept for service scheduling, customers, parts, and follow-ups. Demo numbers are synthetic — not
+        customer performance data.
+      </p>
+    </div>
+  );
+}
+
 const DEMOS: Record<SolutionExperienceKey, ComponentType> = {
   retail: RetailDemo,
   nursery: NurseryDemo,
@@ -271,6 +297,7 @@ const DEMOS: Record<SolutionExperienceKey, ComponentType> = {
   jewellery: JewelleryDemo,
   logistics: LogisticsDemo,
   healthcare: HealthcareDemo,
+  automotive: AutomotiveDemo,
 };
 
 export function VerticalSolutionExperience({ vertical }: { vertical: VerticalContent }) {
@@ -423,7 +450,7 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
                 href="/contact?intent=demo"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:border-rinads-primary/45"
               >
-                Book a platform demo
+                Book a demo
               </Link>
               <Link
                 href="/signup?mode=login"

@@ -24,7 +24,14 @@ describe("Solutions UX V2 contracts", () => {
     const coming = VERTICALS.filter((vertical) => vertical.status === "coming").map((vertical) => vertical.slug);
 
     assert.deepEqual(available, ["salon"]);
-    assert.deepEqual(coming, ["retail", "jewellery", "nursery", "healthcare", "logistics"]);
+    assert.deepEqual(coming, [
+      "retail",
+      "jewellery",
+      "nursery",
+      "healthcare",
+      "logistics",
+      "automotive",
+    ]);
   });
 
   it("uses the R GLOW public identity for the salon solution", () => {

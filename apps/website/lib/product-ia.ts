@@ -167,15 +167,25 @@ export const NAV_SOLUTIONS: NavGroup = {
       section: "Future / private preview",
       status: "Private preview",
     },
+    {
+      label: "Automotive",
+      href: "/solutions/automotive",
+      description: "Service jobs, customers, parts, and follow-ups.",
+      section: "Future / private preview",
+      status: "Coming soon",
+    },
   ],
 };
 
+/**
+ * Customers nav is intentionally unused in NAV_GROUPS until approved case studies exist.
+ * Do not re-add to primary navigation while CASE_STUDIES is empty.
+ */
 export const NAV_CUSTOMERS: NavGroup = {
   label: "Customers",
   href: "/customers",
   items: [
-    { label: "Customer stories", href: "/customers", description: "How organisations use RINADS." },
-    { label: "Book a platform demo", href: "/contact?intent=demo", description: "See the platform with your workflow in mind." },
+    { label: "Customer stories", href: "/customers", description: "Published only after customer approval." },
   ],
 };
 

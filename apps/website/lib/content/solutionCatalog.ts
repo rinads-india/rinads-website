@@ -73,8 +73,8 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
     industry: "Automotive",
     outcome: "Service operations, customers, parts and follow-ups on the shared RINADS core.",
     poweredBy: ["Business OS", "Commerce OS", "RINPO"],
-    href: "/solutions",
-    ctaLabel: "Talk about Automotive",
+    href: "/solutions/automotive",
+    ctaLabel: "Explore Automotive",
     status: "coming_soon",
     tier: "future",
     depthOrder: 5,
@@ -136,6 +136,7 @@ const PAGE_SLUGS = new Set([
   "jewellery",
   "healthcare",
   "logistics",
+  "automotive",
 ]);
 
 export const VERTICAL_AVAILABILITY: VerticalAvailability[] = SOLUTION_CATALOG.filter((s) =>

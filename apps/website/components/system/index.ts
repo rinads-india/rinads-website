@@ -37,3 +37,5 @@ export { OutcomeGrid } from "./OutcomeGrid";
 export { IndustryCard } from "./IndustryCard";
 export { RinpoDemo } from "./RinpoDemo";
 export { BusinessAssessment } from "./BusinessAssessment";
+export { OsMarketingRoute } from "./OsMarketingRoute";
+export { VerticalSolutionRoute } from "./VerticalSolutionRoute";

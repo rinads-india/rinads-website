@@ -57,7 +57,7 @@ export function SolutionsClient() {
         primaryHref="/platform"
         primaryLabel="Explore the platform"
         secondaryHref="/contact?intent=demo"
-        secondaryLabel="Book a platform demo"
+        secondaryLabel="Book a demo"
       />
 
       <OutcomeJourneySection

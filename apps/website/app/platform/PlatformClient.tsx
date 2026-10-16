@@ -101,7 +101,7 @@ export function PlatformClient() {
         headline={PLATFORM_OVERVIEW.headline}
         summary="One connected operating platform for business — with RINPO as the interface, RINADS Intelligence as the intelligence layer, eight Operating Systems, and RINADS Cloud as the shared foundation."
         primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
+        primaryLabel="Book a demo"
         secondaryHref="/rinpo"
         secondaryLabel="See how RINPO works"
       />

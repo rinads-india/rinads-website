@@ -26,7 +26,7 @@ export default function ChangelogPage() {
             href="/contact?intent=demo"
             className="mt-6 inline-flex text-sm font-semibold text-rinads-primary hover:underline"
           >
-            Book a platform demo →
+            Book a demo →
           </Link>
         </div>
       </section>

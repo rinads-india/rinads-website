@@ -4,7 +4,8 @@ export type SolutionExperienceKey =
   | "salon"
   | "jewellery"
   | "logistics"
-  | "healthcare";
+  | "healthcare"
+  | "automotive";
 
 export type SolutionExperienceConfig = {
   slug: SolutionExperienceKey;
@@ -86,6 +87,19 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
     demoSummary: "A planned operational configuration for scheduling, team workflows, follow-ups, and practice administration. It is not presented as a clinical decision system.",
     rinpoPrompt: "Show me how RINADS could support non-clinical healthcare operations such as scheduling, follow-ups, and team workflows.",
     statusNote: "Private preview · non-clinical operations scope",
+  },
+  automotive: {
+    slug: "automotive",
+    publicName: "Automotive",
+    signature: "Automotive Service Configuration",
+    foundation: ["Business OS", "Commerce OS", "Automation OS", "RINPO"],
+    workflow: ["Booking", "Vehicle", "Job", "Parts", "Invoice", "Follow-up"],
+    demoLabel: "Automotive configuration concept",
+    demoSummary:
+      "A planned configuration for service scheduling, customers, parts, and follow-ups on the shared RINADS core. Not generally available.",
+    rinpoPrompt:
+      "Show me how an automotive service business could use RINADS for jobs, customers, parts, and follow-ups.",
+    statusNote: "Coming soon",
   },
 };
 

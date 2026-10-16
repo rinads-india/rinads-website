@@ -1,6 +1,6 @@
 /**
  * Site-wide CTA taxonomy — single source of truth for marketing destinations.
- * Prefer intent-specific labels; avoid repeating "Book a platform demo" everywhere.
+ * Prefer intent-specific labels; avoid repeating "Book a demo" everywhere.
  *
  * createWorkspace stays disabled until production self-service onboarding is ready.
  */

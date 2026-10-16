@@ -6,8 +6,10 @@ import {
   PageHero,
   CTASection,
 } from "@/components/system";
+import { CTAS } from "@/lib/ctas";
+import { getPublishedCaseStudies } from "@/lib/content/case-studies";
 
-const SECTIONS = [
+const BASE_SECTIONS = [
   {
     title: "Guides",
     items: [
@@ -15,6 +17,26 @@ const SECTIONS = [
       { label: "Lead follow-up automation", href: "/platform/automation-os", description: "Governed workflows for follow-up with approvals." },
       { label: "WhatsApp business workflows", href: "/integrations/whatsapp", description: "Messaging integrations with explicit availability." },
       { label: "Replacing spreadsheets", href: "/docs", description: "Move operational work onto shared business context." },
+    ],
+  },
+  {
+    title: "Assess & plan",
+    items: [
+      {
+        label: "Business Readiness Assessment",
+        href: "/resources/business-readiness",
+        description: "Practical pathway guidance — not a certification.",
+      },
+      {
+        label: "Pricing coverage",
+        href: "/pricing",
+        description: "Start, Grow, Scale, and Enterprise operating packages.",
+      },
+      {
+        label: "Start a project",
+        href: "/projects",
+        description: "Tell RINADS what you need to accomplish.",
+      },
     ],
   },
   {
@@ -30,7 +52,6 @@ const SECTIONS = [
     items: [
       { label: "Platform architecture", href: "/platform", description: "How operating systems share one business foundation." },
       { label: "Security & governance", href: "/security", description: "Permissions, approvals, and auditability." },
-      { label: "Customer stories", href: "/customers", description: "Approved case studies only — never invented metrics." },
       { label: "Changelog", href: "/changelog", description: "Product updates as they are published." },
     ],
   },
@@ -45,20 +66,36 @@ const SECTIONS = [
 ] as const;
 
 export function ResourcesClient() {
+  const hasStories = getPublishedCaseStudies().length > 0;
+  const sections = BASE_SECTIONS.map((section) => {
+    if (section.title !== "Platform & trust" || !hasStories) return section;
+    return {
+      ...section,
+      items: [
+        ...section.items,
+        {
+          label: "Customer stories",
+          href: "/customers",
+          description: "Approved case studies only — never invented metrics.",
+        },
+      ],
+    };
+  });
+
   return (
     <MarketingPageShell>
       <PageHero
         eyebrow="Resources"
         headline="Knowledge for running a connected business."
         summary="Guides, industry playbooks, architecture, security, and developer documentation — oriented around business problems, not generic AI news."
-        primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
+        primaryHref={CTAS.bookDemo.href}
+        primaryLabel={CTAS.bookDemo.label}
         secondaryHref="/docs"
         secondaryLabel="Open documentation"
       />
       <section className="px-6 pb-16 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl space-y-14">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <div key={section.title}>
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-rinads-primary">{section.title}</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -79,7 +116,11 @@ export function ResourcesClient() {
       </section>
       <CTASection
         headline="Ready to see RINADS on your workflow?"
-        summary="Book a platform demo or start a project conversation with the team."
+        summary="Book a demo or start a project conversation with the team."
+        primaryHref={CTAS.bookDemo.href}
+        primaryLabel={CTAS.bookDemo.label}
+        secondaryHref={CTAS.startProject.href}
+        secondaryLabel={CTAS.startProject.label}
       />
     </MarketingPageShell>
   );

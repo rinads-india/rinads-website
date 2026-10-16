@@ -8,22 +8,30 @@ import {
   CTASection,
   ProductStatus,
 } from "@/components/system";
+import type { BreadcrumbItem } from "@/components/system/Breadcrumbs";
 import { VerticalSolutionExperience } from "@/components/system/VerticalSolutionExperience";
 import type { VerticalContent } from "@/lib/content/types";
 import { getSolutionExperience } from "@/lib/solution-experience";
 import { getVerticalAvailability } from "@/lib/content/leads";
+import { CTAS } from "@/lib/ctas";
 
-export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }) {
+export function VerticalSolutionPage({
+  vertical,
+  breadcrumbs,
+}: {
+  vertical: VerticalContent;
+  breadcrumbs?: BreadcrumbItem[];
+}) {
   const config = getSolutionExperience(vertical.slug);
   const availability = getVerticalAvailability(vertical.slug);
   const configurable =
     availability.status === "available_configuration" ||
     availability.status === "generally_available";
-  const primaryHref = configurable ? "/contact?intent=demo" : "/projects";
-  const primaryLabel = configurable ? "Book a platform demo" : "Plan this solution";
+  const primaryHref = configurable ? CTAS.bookDemo.href : CTAS.startProject.href;
+  const primaryLabel = configurable ? CTAS.bookDemo.label : "Plan this solution";
 
   return (
-    <MarketingPageShell>
+    <MarketingPageShell breadcrumbs={breadcrumbs}>
       <PageHero
         eyebrow={(config?.publicName ?? vertical.name) + " · " + vertical.type}
         headline={vertical.headline}
@@ -32,6 +40,7 @@ export function VerticalSolutionPage({ vertical }: { vertical: VerticalContent }
         primaryLabel={primaryLabel}
         secondaryHref="/solutions"
         secondaryLabel="All solutions"
+        compactTop={Boolean(breadcrumbs?.length)}
       />
 
       <section className="px-6 pb-2 md:px-12 lg:px-20">
