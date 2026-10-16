@@ -21,7 +21,7 @@ export type UpsertOptions = {
   ignoreDuplicates?: boolean;
 };
 
-export interface DbQuery<Row extends Record<string, unknown>>
+export interface DbQuery<Row extends object>
   extends PromiseLike<DbResult<Row[]>> {
   select(columns?: string): DbQuery<Row>;
   eq(column: string, value: unknown): DbQuery<Row>;
@@ -40,7 +40,7 @@ export interface DbQuery<Row extends Record<string, unknown>>
 }
 
 export type JewelleryDb = {
-  from<Row extends Record<string, unknown>>(table: string): DbQuery<Row>;
+  from<Row extends object>(table: string): DbQuery<Row>;
 };
 
 export function asJewelleryDb(client: unknown): JewelleryDb {
