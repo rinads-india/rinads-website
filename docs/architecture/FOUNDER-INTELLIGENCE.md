@@ -18,6 +18,27 @@ checks canonical membership and role data before rendering. UI visibility is
 not treated as authorization. Production continues to fail closed when demo
 auth or demo data is enabled.
 
+## Founder Today and Attention
+
+Founder Intelligence is an exception-oriented control surface rather than a
+second ERP. The `Today` slice reuses the canonical RINPO control snapshot and
+shows direct production facts including:
+
+- pending runtime approvals;
+- pending governed RINPO actions;
+- RINPO runtime health;
+- the currently selected RINPO model provider/model.
+
+`Attention` is deterministic. It is built from disconnected/degraded sources,
+non-READY configured Vercel production projects, pending RINPO approvals or
+actions, an unconfigured selected provider, and an explicit deployment-parity
+check between the public website and platform-admin projects when both return
+Git commit metadata.
+
+No model is allowed to invent urgency, health percentages, or business facts
+for this view. Future prioritization/recommendation layers must label model
+judgement separately from source facts.
+
 ## Runtime map
 
 ```mermaid
@@ -80,8 +101,15 @@ health percentages.
 | --- | --- | --- | --- |
 | Supabase | Auth health + PostgREST root | Both configured endpoints return success | Public project URL or anon key is absent |
 | Workspace registry | Service-role query of `workspaces`, organizations, and location counts | Canonical query succeeds | Service role credentials are absent |
-| Vercel | Latest production deployment per configured project | Every configured project reports `READY` | Read token or project IDs are absent |
+| Vercel | Latest production deployment per configured project, including branch/commit metadata when returned | Every configured project reports `READY` | Read token or project IDs are absent |
 | RINPO runtime | Configured HTTP health endpoint | Endpoint returns 2xx | No runtime health URL is configured |
+
+The Vercel source exposes each configured project separately so the founder can
+see which surface is degraded instead of only a fleet-level count. When both
+`www.rinads.com` and `admin.rinads.com` return Git commit SHAs, Founder
+Intelligence reports a parity exception if they differ. This is an observation,
+not an automatic deployment decision; independent app deployment policies can
+still make divergence intentional.
 
 Timeouts and non-2xx responses become `degraded` or `unavailable`; they never
 become guessed values. Secrets are read server-side from environment variables
