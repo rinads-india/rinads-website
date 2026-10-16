@@ -102,6 +102,9 @@ export async function loadCompanyFacts(input: LoadFactsInput): Promise<{ facts: 
         projectId: strOrNull(r.project_id),
         createdAt: iso(r.created_at),
         updatedAt: iso(r.updated_at),
+        estimateHours: numOrNull(r.estimate_hours),
+        requiredSkills: ((r.required_skills as string[] | null) ?? []) as string[],
+        blockedBy: ((r.blocked_by as string[] | null) ?? []) as string[],
       }))
   );
 

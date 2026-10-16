@@ -71,6 +71,8 @@ const nextConfig: NextConfig = {
     "@rinads/ui",
     "@rinads/salon",
     "@rinads/salon-server",
+    "@rinads/company-os",
+    "@rinads/company-os-server",
   ],
   images: {
     remotePatterns: [

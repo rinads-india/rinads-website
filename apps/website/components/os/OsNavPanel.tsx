@@ -2,12 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  getOsDesktopNavItems,
-  getOsSidebarUtilityItems,
-  resolveOsActiveNavId,
-  type OsNavItem,
-} from "@/lib/os-nav";
+import { Layers } from "lucide-react";
+import { getOsAreaNavGroups, resolveOsActiveAreaId, type OsNavItem } from "@/lib/os-nav";
 import { useOsOrgRole } from "@/components/os/OsOrgRoleProvider";
 
 function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
@@ -28,55 +24,43 @@ function NavLink({ item, active }: { item: OsNavItem; active: boolean }) {
 
 export function OsNavPanel() {
   const pathname = usePathname() ?? "/os";
-  const activeId = resolveOsActiveNavId(pathname);
-  const { tier } = useOsOrgRole();
-  const primary = getOsDesktopNavItems(tier);
-  const utility = getOsSidebarUtilityItems(tier);
-
-  const primaryItems = primary.filter((item) => item.id !== "rooms");
-  const roomsItem = primary.find((item) => item.id === "rooms");
+  const activeId = resolveOsActiveAreaId(pathname);
+  const { roleKey, permissions, tier } = useOsOrgRole();
+  // Live members: real role + permissions. Demo / unresolved sessions fall back to member-level areas only.
+  const groups = getOsAreaNavGroups(roleKey || tier ? { roleKey, permissions } : null);
 
   return (
     <nav
       aria-label="Business OS primary"
       data-os-guide="dashboard"
-      className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-56"
+      className="os-glass hidden flex-col gap-4 rounded-3xl p-4 shadow-sm lg:flex lg:min-h-[420px] lg:w-60"
     >
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-rinads-primary">
-          BUSINESS OS
+          COMPANY OS
         </p>
         <h2 className="mt-1 text-sm font-semibold leading-snug text-gray-900">RINADS Business OS</h2>
       </div>
 
-      <ul className="flex flex-col gap-1">
-        {primaryItems.map((item) => (
-          <li key={item.id}>
-            <NavLink item={item} active={item.id === activeId} />
-          </li>
-        ))}
-      </ul>
-
-      {roomsItem && (
-        <div className="border-t border-white/40 pt-3">
-          <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
-            Collaboration
-          </p>
-          <NavLink item={roomsItem} active={roomsItem.id === activeId} />
-        </div>
-      )}
-
-      {utility.length > 0 && (
-        <div className="mt-auto border-t border-white/40 pt-3">
+      {groups.map((group, index) => (
+        <div key={group.group} className={index === 0 ? "" : "border-t border-white/40 pt-3"}>
+          {index > 0 && (
+            <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">{group.label}</p>
+          )}
           <ul className="flex flex-col gap-1">
-            {utility.map((item) => (
+            {group.items.map((item) => (
               <li key={item.id}>
                 <NavLink item={item} active={item.id === activeId} />
               </li>
             ))}
           </ul>
         </div>
-      )}
+      ))}
+
+      <div className="border-t border-white/40 pt-3">
+        <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Collaboration</p>
+        <NavLink item={{ id: "rooms", label: "Rooms", icon: Layers, href: "/os/rooms" }} active={pathname.startsWith("/os/rooms")} />
+      </div>
     </nav>
   );
 }

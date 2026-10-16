@@ -146,3 +146,45 @@ describe("work allocation", () => {
     assert.equal(utilisation({ weeklyCapacityHours: 40, committedHours: 50 }), 125);
   });
 });
+
+import { allocationTaskFromFacts, available, recommendForOpenTasks, unavailable } from "../src";
+import { emptyFacts } from "./fixtures";
+
+describe("allocation inputs from facts", () => {
+  const asOf = NOW.toISOString();
+  const task = (t: Record<string, unknown> = {}) => ({ id: "t1", title: "Build", status: "todo" as const, priority: "high" as const, dueAt: daysAhead(3), assigneeId: null, projectId: "p1", createdAt: asOf, updatedAt: asOf, estimateHours: 6, requiredSkills: ["design"], blockedBy: [] as string[], ...t });
+  const facts = (tasks: ReturnType<typeof task>[]) =>
+    emptyFacts({
+      tasks: available(tasks, asOf),
+      projects: available([{ id: "p1", name: "P", companyId: "c1", kind: "project", status: "active", dueDate: null, ownerId: null, updatedAt: asOf }], asOf),
+      companies: available([{ id: "c1", name: "Acme", relationship: "client", ownerId: null, priority: "strategic" }], asOf),
+      people: available([person({ userId: "u1", name: "Asha" })], asOf),
+    });
+
+  it("resolves client priority through project → company and detects open dependencies", () => {
+    const blocker = task({ id: "b1", status: "in_progress", blockedBy: [] });
+    const t = task({ blockedBy: ["b1"] });
+    const a = allocationTaskFromFacts(t, facts([t, blocker]));
+    assert.equal(a.clientPriority, "strategic");
+    assert.equal(a.blockedByOpenDependency, true);
+    const done = allocationTaskFromFacts(t, facts([t, { ...blocker, status: "completed" as const }]));
+    assert.equal(done.blockedByOpenDependency, false);
+  });
+
+  it("leaves missing inputs missing (no guessed estimate, skills or priority)", () => {
+    const bare = { ...task(), estimateHours: undefined, requiredSkills: undefined, projectId: null };
+    const a = allocationTaskFromFacts(bare as never, facts([bare as never]));
+    assert.equal(a.estimateHours, null);
+    assert.deepEqual(a.requiredSkills, []);
+    assert.equal(a.clientPriority, null);
+  });
+
+  it("recommends for unassigned / hot tasks only, and is unavailable without people.read", () => {
+    const r = recommendForOpenTasks(facts([task(), task({ id: "t2", priority: "low", assigneeId: "u9" })]), NOW);
+    assert.equal(r.state, "available");
+    assert.deepEqual(r.state === "available" && r.items.map((i) => i.task.id), ["t1"]);
+    assert.equal(r.state === "available" && r.items[0].result.recommendations[0].userId, "u1");
+    const denied = recommendForOpenTasks({ ...facts([task()]), people: unavailable("no people.read") }, NOW);
+    assert.equal(denied.state, "unavailable");
+  });
+});

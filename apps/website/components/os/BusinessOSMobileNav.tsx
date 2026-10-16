@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  getOsMobileMoreAreaItems,
   getOsMobileMoreNavItems,
   getOsMobilePrimaryNavItems,
   resolveOsActiveNavId,
@@ -22,14 +23,17 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export function BusinessOSMobileNav() {
   const pathname = usePathname() ?? "/os";
   const activeId = resolveOsActiveNavId(pathname);
-  const { tier } = useOsOrgRole();
+  const { tier, roleKey, permissions } = useOsOrgRole();
   const [moreOpen, setMoreOpen] = useState(false);
   const titleId = useId();
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const primary = getOsMobilePrimaryNavItems(tier);
-  const moreItems = getOsMobileMoreNavItems(tier);
+  // Company OS areas first, then the legacy bridges that are not already covered (Automate, Rooms, Integrations).
+  const areaItems = getOsMobileMoreAreaItems(roleKey || tier ? { roleKey, permissions } : null);
+  const areaHrefs = new Set(areaItems.map((i) => i.href));
+  const moreItems = [...areaItems, ...getOsMobileMoreNavItems(tier).filter((i) => !areaHrefs.has(i.href) && i.id !== "money" && i.id !== "settings")];
 
   const navPath = pathname;
   const [lastPath, setLastPath] = useState(navPath);
@@ -106,7 +110,8 @@ export function BusinessOSMobileNav() {
     activeId === "automate" ||
     activeId === "rooms" ||
     activeId === "settings" ||
-    activeId === "integrations";
+    activeId === "integrations" ||
+    moreItems.some((item) => item.id === activeId);
 
   return (
     <>

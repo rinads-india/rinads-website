@@ -15,11 +15,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OsLayout({ children }: { children: React.ReactNode }) {
   const pathname = await readOsRequestPathname();
   const access = await requireOsShellAccess(pathname);
+  const membership = access.memberships.find((m) => m.organizationId === access.organizationId);
 
   return (
     <OsShellLayout
       membershipRoleKey={access.roleKey as RoleKey | null}
       membershipResolved={access.enforced}
+      membershipPermissions={membership ? [...membership.permissions] : []}
     >
       {children}
     </OsShellLayout>

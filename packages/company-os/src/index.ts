@@ -16,3 +16,4 @@ export * from "./growth";
 export * from "./actions";
 export * from "./governed";
 export * from "./agents";
+export * from "./work";

@@ -383,6 +383,25 @@ export function crmTools(env: Env): DomainTool[] {
       env
     ),
 
+    defineTool(
+      {
+        key: "contract.send",
+        async run(ctx, input) {
+          const id = reqUuid(input, "contractId");
+          const c = await mustRead(env, "crm_contracts", ctx.organizationId, id, "Contract");
+          const t = canTransition(CONTRACT_MACHINE, c.status as never, "sent");
+          if (!t.ok) throw new ToolError(t.reason, "invalid_transition");
+          if (!c.company_id) throw new ToolError("Link the contract to a company before sending it.");
+          await updateOne(env, "crm_contracts", ctx.organizationId, id, { status: "sent" });
+          return { id, status: "sent" };
+        },
+        async verify(ctx, _i, out) {
+          await verifyRow(env, "crm_contracts", ctx.organizationId, String(out.id), { status: "sent" });
+        },
+      },
+      env
+    ),
+
     // CRITICAL — admin/founder approver only. A signed contract makes the company a client.
     defineTool(
       {

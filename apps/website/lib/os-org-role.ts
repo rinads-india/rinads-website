@@ -13,6 +13,8 @@ export type OsOrgRoleView = {
   tier: OsCapabilityTier | null;
   roleKey: RoleKey | null;
   source: OsOrgRoleSource;
+  /** The member's real permission keys for the active organisation (UI hints only — RLS enforces). */
+  permissions: readonly string[];
 };
 
 /** Map CORE RoleKey → OS capability tier. Privileged system roles map to admin for org bridges only. */
@@ -47,11 +49,12 @@ export function capabilityTierFromDemoRole(
   return null;
 }
 
-export function buildMembershipRoleView(roleKey: RoleKey | null): OsOrgRoleView {
+export function buildMembershipRoleView(roleKey: RoleKey | null, permissions: readonly string[] = []): OsOrgRoleView {
   return {
     roleKey,
     tier: capabilityTierFromRoleKey(roleKey),
     source: roleKey ? "membership" : "unresolved",
+    permissions,
   };
 }
 
@@ -61,6 +64,7 @@ export function buildDemoRoleView(demoRole: string | null | undefined): OsOrgRol
     roleKey: null,
     tier,
     source: tier ? "demo" : "unresolved",
+    permissions: [],
   };
 }
 

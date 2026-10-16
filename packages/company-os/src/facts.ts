@@ -28,6 +28,10 @@ export type TaskFact = {
   projectId: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Planning inputs for allocation. Optional: absent/empty means "not recorded", never a guess. */
+  estimateHours?: number | null;
+  requiredSkills?: string[];
+  blockedBy?: string[];
 };
 
 export type AlertFact = {

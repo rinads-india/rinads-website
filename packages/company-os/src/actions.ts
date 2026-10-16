@@ -50,6 +50,7 @@ export const ACTION_CATALOG: readonly ActionSpec[] = [
   spec({ key: "proposal.create", label: "Create proposal draft", domain: "crm", description: "Draft a priced proposal (not yet sent)", risk: "LOW", requiredPermission: "crm.manage", approval: "never", agentMayPropose: true }),
   spec({ key: "proposal.send", label: "Send proposal to client", domain: "crm", description: "Mark a priced proposal as sent to a client", risk: "HIGH", requiredPermission: "crm.manage", approval: "always", agentMayPropose: true }),
   spec({ key: "contract.create", label: "Create contract draft", domain: "crm", description: "Draft a contract (not yet sent or signed)", risk: "LOW", requiredPermission: "crm.manage", approval: "never", agentMayPropose: true }),
+  spec({ key: "contract.send", label: "Send contract for signature", domain: "crm", description: "Mark a drafted contract as sent for signature (recording the signature is a separate CRITICAL action)", risk: "MEDIUM", requiredPermission: "crm.manage", approval: "never", agentMayPropose: true }),
   spec({ key: "contract.sign", label: "Record contract signature", domain: "crm", description: "Mark a contract signed (creates a client)", risk: "CRITICAL", requiredPermission: "crm.manage", approval: "always", agentMayPropose: true }),
   // Delivery
   spec({ key: "project.create", label: "Create project / retainer", domain: "projects", description: "Create a delivery project or retainer", risk: "MEDIUM", requiredPermission: "projects.manage", approval: "never", agentMayPropose: true }),
