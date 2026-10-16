@@ -24,7 +24,7 @@ export function AcademyProgramPage({ program }: { program: AcademyProgram }) {
         headline={program.headline}
         summary={program.summary}
         primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
+        primaryLabel="Book a demo"
         secondaryHref="/academy"
         secondaryLabel="All programs"
       />

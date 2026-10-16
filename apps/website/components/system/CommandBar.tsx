@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { HERO_COMMANDS } from "@/lib/product-ia";
+import { trackMarketing } from "@/lib/analytics";
 
 type CommandBarProps = {
   commands?: readonly string[];
@@ -22,7 +23,9 @@ export function CommandBar({
   const submit = (prompt: string) => {
     const trimmed = prompt.trim();
     if (!trimmed) return;
+    trackMarketing("rinpo_prompt_started", { source: "command_bar" });
     openPhoneScreen("chat", trimmed);
+    trackMarketing("rinpo_prompt_completed", { source: "command_bar" });
     setValue("");
   };
 

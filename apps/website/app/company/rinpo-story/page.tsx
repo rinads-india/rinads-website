@@ -19,7 +19,7 @@ export default function CompanyRinpoStoryPage() {
         primaryHref="/rinpo"
         primaryLabel="See how RINPO works"
         secondaryHref="/contact?intent=demo"
-        secondaryLabel="Book a platform demo"
+        secondaryLabel="Book a demo"
       />
 
       <section className="px-6 pb-16 md:px-12 lg:px-20">

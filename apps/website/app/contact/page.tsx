@@ -20,7 +20,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   const headline =
     intent === "demo"
-      ? "Book a platform demo with the RINADS team."
+      ? "Book a demo with the RINADS team."
       : intent === "sales"
         ? "Talk to sales about the right plan for your organisation."
         : intent === "implementation"

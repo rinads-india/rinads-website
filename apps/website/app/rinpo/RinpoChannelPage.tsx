@@ -18,7 +18,7 @@ export function RinpoChannelPage({ eyebrow, headline, summary, channel }: Props)
         headline={headline}
         summary={summary}
         primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
+        primaryLabel="Book a demo"
         secondaryHref="/rinpo"
         secondaryLabel="RINPO overview"
       />

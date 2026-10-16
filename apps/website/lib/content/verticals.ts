@@ -71,6 +71,16 @@ export const VERTICALS: VerticalContent[] = [
     capabilities: ["Control tower", "Courier & 3PL", "Tracking", "Returns", "Exceptions"],
     status: "coming",
   },
+  {
+    slug: "automotive",
+    name: "Automotive",
+    type: "Automotive OS",
+    headline: "Service operations on the shared RINADS core.",
+    summary:
+      "Customers, service jobs, parts, and follow-ups — a planned industry configuration, not a separate technology stack.",
+    capabilities: ["Service scheduling", "Customers & vehicles", "Parts & inventory", "Jobs & invoices", "Follow-ups"],
+    status: "coming",
+  },
 ];
 
 export const VERTICAL_EXAMPLES = [

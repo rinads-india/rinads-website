@@ -5,34 +5,35 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
-import { FOOTER_COMPANY, FOOTER_LEGAL, FOOTER_PLATFORM } from "@/lib/product-ia";
+import {
+  FOOTER_COMPANY,
+  FOOTER_LEGAL,
+  FOOTER_PLATFORM,
+  FOOTER_RESOURCES,
+  FOOTER_SOLUTIONS,
+} from "@/lib/product-ia";
+import { COMPANY_CONFIG } from "@/lib/content/companyConfig";
 
 const FOOTER_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260503_104800_bc43ae09-f494-43e3-97d7-2f8c1692cfd7.mp4";
 
-const SOCIALS: { name: string; href: string; path: string }[] = [
-  {
-    name: "X",
-    href: "https://www.rinads.com",
-    path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.727-8.822L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z",
-  },
-  {
-    name: "LinkedIn",
-    href: "https://www.rinads.com",
-    path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
-  },
-  {
-    name: "Facebook",
-    href: "https://www.rinads.com",
-    path: "M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97H15.83c-1.491 0-1.956.93-1.956 1.886v2.265h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z",
-  },
-];
+const FOOTER_VIDEO_POSTER = "/assets/rinpo-full-body-transparent-v2.png";
+
+const SOCIAL_PATHS: Record<string, string> = {
+  X: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.727-8.822L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+  LinkedIn:
+    "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+  Facebook:
+    "M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97H15.83c-1.491 0-1.956.93-1.956 1.886v2.265h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z",
+};
 
 export function Footer() {
   const [videoFailed, setVideoFailed] = useState(false);
+  const [playVideo, setPlayVideo] = useState(false);
   const { openPhoneScreen } = useRinpo();
   const watermarkSvgRef = useRef<SVGSVGElement>(null);
   const watermarkTextRef = useRef<SVGTextElement>(null);
+  const socials = COMPANY_CONFIG.socials.filter((s) => SOCIAL_PATHS[s.name]);
 
   const fitWatermark = useCallback(() => {
     const svg = watermarkSvgRef.current;
@@ -56,29 +57,31 @@ export function Footer() {
     return () => window.removeEventListener("resize", fitWatermark);
   }, [fitWatermark]);
 
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    const timer = window.setTimeout(() => setPlayVideo(true), 400);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const handleMeetRinpo = () => {
     openPhoneScreen("chat");
   };
 
-  const handleSubscribe = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
-    openPhoneScreen("chat", email ? `Subscribe me for RINADS updates: ${email}` : undefined);
-  };
-
   return (
-    <section id="contact" className="footer-section" aria-label="Site footer">
+    <footer className="footer-section" aria-label="Site footer">
       <div className="footer-wrapper">
         <div className="footer-left">
-          {!videoFailed ? (
+          {!videoFailed && playVideo ? (
             <video
               className="footer-left-video"
               autoPlay
               muted
               loop
               playsInline
-              preload="auto"
+              preload="none"
+              poster={FOOTER_VIDEO_POSTER}
               onError={() => setVideoFailed(true)}
             >
               <source src={FOOTER_VIDEO} type="video/mp4" />
@@ -93,31 +96,33 @@ export function Footer() {
 
           <div className="footer-tagline-container">
             <p className="footer-tagline">
-              The AI Operating Platform for Business.
+              <span className="footer-tagline-primary">Not another business app.</span>
               <br />
-              <span>One intelligent platform. Powered by RINPO.</span>
+              <span className="footer-tagline-secondary">The intelligent operating platform.</span>
             </p>
           </div>
 
-          <div className="footer-social-row">
-            <span className="footer-social-label">Stay connected!</span>
-            <div className="footer-social-icons">
-              {SOCIALS.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={social.name}
-                  className="social-icon"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden>
-                    <path d={social.path} />
-                  </svg>
-                </a>
-              ))}
+          {socials.length > 0 ? (
+            <div className="footer-social-row">
+              <span className="footer-social-label">Stay connected</span>
+              <div className="footer-social-icons">
+                {socials.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={social.name}
+                    className="social-icon"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden>
+                      <path d={SOCIAL_PATHS[social.name]} />
+                    </svg>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="footer-right">
@@ -130,11 +135,10 @@ export function Footer() {
             <div className="lucky-cube">
               <Image
                 src="/assets/rinpo-full-body-transparent-v2.png"
-                alt=""
+                alt="RINPO — the RINADS AI assistant"
                 width={96}
                 height={96}
                 className="lucky-cube-image"
-                aria-hidden
               />
             </div>
             <div className="lucky-text-row">
@@ -143,7 +147,7 @@ export function Footer() {
                 <path d="M18 5 L 12 5" />
                 <path d="M18 5 L 18 11" />
               </svg>
-              <span className="lucky-text">Meet RINPO?</span>
+              <span className="lucky-text">Meet RINPO.</span>
             </div>
           </button>
 
@@ -158,8 +162,32 @@ export function Footer() {
                 ))}
               </div>
               <div className="footer-col">
-                <p className="footer-col-title">Explore</p>
+                <p className="footer-col-title">Solutions</p>
+                {FOOTER_SOLUTIONS.map((link) => (
+                  <Link key={link.label} href={link.href}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="footer-col">
+                <p className="footer-col-title">Company</p>
                 {FOOTER_COMPANY.map((link) => (
+                  <Link key={link.label} href={link.href}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="footer-col">
+                <p className="footer-col-title">Resources</p>
+                {FOOTER_RESOURCES.map((link) => (
+                  <Link key={link.label} href={link.href}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="footer-col">
+                <p className="footer-col-title">Legal</p>
+                {FOOTER_LEGAL.map((link) => (
                   <Link key={link.label} href={link.href}>
                     {link.label}
                   </Link>
@@ -171,36 +199,18 @@ export function Footer() {
           <div className="footer-bottom">
             <div>
               <p className="footer-copyright">
-                © {new Date().getFullYear()} RINADS®. All rights reserved.
+                © {new Date().getFullYear()} {COMPANY_CONFIG.legalName}. All rights reserved.
               </p>
-              <nav aria-label="Legal" className="footer-legal-nav">
-                {FOOTER_LEGAL.map((link, i) => (
-                  <span key={link.href}>
-                    {i > 0 ? <span aria-hidden> · </span> : null}
-                    <Link href={link.href}>{link.label}</Link>
-                  </span>
-                ))}
-              </nav>
+              <p className="footer-location text-sm" style={{ color: "var(--footer-muted)" }}>
+                {COMPANY_CONFIG.location.display}
+              </p>
             </div>
 
             <div className="footer-cta-mini">
-              <h4>
-                Not another business app.
-                <strong>The intelligent operating platform.</strong>
-              </h4>
-              <form className="footer-subscribe-row" onSubmit={handleSubscribe}>
-                <label htmlFor="footer-email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="footer-email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter email address"
-                  autoComplete="email"
-                />
-                <button type="submit">Subscribe</button>
-              </form>
+              <p className="footer-closing-line">
+                <span className="footer-tagline-primary">Not another business app.</span>{" "}
+                <span className="footer-tagline-secondary">The intelligent operating platform.</span>
+              </p>
             </div>
           </div>
         </div>
@@ -218,6 +228,6 @@ export function Footer() {
           </text>
         </svg>
       </div>
-    </section>
+    </footer>
   );
 }

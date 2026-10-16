@@ -50,7 +50,7 @@ export const OUTCOME_JOURNEYS: OutcomeJourney[] = [
   {
     id: "start-conversation",
     outcome: "Start a qualified conversation",
-    summary: "Book a platform demo or describe your project — leads are validated before persistence.",
+    summary: "Book a demo or describe your project — leads are validated before persistence.",
     href: "/contact?intent=demo",
     cta: "Book a demo",
   },

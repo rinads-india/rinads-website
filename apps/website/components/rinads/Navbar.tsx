@@ -12,6 +12,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { CTAS, NAV_GROUPS } from "@/lib/product-ia";
+import { trackMarketing } from "@/lib/analytics";
 
 const islandLinkClass =
   "rounded-full px-2 py-2 text-[11px] font-semibold tracking-[0.08em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:px-2.5 xl:text-xs";
@@ -137,7 +138,10 @@ function MobileMenuOverlay({
                   </Link>
                   <Link
                     href={CTAS.signIn.href}
-                    onClick={onClose}
+                    onClick={() => {
+                      trackMarketing("signin_clicked", { source: "navbar_mobile" });
+                      onClose();
+                    }}
                     className="flex min-h-12 items-center justify-center rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition-colors hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     {CTAS.signIn.label}
@@ -254,6 +258,7 @@ export function Navbar() {
               <Link
                 href={CTAS.signIn.href}
                 data-rinpo-guide="account"
+                onClick={() => trackMarketing("signin_clicked", { source: "navbar_desktop" })}
                 className="hidden h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary md:flex sm:h-11"
               >
                 <UserRound size={16} aria-hidden />

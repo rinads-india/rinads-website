@@ -1,5 +1,3 @@
-import type { ProductStatusValue } from "@/lib/product-status";
-
 export type OutcomeOption = {
   id: string;
   label: string;
@@ -19,7 +17,7 @@ export const PROJECT_OUTCOMES: OutcomeOption[] = [
   },
   {
     id: "automate",
-    label: "Automate a workflow",
+    label: "Automate workflows",
     description: "Reduce manual handoffs with governed automation.",
   },
   {
@@ -39,7 +37,7 @@ export const PROJECT_OUTCOMES: OutcomeOption[] = [
   },
   {
     id: "marketing",
-    label: "Improve marketing/growth",
+    label: "Improve marketing",
     description: "Campaigns, content, and lead follow-up connected to CRM.",
   },
   {
@@ -69,10 +67,14 @@ export const TIMELINES = [
   "Exploring / no timeline",
 ] as const;
 
+export type LeadStage = "step1" | "complete";
+
 export type LeadPayload = {
   outcome: string;
   name: string;
+  /** Work email — required unless phone provided */
   workEmail: string;
+  phone?: string;
   company: string;
   role: string;
   companySize: string;
@@ -82,44 +84,21 @@ export type LeadPayload = {
   timeline: string;
   budget?: string;
   message?: string;
+  websiteUrl?: string;
   privacyAccepted: boolean;
   intent?: string;
   plan?: string;
   sourcePath?: string;
   honeypot?: string;
+  stage?: LeadStage;
 };
 
 export type LeadValidationError = { field: string; message: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[+]?[\d\s().-]{7,20}$/;
 
-export function validateLeadPayload(input: Partial<LeadPayload>): {
-  ok: boolean;
-  errors: LeadValidationError[];
-  value?: LeadPayload;
-} {
-  const errors: LeadValidationError[] = [];
-
-  if (input.honeypot) {
-    return { ok: false, errors: [{ field: "honeypot", message: "Rejected." }] };
-  }
-
-  if (!input.outcome) errors.push({ field: "outcome", message: "Select what you are trying to achieve." });
-  if (!input.name?.trim()) errors.push({ field: "name", message: "Enter your name." });
-  if (!input.workEmail?.trim() || !EMAIL_RE.test(input.workEmail.trim())) {
-    errors.push({ field: "workEmail", message: "Enter a valid work email." });
-  }
-  if (!input.company?.trim()) errors.push({ field: "company", message: "Enter your company." });
-  if (!input.role?.trim()) errors.push({ field: "role", message: "Enter your role." });
-  if (!input.companySize) errors.push({ field: "companySize", message: "Select company size." });
-  if (!input.industry?.trim()) errors.push({ field: "industry", message: "Enter your industry." });
-  if (!input.problem?.trim()) errors.push({ field: "problem", message: "Describe the problem." });
-  if (!input.timeline) errors.push({ field: "timeline", message: "Select a timeline." });
-  if (!input.privacyAccepted) {
-    errors.push({ field: "privacyAccepted", message: "Privacy acknowledgement is required." });
-  }
-
-  // Never accept secrets
+function rejectSecrets(input: Partial<LeadPayload>, errors: LeadValidationError[]) {
   const blob = `${input.message ?? ""} ${input.problem ?? ""} ${input.currentTools ?? ""}`;
   if (/(password|api[_ -]?key|secret[_ -]?key|private[_ -]?key)/i.test(blob)) {
     errors.push({
@@ -127,6 +106,67 @@ export function validateLeadPayload(input: Partial<LeadPayload>): {
       message: "Do not include passwords, API keys, or other credentials.",
     });
   }
+}
+
+/**
+ * Step 1: name, email or phone, company, role, primary problem (outcome), privacy.
+ * Step 2 / complete: optional enrichment fields; full validation when stage=complete.
+ */
+export function validateLeadPayload(input: Partial<LeadPayload>): {
+  ok: boolean;
+  errors: LeadValidationError[];
+  value?: LeadPayload;
+} {
+  const errors: LeadValidationError[] = [];
+  const stage: LeadStage = input.stage === "step1" ? "step1" : "complete";
+
+  if (input.honeypot) {
+    return { ok: false, errors: [{ field: "honeypot", message: "Rejected." }] };
+  }
+
+  if (!input.outcome) {
+    errors.push({ field: "outcome", message: "Select your primary problem." });
+  }
+  if (!input.name?.trim()) errors.push({ field: "name", message: "Enter your name." });
+
+  const email = input.workEmail?.trim() ?? "";
+  const phone = input.phone?.trim() ?? "";
+  const hasEmail = email.length > 0 && EMAIL_RE.test(email);
+  const hasPhone = phone.length > 0 && PHONE_RE.test(phone);
+
+  if (!hasEmail && !hasPhone) {
+    errors.push({
+      field: "workEmail",
+      message: "Enter a valid work email or phone number.",
+    });
+    if (phone && !hasPhone) {
+      errors.push({ field: "phone", message: "Enter a valid phone number." });
+    }
+  } else if (email && !hasEmail) {
+    errors.push({ field: "workEmail", message: "Enter a valid work email." });
+  } else if (phone && !hasPhone) {
+    errors.push({ field: "phone", message: "Enter a valid phone number." });
+  }
+
+  if (!input.company?.trim()) errors.push({ field: "company", message: "Enter your company." });
+  if (!input.role?.trim()) errors.push({ field: "role", message: "Enter your role." });
+
+  if (stage === "complete") {
+    // Step 2 fields remain optional for conversion; problem text optional if outcome set
+    if (!input.privacyAccepted) {
+      errors.push({ field: "privacyAccepted", message: "Privacy acknowledgement is required." });
+    }
+  } else if (!input.privacyAccepted) {
+    errors.push({ field: "privacyAccepted", message: "Privacy acknowledgement is required." });
+  }
+
+  // Primary problem is the outcome selection; free-text problem optional
+  const problem =
+    input.problem?.trim() ||
+    PROJECT_OUTCOMES.find((o) => o.id === input.outcome)?.label ||
+    "";
+
+  rejectSecrets(input, errors);
 
   if (errors.length) return { ok: false, errors };
 
@@ -136,46 +176,30 @@ export function validateLeadPayload(input: Partial<LeadPayload>): {
     value: {
       outcome: input.outcome!,
       name: input.name!.trim(),
-      workEmail: input.workEmail!.trim().toLowerCase(),
+      workEmail: hasEmail ? email.toLowerCase() : "",
+      phone: hasPhone ? phone : undefined,
       company: input.company!.trim(),
       role: input.role!.trim(),
-      companySize: input.companySize!,
-      industry: input.industry!.trim(),
+      companySize: input.companySize?.trim() || "",
+      industry: input.industry?.trim() || "",
       currentTools: input.currentTools?.trim() || undefined,
-      problem: input.problem!.trim(),
-      timeline: input.timeline!,
+      problem,
+      timeline: input.timeline?.trim() || "",
       budget: input.budget?.trim() || undefined,
       message: input.message?.trim() || undefined,
+      websiteUrl: input.websiteUrl?.trim() || undefined,
       privacyAccepted: true,
       intent: input.intent,
       plan: input.plan,
       sourcePath: input.sourcePath,
+      stage,
     },
   };
 }
 
-export type VerticalAvailability = {
-  slug: string;
-  status: ProductStatusValue;
-  tier: "commercial" | "future";
-};
-
-/** Align public availability with honest production posture. */
-export const VERTICAL_AVAILABILITY: VerticalAvailability[] = [
-  { slug: "retail", status: "prototype_demo", tier: "commercial" },
-  { slug: "salon", status: "available_configuration", tier: "commercial" },
-  { slug: "nursery", status: "prototype_demo", tier: "commercial" },
-  { slug: "jewellery", status: "coming_soon", tier: "future" },
-  { slug: "healthcare", status: "private_preview", tier: "future" },
-  { slug: "logistics", status: "coming_soon", tier: "future" },
-];
-
-export function getVerticalAvailability(slug: string): VerticalAvailability {
-  return (
-    VERTICAL_AVAILABILITY.find((item) => item.slug === slug) ?? {
-      slug,
-      status: "coming_soon" as const,
-      tier: "future" as const,
-    }
-  );
-}
+/** Vertical availability — authoritative source is solutionCatalog. */
+export {
+  VERTICAL_AVAILABILITY,
+  getVerticalAvailability,
+  type VerticalAvailability,
+} from "./solutionCatalog";

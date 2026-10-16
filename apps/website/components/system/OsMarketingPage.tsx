@@ -9,27 +9,36 @@ import {
   CTASection,
   ProductStatus,
 } from "@/components/system";
+import type { BreadcrumbItem } from "@/components/system/Breadcrumbs";
 import { OperatingSystemDemo } from "@/components/system/OperatingSystemDemo";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
 import { getOperatingSystemDemo } from "@/lib/os-demo-config";
 import { getOsAvailability } from "@/lib/content/pricing";
 import type { OsPageContent } from "@/lib/content/types";
+import { CTAS } from "@/lib/ctas";
 
-export function OsMarketingPage({ content }: { content: OsPageContent }) {
+export function OsMarketingPage({
+  content,
+  breadcrumbs,
+}: {
+  content: OsPageContent;
+  breadcrumbs?: BreadcrumbItem[];
+}) {
   const { openPhoneScreen } = useRinpo();
   const demo = getOperatingSystemDemo(content.slug);
   const availability = getOsAvailability(content.slug);
 
   return (
-    <MarketingPageShell>
+    <MarketingPageShell breadcrumbs={breadcrumbs}>
       <PageHero
         eyebrow={content.eyebrow}
         headline={content.headline}
         summary={content.summary}
-        primaryHref="/contact?intent=demo"
-        primaryLabel="Book a platform demo"
-        secondaryHref="/platform"
-        secondaryLabel="Explore the platform"
+        primaryHref={CTAS.bookDemo.href}
+        primaryLabel={CTAS.bookDemo.label}
+        secondaryHref={CTAS.explorePlatform.href}
+        secondaryLabel={CTAS.explorePlatform.label}
+        compactTop={Boolean(breadcrumbs?.length)}
       />
 
       {availability ? (

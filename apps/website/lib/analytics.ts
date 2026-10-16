@@ -1,9 +1,28 @@
 /**
  * Stable marketing + product analytics events.
- * Never send passwords, secrets, API keys, or raw RINPO prompts by default.
+ * Never send passwords, secrets, API keys, or raw form free-text / RINPO prompts.
  */
 
 export const MARKETING_EVENTS = [
+  // Funnel events (V2)
+  "hero_try_rinpo",
+  "hero_book_demo",
+  "rinpo_prompt_started",
+  "rinpo_prompt_completed",
+  "platform_card_clicked",
+  "industry_solution_clicked",
+  "pricing_viewed",
+  "pricing_plan_selected",
+  "pricing_estimate_started",
+  "contact_step1_completed",
+  "contact_step2_completed",
+  "lead_submitted",
+  "whatsapp_clicked",
+  "service_project_started",
+  "assessment_started",
+  "assessment_completed",
+  "signin_clicked",
+  // Legacy aliases kept for existing call sites
   "landing_viewed",
   "nav_clicked",
   "product_explored",
@@ -12,7 +31,6 @@ export const MARKETING_EVENTS = [
   "rinpo_demo_completed",
   "case_study_viewed",
   "security_viewed",
-  "pricing_viewed",
   "demo_booking_started",
   "demo_booking_completed",
   "project_form_started",
@@ -40,7 +58,8 @@ export type AnalyticsEvent = MarketingEvent | ProductEvent;
 
 export type AnalyticsProps = Record<string, string | number | boolean | null | undefined>;
 
-const SENSITIVE_KEY = /(password|secret|api[_-]?key|token|authorization|prompt|message_body|raw_prompt)/i;
+const SENSITIVE_KEY =
+  /(password|secret|api[_-]?key|token|authorization|prompt|message_body|raw_prompt|problem|message|current_tools)/i;
 
 function sanitizeProps(props?: AnalyticsProps): AnalyticsProps | undefined {
   if (!props) return undefined;

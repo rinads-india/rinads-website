@@ -22,7 +22,7 @@ export function CompanyClient() {
         primaryHref="/projects"
         primaryLabel="Start a project"
         secondaryHref="/contact?intent=demo"
-        secondaryLabel="Book a platform demo"
+        secondaryLabel="Book a demo"
       />
 
       <section id="about" className="px-6 pb-16 md:px-12 lg:px-20">
@@ -49,14 +49,14 @@ export function CompanyClient() {
         <div className="mx-auto max-w-7xl">
           <h2 className="text-2xl font-bold text-foreground">Contact</h2>
           <p className="mt-3 max-w-xl text-muted-foreground">
-            Book a platform demo, start a project conversation, or sign in to an existing workspace.
+            Book a demo, start a project conversation, or sign in to an existing workspace.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/contact?intent=demo"
               className="rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white hover:bg-rinads-primary-dark"
             >
-              Book a platform demo
+              Book a demo
             </Link>
             <button
               type="button"

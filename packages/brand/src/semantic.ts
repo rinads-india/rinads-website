@@ -66,6 +66,58 @@ export const statusColors = {
   },
 } as const;
 
+/** Product availability tokens — pair with readable status text. */
+export const productStatusTokens = {
+  available: {
+    foreground: "#166534",
+    background: "#DCFCE7",
+    border: "rgba(22, 101, 52, 0.35)",
+    foregroundDark: "#BBF7D0",
+    backgroundDark: "rgba(22, 101, 52, 0.28)",
+    borderDark: "rgba(187, 247, 208, 0.35)",
+  },
+  preview: {
+    foreground: "#92400E",
+    background: "#FEF3C7",
+    border: "rgba(146, 64, 14, 0.35)",
+    foregroundDark: "#FDE68A",
+    backgroundDark: "rgba(146, 64, 14, 0.28)",
+    borderDark: "rgba(253, 230, 138, 0.35)",
+  },
+  prototype: {
+    foreground: "#4B5563",
+    background: "#F3F4F6",
+    border: "rgba(75, 85, 99, 0.35)",
+    foregroundDark: "rgba(255, 255, 255, 0.7)",
+    backgroundDark: "rgba(255, 255, 255, 0.05)",
+    borderDark: "rgba(255, 255, 255, 0.2)",
+  },
+  soon: {
+    foreground: "#6B7280",
+    background: "transparent",
+    border: "rgba(107, 114, 128, 0.35)",
+    foregroundDark: "rgba(255, 255, 255, 0.45)",
+    backgroundDark: "transparent",
+    borderDark: "rgba(255, 255, 255, 0.15)",
+  },
+  error: {
+    foreground: "#991B1B",
+    background: "#FEE2E2",
+    border: "rgba(153, 27, 27, 0.35)",
+    foregroundDark: "#FECACA",
+    backgroundDark: "rgba(153, 27, 27, 0.28)",
+    borderDark: "rgba(254, 202, 202, 0.35)",
+  },
+  warning: {
+    foreground: "#92400E",
+    background: "#FEF3C7",
+    border: "rgba(146, 64, 14, 0.35)",
+    foregroundDark: "#FDE68A",
+    backgroundDark: "rgba(146, 64, 14, 0.28)",
+    borderDark: "rgba(253, 230, 138, 0.35)",
+  },
+} as const;
+
 export const spacing = {
   0: "0",
   1: "0.25rem",

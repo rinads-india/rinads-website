@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "Across RINADS I can surface today's attention across **Business OS** — customers, work, money, growth, and automation. " +
-        "Book a platform demo to connect your workspace, or explore the platform architecture.";
+        "Book a demo to connect your workspace, or explore the platform architecture.";
       links = [
-        { label: "Book a platform demo", href: "/contact?intent=demo" },
+        { label: "Book a demo", href: "/contact?intent=demo" },
         { label: "Business OS", href: "/platform/business-os" },
         { label: "See how RINPO works", href: "/rinpo" },
       ];

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getPageMetadata } from "@/lib/cms";
-import { getVertical } from "@/lib/content/verticals";
-import { VerticalSolutionPage } from "@/components/system/VerticalSolutionPage";
+import { VerticalSolutionRoute } from "@/components/system/VerticalSolutionRoute";
 
 const SLUG = "nursery";
 
@@ -11,7 +9,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  const vertical = getVertical(SLUG);
-  if (!vertical) notFound();
-  return <VerticalSolutionPage vertical={vertical} />;
+  return <VerticalSolutionRoute slug={SLUG} />;
 }

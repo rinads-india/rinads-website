@@ -222,6 +222,14 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     pageType: "solution",
   },
   {
+    path: "/solutions/automotive",
+    indexable: true,
+    title: "Automotive Solution | RINADS",
+    description:
+      "Service operations, customers, parts, and follow-ups — coming soon on the shared RINADS core.",
+    pageType: "solution",
+  },
+  {
     path: "/customers",
     indexable: true,
     title: "Customers | RINADS",
@@ -304,7 +312,7 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     path: "/contact",
     indexable: true,
     title: "Contact | Book a Demo or Talk to RINADS",
-    description: "Book a platform demo, talk to sales, or start an implementation conversation.",
+    description: "Book a demo, talk to sales, or start an implementation conversation.",
     pageType: "form",
   },
   {
@@ -319,6 +327,14 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     indexable: true,
     title: "Resources | RINADS Knowledge Hub",
     description: "Guides, architecture notes, implementation playbooks, and customer stories.",
+    pageType: "resource",
+  },
+  {
+    path: "/resources/business-readiness",
+    indexable: true,
+    title: "Business Readiness Assessment | RINADS",
+    description:
+      "RINADS Business Readiness Assessment — practical pathway guidance for growing businesses. Not a certification.",
     pageType: "resource",
   },
   {
