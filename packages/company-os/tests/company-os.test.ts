@@ -10,7 +10,7 @@ import {
   openApprovalsOnly,
   rankAssignees,
   scoreAssignee,
-} from "../src/index.ts";
+} from "../src/index";
 
 describe("isCompanyOsOrg", () => {
   it("requires operator flag unless demo/feature forced", () => {
