@@ -129,7 +129,7 @@ export async function loadJewelleryDashboard(): Promise<JewelleryDashboard> {
   }
 
   const supabase = await createOwnerServerClient();
-  const ctx = await getCommerceContextFromTenancy();
+  const ctx = await getCommerceContextFromTenancy(async () => supabase);
   const db = asJewelleryDb(supabase);
   const organizationId = ctx.organizationId;
   const now = new Date().toISOString();
