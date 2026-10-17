@@ -137,9 +137,13 @@ function CallOverlay({
 
   useEffect(() => {
     if (state !== "active") return;
+    // Seed the countdown from the server-provided max once the call is active:
+    // `maxSeconds` is only known after `connect()` resolves, which happens after
+    // this overlay first mounts during the connecting phase.
+    setRemaining(maxSeconds);
     const timer = window.setInterval(() => setRemaining((value) => value - 1), 1000);
     return () => window.clearInterval(timer);
-  }, [state]);
+  }, [state, maxSeconds]);
 
   useEffect(() => {
     if (remaining <= 0 && state === "active") void end();
