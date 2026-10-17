@@ -46,6 +46,32 @@ spoken while `COMMERCIAL_CONFIG.priceApproved` is `false`.
 6. Open `/rinpo/live`. Until both variables exist the page says live video is
    not enabled and the start button stays disabled.
 
+## Go-live checklist (follows docs/deployment/POLICY.md)
+
+RINPO Live is founder-gated: merging the code does not enable it. It switches on
+only when both `RUNWAYML_API_SECRET` and `RUNWAY_AVATAR_ID` exist in the target
+Vercel environment.
+
+1. **Merge** the PR through the normal flow (CI → review → merge → staging).
+   With no Runway variables the page is live but honestly shows "not enabled".
+2. **Before enabling in an environment**
+   - Counsel adds Runway to `/legal/subprocessors` (deliberately a placeholder
+     today — this change does not invent vendor entries) and the Privacy Policy/DPA
+     are reviewed for conversation transcripts and recordings.
+   - A spend/usage limit is set in the Runway Developer Portal.
+3. **Create the Character** (steps above) and add `RUNWAY_AVATAR_ID` +
+   `RUNWAYML_API_SECRET` to that environment, then redeploy.
+4. **Check configuration** (read-only, no network): `pnpm ops:preflight` reports
+   "rinpo live (runway)": disabled is a pass; only one variable set, or a
+   `NEXT_PUBLIC_` Runway variable, is flagged.
+5. **Verify the deployment** (read-only, starts no session, spends no credits):
+   `pnpm ops:verify --website https://<host>` — the `[rinpo live]` probe prints
+   `enabled` or `disabled (founder-gated)`; only a broken endpoint fails.
+6. **Smoke it by hand once:** open `/rinpo/live`, pick Auto, speak, confirm the
+   character answers, a link card appears when you ask about pricing or contact,
+   and the call ends at the time limit. Listen to Malayalam/Tamil/Arabic before
+   removing their Beta label.
+
 ## Day-to-day
 
 - **Edit facts or tone:** change `content/rinpo-knowledge/*.md`, the catalogs, or

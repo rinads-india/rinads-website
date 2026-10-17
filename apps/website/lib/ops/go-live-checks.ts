@@ -165,3 +165,50 @@ export function evaluateRazorpayConfig(env: EnvMap): CheckResult {
   }
   return { ok: problems.length === 0, problems, warnings };
 }
+
+/**
+ * RINPO Live (Runway Characters). Off by default: with neither secret set the
+ * feature reports "disabled" and the page shows an honest not-enabled state.
+ * Setting only one of the two is a misconfiguration, and the Runway secret must
+ * never be exposed through a NEXT_PUBLIC_ variable.
+ */
+export function evaluateRinpoLiveConfig(env: EnvMap): CheckResult {
+  const problems: string[] = [];
+  const warnings: string[] = [];
+  const hasSecret = present(env.RUNWAYML_API_SECRET);
+  const hasAvatar = present(env.RUNWAY_AVATAR_ID);
+
+  if (Object.keys(env).some((key) => /^NEXT_PUBLIC_.*RUNWAY/i.test(key))) {
+    problems.push("Runway credentials must never be exposed via a NEXT_PUBLIC_ variable.");
+  }
+  if (!hasSecret && !hasAvatar) {
+    warnings.push("RINPO Live is disabled (RUNWAYML_API_SECRET and RUNWAY_AVATAR_ID unset; safe default).");
+    return { ok: problems.length === 0, problems, warnings };
+  }
+  if (!hasSecret) problems.push("RUNWAYML_API_SECRET is required when RUNWAY_AVATAR_ID is set.");
+  if (!hasAvatar) {
+    problems.push("RUNWAY_AVATAR_ID is required when RUNWAYML_API_SECRET is set (run `pnpm --filter @rinads/website runway:sync`).");
+  }
+  if (
+    hasAvatar &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(env.RUNWAY_AVATAR_ID!.trim())
+  ) {
+    warnings.push("RUNWAY_AVATAR_ID does not look like a UUID — copy it from the `runway:sync` output.");
+  }
+  if (present(env.RINPO_LIVE_MAX_SECONDS)) {
+    const seconds = Number.parseInt(env.RINPO_LIVE_MAX_SECONDS!, 10);
+    if (!Number.isFinite(seconds) || seconds < 30 || seconds > 300) {
+      warnings.push("RINPO_LIVE_MAX_SECONDS should be 30–300; it will be clamped.");
+    }
+  }
+  return { ok: problems.length === 0, problems, warnings };
+}
+
+export type RinpoLiveProbe = { enabled: boolean };
+
+/** Parse the `GET /api/rinpo/live` capability probe; null when malformed. */
+export function parseRinpoLiveProbe(body: unknown): RinpoLiveProbe | null {
+  if (body === null || typeof body !== "object") return null;
+  const { enabled } = body as { enabled?: unknown };
+  return typeof enabled === "boolean" ? { enabled } : null;
+}
