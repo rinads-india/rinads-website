@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AvatarCall,
   AvatarVideo,
@@ -73,48 +73,56 @@ async function requestSession(
   };
 }
 
-function IdleStage() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-
-  useEffect(() => {
-    // Respect reduced-motion: keep the poster frame instead of looping footage.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      videoRef.current?.pause();
-    }
-  }, []);
-
-  const toggleSound = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    const next = !muted;
-    video.muted = next;
-    setMuted(next);
-    if (!next) void video.play().catch(() => undefined);
-  };
+function IdleStage({ capability }: { capability: Capability }) {
+  const [showIntro, setShowIntro] = useState(false);
 
   return (
     <div className="relative w-full bg-white" style={STAGE_STYLE}>
-      <video
-        ref={videoRef}
-        className="h-full w-full object-cover"
-        src={IDLE_VIDEO}
-        poster={POSTER}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        aria-label="RINPO introducing itself"
-      />
+      {showIntro ? (
+        // The recording is opt-in and labelled: the live conversation is the product.
+        <video
+          className="h-full w-full object-cover"
+          src={IDLE_VIDEO}
+          poster={POSTER}
+          autoPlay
+          playsInline
+          controls
+          onEnded={() => setShowIntro(false)}
+          aria-label="Recorded introduction from RINPO"
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- fixed 1088×704 poster, no layout shift
+        <img
+          className="h-full w-full object-cover"
+          src={POSTER}
+          alt="RINPO, the RINADS character, ready to talk"
+        />
+      )}
+
+      <span
+        className={
+          capability === "enabled"
+            ? "absolute bottom-3 left-3 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white"
+            : "absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white"
+        }
+      >
+        {showIntro
+          ? "Recorded intro"
+          : capability === "enabled"
+            ? "Live · ready to talk"
+            : capability === "loading"
+              ? "Checking live availability…"
+              : "Live call not enabled yet"}
+      </span>
+
       <button
         type="button"
-        onClick={toggleSound}
+        onClick={() => setShowIntro((value) => !value)}
         className="absolute right-3 top-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-black/10 bg-white/85 px-4 py-2 text-xs font-semibold text-[var(--text-primary)] backdrop-blur transition hover:bg-white"
-        aria-pressed={!muted}
+        aria-pressed={showIntro}
       >
-        {muted ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
-        {muted ? "Play intro with sound" : "Mute intro"}
+        {showIntro ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
+        {showIntro ? "Back to live" : "Watch recorded intro"}
       </button>
     </div>
   );
@@ -356,7 +364,7 @@ export function RinpoLive() {
           onError={handleError}
         />
       ) : (
-        <IdleStage />
+        <IdleStage capability={capability} />
       )}
 
       <div className="p-5 md:p-6">
@@ -392,7 +400,7 @@ export function RinpoLive() {
         <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">
           {live
             ? `Talking in ${getLiveLanguage(activeLanguage).label}. To change language, end the call and pick again.`
-            : "Pick a language, or leave Auto-detect and just speak. Beta languages work, but pronunciation may be less polished."}
+            : "Pick English or Malayalam, or leave Auto and speak either — RINPO follows you. Malayalam is in beta, so pronunciation may be less polished."}
         </p>
 
         {!live ? (
@@ -414,8 +422,9 @@ export function RinpoLive() {
 
         {capability === "disabled" ? (
           <p className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--text-muted)]">
-            Live video conversation is not enabled on this deployment yet. The intro above is a
-            recording; RINPO chat and browser voice remain available.
+            Live video conversation is not enabled on this deployment yet, so RINPO can&apos;t talk
+            back right now. You can watch a recorded intro meanwhile; RINPO chat and browser voice
+            remain available.
           </p>
         ) : null}
 

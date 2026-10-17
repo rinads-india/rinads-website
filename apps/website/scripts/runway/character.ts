@@ -30,6 +30,11 @@ import {
 import { LIVE_LANGUAGES } from "../../lib/rinpo-live/languages";
 import { buildPersonality, buildStartScript } from "../../lib/rinpo-live/personality";
 import { duplicateAvatarMessage, findDuplicateAvatar } from "../../lib/rinpo-live/sync-guards";
+import {
+  DEFAULT_VOICE_DESIGN_PROMPT,
+  validateVoicePrompt,
+  voiceChoiceError,
+} from "../../lib/rinpo-live/voice";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(HERE, "assets");
@@ -49,6 +54,8 @@ sync options
   --name <name>         Character name (default: RINPO)
   --voice-preset <id>   Runway preset voice (default: clara)
   --clone-voice         Clone a custom voice from scripts/runway/assets/rinpo-voice-sample.mp3
+  --design-voice        Design an English + Malayalam voice from a text prompt (eleven_ttv_v3)
+  --voice-prompt <text> Voice description for --design-voice (default: bilingual, warm, calm)
   --voice-id <id>       Use an existing custom voice
   --update-image        Re-upload the reference image on an existing Character
   --force-create        Create a new Character even if one with the same name exists
@@ -137,9 +144,29 @@ async function waitUntil<T extends { status: string }>(
 
 async function resolveVoice(
   client: RunwayML,
-  values: { "clone-voice"?: boolean; "voice-id"?: string; "voice-preset"?: string },
+  values: {
+    "clone-voice"?: boolean;
+    "design-voice"?: boolean;
+    "voice-prompt"?: string;
+    "voice-id"?: string;
+    "voice-preset"?: string;
+  },
 ): Promise<AvatarCreateParams["voice"]> {
   if (values["voice-id"]) return { type: "custom", id: values["voice-id"] };
+  if (values["design-voice"]) {
+    const prompt = values["voice-prompt"] ?? DEFAULT_VOICE_DESIGN_PROMPT;
+    const problem = validateVoicePrompt(prompt);
+    if (problem) fail(problem);
+    console.log("\nDesigning an English + Malayalam voice (eleven_ttv_v3)…");
+    const voice = await client.voices.create({
+      name: "RINPO",
+      description: "Designed for RINPO Live: English and Malayalam.",
+      from: { type: "text", model: "eleven_ttv_v3", prompt },
+    });
+    await waitUntil("Voice", () => client.voices.retrieve(voice.id));
+    console.log(`  ✔ Designed voice ready: ${voice.id} — listen to it in the Runway portal before going live.`);
+    return { type: "custom", id: voice.id };
+  }
   if (values["clone-voice"]) {
     console.log("\nCloning voice from the sample extracted from the character video…");
     const voice = await client.voices.create({
@@ -190,11 +217,21 @@ async function sync(args: string[]): Promise<void> {
       name: { type: "string" },
       "voice-preset": { type: "string" },
       "clone-voice": { type: "boolean" },
+      "design-voice": { type: "boolean" },
+      "voice-prompt": { type: "string" },
       "voice-id": { type: "string" },
       "update-image": { type: "boolean" },
       "force-create": { type: "boolean" },
     },
   });
+
+  const voiceProblem = voiceChoiceError({
+    cloneVoice: values["clone-voice"],
+    designVoice: values["design-voice"],
+    voiceId: values["voice-id"],
+    voicePreset: values["voice-preset"],
+  });
+  if (voiceProblem) fail(voiceProblem);
 
   const documents = buildKnowledgeDocuments(readAuthoredDocuments());
   reportKnowledge(documents);
@@ -225,7 +262,8 @@ async function sync(args: string[]): Promise<void> {
 
   if (avatarId) {
     console.log(`\nUpdating Character ${avatarId}`);
-    const voiceRequested = values["clone-voice"] || values["voice-id"] || values["voice-preset"];
+    const voiceRequested =
+      values["clone-voice"] || values["design-voice"] || values["voice-id"] || values["voice-preset"];
     await client.avatars.update(avatarId, {
       name,
       personality,

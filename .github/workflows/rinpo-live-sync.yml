@@ -30,6 +30,10 @@ on:
         description: "Clone a custom voice from the character video's audio (only if that voice is yours to use)"
         type: boolean
         default: false
+      design_voice:
+        description: "Design an English + Malayalam voice from a text prompt (recommended for Malayalam; listen to it before going live)"
+        type: boolean
+        default: false
       voice_preset:
         description: "Runway preset voice when not cloning (lowercase letters only)"
         type: string
@@ -73,6 +77,7 @@ jobs:
           RUNWAY_AVATAR_ID: ${{ vars.RUNWAY_AVATAR_ID }}
           DRY_RUN: ${{ inputs.dry_run }}
           CLONE_VOICE: ${{ inputs.clone_voice }}
+          DESIGN_VOICE: ${{ inputs.design_voice }}
           VOICE_PRESET: ${{ inputs.voice_preset }}
           UPDATE_IMAGE: ${{ inputs.update_image }}
         run: |
@@ -82,6 +87,10 @@ jobs:
             echo "voice_preset must be lowercase letters only." >&2
             exit 1
           fi
+          if [ "$CLONE_VOICE" = "true" ] && [ "$DESIGN_VOICE" = "true" ]; then
+            echo "Choose either clone_voice or design_voice, not both." >&2
+            exit 1
+          fi
           if [ "$DRY_RUN" != "true" ] && [ -z "${RUNWAYML_API_SECRET:-}" ]; then
             echo "RUNWAYML_API_SECRET is not set. Add it under Settings → Secrets and variables → Actions." >&2
             exit 1
@@ -89,7 +98,13 @@ jobs:
 
           args=()
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
-          if [ "$CLONE_VOICE" = "true" ]; then args+=(--clone-voice); else args+=(--voice-preset "$VOICE_PRESET"); fi
+          if [ "$CLONE_VOICE" = "true" ]; then
+            args+=(--clone-voice)
+          elif [ "$DESIGN_VOICE" = "true" ]; then
+            args+=(--design-voice)
+          else
+            args+=(--voice-preset "$VOICE_PRESET")
+          fi
           if [ "$UPDATE_IMAGE" = "true" ]; then args+=(--update-image); fi
 
           pnpm --filter @rinads/website runway:sync "${args[@]}" 2>&1 | tee sync.log

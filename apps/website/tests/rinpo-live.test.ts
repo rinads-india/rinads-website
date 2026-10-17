@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { CASE_STUDIES } from "../lib/content/case-studies";
 import { COMMERCIAL_CONFIG } from "../lib/content/commercialConfig";
+import { OS_PAGES } from "../lib/content/platform-os";
+import { USE_CASES } from "../lib/content/use-cases";
 import { metadataFromRegistry } from "../lib/route-registry";
 import { SOLUTION_CATALOG } from "../lib/content/solutionCatalog";
 import {
@@ -72,9 +75,22 @@ describe("RINPO Live languages", () => {
     }
   });
 
-  it("labels languages Runway does not document for voices as beta", () => {
-    const beta = LIVE_LANGUAGES.filter((language) => language.support === "beta").map((l) => l.code);
-    assert.deepEqual(beta.sort(), ["ar", "ml", "ta"]);
+  it("offers English and Malayalam (plus Auto) and nothing else", () => {
+    assert.deepEqual(
+      LIVE_LANGUAGES.map((language) => language.code),
+      ["auto", "en", "ml"],
+    );
+  });
+
+  it("labels Malayalam beta (Runway does not document it) and English documented", () => {
+    const support = Object.fromEntries(LIVE_LANGUAGES.map((l) => [l.code, l.support]));
+    assert.deepEqual(support, { auto: "auto", en: "documented", ml: "beta" });
+  });
+
+  it("greets in the chosen language, with Malayalam written in Malayalam script", () => {
+    assert.match(getLiveLanguage("ml").greeting, /[\u0D00-\u0D7F]/);
+    assert.doesNotMatch(getLiveLanguage("en").greeting, /[\u0D00-\u0D7F]/);
+    assert.match(getLiveLanguage("auto").greeting, /English or Malayalam/);
   });
 
   it("validates codes strictly", () => {
@@ -92,11 +108,35 @@ describe("RINPO Live personality", () => {
     }
   });
 
-  it("applies the chosen language, and follows the visitor in auto mode", () => {
+  it("applies the chosen language, and follows the visitor between the two in auto mode", () => {
     assert.match(buildPersonality("ml"), /Speak Malayalam/);
-    assert.match(buildPersonality("ml"), /short, simple sentences/); // beta guidance
-    assert.doesNotMatch(buildPersonality("en"), /short, simple sentences/);
-    assert.match(buildPersonality("auto"), /same language the visitor is speaking/);
+    assert.match(buildPersonality("en"), /Speak English/);
+    assert.match(buildPersonality("auto"), /latest message/);
+    assert.match(buildPersonality("auto"), /English and Malayalam/);
+  });
+
+  it("makes Malayalam speakable: script, short sentences, digits", () => {
+    for (const code of ["ml", "auto"] as const) {
+      const prompt = buildPersonality(code);
+      assert.match(prompt, /Malayalam script, never in English letters/, code);
+      assert.match(prompt, /short, simple sentences/, code);
+      assert.match(prompt, /digit by digit/, code);
+    }
+  });
+
+  it("lets a visitor switch language mid-call, whichever default is chosen", () => {
+    assert.match(buildPersonality("en"), /switches to Malayalam/);
+    assert.match(buildPersonality("ml"), /switches to English/);
+  });
+
+  it("keeps RINPO to public information and says so about private data", () => {
+    for (const language of LIVE_LANGUAGES) {
+      assert.match(
+        buildPersonality(language.code),
+        /cannot see any customer's or organisation's private data/,
+        language.code,
+      );
+    }
   });
 
   it("keeps the honesty rules in every language", () => {
@@ -179,6 +219,25 @@ describe("RINPO Live knowledge", () => {
       assert.match(block, /\[Roadmap\]/);
       assert.doesNotMatch(block, /\[Available\]/);
     }
+  });
+
+  it("covers the whole public platform: every operating system and use case", () => {
+    const docs = buildGeneratedKnowledge();
+    const platform = docs.find((d) => d.key === "platform")!.content;
+    for (const os of Object.values(OS_PAGES)) assert.ok(platform.includes(os.name), os.name);
+    const useCases = docs.find((d) => d.key === "use-cases")!.content;
+    for (const useCase of USE_CASES) assert.ok(useCases.includes(useCase.title), useCase.title);
+  });
+
+  it("tells RINPO there are no published customers, and trips if that stops being true", () => {
+    assert.equal(
+      CASE_STUDIES.length,
+      0,
+      "Case studies now exist: update the customers knowledge document before enabling RINPO Live",
+    );
+    const customers = buildGeneratedKnowledge().find((d) => d.key === "customers")!.content;
+    assert.match(customers, /no customer stories, deployments, demonstrations or lab results are published/i);
+    assert.match(customers, /Never name a customer/);
   });
 
   it("lists each edition page once, even when the catalog keeps legacy aliases", () => {
@@ -414,14 +473,25 @@ describe("RINPO Live surfaces", () => {
     assert.deepEqual(meta.robots, { index: true, follow: true });
   });
 
-  it("is honest in the UI: AI disclosure, transcription notice, disabled state, beta labels", () => {
+  it("is honest in the UI: AI disclosure, transcription notice, disabled state, beta label", () => {
     const ui = read("components/rinpo/RinpoLive.tsx");
     assert.match(ui, /AI character, not a person/);
     assert.match(ui, /may be transcribed/);
     assert.match(ui, /not enabled on this deployment yet/);
+    assert.match(ui, /Live call not enabled yet/);
     assert.match(ui, /Beta/);
     assert.match(ui, /dir="auto"/);
-    assert.match(ui, /prefers-reduced-motion/);
+  });
+
+  it("never passes a recording off as the live conversation", () => {
+    const ui = read("components/rinpo/RinpoLive.tsx");
+    // The recording is opt-in, labelled, and not an auto-playing loop.
+    assert.match(ui, /Watch recorded intro/);
+    assert.match(ui, /Recorded intro/);
+    assert.doesNotMatch(ui, /\sloop[\s>=]/);
+    assert.doesNotMatch(ui, /\smuted[\s>=]/);
+    // Idle stage is a still portrait; the video only mounts after a click.
+    assert.match(ui, /showIntro \? \(/);
   });
 
   it("opens suggested links in a new tab so the call is never interrupted", () => {

@@ -229,7 +229,7 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     path: "/rinpo/live",
     indexable: true,
     title: "RINPO Live | Talk to RINPO on video",
-    description: "A live video conversation with the RINPO character, in your language, answering from RINADS's own information.",
+    description: "A live, two-way video conversation with the RINPO character in English or Malayalam, answering from RINADS's public platform information.",
     pageType: "product",
   },
   {

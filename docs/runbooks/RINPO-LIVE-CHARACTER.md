@@ -14,7 +14,7 @@ editable layers, plus a review loop:
 | --- | --- | --- |
 | Behaviour and rules | `apps/website/lib/rinpo-live/personality.ts` | 10,000 chars (≈3.4k used) |
 | Facts (knowledge base) | generated from the site catalogs + `apps/website/content/rinpo-knowledge/*.md` | 50,000 tokens (≈5.7k used) |
-| Language | `apps/website/lib/rinpo-live/languages.ts` | per-session override |
+| Language (English, Malayalam) | `apps/website/lib/rinpo-live/languages.ts` | per-session override |
 | Review loop | `runway:transcripts` → `corrections.md` → `runway:sync` | — |
 
 Facts are generated from `productCatalog`, `solutionCatalog`, `services`,
@@ -35,6 +35,7 @@ spoken while `COMMERCIAL_CONFIG.priceApproved` is `false`.
    export RUNWAYML_API_SECRET=...
    pnpm --filter @rinads/website runway:sync --clone-voice   # or --voice-preset clara
    ```
+   For Malayalam use `--design-voice` instead (see *Languages* below).
    The reference image is a frame from the character video
    (`scripts/runway/assets/rinpo-reference.png`). `--clone-voice` clones the
    voice from the same video's audio (`rinpo-voice-sample.mp3`); only clone a
@@ -85,8 +86,8 @@ Vercel environment.
    `enabled` or `disabled (founder-gated)`; only a broken endpoint fails.
 6. **Smoke it by hand once:** open `/rinpo/live`, pick Auto, speak, confirm the
    character answers, a link card appears when you ask about pricing or contact,
-   and the call ends at the time limit. Listen to Malayalam/Tamil/Arabic before
-   removing their Beta label.
+   and the call ends at the time limit. Run the Malayalam acceptance test (see Languages)
+   before removing the Beta label.
 
 ## Day-to-day
 
@@ -117,14 +118,50 @@ Vercel environment.
 Per-IP and daily counters are in memory (per serverless instance), like the chat
 route's limiter. For a hard ceiling use the Runway portal limits.
 
-## Languages
+## Languages — English and Malayalam
 
-`auto` follows whatever the visitor speaks. English, Hindi, Spanish, French and
-German are in Runway's documented voice-language list. **Malayalam, Tamil and
-Arabic are labelled Beta**: the model is told to speak them, but Runway does not
-document voice support, so check pronunciation with the voice you chose (a
-designed voice via `eleven_multilingual_ttv_v2` / `eleven_ttv_v3` is the
-documented route to a better-suited voice) before removing the label.
+RINPO Live speaks **English and Malayalam**. The picker offers *English*, *Malayalam*
+and *Auto*, which follows whichever of the two the visitor speaks and switches the
+moment they do. Anything else is declined politely (RINPO says it speaks English and
+Malayalam). Language is a per-session override of the prompt, not a separate avatar.
+
+**Malayalam is labelled Beta, deliberately.** What is and is not established:
+
+- Instruction-following: the prompt tells RINPO to write Malayalam in Malayalam script
+  (so it is spoken correctly), in short sentences, with digits read one by one.
+- Speech-to-text and text-to-speech quality in Malayalam through Runway's *live*
+  pipeline is **not documented by Runway and has not been tested here**. ElevenLabs
+  lists Malayalam for its v3 text-to-speech and its Scribe speech-to-text, and Runway's
+  voice design uses that v3 model, but the live-call result still has to be heard.
+- Preset voices are the least likely to suit Malayalam. Create the voice with
+  `--design-voice` (workflow input `design_voice`): it designs an English + Malayalam
+  voice from a prompt (`DEFAULT_VOICE_DESIGN_PROMPT` in `lib/rinpo-live/voice.ts`, or
+  your own with `--voice-prompt "…"`), using Runway's `eleven_ttv_v3` model. Listen to it
+  in the Runway portal and in a real call before removing the Beta label.
+- `--clone-voice` clones the English-speaking character video; how it sounds in
+  Malayalam is unverified. Only one voice option may be used per run.
+
+**Acceptance test before removing Beta** (do it once, in a real call): speak five
+Malayalam questions (services, pricing, contact, a product status, something not in the
+knowledge). Check RINPO understood you, answered in Malayalam, pronounced product names
+and phone digits clearly, and did not invent anything.
+
+## What "all data on the platform" means
+
+RINPO knows **all public RINADS platform information**, generated from the same typed
+content that drives the website so it can never be more optimistic than the site:
+company, products and their availability status, every operating system and its modules,
+use cases, services, industry editions (with capabilities), plans and pricing policy,
+RINPO and Academy, and what the site says about customer proof (currently none is
+published — RINPO says so and never names a customer). That is about 8.5k of Runway's
+50k-token budget.
+
+It deliberately does **not** know any organisation's private data (customers, orders,
+invoices, projects, staff). The Live page is public and unauthenticated; wiring tenant
+data to it would expose one customer's information to anyone who starts a call, and the
+prompt tells RINPO to say plainly that it cannot see private data. Letting a *signed-in*
+owner ask RINPO about their own workspace is a separate, larger feature: it needs
+authentication, per-organisation isolation and server tools (see below).
 
 ## How it works
 
@@ -151,6 +188,9 @@ Policy and DPA/Subprocessors pages to cover Runway before enabling in production
 
 ## Not included (next steps)
 
+- **Private platform data.** A signed-in mode where an owner can ask RINPO about their
+  own workspace needs authentication, tenant isolation and audit, so it is a separate
+  build, not a setting.
 - **Server tools** (e.g. lead capture, live order lookup) need a long-lived RPC
   connection (`@runwayml/avatars-node-rpc`) that does not fit a short serverless
   route; they need a small worker.

@@ -13,8 +13,11 @@
 
 import { COMPANY_CONFIG } from "@/lib/content/companyConfig";
 import {
+  ACADEMY_MODEL,
   ACADEMY_PROGRAMS,
+  ACADEMY_SUPPORT,
 } from "@/lib/content/academy";
+import { EVIDENCE_EMPTY_STATES } from "@/lib/content/case-studies";
 import {
   COMMERCIAL_CONFIG,
   PRICING_FAQ,
@@ -22,6 +25,7 @@ import {
   PRICING_PLANS,
   type PricingPlan,
 } from "@/lib/content/commercialConfig";
+import { OS_PAGES, PLATFORM_OVERVIEW } from "@/lib/content/platform-os";
 import { PRODUCT_CATALOG } from "@/lib/content/productCatalog";
 import { SOLUTION_CATALOG } from "@/lib/content/solutionCatalog";
 import {
@@ -32,6 +36,8 @@ import {
   SERVICE_IMPLEMENTATION_GROUPS,
   SERVICE_LINES,
 } from "@/lib/content/services";
+import { USE_CASES } from "@/lib/content/use-cases";
+import { VERTICALS } from "@/lib/content/verticals";
 import { PRODUCT_STATUS_META } from "@/lib/product-status";
 import { PUBLIC_CONTACT } from "./personality";
 
@@ -135,9 +141,11 @@ function editions(): KnowledgeDocument {
   );
   const blocks = unique.map((edition) => {
     const status = PRODUCT_STATUS_META[edition.status];
+    const capabilities = VERTICALS.find((vertical) => vertical.slug === edition.slug)?.capabilities;
     return [
       `## ${edition.editionName} — ${edition.industry} [${status.label}]`,
       edition.outcome,
+      ...(capabilities ? [`Capabilities: ${capabilities.join(", ")}.`] : []),
       `Powered by: ${edition.poweredBy.join(", ")}.`,
       `Status meaning: ${status.description}`,
       `Page: ${edition.href}`,
@@ -192,10 +200,63 @@ function rinpo(): KnowledgeDocument {
     `## Channels\n${RINPO_CHANNELS.join(", ")}. Voice and phone are described at their true status on the RINPO pages (/rinpo).`,
     "",
     "## Academy",
-    "Real Experience Academy teaches through real work: learn, practice, ship and certify, with RINPO as tutor. Page: /resources/academy",
+    `Real Experience Academy teaches through real work, with RINPO as tutor. Learning model: ${ACADEMY_MODEL.join(" → ")}. Formats and support: ${ACADEMY_SUPPORT.join(", ")}. Page: /resources/academy`,
     bullets(ACADEMY_PROGRAMS.map((program) => `${program.name}: ${program.summary}`)),
   ];
   return { key: "rinpo", name: "RINPO and Academy", content: lines.join("\n") };
+}
+
+function platform(): KnowledgeDocument {
+  const blocks = Object.values(OS_PAGES).map((os) =>
+    [
+      `## ${os.name}`,
+      `${os.headline} ${os.summary}`,
+      `Modules: ${os.modules
+        .map((module) => (module.description ? `${module.name} (${module.description})` : module.name))
+        .join("; ")}.`,
+    ].join("\n"),
+  );
+  const lines = [
+    "# RINADS platform — operating systems and modules",
+    "",
+    `${PLATFORM_OVERVIEW.headline} ${PLATFORM_OVERVIEW.summary}`,
+    "",
+    "Availability is set per product in the products and availability document. If an operating system or module is not listed there, say its availability is unconfirmed and offer a consultation — never assume it is ready to buy.",
+    "",
+    ...blocks.flatMap((block) => [block, ""]),
+  ];
+  return { key: "platform", name: "RINADS — platform operating systems and modules", content: lines.join("\n") };
+}
+
+function publicUseCases(): KnowledgeDocument {
+  const blocks = USE_CASES.map((useCase) =>
+    [
+      `## ${useCase.title}`,
+      useCase.summary,
+      `Outcomes: ${useCase.outcomes.join("; ")}.`,
+      `Starts in: ${useCase.platformLabel}.`,
+    ].join("\n"),
+  );
+  const lines = [
+    "# RINADS use cases",
+    "",
+    "Common jobs businesses bring to RINADS. These describe what the platform is designed to do; confirm availability against each product's status.",
+    "",
+    ...blocks.flatMap((block) => [block, ""]),
+  ];
+  return { key: "use-cases", name: "RINADS — use cases", content: lines.join("\n") };
+}
+
+function customers(): KnowledgeDocument {
+  const lines = [
+    "# RINADS customers and proof",
+    "",
+    "RINADS publishes customer evidence only after the customer approves it. At the moment no customer stories, deployments, demonstrations or lab results are published. Never name a customer, a logo, a result, a percentage or a testimonial.",
+    "If a visitor asks for references, say plainly that none are published yet, and offer a demo or a conversation with the team about what RINADS can stand behind for their industry.",
+    "",
+    ...Object.values(EVIDENCE_EMPTY_STATES).flatMap((state) => [`- ${state.title}: ${state.body}`]),
+  ];
+  return { key: "customers", name: "RINADS — customers and proof", content: lines.join("\n") };
 }
 
 /** Documents generated from website truth. */
@@ -203,8 +264,11 @@ export function buildGeneratedKnowledge(): KnowledgeDocument[] {
   return [
     companyOverview(),
     productsAndAvailability(),
+    platform(),
+    publicUseCases(),
     services(),
     editions(),
+    customers(),
     pricing(),
     rinpo(),
   ];
