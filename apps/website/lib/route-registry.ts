@@ -226,6 +226,13 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     pageType: "product",
   },
   {
+    path: "/rinpo/live",
+    indexable: true,
+    title: "RINPO Live | Talk to RINPO on video",
+    description: "A live video conversation with the RINPO character, in your language, answering from RINADS's own information.",
+    pageType: "product",
+  },
+  {
     path: "/rinpo/phone",
     indexable: true,
     title: "RINPO Phone | Product Direction",

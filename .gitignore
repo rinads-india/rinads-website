@@ -45,3 +45,7 @@ yarn-error.log*
 
 package-lock.json
 supabase/.temp/
+
+# RINPO Live — exported visitor transcripts (personal data, never commit)
+.runway-transcripts/
+*.transcripts.md

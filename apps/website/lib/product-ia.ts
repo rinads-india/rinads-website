@@ -182,6 +182,7 @@ export const NAV_RINPO: NavGroup = {
     { label: "Overview", href: "/rinpo", description: "Meet the AI Business Intelligence Character." },
     { label: "Phone", href: "/rinpo/phone", description: "The RINPO Phone experience." },
     { label: "Voice", href: "/rinpo/voice", description: "Voice interface (lazy-loaded)." },
+    { label: "Live", href: "/rinpo/live", description: "Talk to RINPO on live video, in your language." },
     { label: "Agents", href: "/platform/rinpo-runtime", description: "Agent capabilities under Runtime governance." },
     { label: "Runtime", href: "/platform/rinpo-runtime", description: "Execution layer behind RINPO." },
   ],

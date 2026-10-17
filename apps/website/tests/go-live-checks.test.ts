@@ -5,8 +5,10 @@ import {
   evaluateCommsWorkerConfig,
   evaluateEnvContract,
   evaluateRazorpayConfig,
+  evaluateRinpoLiveConfig,
   evaluateTwilioConfig,
   parseHealthResponse,
+  parseRinpoLiveProbe,
 } from "../lib/ops/go-live-checks";
 
 const validProdEnv = {
@@ -130,5 +132,41 @@ describe("provider preflights", () => {
       NEXT_PUBLIC_RAZORPAY_KEY_ID: "id",
     });
     assert.equal(ok.ok, true);
+  });
+
+  it("rinpo live is a safe default when unset, and flags half-configured or exposed secrets", () => {
+    const off = evaluateRinpoLiveConfig({});
+    assert.equal(off.ok, true);
+    assert.match(off.warnings.join(" "), /disabled/);
+
+    assert.equal(evaluateRinpoLiveConfig({ RUNWAYML_API_SECRET: "k" }).ok, false);
+    assert.equal(evaluateRinpoLiveConfig({ RUNWAY_AVATAR_ID: "8be4df61-93ca-11d2-aa0d-00e098032b8c" }).ok, false);
+    assert.equal(
+      evaluateRinpoLiveConfig({ RUNWAYML_API_SECRET: "k", NEXT_PUBLIC_RUNWAYML_API_SECRET: "k" }).ok,
+      false,
+    );
+
+    const on = evaluateRinpoLiveConfig({
+      RUNWAYML_API_SECRET: "k",
+      RUNWAY_AVATAR_ID: "8be4df61-93ca-11d2-aa0d-00e098032b8c",
+    });
+    assert.equal(on.ok, true);
+    assert.deepEqual(on.warnings, []);
+
+    const odd = evaluateRinpoLiveConfig({
+      RUNWAYML_API_SECRET: "k",
+      RUNWAY_AVATAR_ID: "not-a-uuid",
+      RINPO_LIVE_MAX_SECONDS: "9000",
+    });
+    assert.equal(odd.ok, true);
+    assert.equal(odd.warnings.length, 2);
+  });
+
+  it("parses the rinpo live capability probe strictly", () => {
+    assert.deepEqual(parseRinpoLiveProbe({ enabled: true, maxDurationSeconds: 180 }), { enabled: true });
+    assert.deepEqual(parseRinpoLiveProbe({ enabled: false }), { enabled: false });
+    for (const bad of [null, undefined, "x", {}, { enabled: "yes" }, []]) {
+      assert.equal(parseRinpoLiveProbe(bad), null);
+    }
   });
 });

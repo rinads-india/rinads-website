@@ -13,6 +13,7 @@ import {
   evaluateCommsWorkerConfig,
   evaluateEnvContract,
   evaluateRazorpayConfig,
+  evaluateRinpoLiveConfig,
   evaluateTwilioConfig,
   type CheckResult,
 } from "../../apps/website/lib/ops/go-live-checks";
@@ -39,6 +40,7 @@ function main() {
   report("twilio whatsapp", evaluateTwilioConfig(env), true);
   report("communications worker", evaluateCommsWorkerConfig(env), true);
   report("razorpay billing", evaluateRazorpayConfig(env), true);
+  report("rinpo live (runway)", evaluateRinpoLiveConfig(env), true);
 
   console.log("");
   if (hardFailures > 0) {

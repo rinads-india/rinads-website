@@ -18,6 +18,7 @@ import {
   MIGRATION_SENTINEL_TABLES,
   buildTablePresenceUrl,
   parseHealthResponse,
+  parseRinpoLiveProbe,
 } from "../../apps/website/lib/ops/go-live-checks";
 
 type Cli = { website?: string; glow?: string };
@@ -60,6 +61,26 @@ async function checkHealth(label: string, baseUrl: string): Promise<void> {
   }
 }
 
+/**
+ * RINPO Live is founder-gated: "disabled" is a pass. Only a broken endpoint
+ * (non-200 or a malformed probe) is a hard failure. The probe never starts a
+ * session, so it spends no Runway credits.
+ */
+async function checkRinpoLive(baseUrl: string): Promise<void> {
+  console.log(`\n[rinpo live] ${baseUrl}/api/rinpo/live (capability probe)`);
+  try {
+    const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/rinpo/live`, {
+      headers: { accept: "application/json" },
+    });
+    const probe = parseRinpoLiveProbe(await res.json().catch(() => null));
+    if (!res.ok || !probe) fail(`probe failed (http=${res.status}, body ${probe ? "ok" : "malformed"})`);
+    else if (probe.enabled) ok("enabled — live video conversation is available");
+    else info("disabled (founder-gated): set RUNWAYML_API_SECRET + RUNWAY_AVATAR_ID to enable");
+  } catch (error) {
+    fail(`unreachable: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 async function checkMigrations(): Promise<void> {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -89,6 +110,7 @@ async function main() {
     console.log("\nNo targets given. Pass --website <url> and/or --glow <url>.");
   }
   if (cli.website) await checkHealth("website", cli.website);
+  if (cli.website) await checkRinpoLive(cli.website);
   if (cli.glow) await checkHealth("glow", cli.glow);
   await checkMigrations();
 
