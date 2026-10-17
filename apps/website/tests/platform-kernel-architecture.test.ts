@@ -73,9 +73,9 @@ describe("platform kernel architecture contract", () => {
     }
   });
 
-  it("does not allow new direct variant.stock mutation sites", () => {
+  it("confines direct variant.stock mutation to compatibility/projection adapters", () => {
     const allowedCompatibilityMutations = new Set([
-      "packages/commerce/src/services/checkout.ts",
+      "packages/commerce-server/src/legacy-inventory.ts",
       "packages/operations-server/src/seed.ts",
     ]);
 
@@ -96,8 +96,17 @@ describe("platform kernel architecture contract", () => {
     assert.deepEqual(
       unexpected,
       [],
-      `new direct variant.stock mutation bypasses the inventory ledger contract: ${unexpected.join(", ")}`,
+      `direct variant.stock mutation bypasses the inventory ledger contract: ${unexpected.join(", ")}`,
     );
+  });
+
+  it("requires an inventory provider for authoritative checkout", () => {
+    const checkout = readFileSync(
+      join(REPO_ROOT, "packages/commerce/src/services/checkout.ts"),
+      "utf8",
+    );
+    assert.match(checkout, /INVENTORY_UNAVAILABLE/);
+    assert.doesNotMatch(checkout, /variant\.stock\s*(?:=|\+=|-=|\*=|\/=|\+\+|--)/);
   });
 
   it("documents scalar variant stock as a compatibility projection, not authority", () => {
