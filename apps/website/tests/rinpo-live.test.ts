@@ -430,6 +430,14 @@ describe("RINPO Live surfaces", () => {
     assert.match(ui, /rel="noopener noreferrer"/);
   });
 
+  it("derives the countdown from the server max instead of seeding it at mount", () => {
+    const ui = read("components/rinpo/RinpoLive.tsx");
+    // maxSeconds only arrives after connect() resolves, i.e. after the overlay mounts,
+    // so remaining time must be computed from the current value, never captured once.
+    assert.match(ui, /const remaining = maxSeconds - elapsed;/);
+    assert.doesNotMatch(ui, /useState\(maxSeconds\)/);
+  });
+
   it("keeps the Runway secret out of client code", () => {
     for (const file of [
       "components/rinpo/RinpoLive.tsx",

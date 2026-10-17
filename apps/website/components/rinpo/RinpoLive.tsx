@@ -132,12 +132,15 @@ function CallOverlay({
   const session = useAvatarSession();
   const { micError } = useLocalMedia();
   const transcript = useTranscript({ interim: true });
-  const [remaining, setRemaining] = useState(maxSeconds);
+  const [elapsed, setElapsed] = useState(0);
   const { state, end } = session;
+  // Derived, not seeded: `maxSeconds` only arrives after `connect()` resolves,
+  // which is after this overlay first mounts (during the connecting phase).
+  const remaining = maxSeconds - elapsed;
 
   useEffect(() => {
     if (state !== "active") return;
-    const timer = window.setInterval(() => setRemaining((value) => value - 1), 1000);
+    const timer = window.setInterval(() => setElapsed((value) => value + 1), 1000);
     return () => window.clearInterval(timer);
   }, [state]);
 
