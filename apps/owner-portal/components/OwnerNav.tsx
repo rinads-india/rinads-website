@@ -6,6 +6,7 @@ import type { RoleKey } from "@rinads/permissions";
 
 const links = [
   { href: "/operations", label: "Control Tower" },
+  { href: "/jewellery", label: "Jewellery OS" },
   { href: "/runtime", label: "Runtime" },
   { href: "/approvals", label: "Approvals" },
   { href: "/inventory", label: "Inventory" },
@@ -30,8 +31,8 @@ export function OwnerNav({ role = "founder" }: OwnerNavProps) {
     <header className="border-b border-rinads-primary/15 bg-surface">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">Ambady ERP</p>
-          <h1 className="text-lg font-semibold text-foreground">Operations Control Tower</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">RINADS Business OS</p>
+          <h1 className="text-lg font-semibold text-foreground">Owner Operations</h1>
         </div>
         <nav aria-label="Owner portal" className="flex flex-wrap gap-1">
           {links.map(({ href, label }) => {

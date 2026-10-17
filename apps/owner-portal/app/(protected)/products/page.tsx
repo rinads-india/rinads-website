@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Card, EmptyState } from "@rinads/ui";
-import { demoContext, listAllProducts, commerce } from "@/lib/commerce";
+import { loadOwnerCatalogRuntime } from "@/lib/catalog-runtime";
 
 function statusTone(status: string): "default" | "success" | "warning" | "danger" {
   switch (status) {
@@ -15,17 +15,22 @@ function statusTone(status: string): "default" | "success" | "warning" | "danger
   }
 }
 
-export default function ProductsPage() {
-  const ctx = demoContext();
-  const products = listAllProducts(ctx);
-  const store = commerce.repo.getStore();
+export default async function ProductsPage() {
+  const runtime = await loadOwnerCatalogRuntime();
+  const products = runtime.store.products;
+  const store = runtime.store;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-foreground">Products</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-2xl font-semibold text-foreground">Products</h2>
+          <Badge tone={runtime.demo ? "warning" : "success"}>
+            {runtime.demo ? "Demo data" : "Production tenant"}
+          </Badge>
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          All catalog items including drafts and archived products.
+          Catalog items for the active organization, including drafts and archived products.
         </p>
       </div>
 
@@ -40,14 +45,14 @@ export default function ProductsPage() {
                 <th>Status</th>
                 <th>Category</th>
                 <th>Variants</th>
-                <th>Stock</th>
+                <th>Stock projection</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => {
-                const variants = store.variants.filter((v) => v.productId === product.id);
-                const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
+                const variants = store.variants.filter((variant) => variant.productId === product.id);
+                const totalStock = variants.reduce((sum, variant) => sum + variant.stock, 0);
                 return (
                   <tr key={product.id}>
                     <td>
@@ -77,8 +82,9 @@ export default function ProductsPage() {
       )}
 
       <p className="rbac-note">
-        Staff with <code className="text-xs">commerce.catalog.write</code> (Phase 1+) can edit products.
-        Current session uses founder role for demo navigation only.
+        Catalog reads are tenant-bound in production. Product editing remains subject to the existing
+        <code className="mx-1 text-xs">commerce.catalog.write</code>
+        permission and its route-level production hardening.
       </p>
     </div>
   );
