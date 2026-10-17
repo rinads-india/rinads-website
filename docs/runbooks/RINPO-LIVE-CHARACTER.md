@@ -39,6 +39,22 @@ spoken while `COMMERCIAL_CONFIG.priceApproved` is `false`.
    (`scripts/runway/assets/rinpo-reference.png`). `--clone-voice` clones the
    voice from the same video's audio (`rinpo-voice-sample.mp3`); only clone a
    voice you have the right to use. Without it, the `clara` preset is used.
+   **Prefer not to run it locally?** Use the manual GitHub Actions workflow
+   *RINPO Live — Runway sync* (`.github/workflows/rinpo-live-sync.yml`):
+   1. Settings → Secrets and variables → Actions → add the secret
+      `RUNWAYML_API_SECRET` (optionally on an environment named `rinpo-live` with
+      required reviewers as an approval gate).
+   2. Actions → *RINPO Live — Runway sync* → **Run workflow** on `main` with
+      `dry_run` left on (needs no key) and check the summary.
+   3. Run it again with `dry_run` off (and `clone_voice` on if you want the video's
+      voice). The run summary prints `RUNWAY_AVATAR_ID`.
+   4. Save that id as an Actions **variable** `RUNWAY_AVATAR_ID` so later runs update
+      the same Character, then continue with step 4 below.
+
+   The workflow is manual-only, runs from `main` only (branch code can never read the
+   secret), uses a read-only token, and never deploys. Creating twice is refused:
+   if a Character named "RINPO" already exists the sync stops and tells you to set
+   `RUNWAY_AVATAR_ID` (or pass `--force-create` on purpose).
 4. Add the printed `RUNWAY_AVATAR_ID` and your `RUNWAYML_API_SECRET` to Vercel
    (Production **and** Preview) and `.env.local`. Both are server-only.
 5. In the Runway Developer Portal set a spend/usage limit — the in-app limits

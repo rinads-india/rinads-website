@@ -29,6 +29,7 @@ import {
 } from "../../lib/rinpo-live/knowledge";
 import { LIVE_LANGUAGES } from "../../lib/rinpo-live/languages";
 import { buildPersonality, buildStartScript } from "../../lib/rinpo-live/personality";
+import { duplicateAvatarMessage, findDuplicateAvatar } from "../../lib/rinpo-live/sync-guards";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(HERE, "assets");
@@ -50,6 +51,7 @@ sync options
   --clone-voice         Clone a custom voice from scripts/runway/assets/rinpo-voice-sample.mp3
   --voice-id <id>       Use an existing custom voice
   --update-image        Re-upload the reference image on an existing Character
+  --force-create        Create a new Character even if one with the same name exists
 
 transcripts options
   --limit <n>           How many recent conversations (default: 20)
@@ -190,6 +192,7 @@ async function sync(args: string[]): Promise<void> {
       "clone-voice": { type: "boolean" },
       "voice-id": { type: "string" },
       "update-image": { type: "boolean" },
+      "force-create": { type: "boolean" },
     },
   });
 
@@ -235,6 +238,15 @@ async function sync(args: string[]): Promise<void> {
     });
     console.log("  ✔ Character updated. Knowledge and prompts are live for new sessions.");
     return;
+  }
+
+  if (!values["force-create"]) {
+    const existing: { id: string; name: string }[] = [];
+    for await (const avatar of client.avatars.list({ limit: 100 })) {
+      existing.push({ id: avatar.id, name: avatar.name });
+    }
+    const duplicate = findDuplicateAvatar(existing, name);
+    if (duplicate) fail(duplicateAvatarMessage(duplicate, name));
   }
 
   console.log("\nCreating Character from the reference frame");
