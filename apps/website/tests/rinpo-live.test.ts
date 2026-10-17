@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { COMMERCIAL_CONFIG } from "../lib/content/commercialConfig";
+import { metadataFromRegistry } from "../lib/route-registry";
 import { SOLUTION_CATALOG } from "../lib/content/solutionCatalog";
 import {
   DEFAULT_MAX_DURATION_SECONDS,
@@ -402,6 +403,15 @@ describe("RINPO Live surfaces", () => {
     assert.match(read("lib/route-registry.ts"), /path: "\/rinpo\/live"/);
     assert.match(read("lib/product-ia.ts"), /href: "\/rinpo\/live"/);
     assert.match(read("app/rinpo/live/page.tsx"), /LiveClient/);
+  });
+
+  it("serves real SEO metadata from the route registry (not the CMS fallback)", () => {
+    assert.match(read("app/rinpo/live/page.tsx"), /metadataFromRegistry\("\/rinpo\/live"\)/);
+    const meta = metadataFromRegistry("/rinpo/live");
+    assert.ok(meta);
+    assert.match(String(meta.title), /RINPO Live/);
+    assert.equal(meta.alternates.canonical.endsWith("/rinpo/live"), true);
+    assert.deepEqual(meta.robots, { index: true, follow: true });
   });
 
   it("is honest in the UI: AI disclosure, transcription notice, disabled state, beta labels", () => {

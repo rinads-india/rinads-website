@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { getPageMetadata } from "@/lib/cms";
+import { metadataFromRegistry } from "@/lib/route-registry";
 import { LiveClient } from "./LiveClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/rinpo/live");
+  return (
+    (metadataFromRegistry("/rinpo/live") as Metadata) ?? { title: "RINPO Live | RINADS" }
+  );
 }
 
 export default function Page() {
