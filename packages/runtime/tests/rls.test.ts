@@ -24,4 +24,35 @@ describe("Runtime RLS policies", () => {
     assert.match(sql, /claim_runtime_jobs/);
     assert.match(sql, /reset_stale_runtime_jobs/);
   });
+
+  it("RINPO hardening makes business events immutable and moves processing state out of the event row", () => {
+    const sql = readFileSync(
+      join(process.cwd(), "../../supabase/migrations/20261011100000_rinpo_event_immutability.sql"),
+      "utf8"
+    );
+
+    assert.match(sql, /prevent_business_event_mutation/);
+    assert.match(sql, /business_events_append_only/);
+    assert.match(sql, /BEFORE UPDATE OR DELETE ON business_events/);
+    assert.match(sql, /business_event_consumptions/);
+    assert.match(sql, /business_event_consumptions ENABLE ROW LEVEL SECURITY/);
+    assert.match(sql, /private\.is_org_member\(organization_id\)/);
+    assert.match(sql, /processed_at IS[\s\S]*DEPRECATED/);
+  });
+
+  it("DLQ replay is auditable and service-role only", () => {
+    const sql = readFileSync(
+      join(process.cwd(), "../../supabase/migrations/20261011110000_runtime_dlq_replay.sql"),
+      "utf8"
+    );
+
+    assert.match(sql, /status IN \('open', 'replayed', 'discarded'\)/);
+    assert.match(sql, /replay_count/);
+    assert.match(sql, /replay_runtime_dead_letter/);
+    assert.match(sql, /SECURITY DEFINER/);
+    assert.match(sql, /REVOKE ALL ON FUNCTION replay_runtime_dead_letter[\s\S]*FROM authenticated/);
+    assert.match(sql, /GRANT EXECUTE ON FUNCTION replay_runtime_dead_letter[\s\S]*TO service_role/);
+    assert.match(sql, /status = 'dead_letter'/);
+    assert.match(sql, /attempts = 0/);
+  });
 });

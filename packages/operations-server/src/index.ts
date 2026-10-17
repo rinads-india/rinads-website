@@ -207,7 +207,10 @@ export {
   claimRuntimeJobs,
   enqueueRuntimeJobToSupabase,
   resetStaleRunningJobs,
+  replayRuntimeDeadLetterInSupabase,
   mapRuntimeJobRow,
+  mapDeadLetterRow,
+  type ReplayRuntimeDeadLetterResult,
   type RuntimeSupabaseClient,
 } from "./runtime-supabase";
 export { createRuntimePersistenceHooks } from "./runtime-persistence";

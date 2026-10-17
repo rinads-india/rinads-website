@@ -14,6 +14,8 @@ Migration `20260818100000_runtime_2.sql` enables RLS on:
 - `workflow_schedules`, `rinpo_memory_facts`
 - `business_events` (member SELECT policy added)
 
+Migration `20261011100000_rinpo_event_immutability.sql` additionally enables RLS on `business_event_consumptions`.
+
 Policies use `private.is_org_member(organization_id)` — same pattern as ERP/commerce tables.
 
 Verified by `packages/runtime/tests/rls.test.ts` (migration SQL assertions).
@@ -31,13 +33,17 @@ No cross-tenant job polling or event listing.
 
 ## Append-only events
 
-Design intent: `business_events` is canonical and immutable.
+`business_events` is canonical and immutable.
 
 - Migration comment: append-only canonical events
 - No UPDATE/DELETE policies for authenticated users on `business_events`
 - In-memory emit deduplicates via idempotency key; never mutates existing rows
+- `20261011100000_rinpo_event_immutability.sql` adds a DB trigger that rejects UPDATE/DELETE on `business_events`
+- the legacy `business_events.processed_at` column is explicitly deprecated
+- per-consumer processing state is stored in `business_event_consumptions`
+- an organization guard prevents a consumption row from referencing an event owned by another organization
 
-**Gap:** `processed_at` column exists but is never written. No DB trigger enforcing INSERT-only yet.
+This keeps the canonical event immutable while allowing each consumer to track `pending`, `processing`, `processed`, or `failed` state independently.
 
 ## Sensitive data
 
@@ -62,3 +68,4 @@ Design intent: `business_events` is canonical and immutable.
 
 - [RUNTIME-FORENSICS.md](./RUNTIME-FORENSICS.md) — pre-2.0 security gaps
 - [ERP-SECURITY.md](./ERP-SECURITY.md) — operations RLS baseline
+- [RINPO Canon v2.1](./rinpo/RINPO-CANON-V2.1.md) — canonical execution/security rules

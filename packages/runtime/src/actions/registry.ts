@@ -19,13 +19,33 @@ export type ActionContext = {
   correlationId?: string;
 };
 
+export type ActionResult =
+  | { ok: true; data?: Record<string, unknown> }
+  | { ok: false; error: string; errorClass?: string };
+
 export type ActionHandler = (
   ctx: ActionContext,
   input: Record<string, unknown>
-) => Promise<{ ok: true; data?: Record<string, unknown> } | { ok: false; error: string; errorClass?: string }>;
+) => Promise<ActionResult>;
+
+export type ActionVerificationResult =
+  | { ok: true }
+  | { ok: false; error: string; errorClass?: string };
+
+export type ActionVerifier = (
+  ctx: ActionContext,
+  input: Record<string, unknown>,
+  output: Record<string, unknown> | undefined
+) => Promise<ActionVerificationResult> | ActionVerificationResult;
 
 export type RegisteredAction = ActionDefinition & {
   handler: ActionHandler;
+  /**
+   * Optional business-state postcondition verifier.
+   * A successful handler result is not considered authoritative when a verifier is present;
+   * the verifier must confirm the expected state before the action is reported as successful.
+   */
+  verify?: ActionVerifier;
 };
 
 const registry = new Map<string, RegisteredAction>();
@@ -39,7 +59,7 @@ export function getAction(key: string): RegisteredAction | undefined {
 }
 
 export function listActions(): ActionDefinition[] {
-  return [...registry.values()].map(({ handler: _h, ...def }) => def);
+  return [...registry.values()].map(({ handler: _h, verify: _v, ...def }) => def);
 }
 
 export function clearActionRegistry(): void {

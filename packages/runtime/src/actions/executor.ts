@@ -1,4 +1,4 @@
-import { getAction, type ActionRiskLevel } from "./registry";
+import { getAction, type ActionRiskLevel, type ActionResult } from "./registry";
 import type { ActionContext } from "./registry";
 
 export type { ActionContext };
@@ -45,12 +45,34 @@ export async function executeAction(
   ctx: ActionContext,
   actionKey: string,
   input: Record<string, unknown>
-): Promise<{ ok: true; data?: Record<string, unknown> } | { ok: false; error: string; errorClass?: string }> {
+): Promise<ActionResult> {
   const validation = validateActionExecution(ctx, actionKey);
   if (!validation.allowed) {
     return { ok: false, error: validation.reason, errorClass: validation.errorClass };
   }
 
   const action = getAction(actionKey)!;
-  return action.handler(ctx, input);
+  const result = await action.handler(ctx, input);
+  if (!result.ok) return result;
+
+  if (action.verify) {
+    try {
+      const verification = await action.verify(ctx, input, result.data);
+      if (!verification.ok) {
+        return {
+          ok: false,
+          error: verification.error,
+          errorClass: verification.errorClass ?? "verification_error",
+        };
+      }
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Action postcondition verification failed",
+        errorClass: "verification_error",
+      };
+    }
+  }
+
+  return result;
 }
