@@ -1,0 +1,125 @@
+name: RINPO Live — Runway sync
+
+# Manual only. Creates or updates the RINPO Runway Character and publishes its
+# knowledge documents (see docs/runbooks/RINPO-LIVE-CHARACTER.md).
+#
+# This workflow never deploys anything and never runs automatically. It holds a
+# billing-capable API key, so it is locked down:
+#   - workflow_dispatch only (no pull_request / push triggers)
+#   - runs from `main` only, so code on a branch can never read the secret
+#   - read-only token, and the secret is exposed to a single step
+#   - inputs reach the shell through env vars, never interpolated into the script
+#
+# One-time setup:
+#   1. Settings → Secrets and variables → Actions → New repository secret:
+#      RUNWAYML_API_SECRET (optionally scope it to an environment named
+#      `rinpo-live` and add required reviewers for an approval gate).
+#   2. Run this workflow with dry_run = true (default) to preview — no key needed.
+#   3. Run again with dry_run = false. The summary prints RUNWAY_AVATAR_ID.
+#   4. Save that id as an Actions *variable* RUNWAY_AVATAR_ID (so later runs update
+#      the same Character) and as RUNWAY_AVATAR_ID in the Vercel Production env.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only: build knowledge and prompts, call no API (no key needed)"
+        type: boolean
+        default: true
+      clone_voice:
+        description: "Clone a custom voice from the character video's audio (only if that voice is yours to use)"
+        type: boolean
+        default: false
+      voice_preset:
+        description: "Runway preset voice when not cloning (lowercase letters only)"
+        type: string
+        default: clara
+      update_image:
+        description: "Re-upload the reference image on an existing Character"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rinpo-live-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync RINPO Character
+    # Never run branch code with the Runway secret available.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: rinpo-live
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter @rinads/website...
+
+      - name: Sync with Runway
+        env:
+          RUNWAYML_API_SECRET: ${{ secrets.RUNWAYML_API_SECRET }}
+          RUNWAY_AVATAR_ID: ${{ vars.RUNWAY_AVATAR_ID }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CLONE_VOICE: ${{ inputs.clone_voice }}
+          VOICE_PRESET: ${{ inputs.voice_preset }}
+          UPDATE_IMAGE: ${{ inputs.update_image }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "$VOICE_PRESET" =~ ^[a-z]+$ ]]; then
+            echo "voice_preset must be lowercase letters only." >&2
+            exit 1
+          fi
+          if [ "$DRY_RUN" != "true" ] && [ -z "${RUNWAYML_API_SECRET:-}" ]; then
+            echo "RUNWAYML_API_SECRET is not set. Add it under Settings → Secrets and variables → Actions." >&2
+            exit 1
+          fi
+
+          args=()
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          if [ "$CLONE_VOICE" = "true" ]; then args+=(--clone-voice); else args+=(--voice-preset "$VOICE_PRESET"); fi
+          if [ "$UPDATE_IMAGE" = "true" ]; then args+=(--update-image); fi
+
+          pnpm --filter @rinads/website runway:sync "${args[@]}" 2>&1 | tee sync.log
+
+      - name: Summary
+        if: always()
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          {
+            echo "### RINPO Live — Runway sync"
+            echo
+            if [ ! -f sync.log ]; then
+              echo "The sync did not run (see the step logs above)."
+            else
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "**Dry run** — nothing was sent to Runway."
+              fi
+              avatar_id="$(grep -o 'RUNWAY_AVATAR_ID=[0-9a-fA-F-]\{36\}' sync.log | head -n1 || true)"
+              if [ -n "$avatar_id" ]; then
+                echo
+                echo "**Character created.** Save this id as the Actions variable \`RUNWAY_AVATAR_ID\` and in Vercel (Production):"
+                echo
+                echo "\`${avatar_id}\`"
+                echo
+                echo "Then add \`RUNWAYML_API_SECRET\` to Vercel, redeploy, and run \`pnpm ops:verify --website https://www.rinads.com\`."
+              fi
+              echo
+              echo '```'
+              sed -n '1,40p' sync.log
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
