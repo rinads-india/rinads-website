@@ -5,6 +5,12 @@ import {
   duplicateAvatarMessage,
   findDuplicateAvatar,
 } from "../lib/rinpo-live/sync-guards";
+import {
+  DEFAULT_VOICE_DESIGN_PROMPT,
+  MIN_VOICE_PROMPT_CHARS,
+  validateVoicePrompt,
+  voiceChoiceError,
+} from "../lib/rinpo-live/voice";
 
 const WORKFLOW = readFileSync(
   new URL("../../../.github/workflows/rinpo-live-sync.yml", import.meta.url),
@@ -39,6 +45,27 @@ describe("runway:sync duplicate-avatar guard", () => {
   });
 });
 
+describe("RINPO Live voice options", () => {
+  it("ships a default design prompt that asks for English and Malayalam", () => {
+    assert.ok(DEFAULT_VOICE_DESIGN_PROMPT.length >= MIN_VOICE_PROMPT_CHARS);
+    assert.match(DEFAULT_VOICE_DESIGN_PROMPT, /English and Malayalam/);
+    assert.equal(validateVoicePrompt(DEFAULT_VOICE_DESIGN_PROMPT), null);
+  });
+
+  it("rejects a design prompt shorter than Runway's minimum", () => {
+    assert.match(String(validateVoicePrompt("too short")), /at least 20 characters/);
+    assert.match(String(validateVoicePrompt("   ")), /at least 20 characters/);
+  });
+
+  it("allows one voice option and refuses combinations", () => {
+    assert.equal(voiceChoiceError({}), null);
+    assert.equal(voiceChoiceError({ designVoice: true }), null);
+    assert.equal(voiceChoiceError({ voicePreset: "clara" }), null);
+    assert.match(String(voiceChoiceError({ cloneVoice: true, designVoice: true })), /--clone-voice, --design-voice/);
+    assert.match(String(voiceChoiceError({ voiceId: "v", voicePreset: "clara" })), /--voice-id, --voice-preset/);
+  });
+});
+
 describe("RINPO Live sync workflow safety", () => {
   it("is manual only", () => {
     assert.match(CODE, /^on:\n {2}workflow_dispatch:/m);
@@ -63,6 +90,13 @@ describe("RINPO Live sync workflow safety", () => {
     for (const line of uses) {
       assert.match(line, /^\s+[A-Z_]+: \$\{\{ inputs\.[a-z_]+ \}\}$/, line);
     }
+  });
+
+  it("offers voice design, and refuses to combine it with cloning", () => {
+    assert.match(WORKFLOW, /design_voice:[\s\S]*?default: false/);
+    assert.match(CODE, /DESIGN_VOICE: \$\{\{ inputs\.design_voice \}\}/);
+    assert.match(CODE, /Choose either clone_voice or design_voice, not both\./);
+    assert.match(CODE, /args\+=\(--design-voice\)/);
   });
 
   it("validates the free-text voice preset before use", () => {

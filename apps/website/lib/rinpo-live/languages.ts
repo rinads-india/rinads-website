@@ -1,29 +1,23 @@
 /**
  * Languages offered by RINPO Live (Runway Characters video conversation).
  *
- * A Runway Character speaks whatever language its personality instructs, so
- * language is a per-session override (personality + startScript) rather than a
- * separate avatar. Voice quality is a separate question: Runway documents a
- * fixed set of languages for its voices, and anything outside that set is
- * labelled "beta" in the UI until it has been verified with the chosen voice.
+ * RINPO Live speaks English and Malayalam. A Runway Character speaks whatever
+ * language its personality instructs, so language is a per-session override
+ * (personality + startScript) rather than a separate avatar.
+ *
+ * Voice quality is a separate question from instruction-following. English is
+ * a documented Runway voice language; Malayalam is not listed by Runway, so it
+ * stays labelled "beta" in the UI until it has been heard with the chosen
+ * voice (see docs/runbooks/RINPO-LIVE-CHARACTER.md → Malayalam).
  *
  * Add a language here and it flows through the picker, the personality and
  * the API validation — nothing else needs to change.
  */
 
-export type LiveLanguageCode =
-  | "auto"
-  | "en"
-  | "hi"
-  | "ml"
-  | "ta"
-  | "ar"
-  | "es"
-  | "fr"
-  | "de";
+export type LiveLanguageCode = "auto" | "en" | "ml";
 
 /**
- * - `auto`: RINPO follows whichever language the visitor speaks.
+ * - `auto`: RINPO follows whichever of English / Malayalam the visitor speaks.
  * - `documented`: listed by Runway as supported for generated voices.
  * - `beta`: the model can be instructed to use it, but voice quality has not
  *   been verified — surfaced honestly in the UI.
@@ -44,11 +38,11 @@ export type LiveLanguage = {
 export const LIVE_LANGUAGES: readonly LiveLanguage[] = [
   {
     code: "auto",
-    label: "Auto-detect",
-    nativeLabel: "Auto",
+    label: "Auto (English / Malayalam)",
+    nativeLabel: "Auto · English / മലയാളം",
     support: "auto",
     greeting:
-      "Hi, I'm RINPO, your guide to RINADS. You can speak to me in your own language and I'll follow you. What would you like to explore?",
+      "Hi, I'm RINPO, your guide to RINADS. You can speak to me in English or Malayalam, and I'll follow you. What would you like to explore?",
   },
   {
     code: "en",
@@ -59,60 +53,12 @@ export const LIVE_LANGUAGES: readonly LiveLanguage[] = [
       "Hi, I'm RINPO, your guide to RINADS. What would you like to explore today?",
   },
   {
-    code: "hi",
-    label: "Hindi",
-    nativeLabel: "हिन्दी",
-    support: "documented",
-    greeting:
-      "नमस्ते! मैं RINPO हूँ, RINADS में आपका गाइड। आज आप क्या जानना चाहेंगे?",
-  },
-  {
     code: "ml",
     label: "Malayalam",
     nativeLabel: "മലയാളം",
     support: "beta",
     greeting:
       "നമസ്കാരം! ഞാൻ RINPO, RINADS-ലേക്കുള്ള നിങ്ങളുടെ വഴികാട്ടി. ഇന്ന് എന്താണ് അറിയാൻ ആഗ്രഹിക്കുന്നത്?",
-  },
-  {
-    code: "ta",
-    label: "Tamil",
-    nativeLabel: "தமிழ்",
-    support: "beta",
-    greeting:
-      "வணக்கம்! நான் RINPO, RINADS-க்கான உங்கள் வழிகாட்டி. இன்று எதைப் பற்றி தெரிந்துகொள்ள விரும்புகிறீர்கள்?",
-  },
-  {
-    code: "ar",
-    label: "Arabic",
-    nativeLabel: "العربية",
-    support: "beta",
-    greeting:
-      "مرحبًا! أنا RINPO، دليلك إلى RINADS. ماذا تود أن تستكشف اليوم؟",
-  },
-  {
-    code: "es",
-    label: "Spanish",
-    nativeLabel: "Español",
-    support: "documented",
-    greeting:
-      "¡Hola! Soy RINPO, tu guía de RINADS. ¿Qué te gustaría explorar hoy?",
-  },
-  {
-    code: "fr",
-    label: "French",
-    nativeLabel: "Français",
-    support: "documented",
-    greeting:
-      "Bonjour ! Je suis RINPO, votre guide RINADS. Qu'aimeriez-vous découvrir aujourd'hui ?",
-  },
-  {
-    code: "de",
-    label: "German",
-    nativeLabel: "Deutsch",
-    support: "documented",
-    greeting:
-      "Hallo! Ich bin RINPO, Ihr Guide durch RINADS. Was möchten Sie heute entdecken?",
   },
 ] as const;
 
