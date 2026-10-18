@@ -6,7 +6,7 @@ import { metadataFromRegistry } from "@/lib/route-registry";
 import { ContactClient } from "./ContactClient";
 
 type ContactPageProps = {
-  searchParams: Promise<{ intent?: string; plan?: string }>;
+  searchParams: Promise<{ intent?: string; plan?: string; source?: string }>;
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,12 +25,16 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
         ? "Talk to sales about the right plan for your organisation."
         : intent === "implementation"
           ? "Talk through implementation with a specialist."
-          : "Book a demo or talk to the RINADS team.";
+          : intent === "partner"
+            ? "Explore a partnership with RINADS."
+            : "Book a demo or talk to the RINADS team.";
 
   const summary =
     plan != null
       ? `You selected the ${plan} plan interest. Tell us about your organisation and we will follow up.`
-      : "Share what you want to achieve — running the business, replacing tools, launching commerce, or implementing AI with control.";
+      : intent === "partner"
+        ? "Share the partnership you have in mind — implementation, referrals, integrations, education, or another strategic collaboration."
+        : "Share what you want to achieve — running the business, replacing tools, launching commerce, or implementing AI with control.";
 
   return (
     <>
