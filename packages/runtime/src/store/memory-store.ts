@@ -6,7 +6,12 @@ import type { OutboxStore } from "../outbox/outbox";
 import type { SchedulerStore } from "../scheduler/scheduler";
 import type { LoopGuardStore } from "../loop-guard";
 
-let idCounter = 0;
+function createRuntimeId(): string {
+  if (typeof globalThis.crypto?.randomUUID !== "function") {
+    throw new Error("RINPO Runtime requires crypto.randomUUID() for persistence-safe identities");
+  }
+  return globalThis.crypto.randomUUID();
+}
 
 export function createMemoryRuntimeStore(): EventEmitterStore &
   JobQueueStore &
@@ -28,9 +33,10 @@ export function createMemoryRuntimeStore(): EventEmitterStore &
     messages: [],
     schedules: [],
     recentEvents: [],
-    nextId(prefix: string) {
-      idCounter++;
-      return `${prefix}_${idCounter}_${Date.now().toString(36)}`;
+    nextId(_prefix: string) {
+      // Runtime persistence tables use UUID primary/foreign keys. Prefixes are retained in
+      // the API signature only for call-site readability and must never alter persisted IDs.
+      return createRuntimeId();
     },
   };
 }

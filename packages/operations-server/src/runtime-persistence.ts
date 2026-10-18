@@ -1,6 +1,7 @@
 import type { RuntimePersistenceHooks } from "@rinads/runtime";
 import {
   enqueueRuntimeJobToSupabase,
+  persistDeadLetter,
   persistExecutionSnapshot,
   persistRuntimeJob,
   type RuntimeSupabaseClient,
@@ -18,6 +19,10 @@ export function createRuntimePersistenceHooks(
     onJobUpdated: async (job) => {
       if (job.organizationId !== organizationId) return;
       await persistRuntimeJob(client, job);
+    },
+    onDeadLetterUpdated: async (deadLetter) => {
+      if (deadLetter.organizationId !== organizationId) return;
+      await persistDeadLetter(client, deadLetter);
     },
     onExecutionUpdated: async (execution) => {
       if (execution.organizationId !== organizationId) return;

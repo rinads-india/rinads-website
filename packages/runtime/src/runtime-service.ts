@@ -6,6 +6,8 @@ import { checkEventLoop } from "./loop-guard";
 import {
   enqueueJob,
   processJobQueue,
+  replayDeadLetter as replayDeadLetterJob,
+  type DeadLetterRecord,
   type DurableJob,
   type JobProcessor,
   type JobQueueStore,
@@ -41,6 +43,7 @@ import { getAction } from "./actions/registry";
 export type RuntimePersistenceHooks = {
   onJobEnqueued?: (job: DurableJob) => void | Promise<void>;
   onJobUpdated?: (job: DurableJob) => void | Promise<void>;
+  onDeadLetterUpdated?: (deadLetter: DeadLetterRecord) => void | Promise<void>;
   onExecutionUpdated?: (execution: WorkflowExecution) => void | Promise<void>;
 };
 
@@ -124,9 +127,9 @@ export class RuntimeService {
     }
     if (partial.deadLetters?.length) {
       for (const dlq of partial.deadLetters) {
-        if (!this.store.deadLetters.some((d) => d.id === dlq.id)) {
-          this.store.deadLetters.push(dlq);
-        }
+        const idx = this.store.deadLetters.findIndex((d) => d.id === dlq.id);
+        if (idx >= 0) this.store.deadLetters[idx] = dlq;
+        else this.store.deadLetters.push(dlq);
       }
     }
     if (partial.executions?.length) {
@@ -329,6 +332,9 @@ export class RuntimeService {
       onJobUpdated: (job) => {
         void this.persistenceHooks?.onJobUpdated?.(job);
       },
+      onDeadLetterUpdated: (deadLetter) => {
+        void this.persistenceHooks?.onDeadLetterUpdated?.(deadLetter);
+      },
     });
     const outbox = await processOutbox(this.store, {
       email: emailAdapter,
@@ -357,7 +363,9 @@ export class RuntimeService {
       executions: getExecutionCounts(this.store, organizationId),
       jobs: {
         queued: this.store.jobs.filter((j) => j.organizationId === organizationId && j.status === "queued").length,
-        deadLetter: this.store.deadLetters.filter((d) => d.organizationId === organizationId).length,
+        deadLetter: this.store.deadLetters.filter(
+          (d) => d.organizationId === organizationId && d.status === "open"
+        ).length,
       },
       approvals: listPendingApprovals(this.store, organizationId).length,
       outboxPending: listOutbox(this.store, organizationId).filter((m) => m.status === "pending").length,
@@ -378,6 +386,58 @@ export class RuntimeService {
 
   getDeadLetters(organizationId: string) {
     return this.store.deadLetters.filter((d) => d.organizationId === organizationId);
+  }
+
+  replayDeadLetter(ctx: ActionContext, deadLetterId: string, resolutionNote?: string) {
+    const isSystemRole = ctx.roleKey === "founder" || ctx.roleKey === "super_admin";
+    const canManageRuntime = isSystemRole || ctx.permissions?.includes("org.manage") === true;
+    if (!canManageRuntime) {
+      return {
+        ok: false as const,
+        error: "Missing permission: org.manage",
+        errorClass: "authorization_error",
+      };
+    }
+
+    const replayedBy = ctx.userId ?? ctx.roleKey;
+    if (!replayedBy) {
+      return {
+        ok: false as const,
+        error: "Replay requires an authenticated actor",
+        errorClass: "identity_error",
+      };
+    }
+
+    const result = replayDeadLetterJob(this.store, {
+      organizationId: ctx.organizationId,
+      deadLetterId,
+      replayedBy,
+      resolutionNote,
+    });
+    if (!result.ok) return result;
+
+    void this.persistenceHooks?.onJobUpdated?.(result.job);
+    void this.persistenceHooks?.onDeadLetterUpdated?.(result.deadLetter);
+
+    this.emit({
+      organizationId: ctx.organizationId,
+      eventType: "runtime.dead_letter.replayed.v1",
+      aggregateType: "runtime_job",
+      aggregateId: result.job.id,
+      payload: {
+        deadLetterId: result.deadLetter.id,
+        sourceJobId: result.job.id,
+        replayCount: result.deadLetter.replayCount,
+        resolutionNote: result.deadLetter.resolutionNote,
+      },
+      correlationId: result.job.correlationId,
+      actorType: "user",
+      actorId: replayedBy,
+      idempotencyKey: `runtime.dead_letter.replayed:${result.deadLetter.id}:${result.deadLetter.replayCount}`,
+      source: "runtime-control-plane",
+    });
+
+    return result;
   }
 
   approve(approvalId: string, resolvedBy: string) {

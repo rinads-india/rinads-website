@@ -71,6 +71,25 @@ export function wireRuntime(deps: RuntimeWiringDeps, options: WireRuntimeOptions
       });
       return result.ok ? { ok: true, data: { fulfilmentId: result.data.id } } : { ok: false, error: result.error.message };
     },
+    verify: (ctx, input, output) => {
+      const fulfilmentId = String(output?.fulfilmentId ?? "");
+      const orderId = String(input.orderId ?? "");
+      const exists = deps.opsRepo
+        .getStore()
+        .fulfilments.some(
+          (f) =>
+            f.id === fulfilmentId &&
+            f.organizationId === ctx.organizationId &&
+            f.orderId === orderId
+        );
+      return exists
+        ? { ok: true }
+        : {
+            ok: false,
+            error: "Fulfilment postcondition not found after create action",
+            errorClass: "verification_error",
+          };
+    },
   });
 
   registerAction({
@@ -79,7 +98,7 @@ export function wireRuntime(deps: RuntimeWiringDeps, options: WireRuntimeOptions
     riskLevel: "LOW",
     idempotencyRequired: true,
     handler: async (ctx, input) => {
-      runtime.enqueueNotification({
+      const message = runtime.enqueueNotification({
         organizationId: ctx.organizationId,
         channel: (input.channel as "email" | "whatsapp") ?? "email",
         templateKey: String(input.templateKey ?? "order_confirmation"),
@@ -88,7 +107,24 @@ export function wireRuntime(deps: RuntimeWiringDeps, options: WireRuntimeOptions
         idempotencyKey: String(input.idempotencyKey ?? `notify:${input.orderId}`),
         correlationId: ctx.correlationId,
       });
-      return { ok: true };
+      return { ok: true, data: { messageId: message.id } };
+    },
+    verify: (ctx, input, output) => {
+      const messageId = String(output?.messageId ?? "");
+      const idempotencyKey = String(input.idempotencyKey ?? `notify:${input.orderId}`);
+      const exists = runtime.store.messages.some(
+        (m) =>
+          m.id === messageId &&
+          m.organizationId === ctx.organizationId &&
+          m.idempotencyKey === idempotencyKey
+      );
+      return exists
+        ? { ok: true }
+        : {
+            ok: false,
+            error: "Notification outbox postcondition not found after enqueue action",
+            errorClass: "verification_error",
+          };
     },
   });
 
@@ -107,6 +143,19 @@ export function wireRuntime(deps: RuntimeWiringDeps, options: WireRuntimeOptions
         entityId: String(input.orderId ?? ""),
       });
       return { ok: true, data: { taskId: task.id } };
+    },
+    verify: (ctx, _input, output) => {
+      const taskId = String(output?.taskId ?? "");
+      const exists = deps.opsRepo
+        .getStore()
+        .tasks.some((t) => t.id === taskId && t.organizationId === ctx.organizationId);
+      return exists
+        ? { ok: true }
+        : {
+            ok: false,
+            error: "Task postcondition not found after create action",
+            errorClass: "verification_error",
+          };
     },
   });
 
