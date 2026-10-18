@@ -46,7 +46,46 @@ export function broadTodayRangeIso(): { from: string; to: string; now: string } 
   };
 }
 
+/** A stable YYYY-MM-DD key in the salon branch's local timezone. */
+export function zonedCalendarDateKey(iso: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(iso));
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function zonedDateHeading(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+  }).format(new Date(iso));
+}
+
+export function zonedTimeLabel(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+export function zonedDateTimeLabel(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
 export function isSameZonedCalendarDate(a: string, b: string, timeZone: string): boolean {
-  const formatter = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
-  return formatter.format(new Date(a)) === formatter.format(new Date(b));
+  return zonedCalendarDateKey(a, timeZone) === zonedCalendarDateKey(b, timeZone);
 }
