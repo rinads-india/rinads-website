@@ -2,7 +2,14 @@ import { Badge, Card, EmptyState } from "@rinads/ui";
 import { canRescheduleAppointment, type AppointmentStatus } from "@rinads/salon";
 import Link from "next/link";
 import { getSalonRepository } from "@/lib/salon";
-import { broadTodayRangeIso, isSameZonedCalendarDate } from "@/lib/time";
+import {
+  broadTodayRangeIso,
+  isSameZonedCalendarDate,
+  zonedCalendarDateKey,
+  zonedDateHeading,
+  zonedDateTimeLabel,
+  zonedTimeLabel,
+} from "@/lib/time";
 import { requireTenancy } from "@/lib/tenancy";
 import { AppointmentActions } from "./AppointmentActions";
 import { AppointmentNotes } from "./AppointmentNotes";
@@ -10,6 +17,8 @@ import { AppointmentReschedule } from "./AppointmentReschedule";
 import { NewAppointmentForm } from "./NewAppointmentForm";
 
 export const metadata = { title: "Calendar — R GLOW Console" };
+
+const UPCOMING_HORIZON_DAYS = 90;
 
 const STATUS_TONE: Record<AppointmentStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -21,40 +30,32 @@ const STATUS_TONE: Record<AppointmentStatus, string> = {
   no_show: "bg-red-100 text-red-700",
 };
 
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-IN", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+type CalendarAppointment = { startsAt: string; branchId: string };
+type BranchTimezone = { timezone: string };
 
-function formatDayHeading(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long" });
-}
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-}
-
-function dayKey(iso: string): string {
-  return new Date(iso).toISOString().slice(0, 10);
-}
-
-/** Groups a flat, already-sorted appointment list into day buckets — a lightweight day/week calendar view without a full grid widget. */
-function groupByDay<T extends { startsAt: string }>(items: T[]): { key: string; heading: string; items: T[] }[] {
-  const groups = new Map<string, T[]>();
+/** Groups appointments by each appointment branch's local calendar date. */
+function groupByDay<T extends CalendarAppointment>(
+  items: T[],
+  branchesById: Map<string, BranchTimezone>
+): { key: string; heading: string; timeZone: string; items: T[] }[] {
+  const groups = new Map<string, { timeZone: string; items: T[] }>();
   for (const item of items) {
-    const key = dayKey(item.startsAt);
-    const bucket = groups.get(key) ?? [];
-    bucket.push(item);
+    const timeZone = branchesById.get(item.branchId)?.timezone ?? "UTC";
+    const localDate = zonedCalendarDateKey(item.startsAt, timeZone);
+    // Include timezone so branches in different zones never collapse into a misleading shared day bucket.
+    const key = `${localDate}:${timeZone}`;
+    const bucket = groups.get(key) ?? { timeZone, items: [] };
+    bucket.items.push(item);
     groups.set(key, bucket);
   }
   return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, groupItems]) => ({ key, heading: formatDayHeading(groupItems[0].startsAt), items: groupItems }));
+    .map(([key, group]) => ({
+      key,
+      heading: zonedDateHeading(group.items[0].startsAt, group.timeZone),
+      timeZone: group.timeZone,
+      items: group.items,
+    }))
+    .sort((a, b) => a.key.localeCompare(b.key));
 }
 
 export default async function CalendarPage({
@@ -66,6 +67,7 @@ export default async function CalendarPage({
   const { branch: branchFilter, view } = await searchParams;
   const calendarView = view === "upcoming" ? "upcoming" : "today";
   const today = broadTodayRangeIso();
+  const upcomingTo = new Date(new Date(today.now).getTime() + UPCOMING_HORIZON_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const repo = await getSalonRepository();
 
   const [branchesResult, staffResult, servicesResult, customersResult, appointmentsResult] = await Promise.all([
@@ -76,7 +78,7 @@ export default async function CalendarPage({
     repo.listAppointments(tenancy.organizationId, {
       branchId: branchFilter || undefined,
       from: calendarView === "today" ? today.from : today.now,
-      to: calendarView === "today" ? today.to : undefined,
+      to: calendarView === "today" ? today.to : upcomingTo,
     }),
   ]);
 
@@ -105,7 +107,7 @@ export default async function CalendarPage({
         <div>
           <h2 className="text-2xl font-semibold text-foreground">Calendar</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {calendarView === "today" ? "Today's" : "Upcoming"} appointments
+            {calendarView === "today" ? "Today's" : `Next ${UPCOMING_HORIZON_DAYS} days of`} appointments
             {branchFilter ? " for the selected branch" : " across every branch you can access"}.
           </p>
         </div>
@@ -170,7 +172,7 @@ export default async function CalendarPage({
         />
       ) : (
         <div className="space-y-6">
-          {groupByDay(appointments).map((day) => (
+          {groupByDay(appointments, branchesById).map((day) => (
             <div key={day.key}>
               <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{day.heading}</h3>
               <div className="space-y-3">
@@ -178,11 +180,12 @@ export default async function CalendarPage({
                   const staff = staffById.get(appt.staffId);
                   const customer = customersById.get(appt.customerId);
                   const appointmentBranch = branchesById.get(appt.branchId);
+                  const timeZone = appointmentBranch?.timezone ?? day.timeZone;
                   return (
                     <Card key={appt.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground">{formatTime(appt.startsAt)}</span>
+                          <span className="text-sm font-semibold text-foreground">{zonedTimeLabel(appt.startsAt, timeZone)}</span>
                           <Badge className={STATUS_TONE[appt.status]}>{appt.status.replace("_", " ")}</Badge>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">
@@ -193,7 +196,7 @@ export default async function CalendarPage({
                           ) : "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
                           {branches.length > 1 && appointmentBranch ? ` · ${appointmentBranch.name}` : ""}
                         </p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(appt.startsAt)}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{zonedDateTimeLabel(appt.startsAt, timeZone)}</p>
                       </div>
                       <div className="flex flex-col items-start gap-2 sm:items-end">
                         <Link href={`/calendar?view=${calendarView}&appointment=${appt.id}${branchFilter ? `&branch=${branchFilter}` : ""}`} className="text-xs text-rinads-primary underline">
