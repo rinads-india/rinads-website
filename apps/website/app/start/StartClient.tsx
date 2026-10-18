@@ -25,7 +25,6 @@ type ActionCard = {
   event: MarketingEvent;
   icon: typeof ArrowRight;
   primary?: boolean;
-  external?: boolean;
 };
 
 const TRACKING_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
@@ -55,9 +54,9 @@ export function StartClient({ whatsappUrl }: StartClientProps) {
     },
     {
       title: "Free Business Simplified Audit",
-      description: "Start with the Business Readiness assessment and identify the clearest operating gaps.",
-      href: appendAttribution("/business-readiness", attribution),
-      event: "business_readiness_started",
+      description: "Request a practical review of your current business setup, digital presence and operating gaps.",
+      href: appendAttribution("/contact?intent=audit", attribution),
+      event: "nav_clicked",
       icon: SearchCheck,
       primary: true,
     },
