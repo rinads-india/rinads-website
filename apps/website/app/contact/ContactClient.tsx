@@ -18,15 +18,17 @@ export function ContactClient() {
       heading={
         intent === "demo"
           ? "Book a demo"
-          : intent === "sales"
-            ? "Talk to sales"
-            : intent === "implementation"
-              ? "Talk to an implementation specialist"
-              : intent === "security"
-                ? "Security enquiry"
-                : intent === "partner"
-                  ? "Partner with RINADS"
-                  : "What are you trying to achieve?"
+          : intent === "audit"
+            ? "Request your free Business Simplified Audit"
+            : intent === "sales"
+              ? "Talk to sales"
+              : intent === "implementation"
+                ? "Talk to an implementation specialist"
+                : intent === "security"
+                  ? "Security enquiry"
+                  : intent === "partner"
+                    ? "Partner with RINADS"
+                    : "What are you trying to achieve?"
       }
     />
   );
