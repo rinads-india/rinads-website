@@ -1,4 +1,5 @@
 import type {
+  DeadLetterRecord,
   DurableJob,
   MemoryRuntimeStore,
   OutboxMessage,
@@ -52,6 +53,26 @@ function mapOutboxRow(row: Record<string, unknown>): OutboxMessage {
   };
 }
 
+export function mapDeadLetterRow(row: Record<string, unknown>): DeadLetterRecord {
+  const createdAt = String(row.created_at ?? new Date().toISOString());
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    sourceType: row.source_type as DeadLetterRecord["sourceType"],
+    sourceId: String(row.source_id),
+    errorClass: row.error_class ? String(row.error_class) : undefined,
+    errorMessage: String(row.error_message),
+    payload: (row.payload as Record<string, unknown>) ?? {},
+    status: (row.status as DeadLetterRecord["status"]) ?? "open",
+    replayCount: Number(row.replay_count ?? 0),
+    replayedAt: row.replayed_at ? String(row.replayed_at) : undefined,
+    replayedBy: row.replayed_by ? String(row.replayed_by) : undefined,
+    resolutionNote: row.resolution_note ? String(row.resolution_note) : undefined,
+    createdAt,
+    updatedAt: String(row.updated_at ?? createdAt),
+  };
+}
+
 function jobToRow(organizationId: string, job: DurableJob): Record<string, unknown> {
   return {
     id: job.id,
@@ -88,6 +109,25 @@ function outboxToRow(organizationId: string, msg: OutboxMessage): Record<string,
   };
 }
 
+function deadLetterToRow(deadLetter: DeadLetterRecord): Record<string, unknown> {
+  return {
+    id: deadLetter.id,
+    organization_id: deadLetter.organizationId,
+    source_type: deadLetter.sourceType,
+    source_id: deadLetter.sourceId,
+    error_class: deadLetter.errorClass ?? null,
+    error_message: deadLetter.errorMessage,
+    payload: deadLetter.payload,
+    status: deadLetter.status,
+    replay_count: deadLetter.replayCount,
+    replayed_at: deadLetter.replayedAt ?? null,
+    replayed_by: deadLetter.replayedBy ?? null,
+    resolution_note: deadLetter.resolutionNote ?? null,
+    created_at: deadLetter.createdAt,
+    updated_at: deadLetter.updatedAt,
+  };
+}
+
 export async function enqueueRuntimeJobToSupabase(
   client: RuntimeSupabaseClient,
   job: DurableJob
@@ -100,6 +140,13 @@ export async function persistRuntimeJob(
   job: DurableJob
 ): Promise<void> {
   await enqueueRuntimeJobToSupabase(client, job);
+}
+
+export async function persistDeadLetter(
+  client: RuntimeSupabaseClient,
+  deadLetter: DeadLetterRecord
+): Promise<void> {
+  await client.from("runtime_dead_letters").upsert([deadLetterToRow(deadLetter)]);
 }
 
 export async function persistExecutionSnapshot(
@@ -148,6 +195,40 @@ export async function claimRuntimeJobs(
   return [];
 }
 
+export type ReplayRuntimeDeadLetterResult =
+  | { ok: true; job: DurableJob }
+  | { ok: false; error: string };
+
+/**
+ * Server-side adapter for the service-role-only replay RPC.
+ * Authorization of the human actor must happen before this function is called.
+ */
+export async function replayRuntimeDeadLetterInSupabase(
+  client: RuntimeSupabaseClient,
+  input: {
+    organizationId: string;
+    deadLetterId: string;
+    replayedBy: string;
+    resolutionNote?: string;
+  }
+): Promise<ReplayRuntimeDeadLetterResult> {
+  if (!client.rpc) {
+    return { ok: false, error: "Runtime replay RPC is unavailable" };
+  }
+
+  const { data, error } = await client.rpc("replay_runtime_dead_letter", {
+    p_org_id: input.organizationId,
+    p_dead_letter_id: input.deadLetterId,
+    p_replayed_by: input.replayedBy,
+    p_resolution_note: input.resolutionNote ?? null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  const row = data?.[0];
+  if (!row) return { ok: false, error: "Replay RPC returned no runtime job" };
+  return { ok: true, job: mapRuntimeJobRow(row) };
+}
+
 export async function loadRuntimeStoreFromSupabase(
   client: RuntimeSupabaseClient,
   organizationId: string
@@ -169,9 +250,11 @@ export async function loadRuntimeStoreFromSupabase(
     fetch("runtime_execution_snapshots"),
   ]);
 
+  // Completed jobs can be omitted from the hot in-memory store. Dead-letter jobs remain
+  // available because authorized replay must reset the original job rather than clone it.
   const jobs = (jobRows ?? [])
     .map(mapRuntimeJobRow)
-    .filter((j) => j.status !== "completed" && j.status !== "dead_letter");
+    .filter((j) => j.status !== "completed");
 
   const messages = (outboxRows ?? [])
     .map(mapOutboxRow)
@@ -184,15 +267,7 @@ export async function loadRuntimeStoreFromSupabase(
     version: Number(row.version ?? 1),
   }));
 
-  const deadLetters = (dlqRows ?? []).map((row) => ({
-    id: String(row.id),
-    organizationId,
-    sourceType: String(row.source_type),
-    sourceId: String(row.source_id),
-    errorMessage: String(row.error_message),
-    payload: (row.payload as Record<string, unknown>) ?? {},
-    createdAt: String(row.created_at),
-  }));
+  const deadLetters = (dlqRows ?? []).map(mapDeadLetterRow);
 
   const executions: WorkflowExecution[] = (snapshotRows ?? []).map((row) =>
     row.execution_json as WorkflowExecution
@@ -239,17 +314,7 @@ export async function syncRuntimeArtifactsToSupabase(
 
   const deadLetters = store.deadLetters.filter((d) => d.organizationId === organizationId);
   if (deadLetters.length) {
-    await client.from("runtime_dead_letters").upsert(
-      deadLetters.map((d) => ({
-        id: d.id,
-        organization_id: organizationId,
-        source_type: d.sourceType,
-        source_id: d.sourceId,
-        error_message: d.errorMessage,
-        payload: d.payload,
-        created_at: d.createdAt,
-      }))
-    );
+    await client.from("runtime_dead_letters").upsert(deadLetters.map(deadLetterToRow));
   }
 
   const executions = store.executions.filter((e) => e.organizationId === organizationId);

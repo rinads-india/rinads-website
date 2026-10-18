@@ -12,7 +12,7 @@ Why not production today:
 
 1. **No Company OS migration has been applied to any database**, so every claim about live behaviour is proven only against an in-process Postgres (PGlite) running the real 44-migration chain, not against Supabase staging.
 2. **No authenticated UAT has been run.** The founder/staff Playwright personas exist but were skipped (no credentials, no deployment).
-3. **PR #115 (function-privilege hardening) and PR #119 (runtime hardening) are not merged.** The release gate for raising autonomy is therefore not met; this release deliberately keeps every AI role at *read + propose*.
+3. **PR #115 (function-privilege hardening) and PR #119 (runtime hardening) are now merged to `main`** (merged into this branch 2026-10-19; all 50 turbo test tasks, including the Company OS DB suites on the chain that now contains #115's migration, pass). Their *production/staging validation* is not evidenced here, so this release still keeps every AI role at *read + propose* and does not raise autonomy.
 4. **No preview or staging deployment of this branch exists yet**, so there is no staging evidence.
 
 Nothing here is marked ready by inference. Where evidence is missing it says so.

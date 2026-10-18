@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "deploy:emergency": "echo 'EMERGENCY MODE only \u2014 see docs/deployment/POLICY.md' && vercel deploy --prod -y --scope rinadss-projects-1ebcffe7",
+    "runway:sync": "tsx scripts/runway/character.ts sync",
+    "runway:transcripts": "tsx scripts/runway/character.ts transcripts",
+    "deploy:emergency": "echo 'EMERGENCY MODE only — see docs/deployment/POLICY.md' && vercel deploy --prod -y --scope rinadss-projects-1ebcffe7",
     "push:github": "bash scripts/push-to-github.sh"
   },
   "dependencies": {
@@ -18,6 +20,7 @@
     "@rinads/brand": "workspace:*",
     "@rinads/cms": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
+    "@rinads/company-os": "workspace:*",
     "@rinads/company-os-engine": "workspace:*",
     "@rinads/company-os-server": "workspace:*",
     "@rinads/database": "workspace:*",
@@ -30,14 +33,15 @@
     "@rinads/shared": "workspace:*",
     "@rinads/tenancy": "workspace:*",
     "@rinads/ui": "workspace:*",
+    "@runwayml/avatars-react": "^0.17.0",
+    "@runwayml/sdk": "^4.22.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "framer-motion": "^12.34.3",
     "lucide-react": "^1.28.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "@rinads/company-os": "workspace:*"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
