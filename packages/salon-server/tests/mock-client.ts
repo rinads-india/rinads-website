@@ -210,15 +210,39 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
       if (fn === "claim_due_salon_notification_outbox") {
         const now = Date.now();
         const limit = Math.min(100, Math.max(1, Number(args.p_limit ?? 25)));
+        const orgIds = Array.isArray(args.p_organization_ids) ? args.p_organization_ids.map(String) : null;
         const rows = getTable("notification_outbox")
           .filter((row) =>
             row.channel === "whatsapp" &&
             ["pending", "failed", "not_configured"].includes(String(row.status)) &&
-            (!row.next_attempt_at || new Date(String(row.next_attempt_at)).getTime() <= now)
+            (!row.next_attempt_at || new Date(String(row.next_attempt_at)).getTime() <= now) &&
+            (!orgIds || orgIds.includes(String(row.organization_id)))
           )
           .slice(0, limit);
         rows.forEach((row) => Object.assign(row, { status: "processing", updated_at: new Date().toISOString() }));
         return { data: rows.map((row) => ({ ...row })), error: null };
+      }
+      if (fn === "update_salon_whatsapp_settings") {
+        const organizationId = String(args.p_organization_id ?? "");
+        const mode = String(args.p_mode ?? "off");
+        const allowlist = Array.isArray(args.p_sandbox_allowlist) ? args.p_sandbox_allowlist.map(String) : [];
+        const rows = getTable("organization_settings");
+        const existing = rows.find((row) => row.organization_id === organizationId);
+        const whatsapp = { mode, sandboxAllowlist: allowlist, updatedAt: new Date().toISOString() };
+        if (!existing) return { data: null, error: { message: "organization settings not found" } };
+        const settings = { ...((existing.settings as Record<string, unknown>) ?? {}) };
+        const communications = { ...((settings.communications as Record<string, unknown>) ?? {}), whatsapp };
+        existing.settings = { ...settings, communications };
+        return { data: whatsapp, error: null };
+      }
+      if (fn === "set_salon_whatsapp_send_enabled") {
+        const organizationId = String(args.p_organization_id ?? "");
+        const enabled = Boolean(args.p_enabled);
+        const rows = getTable("feature_flag_overrides");
+        const existing = rows.find((row) => row.flag_key === "salon.whatsapp.send_enabled" && row.organization_id === organizationId);
+        if (existing) existing.enabled = enabled;
+        else rows.push({ flag_key: "salon.whatsapp.send_enabled", organization_id: organizationId, enabled });
+        return { data: enabled, error: null };
       }
       if (fn === "retry_salon_notification_outbox") {
         const limit = Math.min(100, Math.max(1, Number(args.p_limit ?? 50)));

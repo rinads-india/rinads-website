@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { SalonCommunicationsRepository } from "../src/communications-repository";
 import { runSalonCommunicationsWorker } from "../src/communications-worker";
-import { processSalonNotificationOutbox, validateWhatsAppBody } from "../src/notification-delivery";
+import { processSalonNotificationOutbox, validateWhatsAppBody, type ProcessOutboxOptions, type SalonNotificationAdapter } from "../src/notification-delivery";
+
+const allowLive = async () => ({ allowed: true as const, mode: "live" as const });
+
+function processOutbox(
+  client: ReturnType<typeof createSalonMockClient>,
+  adapter: SalonNotificationAdapter,
+  options: ProcessOutboxOptions = {}
+) {
+  return processSalonNotificationOutbox(client, adapter, { resolveSendGate: allowLive, ...options });
+}
 import type { SalonCampaignsRepository } from "../src/campaigns-repository";
 import { createSalonMockClient } from "./mock-client";
 
@@ -97,8 +107,8 @@ describe("SalonCommunicationsRepository", () => {
       },
     };
     const [first, second] = await Promise.all([
-      processSalonNotificationOutbox(client, adapter, { batchSize: 2 }),
-      processSalonNotificationOutbox(client, adapter, { batchSize: 2 }),
+      processOutbox(client, adapter, { batchSize: 2 }),
+      processOutbox(client, adapter, { batchSize: 2 }),
     ]);
     assert.equal(first.processed + second.processed, 4);
     assert.equal(new Set(recipients).size, 4);
@@ -114,7 +124,7 @@ describe("communications worker controls", () => {
       client,
       {} as SalonCampaignsRepository,
       { send: async () => { sends++; return { status: "sent", providerMessageId: "SM1" }; } },
-      { enabled: false, organizationIds: [ORG_ID] }
+      { enabled: false, organizationIds: [ORG_ID], resolveSendGate: allowLive }
     );
     assert.equal(result.enabled, false);
     assert.equal(sends, 0);
@@ -130,7 +140,7 @@ describe("communications worker controls", () => {
       client,
       campaigns,
       { send: async () => ({ status: "sent", providerMessageId: "SM1" }) },
-      { enabled: true, organizationIds: [ORG_ID], batchSize: 2, throughputDelayMs: 0 }
+      { enabled: true, organizationIds: [ORG_ID], batchSize: 2, throughputDelayMs: 0, resolveSendGate: allowLive }
     );
     assert.equal(result.delivery.processed, 2);
     assert.equal(client.tables.get("notification_outbox")!.filter((row) => row.status === "pending").length, 1);
@@ -157,7 +167,7 @@ describe("communications worker controls", () => {
       client,
       campaigns,
       { send: async () => ({ status: "sent", providerMessageId: "unused" }) },
-      { enabled: true, organizationIds: [ORG_ID], now: new Date("2026-09-16T00:00:00.000Z") }
+      { enabled: true, organizationIds: [ORG_ID], now: new Date("2026-09-16T00:00:00.000Z"), resolveSendGate: allowLive }
     );
     assert.deepEqual(advanced, ["due"]);
     assert.equal(result.campaignsAdvanced, 1);
@@ -174,6 +184,7 @@ describe("communications worker controls", () => {
       {
         enabled: true,
         organizationIds: [ORG_ID, "org_communications_2"],
+        resolveSendGate: allowLive,
         reviewsAutomationUrl: "https://example.test/api/automations/process",
         reviewsAutomationToken: "worker-secret",
         reviewsAutomationLimit: 500,
@@ -198,7 +209,7 @@ describe("communications worker controls", () => {
     await seedOutbox(client, "pending", "40");
     await seedOutbox(client, "pending", "41");
     const delays: number[] = [];
-    const result = await processSalonNotificationOutbox(
+    const result = await processOutbox(
       client,
       { send: async () => ({ status: "sent", providerMessageId: "SM" }) },
       { batchSize: 2, throughputDelayMs: 125, sleep: async (ms) => { delays.push(ms); } }

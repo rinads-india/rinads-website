@@ -45,6 +45,7 @@ export function planFeatureFlags(input: {
     "erp.procurement": modules.includes("procurement"),
     "erp.fulfilment": modules.includes("fulfilment"),
     "rinpo.ops": input.planKey === "platform",
+    "salon.whatsapp.send_enabled": false,
   };
   return flags;
 }

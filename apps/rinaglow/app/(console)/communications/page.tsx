@@ -1,4 +1,5 @@
 import type { CommunicationStatus } from "@rinads/salon-server";
+import { getWhatsAppReadiness } from "@rinads/salon-server";
 import { Badge, Card, EmptyState } from "@rinads/ui";
 import Link from "next/link";
 import { getSalonDeps } from "@/lib/salon";
@@ -34,12 +35,15 @@ export default async function CommunicationsPage({
 
   const page = Math.max(1, Number(query.page ?? 1));
   const status = FILTERS.find((filter) => filter.value === query.status)?.value;
-  const { communications } = await getSalonDeps();
-  const result = await communications.list(tenancy.organizationId, {
-    page,
-    pageSize: 25,
-    statuses: status ? [status] : undefined,
-  });
+  const { communications, client } = await getSalonDeps();
+  const [result, readiness] = await Promise.all([
+    communications.list(tenancy.organizationId, {
+      page,
+      pageSize: 25,
+      statuses: status ? [status] : undefined,
+    }),
+    getWhatsAppReadiness(client, communications, tenancy.organizationId),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -47,6 +51,22 @@ export default async function CommunicationsPage({
         <h2 className="text-2xl font-semibold text-foreground">Communications</h2>
         <p className="mt-1 text-sm text-muted-foreground">Tenant-scoped outbound delivery log. The outbox is the source of truth.</p>
       </div>
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="section-title">WhatsApp status</p>
+            <p className="text-sm text-muted-foreground">{readiness.operatorSummary}</p>
+            {readiness.funnel.failed + readiness.funnel.deadLetter + readiness.funnel.notConfigured > 0 ? (
+              <p className="mt-2 text-sm text-danger">
+                {readiness.funnel.notConfigured} not configured · {readiness.funnel.failed} failed · {readiness.funnel.deadLetter} dead letter. Open a row to see <code>last_error</code> and the Twilio timeline.
+              </p>
+            ) : null}
+          </div>
+          <Link href="/settings#communications" className="btn-secondary">
+            Settings → Communications
+          </Link>
+        </div>
+      </Card>
       <nav className="flex flex-wrap gap-2" aria-label="Communication status filters">
         {FILTERS.map((filter) => (
           <Link

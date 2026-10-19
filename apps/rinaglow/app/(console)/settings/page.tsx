@@ -1,20 +1,26 @@
+import { isPrivilegedRoleKey } from "@rinads/permissions";
 import { Card, EmptyState } from "@rinads/ui";
 import { getBookingReadiness } from "@rinads/salon";
+import { getWhatsAppReadiness } from "@rinads/salon-server";
 import { WorkingHoursEditor } from "@/components/WorkingHoursEditor";
-import { getSalonRepository } from "@/lib/salon";
+import { getSalonDeps, getSalonRepository } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { NewBranchForm } from "./NewBranchForm";
 import { CopyBookingLink } from "./BookingReadiness";
+import { WhatsAppReadinessCard } from "./WhatsAppReadinessCard";
 
 export const metadata = { title: "Settings — R GLOW Console" };
 
 export default async function SettingsPage() {
   const tenancy = await requireTenancy();
   const repo = await getSalonRepository();
-  const [result, servicesResult, staffResult] = await Promise.all([
+  const { client, communications } = await getSalonDeps();
+  const canManageWhatsApp = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("org.manage");
+  const [result, servicesResult, staffResult, whatsappReadiness] = await Promise.all([
     repo.listBranches(tenancy.organizationId),
     repo.listServices(tenancy.organizationId),
     repo.listStaff(tenancy.organizationId),
+    getWhatsAppReadiness(client, communications, tenancy.organizationId),
   ]);
   const branches = result.ok ? result.data : [];
   const readiness = getBookingReadiness(
@@ -31,8 +37,15 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-foreground">Settings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Branches, hours, and organization details.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Branches, hours, WhatsApp delivery, and organization details.</p>
       </div>
+
+      <Card>
+        <WhatsAppReadinessCard
+          readiness={whatsappReadiness}
+          canManage={canManageWhatsApp}
+        />
+      </Card>
 
       <Card>
         <p className="section-title">Public booking</p>

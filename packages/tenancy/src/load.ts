@@ -203,5 +203,6 @@ function defaultFlagDefinitions(): FeatureFlagDefinition[] {
     { key: "erp.procurement", defaultEnabled: false },
     { key: "erp.fulfilment", defaultEnabled: false },
     { key: "rinpo.ops", defaultEnabled: false },
+    { key: "salon.whatsapp.send_enabled", defaultEnabled: false },
   ];
 }

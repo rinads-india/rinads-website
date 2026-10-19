@@ -44,5 +44,6 @@ describe("tenancy load helpers", () => {
     const flags = planFeatureFlags({ planKey: "starter" });
     assert.equal(flags["erp.procurement"], false);
     assert.equal(flags["erp.inventory"], true);
+    assert.equal(flags["salon.whatsapp.send_enabled"], false);
   });
 });
