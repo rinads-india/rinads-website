@@ -73,12 +73,16 @@ export function PhoneHomeScreen({
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && authMode === "supabase") {
-      void loadLiveHome();
-      return;
-    }
-    setLiveHome(null);
-    setLiveState("idle");
+    if (!(isAuthenticated && authMode === "supabase")) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void loadLiveHome();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [authMode, isAuthenticated, loadLiveHome]);
 
   const handleAppClick = (appId: GridAppId) => {
