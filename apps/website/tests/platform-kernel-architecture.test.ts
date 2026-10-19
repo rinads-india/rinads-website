@@ -123,6 +123,6 @@ describe("platform kernel architecture contract", () => {
 
     assert.match(adr, /organization_id[\s\S]*mandatory tenant boundary/i);
     assert.match(adr, /Organization\s*\n\s*-> Workspace/i);
-    assert.match(adr, /Existing tables are not mass-rewritten/i);
+    assert.match(adr, /Existing domain location tables are not mass-rewritten/i);
   });
 });
