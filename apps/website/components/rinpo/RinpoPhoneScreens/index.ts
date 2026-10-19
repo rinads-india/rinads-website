@@ -5,6 +5,7 @@ export { Support } from "./Support";
 export { PlansReminders } from "./PlansReminders";
 export { PhoneHomeScreen } from "./PhoneHomeScreen";
 export { QuickActionsScreen, NotificationsScreen, ProfileMemoryScreen } from "./PhoneExtraScreens";
+export { PhoneWorldScreen, PhoneSettingsScreen } from "./PhoneWorldSettingsScreens";
 
 export type PhoneScreenId =
   | "chat"
@@ -24,4 +25,6 @@ export type PhoneScreenId =
   | "customers"
   | "money"
   | "growth"
+  | "world"
+  | "settings"
   | "apps";
