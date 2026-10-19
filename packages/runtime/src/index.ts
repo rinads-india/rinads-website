@@ -22,4 +22,5 @@ export * from "./adapters/shipping";
 export * from "./adapters/payment";
 export * from "./loop-guard";
 export * from "./store/memory-store";
+export * from "./rinpo-phone/index";
 export { RuntimeService, createRuntimeService, type RuntimePersistenceHooks } from "./runtime-service";
