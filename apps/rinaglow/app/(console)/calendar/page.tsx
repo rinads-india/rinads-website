@@ -1,154 +1,192 @@
-import { Badge, Card, EmptyState } from "@rinads/ui";
-import { canRescheduleAppointment, type AppointmentStatus } from "@rinads/salon";
-import Link from "next/link";
+import { Card, EmptyState } from "@rinads/ui";
+import {
+  addDaysToIsoDate,
+  calendarHref,
+  daysInIsoMonth,
+  parseCalendarView,
+  parseIsoDate,
+  startOfIsoMonth,
+  startOfIsoWeek,
+  type CalendarView,
+  type SalonAppointment,
+  type SalonNote,
+} from "@rinads/salon";
 import { getSalonRepository } from "@/lib/salon";
-import { broadTodayRangeIso, isSameZonedCalendarDate } from "@/lib/time";
 import { requireTenancy } from "@/lib/tenancy";
-import { AppointmentActions } from "./AppointmentActions";
-import { AppointmentNotes } from "./AppointmentNotes";
-import { AppointmentReschedule } from "./AppointmentReschedule";
+import { zonedDateKey, zonedDateRangeIso, zonedNowDate } from "@/lib/time";
+import { AppointmentCard } from "./AppointmentCard";
+import { CalendarMonthGrid } from "./CalendarMonthGrid";
+import { CalendarToolbar } from "./CalendarToolbar";
+import { CalendarWeekGrid } from "./CalendarWeekGrid";
 import { NewAppointmentForm } from "./NewAppointmentForm";
 
 export const metadata = { title: "Calendar — R GLOW Console" };
 
-const STATUS_TONE: Record<AppointmentStatus, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  checked_in: "bg-purple-100 text-purple-800",
-  in_service: "bg-indigo-100 text-indigo-800",
-  completed: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-gray-200 text-gray-600",
-  no_show: "bg-red-100 text-red-700",
-};
+const RANGE_PAD_MS = 14 * 60 * 60 * 1000;
 
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-IN", {
+function formatHeading(view: CalendarView, date: string): string {
+  if (view === "upcoming") return "Upcoming appointments";
+  if (view === "week") {
+    const start = startOfIsoWeek(date);
+    const end = addDaysToIsoDate(start, 6);
+    return `${formatLong(start)} – ${formatLong(end)}`;
+  }
+  if (view === "month") {
+    return new Date(`${startOfIsoMonth(date)}T00:00:00.000Z`).toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  }
+  return formatLong(date);
+}
+
+function formatLong(isoDate: string): string {
+  return new Date(`${isoDate}T00:00:00.000Z`).toLocaleDateString("en-IN", {
     weekday: "short",
     day: "2-digit",
     month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
+    timeZone: "UTC",
   });
 }
 
-function formatDayHeading(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long" });
+function padRange(range: { from: string; to: string }): { from: string; to: string } {
+  return {
+    from: new Date(new Date(range.from).getTime() - RANGE_PAD_MS).toISOString(),
+    to: new Date(new Date(range.to).getTime() + RANGE_PAD_MS).toISOString(),
+  };
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-}
-
-function dayKey(iso: string): string {
-  return new Date(iso).toISOString().slice(0, 10);
-}
-
-/** Groups a flat, already-sorted appointment list into day buckets — a lightweight day/week calendar view without a full grid widget. */
-function groupByDay<T extends { startsAt: string }>(items: T[]): { key: string; heading: string; items: T[] }[] {
-  const groups = new Map<string, T[]>();
-  for (const item of items) {
-    const key = dayKey(item.startsAt);
-    const bucket = groups.get(key) ?? [];
-    bucket.push(item);
-    groups.set(key, bucket);
+function appointmentRange(view: CalendarView, date: string, timeZone: string): { from?: string; to?: string } {
+  if (view === "upcoming") {
+    const start = zonedDateRangeIso(date, timeZone, 1);
+    return { from: start?.from };
   }
-  return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, groupItems]) => ({ key, heading: formatDayHeading(groupItems[0].startsAt), items: groupItems }));
+  if (view === "week") {
+    const range = zonedDateRangeIso(startOfIsoWeek(date), timeZone, 7);
+    return range ? padRange(range) : {};
+  }
+  if (view === "month") {
+    const start = startOfIsoMonth(date);
+    const range = zonedDateRangeIso(start, timeZone, daysInIsoMonth(start));
+    return range ? padRange(range) : {};
+  }
+  const range = zonedDateRangeIso(date, timeZone, 1);
+  return range ? padRange(range) : {};
 }
 
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ branch?: string; view?: string; appointment?: string }>;
+  searchParams: Promise<{ branch?: string; view?: string; appointment?: string; date?: string }>;
 }) {
   const tenancy = await requireTenancy();
-  const { branch: branchFilter, view } = await searchParams;
-  const calendarView = view === "upcoming" ? "upcoming" : "today";
-  const today = broadTodayRangeIso();
+  const { branch: branchFilter, view, date: dateParam } = await searchParams;
+  const calendarView = parseCalendarView(view);
   const repo = await getSalonRepository();
 
-  const [branchesResult, staffResult, servicesResult, customersResult, appointmentsResult] = await Promise.all([
+  const [branchesResult, staffResult, servicesResult, customersResult] = await Promise.all([
     repo.listBranches(tenancy.organizationId),
     repo.listStaff(tenancy.organizationId),
     repo.listServices(tenancy.organizationId),
     repo.listCustomers(tenancy.organizationId),
-    repo.listAppointments(tenancy.organizationId, {
-      branchId: branchFilter || undefined,
-      from: calendarView === "today" ? today.from : today.now,
-      to: calendarView === "today" ? today.to : undefined,
-    }),
   ]);
 
   const branches = branchesResult.ok ? branchesResult.data : [];
-  const staffById = new Map((staffResult.ok ? staffResult.data : []).map((s) => [s.id, s]));
-  const customersById = new Map((customersResult.ok ? customersResult.data : []).map((c) => [c.id, c]));
-  const branchesById = new Map(branches.map((b) => [b.id, b]));
-  const appointments = (appointmentsResult.ok ? appointmentsResult.data : []).filter((appointment) => {
-    if (calendarView !== "today") return true;
-    const branch = branchesById.get(appointment.branchId);
-    return branch ? isSameZonedCalendarDate(appointment.startsAt, today.now, branch.timezone) : false;
+  const selectedBranch = branchFilter ? branches.find((branch) => branch.id === branchFilter) : undefined;
+  const timeZone = selectedBranch?.timezone ?? branches.find((branch) => branch.isActive)?.timezone ?? "Asia/Kolkata";
+  const today = zonedNowDate(timeZone);
+  const selectedDate = parseIsoDate(dateParam) ?? today;
+  const range = appointmentRange(calendarView, selectedDate, timeZone);
+
+  const appointmentsResult = await repo.listAppointments(tenancy.organizationId, {
+    branchId: branchFilter || undefined,
+    from: range.from,
+    to: range.to,
   });
 
-  const notesByAppointment = new Map(
-    await Promise.all(
-      appointments.map(async (a) => {
-        const result = await repo.listNotes("appointment", a.id);
-        return [a.id, result.ok ? result.data : []] as const;
+  const staffById = new Map((staffResult.ok ? staffResult.data : []).map((staff) => [staff.id, staff]));
+  const customersById = new Map((customersResult.ok ? customersResult.data : []).map((customer) => [customer.id, customer]));
+  const branchesById = new Map(branches.map((branch) => [branch.id, branch]));
+  const appointments = appointmentsResult.ok ? appointmentsResult.data : [];
+
+  const appointmentsByDay = new Map<string, SalonAppointment[]>();
+  for (const appointment of appointments) {
+    const tz = branchesById.get(appointment.branchId)?.timezone ?? timeZone;
+    const key = zonedDateKey(appointment.startsAt, tz);
+    const bucket = appointmentsByDay.get(key) ?? [];
+    bucket.push(appointment);
+    appointmentsByDay.set(key, bucket);
+  }
+
+  const dayAppointments =
+    calendarView === "upcoming"
+      ? appointments
+      : calendarView === "day"
+        ? (appointmentsByDay.get(selectedDate) ?? [])
+        : appointments;
+
+  const notesByAppointment = new Map<string, SalonNote[]>();
+  if (calendarView === "day" || calendarView === "upcoming") {
+    const noteEntries = await Promise.all(
+      dayAppointments.map(async (appointment) => {
+        const result = await repo.listNotes("appointment", appointment.id);
+        return [appointment.id, result.ok ? result.data : []] as const;
       })
-    )
+    );
+    for (const [id, notes] of noteEntries) notesByAppointment.set(id, notes);
+  }
+
+  const labels = new Map(
+    appointments.map((appointment) => {
+      const customer = customersById.get(appointment.customerId);
+      const staff = staffById.get(appointment.staffId);
+      const appointmentBranch = branchesById.get(appointment.branchId);
+      return [
+        appointment.id,
+        {
+          timeZone: appointmentBranch?.timezone ?? timeZone,
+          customerLabel: customer?.name ?? customer?.phone ?? "Walk-in customer",
+          customerHref: customer ? `/clients/${customer.id}` : undefined,
+          staffLabel: staff?.displayName ?? "Unassigned staff",
+          branchLabel: !branchFilter && branches.length > 1 ? appointmentBranch?.name : undefined,
+        },
+      ] as const;
+    })
   );
+
+  const emptyTitle =
+    calendarView === "day"
+      ? "No appointments this day"
+      : calendarView === "upcoming"
+        ? "No upcoming appointments"
+        : calendarView === "week"
+          ? "No appointments this week"
+          : "No appointments this month";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">Calendar</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {calendarView === "today" ? "Today's" : "Upcoming"} appointments
-            {branchFilter ? " for the selected branch" : " across every branch you can access"}.
-          </p>
-        </div>
-        {branches.length > 1 ? (
-          <div className="flex flex-wrap gap-1">
-            <Link
-              href={`/calendar?view=${calendarView}`}
-              className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                !branchFilter ? "bg-rinads-primary text-white" : "bg-surface-muted text-foreground"
-              }`}
-            >
-              All branches
-            </Link>
-            {branches.map((b) => (
-              <Link
-                key={b.id}
-                href={`/calendar?view=${calendarView}&branch=${b.id}`}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                  branchFilter === b.id ? "bg-rinads-primary text-white" : "bg-surface-muted text-foreground"
-                }`}
-              >
-                {b.name}
-              </Link>
-            ))}
-          </div>
-        ) : null}
+      <div>
+        <h2 className="text-2xl font-semibold text-foreground">Calendar</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Day, week and month views with check-in, start service, and booking from the same board
+          {branchFilter ? " for the selected store" : " across every store you can access"}.
+        </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href={`/calendar${branchFilter ? `?branch=${branchFilter}` : ""}`} className={calendarView === "today" ? "btn-primary" : "btn-secondary"}>
-          Today
-        </Link>
-        <Link href={`/calendar?view=upcoming${branchFilter ? `&branch=${branchFilter}` : ""}`} className={calendarView === "upcoming" ? "btn-primary" : "btn-secondary"}>
-          Upcoming
-        </Link>
-      </div>
+      <CalendarToolbar
+        view={calendarView}
+        date={selectedDate}
+        branch={branchFilter}
+        heading={formatHeading(calendarView, selectedDate)}
+      />
 
-      {calendarView === "today" ? (
+      {calendarView === "day" ? (
         <div className="today-checkin-banner">
           <p className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">Check-in queue</p>
           <p className="mt-1 text-sm text-foreground">
             Use <span className="font-semibold">Check in</span> / <span className="font-semibold">Start service</span> on
-            each appointment card below. Walk-ins can be added with the form.
+            each appointment card. Walk-ins can be added with the form.
           </p>
         </div>
       ) : null}
@@ -157,63 +195,54 @@ export default async function CalendarPage({
         branches={branches.filter((branch) => branch.isActive)}
         services={(servicesResult.ok ? servicesResult.data : []).filter((service) => service.isActive)}
         staff={(staffResult.ok ? staffResult.data : []).filter((member) => member.isActive)}
+        defaultStartsAtLocal={`${selectedDate}T10:00`}
       />
 
       {!appointmentsResult.ok ? (
         <Card>
           <p className="text-sm text-danger">Could not load appointments: {appointmentsResult.error.message}</p>
         </Card>
-      ) : appointments.length === 0 ? (
-        <EmptyState
-          title={calendarView === "today" ? "No appointments today" : "No upcoming appointments"}
-          description="New bookings from your public booking page will appear here."
+      ) : calendarView === "week" ? (
+        <CalendarWeekGrid
+          date={selectedDate}
+          today={today}
+          branch={branchFilter}
+          appointmentsByDay={appointmentsByDay}
+          labels={labels}
         />
+      ) : calendarView === "month" ? (
+        <CalendarMonthGrid
+          date={selectedDate}
+          today={today}
+          branch={branchFilter}
+          appointmentsByDay={appointmentsByDay}
+          labels={labels}
+        />
+      ) : dayAppointments.length === 0 ? (
+        <EmptyState title={emptyTitle} description="New bookings from your public booking page will appear here." />
       ) : (
-        <div className="space-y-6">
-          {groupByDay(appointments).map((day) => (
-            <div key={day.key}>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{day.heading}</h3>
-              <div className="space-y-3">
-                {day.items.map((appt) => {
-                  const staff = staffById.get(appt.staffId);
-                  const customer = customersById.get(appt.customerId);
-                  const appointmentBranch = branchesById.get(appt.branchId);
-                  return (
-                    <Card key={appt.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground">{formatTime(appt.startsAt)}</span>
-                          <Badge className={STATUS_TONE[appt.status]}>{appt.status.replace("_", " ")}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {customer ? (
-                            <Link href={`/clients/${customer.id}`} className="text-rinads-primary underline">
-                              {customer.name ?? customer.phone}
-                            </Link>
-                          ) : "Walk-in customer"} · {staff?.displayName ?? "Unassigned staff"}
-                          {branches.length > 1 && appointmentBranch ? ` · ${appointmentBranch.name}` : ""}
-                        </p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(appt.startsAt)}</p>
-                      </div>
-                      <div className="flex flex-col items-start gap-2 sm:items-end">
-                        <Link href={`/calendar?view=${calendarView}&appointment=${appt.id}${branchFilter ? `&branch=${branchFilter}` : ""}`} className="text-xs text-rinads-primary underline">
-                          Use in RINPO
-                        </Link>
-                        <AppointmentActions appointmentId={appt.id} status={appt.status} />
-                        <AppointmentReschedule
-                          appointmentId={appt.id}
-                          status={appt.status}
-                          startsAt={appt.startsAt}
-                          canReschedule={canRescheduleAppointment(appt.status)}
-                        />
-                        <AppointmentNotes appointmentId={appt.id} notes={notesByAppointment.get(appt.id) ?? []} />
-                      </div>
-                    </Card>
-                  );
+        <div className="space-y-3">
+          {dayAppointments.map((appointment) => {
+            const meta = labels.get(appointment.id);
+            return (
+              <AppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                timeZone={meta?.timeZone ?? timeZone}
+                customerLabel={meta?.customerLabel ?? "Walk-in customer"}
+                customerHref={meta?.customerHref}
+                staffLabel={meta?.staffLabel ?? "Unassigned staff"}
+                branchLabel={meta?.branchLabel}
+                calendarHref={calendarHref({
+                  view: calendarView,
+                  date: calendarView === "upcoming" ? undefined : selectedDate,
+                  branch: branchFilter,
+                  appointment: appointment.id,
                 })}
-              </div>
-            </div>
-          ))}
+                notes={notesByAppointment.get(appointment.id) ?? []}
+              />
+            );
+          })}
         </div>
       )}
     </div>
