@@ -77,6 +77,7 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
             table === "salon_branches" ? { timezone: "Asia/Kolkata", working_hours: {}, is_active: true }
             : table === "salon_services" ? { category: "general", buffer_min: 0, currency: "INR", is_active: true }
             : table === "salon_staff" ? { specialties: [], working_hours: {}, is_active: true }
+            : table === "salon_products" ? { category: "retail", unit: "pcs", reorder_at: 0, is_active: true }
             : {};
           const stored: SalonRow = { id: `${table}_${++seq}`, created_at: now, updated_at: now, ...defaults, ...row };
           rows.push(stored);
@@ -297,6 +298,108 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
           });
         }
         return { data: billing, error: null };
+      }
+      if (fn === "adjust_salon_stock") {
+        const product = getTable("salon_products").find((row) => row.id === args.p_product_id && row.organization_id === args.p_organization_id);
+        const branch = getTable("salon_branches").find((row) => row.id === args.p_branch_id && row.organization_id === args.p_organization_id);
+        if (!product || !branch) return { data: null, error: { message: "not found" } };
+        const delta = Number(args.p_delta ?? 0);
+        if (!delta) return { data: null, error: { message: "stock adjustment cannot be zero" } };
+        let level = getTable("salon_stock_levels").find(
+          (row) => row.product_id === args.p_product_id && row.branch_id === args.p_branch_id
+        );
+        if (!level) {
+          level = {
+            organization_id: args.p_organization_id,
+            product_id: args.p_product_id,
+            branch_id: args.p_branch_id,
+            quantity: 0,
+          };
+          getTable("salon_stock_levels").push(level);
+        }
+        const next = Number(level.quantity ?? 0) + delta;
+        if (next < 0) return { data: null, error: { message: "insufficient stock" } };
+        level.quantity = next;
+        getTable("salon_stock_movements").push({
+          id: `salon_stock_movements_${++seq}`,
+          organization_id: args.p_organization_id,
+          product_id: args.p_product_id,
+          branch_id: args.p_branch_id,
+          quantity_delta: delta,
+          reason: args.p_reason ?? "adjustment",
+          note: args.p_note ?? null,
+          created_at: new Date().toISOString(),
+        });
+        return { data: { product_id: args.p_product_id, branch_id: args.p_branch_id, quantity: next }, error: null };
+      }
+      if (fn === "transfer_salon_stock") {
+        const existing = getTable("salon_stock_transfers").find(
+          (row) => row.organization_id === args.p_organization_id && row.idempotency_key === args.p_idempotency_key
+        );
+        if (existing) return { data: { id: existing.id, idempotent_replay: true, status: existing.status }, error: null };
+        if (args.p_from_branch_id === args.p_to_branch_id) {
+          return { data: null, error: { message: "source and destination branches must differ" } };
+        }
+        const lines = Array.isArray(args.p_lines) ? args.p_lines as { product_id: string; quantity: number }[] : [];
+        if (!lines.length) return { data: null, error: { message: "at least one transfer line is required" } };
+        const transferId = `salon_stock_transfers_${++seq}`;
+        for (const line of lines) {
+          let source = getTable("salon_stock_levels").find(
+            (row) => row.product_id === line.product_id && row.branch_id === args.p_from_branch_id
+          );
+          if (!source || Number(source.quantity ?? 0) < Number(line.quantity)) {
+            return { data: null, error: { message: "insufficient stock" } };
+          }
+          source.quantity = Number(source.quantity) - Number(line.quantity);
+          let dest = getTable("salon_stock_levels").find(
+            (row) => row.product_id === line.product_id && row.branch_id === args.p_to_branch_id
+          );
+          if (!dest) {
+            dest = {
+              organization_id: args.p_organization_id,
+              product_id: line.product_id,
+              branch_id: args.p_to_branch_id,
+              quantity: 0,
+            };
+            getTable("salon_stock_levels").push(dest);
+          }
+          dest.quantity = Number(dest.quantity ?? 0) + Number(line.quantity);
+          getTable("salon_stock_transfer_lines").push({
+            transfer_id: transferId,
+            organization_id: args.p_organization_id,
+            product_id: line.product_id,
+            quantity: line.quantity,
+          });
+          getTable("salon_stock_movements").push(
+            {
+              organization_id: args.p_organization_id,
+              product_id: line.product_id,
+              branch_id: args.p_from_branch_id,
+              quantity_delta: -Number(line.quantity),
+              reason: "transfer_out",
+              transfer_id: transferId,
+            },
+            {
+              organization_id: args.p_organization_id,
+              product_id: line.product_id,
+              branch_id: args.p_to_branch_id,
+              quantity_delta: Number(line.quantity),
+              reason: "transfer_in",
+              transfer_id: transferId,
+            }
+          );
+        }
+        getTable("salon_stock_transfers").push({
+          id: transferId,
+          organization_id: args.p_organization_id,
+          from_branch_id: args.p_from_branch_id,
+          to_branch_id: args.p_to_branch_id,
+          status: "completed",
+          idempotency_key: args.p_idempotency_key,
+          created_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+        });
+        return { data: { id: transferId, idempotent_replay: false, status: "completed" }, error: null };
       }
       if (fn === "update_salon_branch_gstin") {
         const branch = getTable("salon_branches").find((row) => row.id === args.p_branch_id);

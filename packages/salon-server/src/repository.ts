@@ -33,6 +33,11 @@ import {
   type SalonStaff,
   type SaleWithLines,
   type SalonBillingSettings,
+  type SalonProduct,
+  type SalonStockLevel,
+  type SalonStockMovement,
+  type SalonStockTransfer,
+  type TransferLineInput,
   type WeeklyHours,
 } from "@rinads/salon";
 import type { SalonRow, SalonSupabaseClient } from "./client";
@@ -49,6 +54,9 @@ import {
   mapSaleRow,
   mapServiceRow,
   mapStaffRow,
+  mapProductRow,
+  mapStockLevelRow,
+  mapStockMovementRow,
 } from "./mappers";
 
 export type PublicSalonOrganization = {
@@ -1316,5 +1324,122 @@ export class SalonRepository {
       bookingNumber: row.booking_number,
       idempotentReplay: Boolean(row.idempotent_replay),
     });
+  }
+
+  async listProducts(organizationId: string): Promise<Result<SalonProduct[]>> {
+    const { data, error } = await this.client.from("salon_products").select("*").eq("organization_id", organizationId);
+    if (error) return fail("db_error", error.message);
+    return ok((data ?? []).map(mapProductRow));
+  }
+
+  async createProduct(
+    organizationId: string,
+    input: { name: string; category?: string; sku?: string; unit?: string; reorderAt?: number }
+  ): Promise<Result<SalonProduct>> {
+    if (!input.name.trim()) return fail("invalid_input", "Product name is required.");
+    const { data, error } = await this.client
+      .from("salon_products")
+      .insert({
+        organization_id: organizationId,
+        name: input.name.trim(),
+        category: input.category?.trim() || "retail",
+        sku: input.sku?.trim() || null,
+        unit: input.unit?.trim() || "pcs",
+        reorder_at: input.reorderAt ?? 0,
+      })
+      .select("*")
+      .single();
+    if (error) return fail("db_error", error.message);
+    if (!data) return fail("db_error", "No product returned after insert.");
+    return ok(mapProductRow(data));
+  }
+
+  async listStockLevels(organizationId: string, branchId?: string): Promise<Result<SalonStockLevel[]>> {
+    const { data, error } = await this.client.from("salon_stock_levels").select("*").eq("organization_id", organizationId);
+    if (error) return fail("db_error", error.message);
+    let rows = (data ?? []).map(mapStockLevelRow);
+    if (branchId) rows = rows.filter((row) => row.branchId === branchId);
+    return ok(rows);
+  }
+
+  async listStockMovements(organizationId: string, branchId?: string): Promise<Result<SalonStockMovement[]>> {
+    const { data, error } = await this.client.from("salon_stock_movements").select("*").eq("organization_id", organizationId);
+    if (error) return fail("db_error", error.message);
+    let rows = (data ?? []).map(mapStockMovementRow);
+    if (branchId) rows = rows.filter((row) => row.branchId === branchId);
+    return ok(rows.sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))));
+  }
+
+  async listStockTransfers(organizationId: string): Promise<Result<SalonStockTransfer[]>> {
+    const { data, error } = await this.client.from("salon_stock_transfers").select("*").eq("organization_id", organizationId);
+    if (error) return fail("db_error", error.message);
+    const { data: lineRows, error: lineError } = await this.client
+      .from("salon_stock_transfer_lines")
+      .select("*")
+      .eq("organization_id", organizationId);
+    if (lineError) return fail("db_error", lineError.message);
+    const linesByTransfer = new Map<string, { productId: string; quantity: number }[]>();
+    for (const row of lineRows ?? []) {
+      const transferId = String(row.transfer_id);
+      const bucket = linesByTransfer.get(transferId) ?? [];
+      bucket.push({ productId: String(row.product_id), quantity: Number(row.quantity ?? 0) });
+      linesByTransfer.set(transferId, bucket);
+    }
+    return ok(
+      (data ?? []).map((row) => ({
+        id: String(row.id),
+        organizationId: String(row.organization_id),
+        fromBranchId: String(row.from_branch_id),
+        toBranchId: String(row.to_branch_id),
+        status: String(row.status) as SalonStockTransfer["status"],
+        idempotencyKey: String(row.idempotency_key),
+        createdBy: row.created_by ? String(row.created_by) : undefined,
+        createdAt: row.created_at ? String(row.created_at) : undefined,
+        completedAt: row.completed_at ? String(row.completed_at) : undefined,
+        lines: linesByTransfer.get(String(row.id)) ?? [],
+      }))
+    );
+  }
+
+  async adjustStock(
+    organizationId: string,
+    input: { branchId: string; productId: string; delta: number; reason?: "opening" | "adjustment"; note?: string }
+  ): Promise<Result<{ productId: string; branchId: string; quantity: number }>> {
+    if (!Number.isFinite(input.delta) || input.delta === 0) return fail("invalid_input", "Enter a non-zero quantity.");
+    const { data, error } = await this.client.rpc("adjust_salon_stock", {
+      p_organization_id: organizationId,
+      p_branch_id: input.branchId,
+      p_product_id: input.productId,
+      p_delta: input.delta,
+      p_reason: input.reason ?? "adjustment",
+      p_note: input.note ?? null,
+    });
+    if (error) return fail("db_error", error.message);
+    const row = data as { product_id?: string; branch_id?: string; quantity?: number } | null;
+    return ok({
+      productId: String(row?.product_id ?? input.productId),
+      branchId: String(row?.branch_id ?? input.branchId),
+      quantity: Number(row?.quantity ?? 0),
+    });
+  }
+
+  async transferStock(
+    organizationId: string,
+    input: { fromBranchId: string; toBranchId: string; lines: TransferLineInput[]; idempotencyKey: string }
+  ): Promise<Result<{ id: string; idempotentReplay: boolean }>> {
+    const lines = input.lines.filter((line) => line.quantity > 0);
+    if (!lines.length) return fail("invalid_input", "Choose at least one product to move.");
+    if (input.fromBranchId === input.toBranchId) return fail("invalid_input", "Choose two different stores.");
+    const { data, error } = await this.client.rpc("transfer_salon_stock", {
+      p_organization_id: organizationId,
+      p_from_branch_id: input.fromBranchId,
+      p_to_branch_id: input.toBranchId,
+      p_lines: lines.map((line) => ({ product_id: line.productId, quantity: line.quantity })),
+      p_idempotency_key: input.idempotencyKey,
+    });
+    if (error) return fail("db_error", error.message);
+    const row = data as { id?: string; idempotent_replay?: boolean } | null;
+    if (!row?.id) return fail("db_error", "No transfer confirmation returned.");
+    return ok({ id: String(row.id), idempotentReplay: Boolean(row.idempotent_replay) });
   }
 }
