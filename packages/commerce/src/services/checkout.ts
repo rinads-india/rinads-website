@@ -73,8 +73,22 @@ export class CheckoutService {
     });
   }
 
-  /** Server-side revalidation of price, stock, discount, shipping, tax before order creation. */
+  /**
+   * Authoritative checkout requires an InventoryPort. Production wiring uses
+   * @rinads/operations StockLedgerService; legacy/demo scalar stock must be
+   * supplied explicitly by a compatibility adapter rather than being mutated
+   * inside checkout.
+   */
   placeOrder(ctx: CommerceContext, input: CheckoutInput): Result<Order> {
+    if (!this.inventory) {
+      return err(
+        "INVENTORY_UNAVAILABLE",
+        "Checkout requires an inventory provider.",
+        undefined,
+        ctx.requestId
+      );
+    }
+
     const quoteResult = this.quote(ctx, input);
     if (!quoteResult.ok) return quoteResult;
 
@@ -85,14 +99,12 @@ export class CheckoutService {
     const cart = store.carts.find((c) => c.id === input.cartId);
     if (!cart) return err("CART_NOT_FOUND", "Cart not found.");
 
-    if (this.inventory) {
-      const reserveResult = this.inventory.reserveForCart(
-        ctx,
-        input.cartId,
-        cart.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity }))
-      );
-      if (!reserveResult.ok) return reserveResult;
-    }
+    const reserveResult = this.inventory.reserveForCart(
+      ctx,
+      input.cartId,
+      cart.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity }))
+    );
+    if (!reserveResult.ok) return reserveResult;
 
     const paymentRef = input.paymentReference ?? `demo_${Date.now()}`;
     const paymentResult = this.payment.verify({
@@ -102,11 +114,11 @@ export class CheckoutService {
       currency: "INR",
     });
     if (!paymentResult.ok) {
-      this.inventory?.releaseCartReservations(ctx, input.cartId);
+      this.inventory.releaseCartReservations(ctx, input.cartId);
       return paymentResult;
     }
     if (paymentResult.data.status === "failed") {
-      this.inventory?.releaseCartReservations(ctx, input.cartId);
+      this.inventory.releaseCartReservations(ctx, input.cartId);
       return err("PAYMENT_FAILED", "Payment verification failed.");
     }
 
@@ -139,24 +151,17 @@ export class CheckoutService {
       shippingMethodCode: input.shippingMethodCode,
     });
     if (!orderResult.ok) {
-      this.inventory?.releaseCartReservations(ctx, input.cartId);
+      this.inventory.releaseCartReservations(ctx, input.cartId);
       return orderResult;
     }
 
-    if (this.inventory) {
-      const saleResult = this.inventory.convertReservationToSale(
-        ctx,
-        input.cartId,
-        orderResult.data.id
-      );
-      if (!saleResult.ok) return saleResult;
-      this.inventory.refreshProjections?.(ctx);
-    } else {
-      for (const line of cart.lines) {
-        const variant = store.variants.find((v) => v.id === line.variantId);
-        if (variant) variant.stock -= line.quantity;
-      }
-    }
+    const saleResult = this.inventory.convertReservationToSale(
+      ctx,
+      input.cartId,
+      orderResult.data.id
+    );
+    if (!saleResult.ok) return saleResult;
+    this.inventory.refreshProjections?.(ctx);
 
     if (quoteResult.data.promotionCode) {
       const promo = store.promotions.find(

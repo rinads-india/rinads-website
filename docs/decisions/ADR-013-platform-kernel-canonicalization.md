@@ -29,7 +29,7 @@ Verticals extend the kernel. They do not recreate it.
 
 `organization_id` remains the mandatory tenant boundary and RLS scope.
 
-Future hierarchy is additive:
+The additive hierarchy is:
 
 ```text
 Organization
@@ -37,7 +37,7 @@ Organization
       -> Location (optional physical/operational site)
 ```
 
-Workspace and shared Core location support will be introduced in a later additive migration. Existing tables are not mass-rewritten in this ADR. Each organization will eventually have a default workspace so existing organization-scoped behaviour remains backward compatible.
+PR-K2 added workspace and shared-location schema support with one default workspace per organization, RLS, and a same-organization composite foreign key. Existing domain location tables are not mass-rewritten; inventory and salon location concepts remain compatible until deliberately mapped. Repository merge does not itself mean the migration has been applied to production.
 
 ### 2. Canonical ownership of shared primitives
 
@@ -60,15 +60,17 @@ New verticals MUST NOT create parallel replacements for these primitives.
 
 ### 3. Inventory source of truth
 
-The authoritative inventory model is the operational ledger plus active reservations.
+The authoritative inventory model is the tenant-scoped operational ledger plus active, unexpired reservations.
 
 ```text
-available = on_hand_from_ledger - active_reservations - blocked_stock
+on_hand = tenant-scoped movement sum
+reserved = tenant-scoped active + unexpired reservations
+available = max(0, on_hand - reserved)
 ```
 
-`product_variants.stock` is a compatibility/read projection. It is not the long-term authoritative mutation target.
+`product_variants.stock` is a compatibility/read projection. It is not an authoritative checkout mutation target.
 
-Until PR-K3 completes, the existing legacy checkout fallback may still mutate `variant.stock` in non-ledger/demo paths. That exception is explicitly allowlisted by architecture tests and MUST NOT spread to new code.
+PR-K3 makes authoritative checkout require an `InventoryPort`; the production operations wiring supplies `StockLedgerService`. The old scalar-stock mutation is isolated in `packages/commerce-server/src/legacy-inventory.ts` for demo/legacy commerce-server flows, while `packages/operations-server/src/seed.ts` remains the projection synchronizer. Architecture tests prevent additional direct scalar stock mutation sites.
 
 ### 4. Durable runtime truth
 
@@ -157,13 +159,13 @@ Canonicalization proceeds additively. Existing production contracts stay functio
 
 ## Enforcement
 
-`apps/website/tests/platform-kernel-architecture.test.ts` provides repository-level architecture guards for protected shared tables and direct inventory stock mutation exceptions.
+`apps/website/tests/platform-kernel-architecture.test.ts` provides repository-level architecture guards for protected shared tables, inventory source-of-truth boundaries and authoritative checkout requirements.
 
 Future PRs that intentionally change these rules must update this ADR and the corresponding tests in the same change.
 
 ## Follow-up sequence
 
-1. **PR-K1** — architecture contract + guards (this ADR)
+1. **PR-K1** — architecture contract + guards
 2. **PR-K2** — additive Workspace + shared Location foundation
 3. **PR-K3** — inventory truth hardening
 4. **PR-K4** — durable command/event atomicity
