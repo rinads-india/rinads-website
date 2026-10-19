@@ -53,6 +53,8 @@ export type SalonRinpoContext = {
   roleKey?: string;
   /** Real, resolved permission keys for the caller in this org (from `TenancyContext.permissions`). */
   permissions: string[];
+  /** Active store from the console `?branch=` switcher, when set. */
+  defaultBranchId?: string;
 };
 
 export type SalonRinpoDeps = {
@@ -347,15 +349,21 @@ async function executeSalonRinpoToolInner(
     // READ tools
     // -----------------------------------------------------------------
     case "get_salon_business_summary": {
-      const summary = await getBusinessSummary(deps.repo, ctx.organizationId, argNum(input, "daysInactive", 45));
+      const branchId = input.args.branchId ? arg(input, "branchId") : ctx.defaultBranchId;
+      const summary = await getBusinessSummary(deps.repo, ctx.organizationId, {
+        reactivationDaysInactive: argNum(input, "daysInactive", 45),
+        branchId,
+      });
       return { tool: input.tool, ok: true, message: "Business summary ready.", data: summary };
     }
     case "get_today_appointments": {
-      const result = await getTodayAppointments(deps.repo, ctx.organizationId, input.args.branchId ? arg(input, "branchId") : undefined);
+      const branchId = input.args.branchId ? arg(input, "branchId") : ctx.defaultBranchId;
+      const result = await getTodayAppointments(deps.repo, ctx.organizationId, branchId);
       return { tool: input.tool, ok: true, message: `${result.total} appointment(s) today.`, data: result };
     }
     case "get_staff_utilization": {
-      const result = await getStaffUtilization(deps.repo, ctx.organizationId);
+      const branchId = input.args.branchId ? arg(input, "branchId") : ctx.defaultBranchId;
+      const result = await getStaffUtilization(deps.repo, ctx.organizationId, new Date(), branchId);
       return { tool: input.tool, ok: true, message: "Staff utilization ready.", data: result };
     }
     case "get_empty_slots": {
@@ -381,7 +389,8 @@ async function executeSalonRinpoToolInner(
       const days = argNum(input, "days", 30) ?? 30;
       const to = new Date();
       const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
-      const summary = await getRevenueSummary(deps.repo, ctx.organizationId, from, to);
+      const branchId = input.args.branchId ? arg(input, "branchId") : ctx.defaultBranchId;
+      const summary = await getRevenueSummary(deps.repo, ctx.organizationId, from, to, branchId);
       return { tool: input.tool, ok: true, message: `Revenue over the last ${days} days: ${summary.currency} ${summary.totalRevenue}.`, data: summary };
     }
     case "get_service_performance": {
@@ -389,7 +398,8 @@ async function executeSalonRinpoToolInner(
       return { tool: input.tool, ok: true, message: "Service performance ready.", data: result };
     }
     case "get_pending_payments": {
-      const summary = await getPendingPaymentsSummary(deps.repo, ctx.organizationId);
+      const branchId = input.args.branchId ? arg(input, "branchId") : ctx.defaultBranchId;
+      const summary = await getPendingPaymentsSummary(deps.repo, ctx.organizationId, branchId);
       return { tool: input.tool, ok: true, message: `${summary.count} sale(s) awaiting payment.`, data: summary };
     }
     case "get_customer_communication_preferences": {
