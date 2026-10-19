@@ -34,6 +34,9 @@ export type ChannelConnection = {
   status: "pending" | "active" | "degraded" | "revoked";
   credentialRef: string | null;
   scopes: readonly string[];
+  externalSubject?: string | null;
+  tokenExpiresAt?: string | null;
+  lastVerifiedAt?: string | null;
   metadata?: Readonly<Record<string, unknown>>;
 };
 
@@ -70,6 +73,26 @@ export type ChannelCredentialRefreshResult = {
   status: "active" | "degraded" | "revoked";
   credentialRef: string;
   expiresAt?: string | null;
+};
+
+export type ChannelAccountDiscoveryInput = {
+  organizationId: string;
+  connection: ChannelConnection;
+};
+
+export type DiscoveredChannelAccount = {
+  provider: MarketingProvider;
+  accountType: string;
+  externalAccountId: string;
+  externalParentId?: string | null;
+  displayName: string;
+  username?: string | null;
+  metadata?: Readonly<Record<string, unknown>>;
+};
+
+export type ChannelAccountDiscoveryResult = {
+  accounts: readonly DiscoveredChannelAccount[];
+  observedAt: string;
 };
 
 export type PublishRequest = {
@@ -129,6 +152,12 @@ export type ChannelMetricsResult = {
   raw?: Readonly<Record<string, unknown>>;
 };
 
+export type ChannelAccountMetricsInput = {
+  organizationId: string;
+  connection: ChannelConnection;
+  account: ChannelAccount;
+};
+
 export type ChannelComment = {
   id: string;
   text: string;
@@ -165,6 +194,7 @@ export type ChannelHealthResult = {
 export type ChannelCapability =
   | "connect"
   | "refresh_credentials"
+  | "discover_accounts"
   | "publish"
   | "schedule"
   | "delete_post"

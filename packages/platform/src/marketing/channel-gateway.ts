@@ -1,4 +1,7 @@
 import type {
+  ChannelAccountDiscoveryInput,
+  ChannelAccountDiscoveryResult,
+  ChannelAccountMetricsInput,
   ChannelCapability,
   ChannelComment,
   ChannelConnectInput,
@@ -42,15 +45,15 @@ export interface SocialChannelAdapter {
   refreshCredentials(
     input: ChannelCredentialRefreshInput,
   ): Promise<ChannelCredentialRefreshResult>;
+  discoverAccounts(
+    input: ChannelAccountDiscoveryInput,
+  ): Promise<ChannelAccountDiscoveryResult>;
   publish(input: PublishRequest): Promise<PublishResult>;
   schedule(input: ScheduleRequest): Promise<ScheduledResult>;
   deletePost(input: ChannelPostLookup): Promise<DeletePostResult>;
   getPost(input: ChannelPostLookup): Promise<ChannelPost>;
   getMetrics(input: ChannelPostLookup): Promise<ChannelMetricsResult>;
-  getAccountMetrics(input: {
-    organizationId: string;
-    accountId: string;
-  }): Promise<ChannelMetricsResult>;
+  getAccountMetrics(input: ChannelAccountMetricsInput): Promise<ChannelMetricsResult>;
   getComments(input: ChannelPostLookup): Promise<readonly ChannelComment[]>;
   reply(input: ReplyRequest): Promise<ReplyResult>;
   healthCheck(input: ChannelHealthInput): Promise<ChannelHealthResult>;
