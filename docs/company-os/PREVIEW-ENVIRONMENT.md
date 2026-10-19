@@ -1,34 +1,44 @@
 # Company OS — isolated preview environment
 
-Status: **NOT YET CREATED.** Three attempts to create a Supabase branch through the connector (`create_branch`, 60 s timeout each) produced no branch (verified with `list_branches` afterwards). Supabase branch creation is a billable action that needs a human cost confirmation, which the automation cannot give. Nothing in this document has been applied to any database. The fields below are filled in when the environment exists.
+Status: **PREVIEW BRANCH CREATED; AUTHENTICATED UAT NOT YET COMPLETE.** Supabase GitHub integration created an isolated preview branch for PR #135. The integration reports Database, Services and APIs healthy. Its migration task reports warnings for three historical out-of-order migrations (`20261009020000_production_security_privilege_drift.sql`, `20261011100000_rinpo_event_immutability.sql`, `20261011110000_runtime_dlq_replay.sql`); this is a warning that must be reviewed, not a production approval. The generic Supabase seeding task is green, but the guarded Company OS synthetic seed is intentionally outside `supabase/config.toml` and has **not** been claimed as executed. Vercel preview builds and GitHub CI are green on the current branch. Production remains untouched.
 
 | Field | Value |
 |---|---|
 | Purpose | Authenticated, data-backed preview/UAT of the Company OS and Founder Control Tower with **synthetic data only** |
-| Name | `rinads-company-os-preview` |
-| Source | Supabase branch of `rinads-platform` (`zznigagovilnffyzcrlj`, ap-south-1), **no production data** (`with_data=false`) — or a Supabase GitHub-integration preview branch for the work branch |
-| Ref / region / created | _pending creation_ |
-| Migration baseline | main's migration chain up to `20261016120000_company_os_foundation` |
-| Migrations to add | `20261016130000` … `20261016130600` (7 files, additive) — nothing from PR #115 / #119 / #120 / #104 |
-| Never | point the preview at `zznigagovilnffyzcrlj`'s main database, `dihqoebtctiwjlpzabeh`, or any production project |
+| Name | Supabase GitHub preview branch for `claude/rinads-company-os-mvp-ipygn8` |
+| Source | `rinads-platform` (`zznigagovilnffyzcrlj`, ap-south-1) via Supabase GitHub integration; no production data is intentionally seeded into the branch |
+| Preview ref | `zwnrekiovzutyudjxgzw` |
+| Created / integration report | 2026-10-18 UTC; Database ✅, Services ✅, APIs ✅ |
+| Migration baseline | current PR branch migration chain including Company OS foundation and additive Company OS migrations |
+| Company OS migrations | `20261016130000` … `20261016130600` (7 files, additive) |
+| Current warning | Supabase reports three historical migrations applied out of order; review before any production consideration |
+| Demo seed | `supabase/preview/company-os-demo.sql`; guarded and **not auto-run** |
+| Vercel | branch previews READY; still require authenticated data-backed UAT |
+| Never | point the preview at the main production database; never promote demo seed/personas to production |
 
 ## Why a branch/project and not "just seed it"
 
 The seed (`supabase/preview/company-os-demo.sql`) **refuses to run** unless `rinads.allow_demo_seed = 'yes'` is set in the session and the database contains no organisation other than the demo tenants (the migration-seeded `staging-demo` fixture is tolerated). It also lives outside `supabase/migrations/` and is not referenced by `supabase/config.toml`, so no branch/CI process runs it implicitly.
 
-## Applying (human-approved, preview database only)
+## Remaining preview-only steps
 
-1. Create the branch (founder confirms the cost) and note ref, URL and anon key.
-2. Apply the seven `2026101613*` migrations in order (`apply_migration`, or `supabase db push` against the branch ref). Verify with `list_migrations`, then `get_advisors` (security + performance).
-3. Create the persona logins: `pnpm exec tsx scripts/preview/write-demo-seed.ts --personas <out.sql> <credentials.json>` (both paths **outside** the repo; passwords are random, written now, never committed). Run `out.sql` with `set rinads.allow_demo_seed='yes'` first. Deliver `credentials.json` to the founder out of band, then delete it.
-4. Run `supabase/preview/company-os-demo.sql` (regenerate with `pnpm exec tsx scripts/preview/write-demo-seed.ts`) with the same setting.
-5. Set Vercel **Preview-only** variables scoped to branch `claude/rinads-company-os-mvp-ipygn8` (never Production): Supabase URL + anon key of the branch, auth provider = supabase. Leave every integration (WhatsApp/SMS/email, payments, carriers, GitHub/Vercel tokens) unset → those sections render *not connected*.
+1. Review the Supabase branch migration log and confirm the seven Company OS migrations are present despite the historical out-of-order warning.
+2. Run Supabase security and performance advisors on preview ref `zwnrekiovzutyudjxgzw`; resolve any release-blocking RLS/function privilege findings.
+3. Create the persona logins with `pnpm exec tsx scripts/preview/write-demo-seed.ts --personas <out.sql> <credentials.json>` using paths **outside** the repo. Passwords are generated at run time and must never be committed. Run the generated persona SQL only against the preview branch with `set rinads.allow_demo_seed='yes'` in the same SQL session.
+4. Run `supabase/preview/company-os-demo.sql` against the preview branch with the same guard setting. Do not convert this seed into a normal production migration.
+5. Set Vercel **Preview-only** variables scoped to branch `claude/rinads-company-os-mvp-ipygn8`: Supabase preview URL + publishable/anon key and Supabase auth provider. Do not modify Production variables. Leave real WhatsApp/SMS/email, payment and carrier integrations unset unless separately approved for sandbox use.
+6. Run authenticated founder / manager / staff / client / other-tenant E2E and record evidence. Verify cross-tenant isolation, approval gates, RINPO grounded answers and public-site regression.
+7. Keep PR #135 draft until preview security/UAT evidence is complete and the founder explicitly approves any next release step.
+
+## Access note
+
+The Supabase GitHub integration can provision and update this preview branch, but the currently connected Supabase MCP identity used by some automation sessions may not have direct permission to project ref `zwnrekiovzutyudjxgzw`. If direct SQL/advisor execution is needed, authorize the Supabase connection/account that owns `rinads-platform` rather than using the legacy `rinads-one-dev` project. Do not work around this by applying the current RINADS migration chain to the legacy project.
 
 ## Reset / deletion
 
 - Reset data only: delete the two demo organisations (`DELETE FROM organizations WHERE id IN (...)` cascades) and re-run the seed — it is deterministic and relative to `now()`.
-- Reset everything: delete the Supabase branch (`delete_branch`) or run `reset_branch`; remove the Vercel Preview variables.
-- The seed is safe to re-run (`ON CONFLICT DO NOTHING`).
+- Reset everything: delete/reset the Supabase preview branch through the `rinads-platform` owner account and remove the Vercel Preview variables.
+- The seed is safe to re-run (`ON CONFLICT DO NOTHING`) after its guards pass.
 
 ## What the demo organisation contains (all fictional)
 
