@@ -30,6 +30,20 @@ function isSameUtcDay(a: Date, b: Date): boolean {
   return startOfDayUtc(a).getTime() === startOfDayUtc(b).getTime();
 }
 
+export function zonedDateKey(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function isSameZonedDay(a: Date, b: Date, timeZone?: string): boolean {
+  if (!timeZone) return isSameUtcDay(a, b);
+  return zonedDateKey(a, timeZone) === zonedDateKey(b, timeZone);
+}
+
 export type TodayAppointmentsResult = {
   date: string;
   total: number;
@@ -41,13 +55,19 @@ export async function getTodayAppointments(
   repo: SalonRepository,
   organizationId: string,
   branchId?: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  timeZone?: string
 ): Promise<TodayAppointmentsResult> {
   const result = await repo.listAppointments(organizationId, { branchId });
-  const appointments = result.ok ? result.data.filter((a) => isSameUtcDay(new Date(a.startsAt), now)) : [];
+  const appointments = result.ok ? result.data.filter((a) => isSameZonedDay(new Date(a.startsAt), now, timeZone)) : [];
   const byStatus: Record<string, number> = {};
   for (const appt of appointments) byStatus[appt.status] = (byStatus[appt.status] ?? 0) + 1;
-  return { date: startOfDayUtc(now).toISOString().slice(0, 10), total: appointments.length, byStatus, appointments };
+  return {
+    date: timeZone ? zonedDateKey(now, timeZone) : startOfDayUtc(now).toISOString().slice(0, 10),
+    total: appointments.length,
+    byStatus,
+    appointments,
+  };
 }
 
 export type StaffUtilization = {
@@ -62,12 +82,13 @@ export type StaffUtilization = {
 export async function getStaffUtilization(
   repo: SalonRepository,
   organizationId: string,
-  day: Date = new Date()
+  day: Date = new Date(),
+  branchId?: string
 ): Promise<StaffUtilization[]> {
   const [staffResult, branchesResult, appointmentsResult] = await Promise.all([
     repo.listStaff(organizationId),
     repo.listBranches(organizationId),
-    repo.listAppointments(organizationId),
+    repo.listAppointments(organizationId, { branchId }),
   ]);
   if (!staffResult.ok || !branchesResult.ok || !appointmentsResult.ok) return [];
 
@@ -76,7 +97,7 @@ export async function getStaffUtilization(
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   return staffResult.data
-    .filter((s) => s.isActive)
+    .filter((s) => s.isActive && (!branchId || s.branchId === branchId))
     .map((staff) => {
       const bookedMinutes = appointmentsResult.data
         .filter(
@@ -158,9 +179,10 @@ export async function getRevenueSummary(
   repo: SalonRepository,
   organizationId: string,
   from: Date,
-  to: Date
+  to: Date,
+  branchId?: string
 ): Promise<RevenueSummary> {
-  const result = await repo.listSales(organizationId, { status: "paid" });
+  const result = await repo.listSales(organizationId, { status: "paid", branchId });
   const sales = result.ok
     ? result.data.filter((s) => {
         const createdAt = s.updatedAt ?? s.createdAt;
@@ -190,8 +212,12 @@ export async function getServicePerformance(repo: SalonRepository, organizationI
 
 export type PendingPaymentsSummary = { count: number; totalOutstanding: number; currency: string };
 
-export async function getPendingPaymentsSummary(repo: SalonRepository, organizationId: string): Promise<PendingPaymentsSummary> {
-  const result = await repo.listPendingPayments(organizationId);
+export async function getPendingPaymentsSummary(
+  repo: SalonRepository,
+  organizationId: string,
+  branchId?: string
+): Promise<PendingPaymentsSummary> {
+  const result = await repo.listSales(organizationId, { status: "awaiting_payment", branchId });
   const sales = result.ok ? result.data : [];
   return {
     count: sales.length,
@@ -215,6 +241,16 @@ export type BusinessSummary = {
   reactivationCandidateCount: number;
   unconfirmedBookingCount: number;
   attentionItems: AttentionItem[];
+  collectedToday: RevenueSummary;
+  staffUtilization: StaffUtilization[];
+  branchId?: string;
+  timeZone: string;
+};
+
+export type BusinessSummaryOptions = {
+  reactivationDaysInactive?: number;
+  branchId?: string;
+  now?: Date;
 };
 
 /**
@@ -224,23 +260,54 @@ export type BusinessSummary = {
 export async function getBusinessSummary(
   repo: SalonRepository,
   organizationId: string,
-  reactivationDaysInactive = 45
+  reactivationDaysInactiveOrOptions: number | BusinessSummaryOptions = 45
 ): Promise<BusinessSummary> {
-  const [todayAppointments, pendingPayments, reactivationResult, emptySlotsToday] = await Promise.all([
-    getTodayAppointments(repo, organizationId),
-    getPendingPaymentsSummary(repo, organizationId),
-    repo.getReactivationCandidates(organizationId, reactivationDaysInactive),
-    (async () => {
-      const branches = await repo.listBranches(organizationId);
-      if (!branches.ok || !branches.data.length) return 0;
-      let total = 0;
-      for (const branch of branches.data) {
-        const slots = await getEmptySlots(repo, organizationId, branch.id);
-        total += slots.reduce((sum, s) => sum + s.slots.length, 0);
-      }
-      return total;
-    })(),
-  ]);
+  const options: BusinessSummaryOptions =
+    typeof reactivationDaysInactiveOrOptions === "number"
+      ? { reactivationDaysInactive: reactivationDaysInactiveOrOptions }
+      : reactivationDaysInactiveOrOptions;
+  const reactivationDaysInactive = options.reactivationDaysInactive ?? 45;
+  const now = options.now ?? new Date();
+  const branchId = options.branchId;
+
+  const branchesResult = await repo.listBranches(organizationId);
+  const branches = branchesResult.ok ? branchesResult.data.filter((b) => b.isActive) : [];
+  const selectedBranch = branchId ? branches.find((b) => b.id === branchId) : undefined;
+  const timeZone = selectedBranch?.timezone ?? branches[0]?.timezone ?? "UTC";
+  const emptySlotBranches = selectedBranch ? [selectedBranch] : branches;
+
+  const todayKey = zonedDateKey(now, timeZone);
+
+  const [todayAppointments, pendingPayments, reactivationResult, emptySlotsToday, paidSalesResult, staffUtilization] =
+    await Promise.all([
+      getTodayAppointments(repo, organizationId, branchId, now, timeZone),
+      getPendingPaymentsSummary(repo, organizationId, branchId),
+      repo.getReactivationCandidates(organizationId, reactivationDaysInactive),
+      (async () => {
+        let total = 0;
+        for (const branch of emptySlotBranches) {
+          const slots = await getEmptySlots(repo, organizationId, branch.id, now);
+          total += slots.reduce((sum, s) => sum + s.slots.length, 0);
+        }
+        return total;
+      })(),
+      repo.listSales(organizationId, { status: "paid", branchId }),
+      getStaffUtilization(repo, organizationId, now, branchId),
+    ]);
+
+  const paidToday = paidSalesResult.ok
+    ? paidSalesResult.data.filter((s) => {
+        const at = s.updatedAt ?? s.createdAt;
+        return at ? zonedDateKey(new Date(at), timeZone) === todayKey : false;
+      })
+    : [];
+  const collectedToday: RevenueSummary = {
+    from: todayKey,
+    to: todayKey,
+    totalRevenue: paidToday.reduce((sum, s) => sum + s.total, 0),
+    saleCount: paidToday.length,
+    currency: paidToday[0]?.currency ?? "INR",
+  };
 
   const unconfirmedBookingCount = todayAppointments.byStatus.pending ?? 0;
   const reactivationCandidateCount = reactivationResult.ok ? reactivationResult.data.length : 0;
@@ -252,7 +319,17 @@ export async function getBusinessSummary(
     { kind: "empty_slots_today", count: emptySlotsToday },
   ]);
 
-  return { todayAppointments, pendingPayments, reactivationCandidateCount, unconfirmedBookingCount, attentionItems };
+  return {
+    todayAppointments,
+    pendingPayments,
+    reactivationCandidateCount,
+    unconfirmedBookingCount,
+    attentionItems,
+    collectedToday,
+    staffUtilization,
+    branchId: selectedBranch?.id,
+    timeZone,
+  };
 }
 
 // ---------------------------------------------------------------------------

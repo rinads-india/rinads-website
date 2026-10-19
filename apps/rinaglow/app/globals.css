@@ -154,3 +154,33 @@ th {
   );
   padding: 1rem 1.25rem;
 }
+
+.rinpo-brief {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border-radius: 1.125rem;
+  border: 1.5px solid color-mix(in srgb, var(--pur) 18%, #ede0f7);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pur) 10%, white),
+    color-mix(in srgb, var(--surf) 70%, white)
+  );
+  padding: 1.1rem 1.25rem;
+}
+
+.chip-action {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--pur) 22%, transparent);
+  background: white;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pur);
+}
+
+.chip-action:hover {
+  background: var(--surf);
+}

@@ -9,12 +9,13 @@ import type { TenancyContext } from "@rinads/tenancy";
 import "server-only";
 import { getSalonDeps } from "./salon";
 
-export function toSalonRinpoContext(tenancy: TenancyContext): SalonRinpoContext {
+export function toSalonRinpoContext(tenancy: TenancyContext, defaultBranchId?: string): SalonRinpoContext {
   return {
     organizationId: tenancy.organizationId,
     userId: tenancy.userId,
     roleKey: tenancy.roleKey,
     permissions: tenancy.permissions,
+    defaultBranchId,
   };
 }
 
@@ -34,7 +35,7 @@ export async function runRinpoCommand(tenancy: TenancyContext, text: string, nlu
   }
 
   const deps = await getSalonDeps();
-  const ctx = toSalonRinpoContext(tenancy);
+  const ctx = toSalonRinpoContext(tenancy, nluContext.defaultBranchId);
   const results = [];
   for (const call of parsed.calls) {
     results.push(await executeSalonRinpoTool(deps, ctx, call));

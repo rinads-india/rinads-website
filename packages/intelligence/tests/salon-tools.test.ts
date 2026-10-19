@@ -234,12 +234,14 @@ describe("executeSalonRinpoTool — get_salon_business_summary (READ)", () => {
     assert.ok(customer.ok);
     if (!customer.ok) return;
 
+    const now = new Date();
+    const startsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 6, 0, 0)).toISOString();
     await deps.repo.createAppointment(ORG_ID, {
       branchId: branch.id,
       staffId: staff.id,
       customerId: customer.data.id,
-      startsAt: new Date().toISOString(),
-      endsAt: new Date(Date.now() + 30 * 60_000).toISOString(),
+      startsAt,
+      endsAt: new Date(new Date(startsAt).getTime() + 30 * 60_000).toISOString(),
       serviceIds: [service.id],
     });
 
