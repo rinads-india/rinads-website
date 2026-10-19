@@ -8,6 +8,7 @@ import {
   setOldGoldStatus,
   updateJewelleryJobOrder,
 } from "./actions";
+import Link from "next/link";
 import { loadJewelleryOsData } from "@/lib/jewellery-os";
 
 const panel = "rounded-3xl border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur";
@@ -75,18 +76,18 @@ export default async function JewelleryOsPage() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:w-auto">
-            <a href="/os/customers" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
+            <Link href="/os/customers" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
               Customers
-            </a>
-            <a href="/os/work" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
+            </Link>
+            <Link href="/os/work" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
               Work
-            </a>
-            <a href="/os/money" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
+            </Link>
+            <Link href="/os/money" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
               Money
-            </a>
-            <a href="/os/automate" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
+            </Link>
+            <Link href="/os/automate" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">
               Automate
-            </a>
+            </Link>
           </div>
         </div>
       </section>
