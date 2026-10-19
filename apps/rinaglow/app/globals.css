@@ -363,6 +363,29 @@ th {
   font-style: italic;
 }
 
+.inv-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.inv-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(10 6 18 / 0.45);
+}
+
+.inv-modal {
+  position: relative;
+  margin: 6vh auto 0;
+  width: min(640px, calc(100% - 2rem));
+  border-radius: 1.125rem;
+  border: 1.5px solid color-mix(in srgb, var(--pur) 18%, #ede0f7);
+  background: white;
+  box-shadow: 0 24px 60px rgb(42 15 66 / 0.18);
+}
+
 @media print {
   header,
   .invoice-actions,

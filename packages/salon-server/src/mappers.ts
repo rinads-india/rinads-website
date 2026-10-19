@@ -25,6 +25,10 @@ import type {
   SalonSale,
   SalonSaleLine,
   SalonSegment,
+  SalonProduct,
+  SalonStockLevel,
+  SalonStockMovement,
+  StockMovementReason,
   SalonLoyaltyAccount,
   SalonLoyaltyLedgerEntry,
   SalonLoyaltyProgram,
@@ -332,6 +336,46 @@ export function mapCampaignRow(row: SalonRow): SalonCampaign {
     convertedCount: Number(row.converted_count ?? 0),
     createdAt: optStr(row, "created_at"),
     updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapProductRow(row: SalonRow): SalonProduct {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    name: str(row, "name"),
+    category: str(row, "category"),
+    sku: optStr(row, "sku"),
+    unit: str(row, "unit"),
+    reorderAt: Number(row.reorder_at ?? 0),
+    isActive: Boolean(row.is_active),
+    createdAt: optStr(row, "created_at"),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapStockLevelRow(row: SalonRow): SalonStockLevel {
+  return {
+    organizationId: str(row, "organization_id"),
+    productId: str(row, "product_id"),
+    branchId: str(row, "branch_id"),
+    quantity: Number(row.quantity ?? 0),
+    updatedAt: optStr(row, "updated_at"),
+  };
+}
+
+export function mapStockMovementRow(row: SalonRow): SalonStockMovement {
+  return {
+    id: str(row, "id"),
+    organizationId: str(row, "organization_id"),
+    productId: str(row, "product_id"),
+    branchId: str(row, "branch_id"),
+    quantityDelta: Number(row.quantity_delta ?? 0),
+    reason: str(row, "reason") as StockMovementReason,
+    transferId: optStr(row, "transfer_id"),
+    note: optStr(row, "note"),
+    createdBy: optStr(row, "created_by"),
+    createdAt: optStr(row, "created_at"),
   };
 }
 

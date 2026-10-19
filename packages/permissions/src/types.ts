@@ -42,6 +42,7 @@ export type PermissionKey =
   | "salon.pos.manage"
   | "salon.pricing.override"
   | "salon.campaigns.manage"
+  | "salon.inventory.manage"
   | (string & {});
 
 export type Permission = {
