@@ -30,6 +30,35 @@ describe("Founder Intelligence", () => {
     assert.doesNotMatch(page, /98%|99\.9%|100%/);
   });
 
+  it("promotes live RINPO approvals and provider state into the founder Today view", () => {
+    assert.match(page, /loadRinpoControlSnapshot/);
+    assert.match(page, /Pending approvals/);
+    assert.match(page, /Pending RINPO actions/);
+    assert.match(page, /RINPO provider/);
+    assert.match(page, /Founder control tower/);
+  });
+
+  it("reads canonical operational tasks and alerts into Today and Attention", () => {
+    assert.match(adapters, /operational_tasks/);
+    assert.match(adapters, /operational_alerts/);
+    assert.match(adapters, /loadFounderWork/);
+    assert.match(adapters, /SUPABASE_SERVICE_ROLE_KEY/);
+    assert.match(page, /Open work/);
+    assert.match(page, /Due today/);
+    assert.match(page, /Work pulse/);
+    assert.match(page, /Overdue work/);
+    assert.match(page, /Blocked work/);
+    assert.match(page, /Operational alerts/);
+  });
+
+  it("exposes per-project deployment truth and deterministic parity detection", () => {
+    assert.match(adapters, /githubCommitSha/);
+    assert.match(adapters, /githubCommitRef/);
+    assert.match(adapters, /items/);
+    assert.match(page, /Deployment parity mismatch/);
+    assert.match(page, /websiteSha !== adminSha/);
+  });
+
   it("keeps secrets server-only and marks missing integrations not connected", () => {
     assert.match(adapters, /import "server-only"/);
     assert.match(adapters, /FOUNDER_INTELLIGENCE_VERCEL_TOKEN/);
