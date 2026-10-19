@@ -8,3 +8,4 @@ export * from "./subscriptions";
 export * from "./runtime-jobs";
 export * from "./provisioning-worker";
 export * from "./ambady-migrate";
+export * from "./marketing/index";
