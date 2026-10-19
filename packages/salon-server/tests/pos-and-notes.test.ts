@@ -102,6 +102,35 @@ describe("SalonRepository — POS / checkout", () => {
     const result = await repo.recordPayment(ORG_ID, sale.data.id, { method: "cash", amount: 0, idempotencyKey: "pay-zero" });
     assert.ok(!result.ok);
   });
+
+  it("stores salon GSTIN on organization billing settings without inventing a number", async () => {
+    const repo = new SalonRepository(createSalonMockClient());
+    const empty = await repo.getBillingSettings(ORG_ID);
+    assert.ok(empty.ok);
+    if (empty.ok) assert.equal(empty.data.gstin, "");
+
+    const saved = await repo.updateBillingSettings(ORG_ID, {
+      legalName: "FAB Signature Salon",
+      gstin: "32AABCK1234A1Z5",
+      stateName: "Kerala",
+      stateCode: "32",
+      sacCode: "9997",
+    });
+    assert.ok(saved.ok);
+    if (saved.ok) {
+      assert.equal(saved.data.gstin, "32AABCK1234A1Z5");
+      assert.equal(saved.data.legalName, "FAB Signature Salon");
+    }
+
+    const invalid = await repo.updateBillingSettings(ORG_ID, {
+      legalName: "FAB",
+      gstin: "not-valid",
+      stateName: "Kerala",
+      stateCode: "",
+      sacCode: "9997",
+    });
+    assert.ok(!invalid.ok);
+  });
 });
 
 describe("SalonRepository — refund lifecycle", () => {

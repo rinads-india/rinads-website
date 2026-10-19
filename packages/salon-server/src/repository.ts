@@ -3,7 +3,10 @@ import {
   canTransitionAppointmentStatus,
   canTransitionRefundStatus,
   fail,
+  isValidGstin,
+  normalizeGstin,
   ok,
+  parseSalonBillingSettings,
   validateBookingAvailability,
   type AppointmentStatus,
   type AppointmentWithServices,
@@ -29,6 +32,7 @@ import {
   type SalonService,
   type SalonStaff,
   type SaleWithLines,
+  type SalonBillingSettings,
   type WeeklyHours,
 } from "@rinads/salon";
 import type { SalonRow, SalonSupabaseClient } from "./client";
@@ -60,6 +64,9 @@ export type CreateBranchInput = {
   phone?: string;
   timezone?: string;
   workingHours?: WeeklyHours;
+  gstin?: string;
+  stateName?: string;
+  stateCode?: string;
 };
 
 export type CreateServiceInput = {
@@ -224,6 +231,50 @@ export class SalonRepository {
     if (error) return fail("db_error", error.message);
     if (!data) return fail("db_error", "No branch returned after insert.");
     return ok(mapBranchRow(data));
+  }
+
+  async getBillingSettings(organizationId: string): Promise<Result<SalonBillingSettings>> {
+    const { data, error } = await this.client
+      .from("organization_settings")
+      .select("settings")
+      .eq("organization_id", organizationId)
+      .maybeSingle();
+    if (error) return fail("db_error", error.message);
+    return ok(parseSalonBillingSettings(data?.settings ?? {}));
+  }
+
+  async updateBillingSettings(
+    organizationId: string,
+    input: SalonBillingSettings
+  ): Promise<Result<SalonBillingSettings>> {
+    if (input.gstin && !isValidGstin(input.gstin)) return fail("invalid_input", "Enter a valid 15-character GSTIN.");
+    const { data, error } = await this.client.rpc("update_salon_billing_settings", {
+      p_organization_id: organizationId,
+      p_legal_name: input.legalName,
+      p_gstin: input.gstin ? normalizeGstin(input.gstin) : "",
+      p_state_name: input.stateName,
+      p_state_code: input.stateCode,
+      p_sac_code: input.sacCode,
+      p_address: input.address ?? null,
+      p_pan: input.pan ?? null,
+    });
+    if (error) return fail("db_error", error.message);
+    return ok(parseSalonBillingSettings({ billing: data ?? input }));
+  }
+
+  async updateBranchGstin(
+    branchId: string,
+    input: { gstin?: string; stateName?: string; stateCode?: string }
+  ): Promise<Result<true>> {
+    if (input.gstin && !isValidGstin(input.gstin)) return fail("invalid_input", "Enter a valid 15-character GSTIN.");
+    const { error } = await this.client.rpc("update_salon_branch_gstin", {
+      p_branch_id: branchId,
+      p_gstin: input.gstin ? normalizeGstin(input.gstin) : "",
+      p_state_name: input.stateName ?? "",
+      p_state_code: input.stateCode ?? "",
+    });
+    if (error) return fail("db_error", error.message);
+    return ok(true);
   }
 
   /** Direct insert into the existing `rinpo_audit_log` table — every RINPO WRITE/EXECUTE tool call is audited here. */

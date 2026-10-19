@@ -303,3 +303,80 @@ th {
   font-size: 0.625rem;
   font-weight: 700;
 }
+
+.gst-invoice {
+  border-radius: 1.125rem;
+  border: 1.5px solid color-mix(in srgb, var(--pur) 18%, #ede0f7);
+  background: white;
+  padding: 1.5rem;
+  color: #111827;
+}
+
+.gst-invoice-head,
+.gst-invoice-parties {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.gst-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pur);
+  margin-bottom: 0.35rem;
+}
+
+.gst-invoice h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.gst-invoice-meta p,
+.gst-invoice-parties p,
+.gst-invoice-totals p,
+.gst-invoice-foot p {
+  font-size: 0.8rem;
+  color: #4b4453;
+}
+
+.gst-invoice-meta span {
+  display: inline-block;
+  min-width: 7.5rem;
+  color: #6b5b78;
+}
+
+.gst-invoice-table {
+  margin: 1rem 0;
+  font-size: 0.75rem;
+}
+
+.gst-grand-total {
+  font-size: 1rem !important;
+  font-weight: 700;
+  color: #111827 !important;
+}
+
+.gst-words {
+  font-style: italic;
+}
+
+@media print {
+  header,
+  .invoice-actions,
+  .rinpo-command-bar,
+  nav {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .gst-invoice {
+    border: none;
+    padding: 0;
+  }
+}

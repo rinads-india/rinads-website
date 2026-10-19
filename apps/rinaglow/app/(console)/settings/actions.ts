@@ -61,3 +61,47 @@ export async function saveWhatsAppSettingsAction(_prevState: FormActionState, fo
   revalidatePath("/communications");
   return {};
 }
+
+export async function saveBillingSettingsAction(
+  _prevState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> {
+  const tenancy = await requireTenancy();
+  const repo = await getSalonRepository();
+  const result = await repo.updateBillingSettings(tenancy.organizationId, {
+    legalName: String(formData.get("legalName") ?? "").trim(),
+    gstin: String(formData.get("gstin") ?? "").trim(),
+    stateName: String(formData.get("stateName") ?? "").trim(),
+    stateCode: String(formData.get("stateCode") ?? "").trim(),
+    sacCode: String(formData.get("sacCode") ?? "9997").trim() || "9997",
+    address: String(formData.get("address") ?? "").trim() || undefined,
+    pan: String(formData.get("pan") ?? "").trim() || undefined,
+  });
+  if (!result.ok) return { error: result.error.message };
+  revalidatePath("/settings");
+  revalidatePath("/pos");
+  return {};
+}
+
+export async function saveBranchGstinAction(
+  _prevState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> {
+  const tenancy = await requireTenancy();
+  const repo = await getSalonRepository();
+  const branchId = String(formData.get("branchId") ?? "").trim();
+  if (!branchId) return { error: "Choose a branch." };
+  const branches = await repo.listBranches(tenancy.organizationId);
+  if (!branches.ok || !branches.data.some((branch) => branch.id === branchId)) {
+    return { error: "Branch not found in this salon." };
+  }
+  const result = await repo.updateBranchGstin(branchId, {
+    gstin: String(formData.get("gstin") ?? "").trim() || undefined,
+    stateName: String(formData.get("stateName") ?? "").trim() || undefined,
+    stateCode: String(formData.get("stateCode") ?? "").trim() || undefined,
+  });
+  if (!result.ok) return { error: result.error.message };
+  revalidatePath("/settings");
+  revalidatePath("/pos");
+  return {};
+}
