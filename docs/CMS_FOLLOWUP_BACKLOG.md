@@ -36,7 +36,7 @@ Scoped acceptance criteria: [CMS_PHASE_C.md](./CMS_PHASE_C.md).
 | Blog/posts + `/blog/[slug]` | New tables + routes |
 | Draft preview tokens | `?preview=` on website |
 | Migrate `/story-concept` static HTML | Into CMS-managed Next route |
-| Supabase Storage upload in media admin | Replace URL-only register flow |
+| Supabase Storage upload in media admin | **Shipped in code** (upload UI + `rinads-cms` bucket migration); apply migration to staging is founder-gated |
 | i18n CMS variants | en/ml content rows |
 
 ## P2 — Intelligence
