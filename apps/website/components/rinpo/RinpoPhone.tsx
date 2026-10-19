@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRinpo } from "./RinpoProvider";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Wifi, Signal, Battery } from "lucide-react";
+import { X, Wifi, Signal, Battery, Settings2 } from "lucide-react";
 import {
   RinpoChat,
   ClientPortal,
@@ -15,11 +15,14 @@ import {
   QuickActionsScreen,
   NotificationsScreen,
   ProfileMemoryScreen,
+  PhoneWorldScreen,
+  PhoneSettingsScreen,
 } from "./RinpoPhoneScreens";
 import { RinpoModePlaceholder } from "./RinpoPhoneScreens/RinpoModePlaceholder";
 import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 import { RINPO_STATE_LABELS } from "@/lib/rinpo-experience";
 import {
+  getPhoneDockModesForAudience,
   getPhoneModesForAudience,
   normalizePhoneScreen,
   type RinpoPhoneAudience,
@@ -47,9 +50,10 @@ export function RinpoPhone() {
   } = useRinpo();
   const { user } = useAuth();
   const audience = resolveAudience(user);
-  const bottomModes = useMemo(() => getPhoneModesForAudience(audience), [audience]);
+  const availableModes = useMemo(() => getPhoneModesForAudience(audience), [audience]);
+  const bottomModes = useMemo(() => getPhoneDockModesForAudience(audience), [audience]);
   const screen = normalizePhoneScreen(rawScreen);
-  const activeMode = bottomModes.find((m) => m.id === screen);
+  const activeMode = availableModes.find((m) => m.id === screen);
 
   const [currentTime, setCurrentTime] = useState("9:41");
   const [currentDateStr, setCurrentDateStr] = useState("TUESDAY, 21 JULY");
@@ -82,9 +86,7 @@ export function RinpoPhone() {
         return <RinpoChat initialPrompt={pendingChatPrompt} />;
       case "apps":
       case "home":
-        return (
-          <PhoneHomeScreen onOpenChat={(prompt) => openAsk(prompt)} />
-        );
+        return <PhoneHomeScreen onOpenChat={(prompt) => openAsk(prompt)} />;
       case "actions":
       case "quick-actions":
         return <QuickActionsScreen onOpenChat={(prompt) => openAsk(prompt)} />;
@@ -163,6 +165,10 @@ export function RinpoPhone() {
           );
         }
         return <SearchServices />;
+      case "world":
+        return <PhoneWorldScreen />;
+      case "settings":
+        return <PhoneSettingsScreen />;
       case "portal":
         return <ClientPortal />;
       case "services":
@@ -267,14 +273,30 @@ export function RinpoPhone() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={closeRinpo}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors ml-2"
-              aria-label="Close handset"
-            >
-              <X size={16} />
-            </button>
+            <div className="ml-2 flex shrink-0 items-center gap-1">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => openPhoneScreen("settings")}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                    screen === "settings"
+                      ? "bg-purple-500/25 text-purple-200"
+                      : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+                  }`}
+                  aria-label="Open RINPO Phone settings"
+                >
+                  <Settings2 size={15} />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={closeRinpo}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+                aria-label="Close handset"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-hidden relative bg-gradient-to-b from-[#0c0514] via-[#12071f] to-[#0a0312]">
@@ -293,7 +315,7 @@ export function RinpoPhone() {
           </div>
 
           <nav
-            className="shrink-0 border-t border-purple-500/20 bg-[#090310]/95 px-1 py-2 flex items-center gap-0.5 overflow-x-auto z-20 safe-area-inset-bottom"
+            className="shrink-0 border-t border-purple-500/20 bg-[#090310]/95 px-1 py-2 flex items-center justify-around gap-0.5 z-20 safe-area-inset-bottom"
             aria-label="RINPO phone modes"
           >
             {bottomModes.map((item) => {
@@ -304,7 +326,7 @@ export function RinpoPhone() {
                   key={item.id}
                   type="button"
                   onClick={() => openPhoneScreen(item.id)}
-                  className={`relative flex min-w-[4.25rem] flex-col items-center justify-center py-1 px-2 rounded-xl transition-all shrink-0 ${
+                  className={`relative flex min-w-[3.8rem] flex-col items-center justify-center py-1 px-2 rounded-xl transition-all ${
                     isActive
                       ? "text-purple-300 font-bold"
                       : "text-white/50 hover:text-white/80 font-medium"
