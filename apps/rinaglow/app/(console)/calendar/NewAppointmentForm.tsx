@@ -16,10 +16,12 @@ export function NewAppointmentForm({
   branches,
   services,
   staff,
+  defaultStartsAtLocal,
 }: {
   branches: SalonBranch[];
   services: SalonService[];
   staff: SalonStaff[];
+  defaultStartsAtLocal?: string;
 }) {
   const [state, action, pending] = useActionState(createFrontDeskBookingAction, INITIAL_STATE);
   const [branchId, setBranchId] = useState(branches[0]?.id ?? "");
@@ -66,7 +68,7 @@ export function NewAppointmentForm({
         </fieldset>
         <label className="text-xs font-medium text-muted-foreground">
           Date and time
-          <input name="startsAtLocal" type="datetime-local" required step={900} className="mt-1 w-full" />
+          <input name="startsAtLocal" type="datetime-local" required step={900} defaultValue={defaultStartsAtLocal} className="mt-1 w-full" />
           <span className="mt-1 block font-normal">Enter time in {branch?.timezone ?? "the branch timezone"}.</span>
         </label>
         <label className="text-xs font-medium text-muted-foreground">

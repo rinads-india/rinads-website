@@ -22,7 +22,11 @@ describe("Meta OAuth state", () => {
 
   it("rejects tampered state", () => {
     const state = createMetaOAuthState({ organizationId: "org-1", userId: "user-1" }, SECRET);
-    const tampered = `${state.slice(0, -1)}${state.endsWith("a") ? "b" : "a"}`;
+    const [payload, signature] = state.split(".");
+    // Flip a mid-signature character (trailing base64url chars can be no-ops after decode).
+    const mid = Math.floor(signature.length / 2);
+    const flipped = signature[mid] === "A" ? "B" : "A";
+    const tampered = `${payload}.${signature.slice(0, mid)}${flipped}${signature.slice(mid + 1)}`;
     assert.throws(() => verifyMetaOAuthState(tampered, SECRET), /Invalid Meta OAuth state signature/);
   });
 

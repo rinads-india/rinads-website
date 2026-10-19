@@ -184,3 +184,122 @@ th {
 .chip-action:hover {
   background: var(--surf);
 }
+
+.cal-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--pur) 16%, transparent);
+  background: white;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.cal-legend::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--dot, var(--pur));
+}
+
+.cal-legend-done { --dot: #16a34a; }
+.cal-legend-in_chair { --dot: #7c3aed; }
+.cal-legend-waiting { --dot: #d97706; }
+.cal-legend-upcoming { --dot: #2563eb; }
+
+.cal-event {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--pur) 14%, transparent);
+  background: white;
+  padding: 0.5rem;
+}
+
+.cal-event-done { border-left: 3px solid #16a34a; }
+.cal-event-in_chair { border-left: 3px solid #7c3aed; }
+.cal-event-waiting { border-left: 3px solid #d97706; }
+.cal-event-upcoming { border-left: 3px solid #2563eb; }
+.cal-event-other { border-left: 3px solid #9ca3af; }
+
+.cal-week-wrap {
+  overflow-x: auto;
+  border-radius: 1.125rem;
+  border: 1.5px solid color-mix(in srgb, var(--pur) 18%, #ede0f7);
+  background: white;
+}
+
+.cal-week {
+  display: grid;
+  min-width: 760px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal-week-col {
+  min-height: 22rem;
+  border-right: 1px solid color-mix(in srgb, var(--pur) 10%, transparent);
+}
+
+.cal-week-col:last-child {
+  border-right: none;
+}
+
+.cal-week-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--pur) 12%, transparent);
+  padding: 0.65rem 0.75rem;
+}
+
+.cal-today {
+  background: color-mix(in srgb, var(--pur) 6%, white);
+}
+
+.cal-month {
+  border-radius: 1.125rem;
+  border: 1.5px solid color-mix(in srgb, var(--pur) 18%, #ede0f7);
+  background: white;
+  overflow: hidden;
+}
+
+.cal-month-head,
+.cal-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal-month-dow {
+  padding: 0.55rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid color-mix(in srgb, var(--pur) 12%, transparent);
+}
+
+.cal-month-cell {
+  min-height: 6.5rem;
+  border-right: 1px solid color-mix(in srgb, var(--pur) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pur) 8%, transparent);
+  padding: 0.5rem;
+}
+
+.cal-month-cell:nth-child(7n) {
+  border-right: none;
+}
+
+.cal-month-pad {
+  background: var(--surface-muted);
+}
+
+.cal-month-count {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pur) 16%, white);
+  color: var(--pur);
+  padding: 0.05rem 0.4rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+}

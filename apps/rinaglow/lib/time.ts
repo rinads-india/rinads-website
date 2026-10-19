@@ -50,3 +50,28 @@ export function isSameZonedCalendarDate(a: string, b: string, timeZone: string):
   const formatter = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
   return formatter.format(new Date(a)) === formatter.format(new Date(b));
 }
+
+export function zonedDateKey(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+}
+
+export function zonedNowDate(timeZone: string, now = new Date()): string {
+  return zonedDateKey(now.toISOString(), timeZone);
+}
+
+function addUtcDays(isoDate: string, days: number): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+/** Inclusive start / exclusive end UTC range covering `dayCount` zoned calendar days from `isoDate`. */
+export function zonedDateRangeIso(
+  isoDate: string,
+  timeZone: string,
+  dayCount = 1
+): { from: string; to: string } | null {
+  const from = zonedLocalDateTimeToIso(`${isoDate}T00:00`, timeZone);
+  const to = zonedLocalDateTimeToIso(`${addUtcDays(isoDate, dayCount)}T00:00`, timeZone);
+  if (!from || !to) return null;
+  return { from, to };
+}
