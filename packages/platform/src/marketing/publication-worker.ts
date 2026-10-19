@@ -43,14 +43,16 @@ export interface MarketingPublicationWorkerRepository {
 
 export interface MarketingPublicationTransport {
   readonly provider: MarketingProvider;
+  /** Optional local/provider-independent validation. No network write may occur here. */
+  validate?(claim: ClaimedMarketingPublication): Promise<void>;
   publish(claim: ClaimedMarketingPublication): Promise<MarketingPublicationResult>;
 }
 
 /**
- * Transport errors may explicitly prove that no provider request was sent.
- * Any ordinary/ambiguous exception after beginDispatch is treated as `unknown`
- * and MUST NOT be automatically retried, because the provider may already have
- * accepted the post.
+ * A transport may provide a stable error code and an asserted delivery state.
+ * The worker only trusts `not_sent` before beginDispatch. After that persistence
+ * boundary every failure is coerced to `unknown`, because duplicate prevention
+ * is more important than optimistic retry classification.
  */
 export class MarketingPublicationDispatchError extends Error {
   constructor(
@@ -70,6 +72,32 @@ export type MarketingPublicationWorkerResult = {
   failedBeforeDispatch: number;
   reconciliationRequired: number;
 };
+
+function preDispatchFailure(error: unknown): MarketingPublicationFailure {
+  if (error instanceof MarketingPublicationDispatchError) {
+    return {
+      errorCode: error.code,
+      errorMessage: error.message,
+      deliveryState: "not_sent",
+    };
+  }
+  return {
+    errorCode: "transport_validation_failed",
+    errorMessage: error instanceof Error ? error.message : "Transport validation failed",
+    deliveryState: "not_sent",
+  };
+}
+
+function ambiguousDispatchFailure(error: unknown): MarketingPublicationFailure {
+  return {
+    errorCode:
+      error instanceof MarketingPublicationDispatchError
+        ? error.code
+        : "ambiguous_provider_failure",
+    errorMessage: error instanceof Error ? error.message : "Unknown provider error",
+    deliveryState: "unknown",
+  };
+}
 
 export async function runMarketingPublicationWorker(input: {
   externalEffectsEnabled: boolean;
@@ -117,8 +145,18 @@ export async function runMarketingPublicationWorker(input: {
       continue;
     }
 
-    // This persistence boundary is deliberately immediately before the external
-    // transport. A crash or ordinary exception after it is an ambiguous outcome.
+    if (transport.validate) {
+      try {
+        await transport.validate(claim);
+      } catch (error) {
+        await input.repository.fail(claim, preDispatchFailure(error));
+        failedBeforeDispatch++;
+        continue;
+      }
+    }
+
+    // Persist `unknown` immediately before provider I/O. Once this succeeds,
+    // no adapter assertion may downgrade an error to a safe automatic retry.
     await input.repository.beginDispatch(claim);
 
     try {
@@ -133,22 +171,8 @@ export async function runMarketingPublicationWorker(input: {
       await input.repository.complete(claim, result);
       published++;
     } catch (error) {
-      const failure: MarketingPublicationFailure =
-        error instanceof MarketingPublicationDispatchError
-          ? {
-              errorCode: error.code,
-              errorMessage: error.message,
-              deliveryState: error.deliveryState,
-            }
-          : {
-              errorCode: "ambiguous_provider_failure",
-              errorMessage: error instanceof Error ? error.message : "Unknown provider error",
-              deliveryState: "unknown",
-            };
-
-      await input.repository.fail(claim, failure);
-      if (failure.deliveryState === "unknown") reconciliationRequired++;
-      else failedBeforeDispatch++;
+      await input.repository.fail(claim, ambiguousDispatchFailure(error));
+      reconciliationRequired++;
     }
   }
 

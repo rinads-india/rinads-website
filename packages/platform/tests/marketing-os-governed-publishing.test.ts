@@ -55,8 +55,9 @@ class FakeRepository implements MarketingPublicationWorkerRepository {
 
 function transport(
   publish: (value: ClaimedMarketingPublication) => Promise<MarketingPublicationResult>,
+  validate?: (value: ClaimedMarketingPublication) => Promise<void>,
 ): MarketingPublicationTransport {
-  return { provider: "meta", publish };
+  return { provider: "meta", publish, validate };
 }
 
 describe("Marketing OS governed publication worker", () => {
@@ -127,6 +128,33 @@ describe("Marketing OS governed publication worker", () => {
     assert.equal(repository.failed[0]?.failure.errorCode, "approval_not_approved");
   });
 
+  it("records local validation failures as not_sent before the dispatch boundary", async () => {
+    const repository = new FakeRepository([claim()]);
+    let providerCalls = 0;
+    const result = await runMarketingPublicationWorker({
+      externalEffectsEnabled: true,
+      repository,
+      transports: [transport(
+        async () => {
+          providerCalls++;
+          return { externalPostId: "post-1" };
+        },
+        async () => {
+          throw new MarketingPublicationDispatchError(
+            "provider payload validation rejected locally",
+            "invalid_payload",
+            "not_sent",
+          );
+        },
+      )],
+    });
+
+    assert.equal(providerCalls, 0);
+    assert.equal(repository.begin.length, 0);
+    assert.equal(repository.failed[0]?.failure.deliveryState, "not_sent");
+    assert.equal(result.failedBeforeDispatch, 1);
+  });
+
   it("treats an ordinary error after beginDispatch as an ambiguous delivery and never retries it", async () => {
     const repository = new FakeRepository([claim()]);
     let providerCalls = 0;
@@ -146,22 +174,24 @@ describe("Marketing OS governed publication worker", () => {
     assert.equal(result.reconciliationRequired, 1);
   });
 
-  it("allows a transport to prove a pre-send failure without marking delivery ambiguous", async () => {
+  it("does not trust a transport not_sent assertion after beginDispatch", async () => {
     const repository = new FakeRepository([claim()]);
     const result = await runMarketingPublicationWorker({
       externalEffectsEnabled: true,
       repository,
       transports: [transport(async () => {
         throw new MarketingPublicationDispatchError(
-          "provider payload validation rejected locally",
-          "invalid_payload",
+          "adapter believes request was not sent",
+          "socket_not_written",
           "not_sent",
         );
       })],
     });
 
-    assert.equal(repository.failed[0]?.failure.deliveryState, "not_sent");
-    assert.equal(result.failedBeforeDispatch, 1);
-    assert.equal(result.reconciliationRequired, 0);
+    assert.equal(repository.begin.length, 1);
+    assert.equal(repository.failed[0]?.failure.errorCode, "socket_not_written");
+    assert.equal(repository.failed[0]?.failure.deliveryState, "unknown");
+    assert.equal(result.failedBeforeDispatch, 0);
+    assert.equal(result.reconciliationRequired, 1);
   });
 });
