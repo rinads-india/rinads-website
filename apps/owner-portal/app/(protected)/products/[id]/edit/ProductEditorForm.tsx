@@ -8,11 +8,12 @@ import { saveProduct, type SaveProductState } from "./actions";
 type ProductEditorFormProps = {
   product: Product;
   variants: ProductVariant[];
+  stockEditable: boolean;
 };
 
 const initialState: SaveProductState = { ok: false };
 
-export function ProductEditorForm({ product, variants }: ProductEditorFormProps) {
+export function ProductEditorForm({ product, variants, stockEditable }: ProductEditorFormProps) {
   const [state, formAction, pending] = useActionState(saveProduct, initialState);
 
   return (
@@ -54,7 +55,14 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
       </Card>
 
       <Card className="space-y-4">
-        <h3 className="section-title">Variants</h3>
+        <div>
+          <h3 className="section-title">Variants</h3>
+          {!stockEditable ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Production stock is read-only here. Inventory quantity must change through the shared stock-movement ledger.
+            </p>
+          ) : null}
+        </div>
         <div className="overflow-x-auto">
           <table>
             <thead>
@@ -63,7 +71,7 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
                 <th>SKU</th>
                 <th>Price (₹)</th>
                 <th>Compare at</th>
-                <th>Stock</th>
+                <th>Stock projection</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +88,7 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
                       name={`variant_${variant.id}_price`}
                       type="number"
                       min={0}
-                      step={1}
+                      step="0.01"
                       defaultValue={variant.price}
                     />
                   </td>
@@ -89,7 +97,7 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
                       name={`variant_${variant.id}_compareAtPrice`}
                       type="number"
                       min={0}
-                      step={1}
+                      step="0.01"
                       defaultValue={variant.compareAtPrice ?? ""}
                     />
                   </td>
@@ -100,6 +108,7 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
                       min={0}
                       step={1}
                       defaultValue={variant.stock}
+                      disabled={!stockEditable}
                     />
                   </td>
                 </tr>
@@ -112,13 +121,18 @@ export function ProductEditorForm({ product, variants }: ProductEditorFormProps)
       <Card className="space-y-4">
         <h3 className="section-title">Pricing &amp; stock</h3>
         <p className="text-sm text-muted-foreground">
-          Variant prices and inventory are edited in the table above. Totals are recalculated on save via{" "}
-          <code className="text-xs">catalog.upsertProduct</code>.
+          Product and variant identity/pricing are saved to the active tenant catalog. In production, inventory remains ledger-controlled rather than being directly overwritten by this form.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Badge tone="default">Min ₹{Math.min(...variants.map((v) => v.price))}</Badge>
-          <Badge tone="default">Max ₹{Math.max(...variants.map((v) => v.price))}</Badge>
-          <Badge tone="success">Total stock {variants.reduce((s, v) => s + v.stock, 0)}</Badge>
+          {variants.length ? (
+            <>
+              <Badge tone="default">Min ₹{Math.min(...variants.map((v) => v.price))}</Badge>
+              <Badge tone="default">Max ₹{Math.max(...variants.map((v) => v.price))}</Badge>
+              <Badge tone="success">Stock projection {variants.reduce((s, v) => s + v.stock, 0)}</Badge>
+            </>
+          ) : (
+            <Badge tone="warning">No variants</Badge>
+          )}
         </div>
       </Card>
 

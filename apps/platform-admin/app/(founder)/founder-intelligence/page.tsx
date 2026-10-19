@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SignOutButton } from "@/components/SignOutButton";
 import { loadFounderIntelligenceSnapshot } from "@/lib/founder-intelligence/adapters";
+import { loadRinpoControlSnapshot } from "@/lib/rinpo-control/adapters";
 import type {
   ConnectionState,
   FounderWorkspace,
@@ -41,6 +42,14 @@ const stateLabels: Record<ConnectionState, string> = {
   not_connected: "Not connected",
 };
 
+type FounderAttentionItem = {
+  id: string;
+  label: string;
+  detail: string;
+  state: Exclude<ConnectionState, "operational">;
+  href?: string;
+};
+
 function StatusDot({ state }: { state: ConnectionState }) {
   return <span className={`fi-status-dot fi-status-${state}`} aria-hidden="true" />;
 }
@@ -59,6 +68,19 @@ function SourceCard({ source }: { source: SourceCheck }) {
         </span>
       </div>
       <p className="fi-card-detail">{source.detail}</p>
+      {source.items?.length ? (
+        <div className="fi-system-list" aria-label={`${source.label} detail`}>
+          {source.items.map((item) => (
+            <div key={item.id}>
+              <span>{item.label}</span>
+              <strong>
+                <StatusDot state={item.state} />
+                {stateLabels[item.state]}
+              </strong>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <span className="fi-checked">
         {source.checkedAt
           ? `Checked ${new Date(source.checkedAt).toLocaleTimeString("en-IN", {
@@ -143,17 +165,156 @@ function ArchitectureMap({ sources }: { sources: SourceCheck[] }) {
 }
 
 export default async function FounderIntelligencePage() {
-  const snapshot = await loadFounderIntelligenceSnapshot();
+  const [snapshot, rinpo] = await Promise.all([
+    loadFounderIntelligenceSnapshot(),
+    loadRinpoControlSnapshot(),
+  ]);
   const workspaces =
     snapshot.workspaceResult.state === "operational"
       ? snapshot.workspaceResult.workspaces
       : [];
   const allConnected =
     snapshot.sources.every((source) => source.state === "operational") &&
-    snapshot.workspaceResult.state === "operational";
+    snapshot.workspaceResult.state === "operational" &&
+    snapshot.workResult.state === "operational";
   const connectedCount = snapshot.sources.filter(
     (source) => source.state !== "not_connected"
   ).length;
+
+  const pendingApprovals = rinpo.metrics.find((metric) => metric.id === "pending_approvals");
+  const pendingActions = rinpo.metrics.find((metric) => metric.id === "pending_actions");
+  const selectedProvider = rinpo.providerRoutes.find((provider) => provider.selectedByDefault);
+  const vercel = snapshot.sources.find((source) => source.id === "vercel");
+  const websiteDeployment = vercel?.items?.find((item) => item.label === "www.rinads.com");
+  const adminDeployment = vercel?.items?.find((item) => item.label === "Platform admin");
+  const websiteSha = websiteDeployment?.metadata?.commitSha;
+  const adminSha = adminDeployment?.metadata?.commitSha;
+  const work = snapshot.workResult;
+
+  const attention: FounderAttentionItem[] = [];
+
+  for (const source of snapshot.sources) {
+    if (source.id === "vercel" && source.items?.length) {
+      for (const item of source.items) {
+        if (item.state !== "operational") {
+          attention.push({
+            id: `vercel-${item.id}`,
+            label: `${item.label} deployment`,
+            detail: item.detail,
+            state: item.state,
+            href: item.href,
+          });
+        }
+      }
+      continue;
+    }
+    if (source.state !== "operational") {
+      attention.push({
+        id: `source-${source.id}`,
+        label: source.label,
+        detail: source.detail,
+        state: source.state,
+        href: source.href,
+      });
+    }
+  }
+
+  if (snapshot.workspaceResult.state !== "operational") {
+    attention.push({
+      id: "workspace-registry",
+      label: "Workspace registry",
+      detail: snapshot.workspaceResult.detail,
+      state: snapshot.workspaceResult.state,
+    });
+  }
+
+  if (work.state !== "operational") {
+    attention.push({
+      id: "work-intelligence",
+      label: "Operational work intelligence",
+      detail: work.detail,
+      state: work.state,
+    });
+  } else {
+    if (work.counts.overdue > 0) {
+      attention.push({
+        id: "overdue-work",
+        label: "Overdue work",
+        detail: `${work.counts.overdue} open task${work.counts.overdue === 1 ? " is" : "s are"} past due.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.blocked > 0) {
+      attention.push({
+        id: "blocked-work",
+        label: "Blocked work",
+        detail: `${work.counts.blocked} task${work.counts.blocked === 1 ? " is" : "s are"} blocked.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.urgent > 0) {
+      attention.push({
+        id: "urgent-work",
+        label: "Urgent work",
+        detail: `${work.counts.urgent} open task${work.counts.urgent === 1 ? " is" : "s are"} marked urgent.`,
+        state: "degraded",
+      });
+    }
+    if (work.counts.unacknowledgedAlerts > 0) {
+      attention.push({
+        id: "operational-alerts",
+        label: "Operational alerts",
+        detail: `${work.counts.unacknowledgedAlerts} alert${work.counts.unacknowledgedAlerts === 1 ? " requires" : "s require"} acknowledgement.`,
+        state: "degraded",
+      });
+    }
+  }
+
+  if ((pendingApprovals?.value ?? 0) > 0) {
+    attention.push({
+      id: "pending-approvals",
+      label: "RINPO approvals waiting",
+      detail: `${pendingApprovals?.value} runtime approval${pendingApprovals?.value === 1 ? "" : "s"} require a human decision.`,
+      state: "degraded",
+      href: "/rinpo",
+    });
+  }
+
+  if ((pendingActions?.value ?? 0) > 0) {
+    attention.push({
+      id: "pending-actions",
+      label: "RINPO actions pending",
+      detail: `${pendingActions?.value} governed RINPO action${pendingActions?.value === 1 ? "" : "s"} remain pending.`,
+      state: "degraded",
+      href: "/rinpo",
+    });
+  }
+
+  if (selectedProvider && !selectedProvider.configured) {
+    attention.push({
+      id: "rinpo-provider",
+      label: "Selected RINPO provider is not configured",
+      detail: `${selectedProvider.provider} / ${selectedProvider.model} is selected by default but has no complete server-side provider configuration.`,
+      state: "not_connected",
+      href: "/rinpo",
+    });
+  }
+
+  if (
+    typeof websiteSha === "string" &&
+    typeof adminSha === "string" &&
+    websiteSha &&
+    adminSha &&
+    websiteSha !== adminSha
+  ) {
+    attention.push({
+      id: "deployment-parity",
+      label: "Deployment parity mismatch",
+      detail: `www.rinads.com is on ${websiteSha.slice(0, 7)} while admin.rinads.com is on ${adminSha.slice(0, 7)}. Review whether the control plane should be promoted from the same canonical monorepo state.`,
+      state: "degraded",
+      href: "https://vercel.com/dashboard",
+    });
+  }
 
   return (
     <div className="fi-scene">
@@ -184,7 +345,7 @@ export default async function FounderIntelligencePage() {
         <div>
           <span className="fi-kicker">RINPO BUSINESS OS</span>
           <h1>Founder Intelligence</h1>
-          <p>One truthful view of the RINADS platform, its workspaces, deployments, and runtime.</p>
+          <p>One truthful view of RINADS priorities, approvals, deployments, workspaces, and runtime.</p>
         </div>
         <div className={`fi-overall ${allConnected ? "is-operational" : ""}`}>
           <StatusDot state={allConnected ? "operational" : "not_connected"} />
@@ -198,7 +359,119 @@ export default async function FounderIntelligencePage() {
       </section>
 
       <div className="fi-dashboard-grid">
-        <section className="fi-source-grid" aria-label="Live platform status">
+        <section className="fi-source-grid" aria-label="Founder Today and live platform status">
+          <section className="fi-glass-card fi-system-card" aria-labelledby="today-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Founder control tower</span>
+                <h2 id="today-title">Today</h2>
+              </div>
+              <span className="fi-system-orb">R</span>
+            </div>
+            <div className="fi-system-list">
+              <div>
+                <span>Open work</span>
+                <strong>{work.state === "operational" ? work.counts.open : "—"}</strong>
+              </div>
+              <div>
+                <span>Due today</span>
+                <strong>{work.state === "operational" ? work.counts.dueToday : "—"}</strong>
+              </div>
+              <div>
+                <span>Overdue / blocked</span>
+                <strong>
+                  {work.state === "operational" ? `${work.counts.overdue} / ${work.counts.blocked}` : "—"}
+                </strong>
+              </div>
+              <div>
+                <span>Pending approvals</span>
+                <strong>{pendingApprovals?.value ?? "—"}</strong>
+              </div>
+              <div>
+                <span>Pending RINPO actions</span>
+                <strong>{pendingActions?.value ?? "—"}</strong>
+              </div>
+              <div>
+                <span>RINPO provider</span>
+                <strong>
+                  {selectedProvider
+                    ? `${selectedProvider.provider.toUpperCase()} · ${selectedProvider.model}`
+                    : "—"}
+                </strong>
+              </div>
+            </div>
+            <p>Direct production facts only. No model-generated urgency or invented health score.</p>
+          </section>
+
+          <section className="fi-glass-card fi-system-card" aria-labelledby="attention-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Exceptions first</span>
+                <h2 id="attention-title">Attention</h2>
+              </div>
+              <span className="fi-count">{attention.length}</span>
+            </div>
+            {attention.length === 0 ? (
+              <p>No exceptions were returned by the connected control-plane sources.</p>
+            ) : (
+              <div className="fi-system-list">
+                {attention.slice(0, 8).map((item) => (
+                  <div key={item.id} title={item.detail}>
+                    {item.href ? (
+                      item.href.startsWith("http") ? (
+                        <a href={item.href} target="_blank" rel="noreferrer">
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link href={item.href}>{item.label}</Link>
+                      )
+                    ) : (
+                      <span>{item.label}</span>
+                    )}
+                    <strong>
+                      <StatusDot state={item.state} />
+                      {stateLabels[item.state]}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="fi-glass-card fi-system-card" aria-labelledby="work-title">
+            <div className="fi-card-heading">
+              <div>
+                <span className="fi-eyebrow">Canonical operations</span>
+                <h2 id="work-title">Work pulse</h2>
+              </div>
+              <span className={`fi-status-pill fi-status-${work.state}`}>
+                <StatusDot state={work.state} />
+                {stateLabels[work.state]}
+              </span>
+            </div>
+            {work.state !== "operational" ? (
+              <p>{work.detail}</p>
+            ) : work.tasks.length === 0 ? (
+              <p>No open operational tasks were returned.</p>
+            ) : (
+              <div className="fi-system-list">
+                {work.tasks.slice(0, 8).map((task) => (
+                  <div key={task.id}>
+                    <Link href={`/tenants/${task.organizationId}`} title={task.title}>
+                      {task.organizationName} · {task.title}
+                    </Link>
+                    <strong>{task.priority} · {task.status.replaceAll("_", " ")}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+            {work.state === "operational" ? (
+              <p>
+                Urgent {work.counts.urgent} · Unacknowledged alerts {work.counts.unacknowledgedAlerts}
+              </p>
+            ) : null}
+          </section>
+
           {snapshot.sources.map((source) => (
             <SourceCard source={source} key={source.id} />
           ))}
@@ -286,11 +559,18 @@ export default async function FounderIntelligencePage() {
                 </strong>
               </div>
             ))}
+            <div>
+              <span>Operational work</span>
+              <strong>
+                <StatusDot state={work.state} />
+                {stateLabels[work.state]}
+              </strong>
+            </div>
           </div>
           <p>
             {allConnected
               ? "All configured systems report operational."
-              : "Unconfigured sources remain explicitly disconnected."}
+              : "Unconfigured or degraded sources remain explicit."}
           </p>
         </section>
       </div>
