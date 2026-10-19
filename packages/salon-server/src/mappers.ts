@@ -101,6 +101,9 @@ export function mapBranchRow(row: SalonRow): SalonBranch {
     timezone: str(row, "timezone"),
     workingHours: asWeeklyHours(row.working_hours),
     isActive: Boolean(row.is_active),
+    gstin: optStr(row, "gstin"),
+    stateName: optStr(row, "state_name"),
+    stateCode: optStr(row, "state_code"),
     createdAt: optStr(row, "created_at"),
     updatedAt: optStr(row, "updated_at"),
   };

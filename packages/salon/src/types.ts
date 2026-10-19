@@ -55,6 +55,9 @@ export type SalonBranch = {
   timezone: string;
   workingHours: WeeklyHours;
   isActive: boolean;
+  gstin?: string;
+  stateName?: string;
+  stateCode?: string;
   createdAt?: string;
   updatedAt?: string;
 };

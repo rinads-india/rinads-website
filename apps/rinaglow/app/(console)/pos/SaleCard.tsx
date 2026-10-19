@@ -52,7 +52,14 @@ export function SaleCard({
             <Badge className={STATUS_TONE[sale.status] ?? "bg-gray-200 text-gray-700"}>{sale.status.replace("_", " ")}</Badge>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{customerLabel}</p>
-          <Link href={`/pos?sale=${sale.id}`} className="text-xs text-rinads-primary underline">Use in RINPO</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/pos?sale=${sale.id}`} className="text-xs text-rinads-primary underline">Use in RINPO</Link>
+            {sale.status !== "draft" && sale.status !== "void" ? (
+              <Link href={`/pos/invoices/${sale.id}`} className="text-xs text-rinads-primary underline">
+                GST invoice
+              </Link>
+            ) : null}
+          </div>
         </div>
         <p className="text-sm font-semibold text-foreground">
           {sale.currency} {sale.total.toLocaleString("en-IN")}

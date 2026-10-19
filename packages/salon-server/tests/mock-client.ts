@@ -276,6 +276,38 @@ export function createSalonMockClient(): SalonSupabaseClient & { tables: Map<str
           error: null,
         };
       }
+      if (fn === "update_salon_billing_settings") {
+        const settingsRow = getTable("organization_settings").find((row) => row.organization_id === args.p_organization_id);
+        const billing = {
+          legalName: String(args.p_legal_name ?? ""),
+          gstin: String(args.p_gstin ?? ""),
+          stateName: String(args.p_state_name ?? ""),
+          stateCode: String(args.p_state_code ?? ""),
+          sacCode: String(args.p_sac_code ?? "9997"),
+          address: args.p_address ?? null,
+          pan: args.p_pan ?? null,
+        };
+        if (settingsRow) {
+          const current = (settingsRow.settings as Record<string, unknown>) ?? {};
+          settingsRow.settings = { ...current, billing };
+        } else {
+          getTable("organization_settings").push({
+            organization_id: args.p_organization_id,
+            settings: { billing },
+          });
+        }
+        return { data: billing, error: null };
+      }
+      if (fn === "update_salon_branch_gstin") {
+        const branch = getTable("salon_branches").find((row) => row.id === args.p_branch_id);
+        if (!branch) return { data: null, error: { message: "branch not found" } };
+        Object.assign(branch, {
+          gstin: args.p_gstin || null,
+          state_name: args.p_state_name || null,
+          state_code: args.p_state_code || null,
+        });
+        return { data: null, error: null };
+      }
       return { data: null, error: { message: `rpc ${fn} not stubbed in this mock` } };
     },
   } as unknown as SalonSupabaseClient & { tables: Map<string, SalonRow[]> };

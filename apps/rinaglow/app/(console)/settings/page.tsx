@@ -6,6 +6,7 @@ import { WorkingHoursEditor } from "@/components/WorkingHoursEditor";
 import { getSalonDeps, getSalonRepository } from "@/lib/salon";
 import { requireTenancy } from "@/lib/tenancy";
 import { NewBranchForm } from "./NewBranchForm";
+import { GstinSettingsForm } from "./GstinSettingsForm";
 import { CopyBookingLink } from "./BookingReadiness";
 import { WhatsAppReadinessCard } from "./WhatsAppReadinessCard";
 
@@ -16,11 +17,12 @@ export default async function SettingsPage() {
   const repo = await getSalonRepository();
   const { client, communications } = await getSalonDeps();
   const canManageWhatsApp = isPrivilegedRoleKey(tenancy.roleKey ?? "") || tenancy.permissions.includes("org.manage");
-  const [result, servicesResult, staffResult, whatsappReadiness] = await Promise.all([
+  const [result, servicesResult, staffResult, whatsappReadiness, billingResult] = await Promise.all([
     repo.listBranches(tenancy.organizationId),
     repo.listServices(tenancy.organizationId),
     repo.listStaff(tenancy.organizationId),
     getWhatsAppReadiness(client, communications, tenancy.organizationId),
+    repo.getBillingSettings(tenancy.organizationId),
   ]);
   const branches = result.ok ? result.data : [];
   const readiness = getBookingReadiness(
@@ -62,6 +64,18 @@ export default async function SettingsPage() {
         <p className={`mt-3 text-sm ${readiness.ready && bookingUrl ? "text-emerald-700" : "text-muted-foreground"}`}>
           {readiness.ready && bookingUrl ? "Public booking is ready." : "Complete every item and configure the site URL before sharing."}
         </p>
+      </Card>
+
+      <Card>
+        <p className="section-title">GST / tax invoice</p>
+        <GstinSettingsForm
+          billing={
+            billingResult.ok
+              ? billingResult.data
+              : { legalName: "", gstin: "", stateName: "", stateCode: "", sacCode: "9997" }
+          }
+          branches={branches}
+        />
       </Card>
 
       <Card>
