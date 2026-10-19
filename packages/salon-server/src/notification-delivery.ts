@@ -15,6 +15,7 @@
  * exhaust attempts or get dead-lettered.
  */
 import type { SalonRow, SalonSupabaseClient } from "./client";
+import { loadWhatsAppSendGate, type WhatsAppSendGate } from "./whatsapp-readiness";
 
 export const WHATSAPP_BODY_MAX_CHARS = 1600;
 
@@ -156,6 +157,14 @@ export type ProcessOutboxOptions = {
   sleep?: (ms: number) => Promise<void>;
   /** Test seam; production uses the service-role-only atomic claim RPC. */
   claim?: (limit: number) => Promise<SalonRow[]>;
+  /**
+   * When set, the claim RPC only returns these tenants. Production worker
+   * always passes its env allowlist. Undefined keeps the historical
+   * unscoped claim (tests).
+   */
+  organizationIds?: string[];
+  /** Test seam; production loads the per-org flag + sandbox/live config. */
+  resolveSendGate?: (input: { organizationId: string; recipient: string }) => Promise<WhatsAppSendGate>;
 };
 
 export type ProcessOutboxSummary = {
@@ -186,20 +195,47 @@ export async function processSalonNotificationOutbox(
   if (options.claim) {
     eligible = await options.claim(batchSize);
   } else {
-    const { data, error } = await client.rpc("claim_due_salon_notification_outbox", { p_limit: batchSize });
+    const { data, error } = await client.rpc("claim_due_salon_notification_outbox", {
+      p_limit: batchSize,
+      p_organization_ids: options.organizationIds?.length ? options.organizationIds : null,
+    });
     if (error || !Array.isArray(data)) return summary;
     eligible = data as SalonRow[];
   }
+
+  const resolveSendGate = options.resolveSendGate ?? ((input: { organizationId: string; recipient: string }) =>
+    loadWhatsAppSendGate(client, input.organizationId, input.recipient));
 
   for (let index = 0; index < eligible.length; index++) {
     const row = eligible[index];
     const id = String(row.id);
     const attempts = Number(row.attempts ?? 0);
+    const organizationId = String(row.organization_id ?? "");
+    const recipient = String(row.recipient);
+    const payload = { ...((row.payload as Record<string, unknown>) ?? {}), organizationId };
+
+    const gate = await resolveSendGate({ organizationId, recipient });
+    if (!gate.allowed) {
+      summary.processed++;
+      if (throughputDelayMs > 0 && index < eligible.length - 1) await sleep(throughputDelayMs);
+      await client
+        .from("notification_outbox")
+        .update({
+          status: "not_configured",
+          attempts: attempts + 1,
+          last_error: gate.reason,
+          next_attempt_at: new Date(now.getTime() + notConfiguredRecheckMs).toISOString(),
+        })
+        .eq("id", id)
+        .eq("status", "processing");
+      summary.notConfigured++;
+      continue;
+    }
 
     const result = await adapter.send({
-      recipient: String(row.recipient),
+      recipient,
       templateKey: String(row.template_key),
-      payload: (row.payload as Record<string, unknown>) ?? {},
+      payload,
     });
 
     summary.processed++;

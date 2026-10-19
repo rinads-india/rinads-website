@@ -34,6 +34,7 @@ const REQUIRED_MILESTONES = [
   "20260921100000_salon_loyalty_expiry.sql",
   "20260924100000_site_leads.sql",
   "20261005100000_platform_workspaces_locations.sql",
+  "20261019100000_salon_whatsapp_golive.sql",
 ];
 
 describe("production migration ledger", () => {

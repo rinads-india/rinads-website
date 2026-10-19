@@ -11,3 +11,4 @@ export * from "./automation";
 export * from "./communications-repository";
 export * from "./communications-worker";
 export * from "./loyalty-repository";
+export * from "./whatsapp-readiness";

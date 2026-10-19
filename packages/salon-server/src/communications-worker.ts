@@ -5,6 +5,7 @@ import {
   type ProcessOutboxSummary,
   type SalonNotificationAdapter,
 } from "./notification-delivery";
+import type { WhatsAppSendGate } from "./whatsapp-readiness";
 
 export type CommunicationsWorkerOptions = {
   enabled: boolean;
@@ -17,6 +18,8 @@ export type CommunicationsWorkerOptions = {
   reviewsAutomationToken?: string;
   reviewsAutomationLimit?: number;
   fetchImpl?: typeof fetch;
+  /** Test seam forwarded to outbox processing. */
+  resolveSendGate?: (input: { organizationId: string; recipient: string }) => Promise<WhatsAppSendGate>;
 };
 
 export type CommunicationsWorkerResult = {
@@ -72,6 +75,8 @@ export async function runSalonCommunicationsWorker(
     batchSize: Math.min(100, Math.max(1, Math.floor(options.batchSize ?? 25))),
     throughputDelayMs: Math.max(0, Math.floor(options.throughputDelayMs ?? 250)),
     now,
+    organizationIds: options.organizationIds,
+    resolveSendGate: options.resolveSendGate,
   });
 
   let reviewsAutomationTriggered = false;

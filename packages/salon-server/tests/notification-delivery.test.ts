@@ -5,10 +5,21 @@ import {
   isForwardStatusTransition,
   mapTwilioStatusToOutboxStatus,
   processSalonNotificationOutbox,
+  type ProcessOutboxOptions,
   type SalonNotificationAdapter,
   type TwilioSendResult,
 } from "../src/notification-delivery";
 import { createSalonMockClient } from "./mock-client";
+
+const allowLive = async () => ({ allowed: true as const, mode: "live" as const });
+
+function processOutbox(
+  client: ReturnType<typeof createSalonMockClient>,
+  adapter: SalonNotificationAdapter,
+  options: ProcessOutboxOptions = {}
+) {
+  return processSalonNotificationOutbox(client, adapter, { resolveSendGate: allowLive, ...options });
+}
 
 const ORG_ID = "org_notify_test";
 
@@ -146,7 +157,7 @@ describe("processSalonNotificationOutbox", () => {
   it("marks a successful send with the real provider message id and clears backoff state", async () => {
     const client = createSalonMockClient();
     await seedOutboxRow(client);
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM999" }));
+    const summary = await processOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM999" }));
     assert.equal(summary.sent, 1);
     const [row] = client.tables.get("notification_outbox")!;
     assert.equal(row.status, "sent");
@@ -158,7 +169,7 @@ describe("processSalonNotificationOutbox", () => {
     const client = createSalonMockClient();
     await seedOutboxRow(client);
     const now = new Date("2026-09-08T00:00:00.000Z");
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "not_configured" }), { now, notConfiguredRecheckMs: 900_000 });
+    const summary = await processOutbox(client, fakeAdapter({ status: "not_configured" }), { now, notConfiguredRecheckMs: 900_000 });
     assert.equal(summary.notConfigured, 1);
     const [row] = client.tables.get("notification_outbox")!;
     assert.equal(row.status, "not_configured");
@@ -169,7 +180,7 @@ describe("processSalonNotificationOutbox", () => {
     const client = createSalonMockClient();
     await seedOutboxRow(client, { attempts: 1 });
     const now = new Date("2026-09-08T00:00:00.000Z");
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "failed", error: "Twilio 500" }), {
+    const summary = await processOutbox(client, fakeAdapter({ status: "failed", error: "Twilio 500" }), {
       now,
       maxAttempts: 5,
       baseBackoffMs: 1000,
@@ -186,7 +197,7 @@ describe("processSalonNotificationOutbox", () => {
   it("moves a message to dead_letter once maxAttempts is reached", async () => {
     const client = createSalonMockClient();
     await seedOutboxRow(client, { attempts: 4 });
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "failed", error: "Twilio 500" }), { maxAttempts: 5 });
+    const summary = await processOutbox(client, fakeAdapter({ status: "failed", error: "Twilio 500" }), { maxAttempts: 5 });
     assert.equal(summary.deadLetter, 1);
     const [row] = client.tables.get("notification_outbox")!;
     assert.equal(row.status, "dead_letter");
@@ -197,14 +208,81 @@ describe("processSalonNotificationOutbox", () => {
     const client = createSalonMockClient();
     const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     await seedOutboxRow(client, { status: "failed", next_attempt_at: future });
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM1" }));
+    const summary = await processOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM1" }));
     assert.equal(summary.processed, 0);
   });
 
   it("only processes whatsapp-channel rows", async () => {
     const client = createSalonMockClient();
     await seedOutboxRow(client, { channel: "email" });
-    const summary = await processSalonNotificationOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM1" }));
+    const summary = await processOutbox(client, fakeAdapter({ status: "sent", providerMessageId: "SM1" }));
     assert.equal(summary.processed, 0);
+  });
+
+  it("does not call Twilio when the organization send flag is off", async () => {
+    const client = createSalonMockClient();
+    await seedOutboxRow(client);
+    let sends = 0;
+    const summary = await processSalonNotificationOutbox(
+      client,
+      {
+        send: async () => {
+          sends++;
+          return { status: "sent", providerMessageId: "SM-leak" };
+        },
+      },
+      { resolveSendGate: async () => ({ allowed: false, reason: "WhatsApp sending is off for this salon (salon.whatsapp.send_enabled)." }) }
+    );
+    assert.equal(sends, 0);
+    assert.equal(summary.notConfigured, 1);
+    const [row] = client.tables.get("notification_outbox")!;
+    assert.equal(row.status, "not_configured");
+    assert.match(String(row.last_error), /salon\.whatsapp\.send_enabled/);
+  });
+
+  it("blocks sandbox recipients that are not on the allowlist and sends allowlisted ones", async () => {
+    const client = createSalonMockClient();
+    await seedOutboxRow(client, { recipient: "+919000000001", idempotency_key: "blocked" });
+    await seedOutboxRow(client, { recipient: "+919000000099", idempotency_key: "allowed" });
+    const sent: string[] = [];
+    const summary = await processSalonNotificationOutbox(
+      client,
+      {
+        send: async (input) => {
+          sent.push(input.recipient);
+          return { status: "sent", providerMessageId: `SM-${input.recipient}` };
+        },
+      },
+      {
+        resolveSendGate: async ({ recipient }) =>
+          recipient === "+919000000099"
+            ? { allowed: true, mode: "sandbox" }
+            : { allowed: false, reason: "Recipient is not on this salon's WhatsApp sandbox allowlist." },
+      }
+    );
+    assert.deepEqual(sent, ["+919000000099"]);
+    assert.equal(summary.sent, 1);
+    assert.equal(summary.notConfigured, 1);
+  });
+
+  it("scopes the claim RPC to the worker organization allowlist", async () => {
+    const client = createSalonMockClient();
+    await seedOutboxRow(client, { organization_id: "org_a", idempotency_key: "a" });
+    await seedOutboxRow(client, { organization_id: "org_b", idempotency_key: "b" });
+    const sent: string[] = [];
+    const summary = await processOutbox(
+      client,
+      {
+        send: async (input) => {
+          sent.push(String(input.payload.organizationId));
+          return { status: "sent", providerMessageId: "SM" };
+        },
+      },
+      { organizationIds: ["org_a"] }
+    );
+    assert.equal(summary.sent, 1);
+    assert.deepEqual(sent, ["org_a"]);
+    const leftover = client.tables.get("notification_outbox")!.find((row) => row.organization_id === "org_b");
+    assert.equal(leftover?.status, "pending");
   });
 });

@@ -11,6 +11,7 @@ const FLAG_KEYS = [
   "erp.procurement",
   "erp.fulfilment",
   "rinpo.ops",
+  "salon.whatsapp.send_enabled",
 ] as const;
 
 export async function listTenantFlagsAction(organizationId: string): Promise<

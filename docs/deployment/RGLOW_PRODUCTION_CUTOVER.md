@@ -56,16 +56,20 @@ Secrets on Edge Function / scheduler only (never `NEXT_PUBLIC_`):
 - `RINADS_TWILIO_TOKEN`
 - `RINADS_TWILIO_WHATSAPP_FROM`
 
+Per-org gate (code, still **KEEP OFF** in production): `salon.whatsapp.send_enabled` defaults false; Settings → Communications holds mode `off|sandbox|live` and a sandbox allowlist. The worker also filters `claim_due_salon_notification_outbox` to `RINADS_COMMUNICATIONS_ORGANIZATION_IDS`. Full sequence: [RGLOW_WHATSAPP_GOLIVE.md](./RGLOW_WHATSAPP_GOLIVE.md).
+
+- [ ] Apply `20261019100000_salon_whatsapp_golive.sql`
 - [ ] Start with non-production / sandbox credentials
 - [ ] Complete WhatsApp sender registration + approved templates
 - [ ] Status callback: `<SUPABASE_URL>/functions/v1/notify-whatsapp-webhook`
 - [ ] Confirm signature validation rejects bad signatures
 - [ ] Verify consent / opt-out suppression before enqueue
-- [ ] Send a small allowlisted test campaign
+- [ ] For one org: Settings → Communications = sandbox + allowlist + send flag on
+- [ ] Send a small allowlisted test (worker allowlist = that org only)
 - [ ] Verify outbox transitions `sent → delivered → read` (or `failed`) from real callbacks
 - [ ] Rotate sandbox credentials before production traffic
 
-Without these secrets, `notify-whatsapp` returns `{ status: "not_configured" }` — never a fabricated `sent`.
+Without these secrets, `notify-whatsapp` returns `{ status: "not_configured" }` — never a fabricated `sent`. Org flag/mode off returns the same honest `not_configured` with an explicit `last_error` and never calls Twilio.
 
 ## 5. Communications worker
 
