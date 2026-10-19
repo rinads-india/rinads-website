@@ -13,13 +13,13 @@ function matches(row: SalonRow, filters: Filter[]): boolean {
       case "in":
         return Array.isArray(f.val) && f.val.includes(rowVal);
       case "gte":
-        return (rowVal as number) >= (f.val as number);
+        return (rowVal as string | number) >= (f.val as string | number);
       case "lte":
-        return (rowVal as number) <= (f.val as number);
+        return (rowVal as string | number) <= (f.val as string | number);
       case "lt":
-        return (rowVal as number) < (f.val as number);
+        return (rowVal as string | number) < (f.val as string | number);
       case "gt":
-        return (rowVal as number) > (f.val as number);
+        return (rowVal as string | number) > (f.val as string | number);
       case "is":
         return rowVal === f.val;
       default:

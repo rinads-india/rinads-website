@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from "@rinads/database";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import "server-only";
 import { supabaseConfig } from "./env";
 import { rinaglowAuthCookieOptions } from "./cookies";
@@ -10,8 +11,10 @@ import { rinaglowAuthCookieOptions } from "./cookies";
  * "this is the first real-tenant surface"). Callers must handle the thrown
  * error (e.g. by redirecting to /login) rather than silently degrading to
  * demo data.
+ *
+ * Cached per RSC request so layout + page share one cookie-bound client.
  */
-export async function createRinaglowServerClient() {
+export const createRinaglowServerClient = cache(async () => {
   const cookieStore = await cookies();
   return createServerSupabaseClient(
     supabaseConfig(),
@@ -27,4 +30,4 @@ export async function createRinaglowServerClient() {
     },
     rinaglowAuthCookieOptions()
   );
-}
+});

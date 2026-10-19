@@ -1,4 +1,5 @@
 import { isPrivilegedRoleKey } from "@rinads/permissions";
+import { ConsolePageFallback } from "@/components/ConsolePageFallback";
 import { RinaglowNav } from "@/components/RinaglowNav";
 import { RinpoCommandBar } from "@/components/RinpoCommandBar";
 import { getSalonRepository } from "@/lib/salon";
@@ -18,7 +19,9 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   return (
     <>
       <RinaglowNav organizationName={membership?.organizationName} roleKey={tenancy.roleKey} branches={branches} />
-      <main className="mx-auto max-w-6xl px-4 py-8 pb-32">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-32">
+        <Suspense fallback={<ConsolePageFallback />}>{children}</Suspense>
+      </main>
       <Suspense fallback={null}>
         <RinpoCommandBar canApprove={canApprove} />
       </Suspense>

@@ -37,26 +37,40 @@ export async function loadMemberships(
 
   if (error || !rows?.length) return [];
 
-  const memberships: OrgMembership[] = [];
+  const candidates: Array<{
+    organizationId: string;
+    organizationName: string;
+    organizationSlug: string;
+    organizationStatus: OrgMembership["organizationStatus"];
+    roleKey: RoleKey;
+    roleId: string;
+  }> = [];
+
   for (const row of rows) {
     const org = row.organizations as Record<string, unknown> | undefined;
     const role = row.roles as Record<string, unknown> | undefined;
     if (!org || !role) continue;
 
-    const roleKey = String(role.key) as RoleKey;
-    const permissions = await loadRolePermissions(client, String(role.id));
-
-    memberships.push({
+    candidates.push({
       organizationId: String(org.id),
       organizationName: String(org.name),
       organizationSlug: String(org.slug),
       organizationStatus: org.status as OrgMembership["organizationStatus"],
-      roleKey,
+      roleKey: String(role.key) as RoleKey,
       roleId: String(role.id),
-      permissions,
     });
   }
-  return memberships;
+
+  const uniqueRoleIds = [...new Set(candidates.map((c) => c.roleId))];
+  const permissionEntries = await Promise.all(
+    uniqueRoleIds.map(async (roleId) => [roleId, await loadRolePermissions(client, roleId)] as const)
+  );
+  const permissionsByRole = new Map(permissionEntries);
+
+  return candidates.map((c) => ({
+    ...c,
+    permissions: permissionsByRole.get(c.roleId) ?? [],
+  }));
 }
 
 async function loadRolePermissions(
