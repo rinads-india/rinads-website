@@ -446,21 +446,16 @@ export class SalonRepository {
     organizationId: string,
     filter: AppointmentListFilter = {}
   ): Promise<Result<SalonAppointment[]>> {
-    const { data, error } = await this.client.from("salon_appointments").select("*").eq("organization_id", organizationId);
+    let query = this.client.from("salon_appointments").select("*").eq("organization_id", organizationId);
+    if (filter.branchId) query = query.eq("branch_id", filter.branchId);
+    if (filter.staffId) query = query.eq("staff_id", filter.staffId);
+    if (filter.customerId) query = query.eq("customer_id", filter.customerId);
+    if (filter.from) query = query.gte("starts_at", filter.from);
+    if (filter.to) query = query.lt("starts_at", filter.to);
+    query = query.order("starts_at", { ascending: true });
+    const { data, error } = await query;
     if (error) return fail("db_error", error.message);
-    let rows = (data ?? []).map(mapAppointmentRow);
-    if (filter.branchId) rows = rows.filter((r) => r.branchId === filter.branchId);
-    if (filter.staffId) rows = rows.filter((r) => r.staffId === filter.staffId);
-    if (filter.customerId) rows = rows.filter((r) => r.customerId === filter.customerId);
-    if (filter.from) {
-      const fromMs = new Date(filter.from).getTime();
-      rows = rows.filter((r) => new Date(r.startsAt).getTime() >= fromMs);
-    }
-    if (filter.to) {
-      const toMs = new Date(filter.to).getTime();
-      rows = rows.filter((r) => new Date(r.startsAt).getTime() < toMs);
-    }
-    return ok(rows.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()));
+    return ok((data ?? []).map(mapAppointmentRow));
   }
 
   async listAppointmentServices(appointmentId: string): Promise<Result<SalonAppointmentService[]>> {
@@ -977,12 +972,13 @@ export class SalonRepository {
   }
 
   async listSales(organizationId: string, filter: { status?: string; branchId?: string } = {}): Promise<Result<SalonSale[]>> {
-    const { data, error } = await this.client.from("salon_sales").select("*").eq("organization_id", organizationId);
+    let query = this.client.from("salon_sales").select("*").eq("organization_id", organizationId);
+    if (filter.status) query = query.eq("status", filter.status);
+    if (filter.branchId) query = query.eq("branch_id", filter.branchId);
+    query = query.order("created_at", { ascending: false });
+    const { data, error } = await query;
     if (error) return fail("db_error", error.message);
-    let rows = (data ?? []).map(mapSaleRow);
-    if (filter.status) rows = rows.filter((r) => r.status === filter.status);
-    if (filter.branchId) rows = rows.filter((r) => r.branchId === filter.branchId);
-    return ok(rows.sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()));
+    return ok((data ?? []).map(mapSaleRow));
   }
 
   async listSaleLines(saleId: string): Promise<Result<SalonSaleLine[]>> {

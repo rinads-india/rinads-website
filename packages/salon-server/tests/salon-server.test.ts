@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { SalonRepository, type SalonRow, type SalonSupabaseClient } from "../src/index";
+import { createSalonMockClient } from "./mock-client";
 
 function createMockClient(): SalonSupabaseClient & { tables: Map<string, SalonRow[]> } {
   const tables = new Map<string, SalonRow[]>();
@@ -115,7 +116,8 @@ describe("SalonRepository", () => {
   });
 
   it("creates a staff-facing appointment and lists it back", async () => {
-    const repo = new SalonRepository(createMockClient());
+    // Uses the chainable mock so listAppointments can push branch/date filters in SQL.
+    const repo = new SalonRepository(createSalonMockClient());
     const branch = await repo.createBranch(orgId, { name: "Branch A" });
     const staff = await repo.createStaff(orgId, { displayName: "Asha" });
     assert.ok(branch.ok && staff.ok);

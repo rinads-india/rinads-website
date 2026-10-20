@@ -8,13 +8,14 @@ import {
   SalonLoyaltyRepository,
   type SalonSupabaseClient,
 } from "@rinads/salon-server";
+import { cache } from "react";
 import "server-only";
 import { createRinaglowServerClient } from "./supabase/server";
 
-export async function getSalonRepository(): Promise<SalonRepository> {
+export const getSalonRepository = cache(async (): Promise<SalonRepository> => {
   const client = await createRinaglowServerClient();
   return new SalonRepository(client as unknown as SalonSupabaseClient);
-}
+});
 
 export type SalonDeps = {
   repo: SalonRepository;
@@ -29,7 +30,7 @@ export type SalonDeps = {
 };
 
 /** One Supabase client shared across the repository, RINPO actions, campaigns, and notification enqueueing for a single request. */
-export async function getSalonDeps(): Promise<SalonDeps> {
+export const getSalonDeps = cache(async (): Promise<SalonDeps> => {
   const client = await createRinaglowServerClient();
   const typedClient = client as unknown as SalonSupabaseClient;
   const repo = new SalonRepository(typedClient);
@@ -56,4 +57,4 @@ export async function getSalonDeps(): Promise<SalonDeps> {
     loyalty,
     client: typedClient,
   };
-}
+});

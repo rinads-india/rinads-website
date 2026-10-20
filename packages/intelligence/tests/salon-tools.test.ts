@@ -234,8 +234,17 @@ describe("executeSalonRinpoTool — get_salon_business_summary (READ)", () => {
     assert.ok(customer.ok);
     if (!customer.ok) return;
 
+    // Seed on Asia/Kolkata's calendar day (branch default), not UTC date —
+    // after ~18:30 UTC "today" in Kolkata is already the next day.
     const now = new Date();
-    const startsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 6, 0, 0)).toISOString();
+    const kolkataDay = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+    const [y, m, d] = kolkataDay.split("-").map(Number);
+    const startsAt = new Date(Date.UTC(y, m - 1, d, 6, 30, 0)).toISOString();
     await deps.repo.createAppointment(ORG_ID, {
       branchId: branch.id,
       staffId: staff.id,

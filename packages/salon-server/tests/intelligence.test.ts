@@ -37,6 +37,13 @@ describe("getBusinessSummary dashboard parity", () => {
     await repo.addSaleLine(ORG_ID, sale.data.id, { description: "Cut", unitPrice: 500 });
     await repo.finalizeSale(ORG_ID, sale.data.id);
     await repo.recordPayment(ORG_ID, sale.data.id, { method: "cash", amount: 500, idempotencyKey: "pay-1" });
+    // Pin paid sale timestamps to the same Asia/Kolkata calendar day as `now`
+    // so collectedToday is not sensitive to the wall clock when the mock sets updated_at.
+    const saleRow = client.tables.get("salon_sales")?.find((row) => row.id === sale.data.id);
+    if (saleRow) {
+      saleRow.created_at = now.toISOString();
+      saleRow.updated_at = now.toISOString();
+    }
 
     const summary = await getBusinessSummary(repo, ORG_ID, { now, branchId: branch.data.id });
     assert.equal(summary.todayAppointments.total, 1);
