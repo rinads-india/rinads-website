@@ -114,8 +114,9 @@ export function calculateIndiaGstComponents(input: {
   };
 }
 
+/** Shape validation only; legal classification and required digit depth are policy. */
 export function isValidTaxClassificationCode(kind: "hsn" | "sac", code: string): boolean {
   const normalized = code.trim();
-  if (kind === "sac") return /^\d{6}$/.test(normalized);
+  if (kind === "sac") return /^\d{4,6}$/.test(normalized);
   return /^\d{4,8}$/.test(normalized);
 }
