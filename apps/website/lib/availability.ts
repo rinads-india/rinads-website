@@ -29,16 +29,16 @@ export const PLATFORM_AVAILABILITY: Record<CapabilityKey, AvailabilityStatus> = 
   rinads_services: "AVAILABLE",
 
   // Discovery & workspace
-  ri_search: "AVAILABLE",
+  ri_search: "PREVIEW",      // Supabase-backed but not production-tested
   rinaspace: "PREVIEW",
   rinads_world: "PREVIEW",
 
   // Commerce
-  ri_marketplace: "COMING_SOON",
+  ri_marketplace: "PREVIEW", // Built Phase 3, not production-tested
   payment_checkout: "AVAILABLE",
 
   // Intelligence & automation
-  ri_entity: "COMING_SOON",
+  ri_entity: "PREVIEW",      // /entity/[slug] built Phase 2
   morning_digest: "PREVIEW",
 
   // Operations
