@@ -133,9 +133,9 @@ export async function GET(req: NextRequest) {
             name: row.title,
             description: row.description ?? row.subtitle ?? "",
             kind: row.entity_type ?? "entity",
-            pillar: row.pillar,
+            pillar: row.pillar ?? undefined,
             href: row.href ?? `/${row.entity_type}/${row.slug}`,
-            entityType: row.entity_type,
+            entityType: row.entity_type ?? undefined,
           });
         }
       }
