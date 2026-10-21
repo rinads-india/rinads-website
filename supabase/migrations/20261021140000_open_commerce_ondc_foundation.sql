@@ -73,7 +73,9 @@ create table if not exists public.open_commerce_messages (
   network_message_id text not null,
   action text not null,
   direction text not null check (direction in ('inbound', 'outbound')),
-  signature_verified boolean not null default false,
+  -- Inbound callbacks are verified by the server adapter. Outbound rows are
+  -- signed, not "verified", so NULL means not applicable / not yet evaluated.
+  signature_verified boolean,
   payload jsonb not null,
   payload_hash text,
   processing_status text not null default 'processed'
@@ -95,7 +97,8 @@ create table if not exists public.open_commerce_messages (
     deferrable initially immediate,
   check (length(btrim(network_transaction_id)) > 0),
   check (length(btrim(network_message_id)) > 0),
-  check (action ~ '^(on_)?(search|select|init|confirm|status|track|cancel|update|rating|support)$')
+  check (action ~ '^(on_)?(search|select|init|confirm|status|track|cancel|update|rating|support)$'),
+  check (direction = 'inbound' or signature_verified is null)
 );
 
 create index if not exists open_commerce_channels_org_status_idx
