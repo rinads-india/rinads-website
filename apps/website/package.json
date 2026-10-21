@@ -30,6 +30,7 @@
     "@rinads/shared": "workspace:*",
     "@rinads/tenancy": "workspace:*",
     "@rinads/ui": "workspace:*",
+    "@rinads/world-contract": "workspace:*",
     "@runwayml/avatars-react": "^0.17.0",
     "@runwayml/sdk": "^4.22.0",
     "@supabase/ssr": "^0.6.1",

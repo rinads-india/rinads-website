@@ -4,6 +4,18 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+type RiEntity = {
+  title: string;
+  description?: string | null;
+  subtitle?: string | null;
+  entity_type?: string | null;
+  pillar?: string | null;
+  tags?: string[] | null;
+  href?: string | null;
+  slug?: string | null;
+  visibility?: string | null;
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createWebsiteServerClient();
@@ -13,20 +25,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .eq("slug", slug)
     .eq("visibility", "public")
     .single();
-  if (!data) return { title: "Not Found" };
-  return { title: `${data.title} — RINADS`, description: data.description };
+  const entity = data as RiEntity | null;
+  if (!entity) return { title: "Not Found" };
+  return { title: `${entity.title} — RINADS`, description: entity.description ?? undefined };
 }
 
 export default async function EntityPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createWebsiteServerClient();
-  const { data: entity } = await supabase
+  const { data } = await supabase
     .from("ri_entities")
     .select("*")
     .eq("slug", slug)
     .eq("visibility", "public")
     .single();
 
+  const entity = data as RiEntity | null;
   if (!entity) notFound();
 
   return (
@@ -54,9 +68,9 @@ export default async function EntityPage({ params }: { params: Promise<{ slug: s
       {entity.subtitle && <p className="text-lg text-gray-600 mb-4">{entity.subtitle}</p>}
       {entity.description && <p className="text-gray-700 leading-relaxed mb-8">{entity.description}</p>}
 
-      {entity.tags?.length > 0 && (
+      {entity.tags && entity.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-8">
-          {entity.tags.map((tag: string) => (
+          {entity.tags.map((tag) => (
             <span key={tag} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">{tag}</span>
           ))}
         </div>
