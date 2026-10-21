@@ -5,6 +5,7 @@ export * from "./assignment";
 export * from "./approvals";
 export * from "./health";
 export * from "./finance-core";
+export * from "./india-compliance";
 export * from "./demo-store";
 
 /** Resolve whether an organization should render Company OS shell. */
