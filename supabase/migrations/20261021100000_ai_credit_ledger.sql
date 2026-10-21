@@ -9,6 +9,7 @@ create table if not exists public.credit_accounts (
   status text not null default 'active' check (status in ('active', 'suspended', 'closed')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  unique (organization_id, id),
   unique (organization_id, unit_key)
 );
 
@@ -82,11 +83,6 @@ create table if not exists public.credit_reservations (
     references public.credit_accounts(organization_id, id)
     deferrable initially immediate
 );
-
--- Required by the composite foreign keys above. The primary key remains the
--- canonical row identity; this prevents cross-organization account binding.
-create unique index if not exists credit_accounts_org_id_unique
-  on public.credit_accounts(organization_id, id);
 
 create index if not exists credit_ledger_org_account_time_idx
   on public.credit_ledger(organization_id, account_id, occurred_at desc);
