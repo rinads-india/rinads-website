@@ -1,0 +1,16 @@
+{
+  "name": "@rinads/world-contract",
+  "version": "1.0.0",
+  "description": "RI World Bridge v1 — typed contract between RINADS WORLD (Unity) and web",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
