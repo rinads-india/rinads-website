@@ -22,6 +22,19 @@ export {
   DemoCourierAdapter,
   type CourierAdapter,
 } from "./shipping/shipment-service";
+export {
+  CourierProviderRouter,
+  RINADS_COURIER_PROVIDER_KEYS,
+  type CourierCapability,
+  type CourierProviderDefinition,
+  type CourierQuote,
+  type CourierQuoteInput,
+  type CourierRouteResult,
+  type CourierRoutingCandidate,
+  type CourierRoutingPolicy,
+  type CourierRoutingStrategy,
+  type RinadsCourierProviderKey,
+} from "./shipping/provider-router";
 export { ReturnService, RefundService } from "./returns/return-service";
 export { TaskService, CrmOpsService, WorkQueueService } from "./tasks/task-service";
 export {
