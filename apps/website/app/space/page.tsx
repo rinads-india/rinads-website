@@ -30,9 +30,14 @@ export default async function RINASPACEPage() {
     .single();
 
   if (membership) {
-    const org = (membership as any).organizations;
+    type MembershipRow = {
+      organizations: { name: string } | { name: string }[] | null;
+      roles: { name: string } | { name: string }[] | null;
+    };
+    const row = membership as MembershipRow;
+    const org = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
     if (org?.name) orgName = org.name;
-    const r = (membership as any).roles;
+    const r = Array.isArray(row.roles) ? row.roles[0] : row.roles;
     if (r?.name) role = r.name;
   }
 

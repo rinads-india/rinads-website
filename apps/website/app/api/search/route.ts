@@ -116,7 +116,17 @@ export async function GET(req: NextRequest) {
 
       const { data } = await query;
       if (data) {
-        for (const row of data as any[]) {
+        type EntityRow = {
+          id: string;
+          slug: string;
+          title: string;
+          subtitle?: string | null;
+          description?: string | null;
+          entity_type?: string | null;
+          pillar?: string | null;
+          href?: string | null;
+        };
+        for (const row of data as EntityRow[]) {
           results.push({
             id: row.id,
             slug: row.slug,
