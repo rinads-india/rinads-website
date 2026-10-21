@@ -99,18 +99,14 @@ alter table public.credit_usage_events enable row level security;
 alter table public.credit_ledger enable row level security;
 alter table public.credit_reservations enable row level security;
 
--- Members may inspect their organization's consumption and balance inputs.
--- Mutations are intentionally service-side only in this foundation slice so
--- browser clients cannot mint, consume, refund, or adjust credits directly.
+-- Members may inspect customer-visible balance inputs. Mutations are
+-- intentionally service-side only in this foundation slice so browser clients
+-- cannot mint, consume, refund, or adjust credits directly.
 create policy credit_accounts_member_select on public.credit_accounts
   for select to authenticated
   using (private.is_org_member(organization_id));
 
 create policy credit_lots_member_select on public.credit_lots
-  for select to authenticated
-  using (private.is_org_member(organization_id));
-
-create policy credit_usage_events_member_select on public.credit_usage_events
   for select to authenticated
   using (private.is_org_member(organization_id));
 
@@ -121,6 +117,9 @@ create policy credit_ledger_member_select on public.credit_ledger
 create policy credit_reservations_member_select on public.credit_reservations
   for select to authenticated
   using (private.is_org_member(organization_id));
+
+-- No authenticated SELECT policy is created for credit_usage_events because it
+-- contains raw provider-cost evidence used for internal margin analytics.
 
 -- Ledger rows are append-only. Corrections are compensating entries.
 create or replace function private.prevent_credit_ledger_mutation()
@@ -147,4 +146,4 @@ comment on table public.credit_ledger is
 comment on table public.credit_reservations is
   'Temporary holds used to fail closed before expensive AI/media operations.';
 comment on table public.credit_usage_events is
-  'Provider/model operation usage and provider-cost evidence used for billing and margin analytics.';
+  'Internal provider/model operation usage and provider-cost evidence for billing and margin analytics.';
