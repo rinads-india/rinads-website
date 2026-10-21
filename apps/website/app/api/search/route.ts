@@ -19,12 +19,13 @@ type SearchResult = {
   slug: string;
   name: string;
   description: string;
-  kind: "service" | "industry" | "place";
+  kind: "service" | "industry" | "place" | "entity" | string;
   pillar?: string;
   pricingModel?: string;
   basePrice?: number | null;
   currency?: string;
   href: string;
+  entityType?: string;
 };
 
 const INDUSTRY_REGISTRY: SearchResult[] = [
@@ -93,6 +94,43 @@ export async function GET(req: NextRequest) {
       }
     } catch {
       // Non-fatal — continue with static results
+    }
+  }
+
+  // ri_entities (non-service types: product, industry-entity, place-entity, org)
+  if (kind === "all" || kind === "entity") {
+    try {
+      const supabase = await createWebsiteServerClient();
+      let query = supabase
+        .from("ri_entities")
+        .select("id, slug, title, subtitle, description, entity_type, pillar, href, tags")
+        .not("entity_type", "eq", "service")
+        .eq("visibility", "public")
+        .eq("status", "active")
+        .order("title")
+        .limit(20);
+
+      if (q) {
+        query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+      }
+
+      const { data } = await query;
+      if (data) {
+        for (const row of data as any[]) {
+          results.push({
+            id: row.id,
+            slug: row.slug,
+            name: row.title,
+            description: row.description ?? row.subtitle ?? "",
+            kind: row.entity_type ?? "entity",
+            pillar: row.pillar,
+            href: row.href ?? `/${row.entity_type}/${row.slug}`,
+            entityType: row.entity_type,
+          });
+        }
+      }
+    } catch {
+      // Non-fatal
     }
   }
 
