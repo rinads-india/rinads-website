@@ -26,10 +26,9 @@ export function gstStateCodeFromGstin(value: string): string | null {
   return normalized.slice(0, 2);
 }
 
+/** Format-only validation. It deliberately does not embed a statutory code list. */
 export function isValidIndiaStateCode(value: string): boolean {
-  if (!/^\d{2}$/.test(value)) return false;
-  const numeric = Number(value);
-  return numeric >= 1 && numeric <= 38;
+  return /^\d{2}$/.test(value) && value !== "00";
 }
 
 export function classifyIndiaSupply(
