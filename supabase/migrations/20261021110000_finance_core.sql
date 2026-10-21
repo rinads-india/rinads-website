@@ -218,12 +218,10 @@ create policy finance_entries_update on public.finance_entries
   for update to authenticated
   using (
     private.has_permission(organization_id, 'finance.write')
-    or private.has_permission(organization_id, 'finance.post')
     or private.has_permission(organization_id, 'org.manage')
   )
   with check (
     private.has_permission(organization_id, 'finance.write')
-    or private.has_permission(organization_id, 'finance.post')
     or private.has_permission(organization_id, 'org.manage')
   );
 
@@ -304,7 +302,10 @@ begin
     raise exception 'Lines on posted Finance Core entries are immutable';
   end if;
 
-  return case when tg_op = 'DELETE' then old else new end;
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
 end;
 $$;
 
@@ -329,12 +330,21 @@ declare
   v_line_count bigint;
   v_debit numeric(18,2);
   v_credit numeric(18,2);
+  v_actor_type text;
+  v_actor_id text;
 begin
-  if not (
-    private.has_permission(p_organization_id, 'finance.post')
-    or private.has_permission(p_organization_id, 'org.manage')
-  ) then
-    raise exception 'Missing finance.post permission';
+  if auth.role() = 'service_role' then
+    v_actor_type := 'system';
+    v_actor_id := null;
+  else
+    if not (
+      private.has_permission(p_organization_id, 'finance.post')
+      or private.has_permission(p_organization_id, 'org.manage')
+    ) then
+      raise exception 'Missing finance.post permission';
+    end if;
+    v_actor_type := 'user';
+    v_actor_id := auth.uid()::text;
   end if;
 
   select * into v_entry
@@ -384,8 +394,8 @@ begin
     organization_id, actor_type, actor_id, action, entity, entity_id, after, source
   ) values (
     p_organization_id,
-    'user',
-    auth.uid()::text,
+    v_actor_type,
+    v_actor_id,
     'finance.entry.posted',
     'finance_entry',
     p_entry_id::text,
@@ -414,8 +424,8 @@ begin
     ),
     'finance.entry.posted:' || p_entry_id::text,
     'finance',
-    'user',
-    auth.uid()::text,
+    v_actor_type,
+    v_actor_id,
     'v1'
   )
   on conflict (organization_id, idempotency_key) do nothing;
