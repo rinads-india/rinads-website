@@ -19,11 +19,13 @@ export function OsShellLayout({
   children,
   membershipRoleKey = null,
   membershipResolved = false,
+  membershipPermissions = [],
   companyOsMode = false,
 }: {
   children: React.ReactNode;
   membershipRoleKey?: RoleKey | null;
   membershipResolved?: boolean;
+  membershipPermissions?: readonly string[];
   companyOsMode?: boolean;
 }) {
   return (
@@ -31,6 +33,7 @@ export function OsShellLayout({
       <OsOrgRoleProvider
         membershipRoleKey={membershipRoleKey}
         membershipResolved={membershipResolved}
+        membershipPermissions={membershipPermissions}
       >
         <Suspense fallback={<OsShellFallback companyOsMode={companyOsMode} />}>
           <BusinessOsShell>{children}</BusinessOsShell>

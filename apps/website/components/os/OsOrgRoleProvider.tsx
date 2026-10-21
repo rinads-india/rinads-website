@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const OsOrgRoleContext = createContext<{
   membershipRoleKey: RoleKey | null;
   membershipResolved: boolean;
+  membershipPermissions: readonly string[];
 } | null>(null);
 
 /**
@@ -18,15 +19,18 @@ const OsOrgRoleContext = createContext<{
 export function OsOrgRoleProvider({
   membershipRoleKey,
   membershipResolved,
+  membershipPermissions = [],
   children,
 }: {
   membershipRoleKey: RoleKey | null;
   /** True when Supabase tenancy gate ran (even if roleKey is null). */
   membershipResolved: boolean;
+  /** The member's permission keys for the active organisation (from the trusted server membership). */
+  membershipPermissions?: readonly string[];
   children: ReactNode;
 }) {
   return (
-    <OsOrgRoleContext.Provider value={{ membershipRoleKey, membershipResolved }}>
+    <OsOrgRoleContext.Provider value={{ membershipRoleKey, membershipResolved, membershipPermissions }}>
       {children}
     </OsOrgRoleContext.Provider>
   );
@@ -37,7 +41,7 @@ export function useOsOrgRole(): OsOrgRoleView {
   const { user, isDemoMode } = useAuth();
 
   if (ctx?.membershipResolved) {
-    return buildMembershipRoleView(ctx.membershipRoleKey);
+    return buildMembershipRoleView(ctx.membershipRoleKey, ctx.membershipPermissions);
   }
 
   // Demo auth only: explicit demo session role is the trusted demo model.
@@ -50,5 +54,6 @@ export function useOsOrgRole(): OsOrgRoleView {
     tier: null as OsCapabilityTier | null,
     roleKey: null,
     source: "unresolved" as OsOrgRoleSource,
+    permissions: [] as readonly string[],
   };
 }

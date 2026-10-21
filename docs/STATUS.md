@@ -2,6 +2,8 @@
 
 > **Founder production truth (2026-09-30):** prefer [`docs/founder-audit/PRODUCTION-TRUTH.md`](./founder-audit/PRODUCTION-TRUTH.md), [`LIVE-E2E-VERIFICATION-2026-09-30.md`](./founder-audit/LIVE-E2E-VERIFICATION-2026-09-30.md), and [`STATUS-EXECUTION-2026-09-30.md`](./founder-audit/STATUS-EXECUTION-2026-09-30.md). `main` at `f273306` (#96 merged). Migrations + cookie domain PASS. Auth allowlist + authed personas **explicitly deferred**. Twilio/workers **KEEP OFF**.
 
+> **Company OS + Founder Control Tower MVP (branch `claude/rinads-company-os-mvp-ipygn8`; tracking issue #127; no PR opened for this branch yet):** code-complete in the branch, **not merged, no migration applied anywhere**. See [`docs/company-os/PRODUCTION-READINESS.md`](./company-os/PRODUCTION-READINESS.md) for the evidence-based GO / CONDITIONAL GO / NO-GO.
+
 **Verdict:** RINADS is a multi-app SaaS + commerce/ERP + salon OS monorepo. Platform Phases 9–13 and **R GLOW MVP + Phase E/E.2 are code-complete on `main`**. Ops cutover advanced (migrations + cookie env + docs Gate A). Remaining work is mostly **Auth allowlist dashboard confirm**, **authenticated persona smoke (`E2E_*`)**, **provider stubs outside salon WhatsApp**, **LLM/intelligence depth**, **CMS/polish**, and **Creative OS PR-C1+**.
 
 Latest merged work (git `main`): ops refresh + Creative OS Gate A (#96), brand-first home hero (#95), Creative OS launch architecture docs (#91).

@@ -47,6 +47,26 @@ export function OsRinpoDock({
       setReply(null);
 
       try {
+        // Signed-in members of a live organisation get a briefing from their own permitted company data.
+        // Anything the company endpoint cannot answer (demo mode, unrelated chat, errors) uses the public chat.
+        try {
+          const company = await fetch("/api/os/rinpo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: trimmed }),
+          });
+          if (company.ok) {
+            const briefing = (await company.json()) as { available?: boolean; matched?: boolean; reply?: string };
+            if (briefing.available && briefing.matched && briefing.reply) {
+              setReply(briefing.reply);
+              setPrompt("");
+              return;
+            }
+          }
+        } catch {
+          // fall through to the public chat
+        }
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
