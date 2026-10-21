@@ -86,7 +86,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.1.6
-        version: 16.1.6(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+        version: 16.1.6(@typescript-eslint/parser@8.67.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.3.3
@@ -385,6 +385,9 @@ importers:
 
   apps/website:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.36.0
+        version: 0.36.3
       '@rinads/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -457,6 +460,9 @@ importers:
       react-dom:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
+      three:
+        specifier: ^0.183.2
+        version: 0.183.2
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
@@ -475,7 +481,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.1.6
-        version: 16.1.6(@typescript-eslint/parser@8.67.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+        version: 16.1.6(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.3.3
@@ -487,7 +493,7 @@ importers:
         version: 5.9.3
       vercel:
         specifier: ^50.25.6
-        version: 50.44.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)
+        version: 50.44.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)
 
   packages/auth:
     dependencies:
@@ -792,11 +798,20 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/world-contract:
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
 packages:
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@anthropic-ai/sdk@0.36.3':
+    resolution: {integrity: sha512-+c0mMLxL/17yFZ4P5+U6bTWiCSFZUKJddrv01ud2aFBWnTPLdRncYV76D3q1tqfnL7aCnhRtykFnoCFzvr4U3Q==}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -1981,6 +1996,12 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
+  '@types/node-fetch@2.6.13':
+    resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
+
+  '@types/node@18.19.130':
+    resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
+
   '@types/node@20.11.0':
     resolution: {integrity: sha512-o9bjXmDNcF7GbM4CNQpmi+TutCgap/K3w1JyKgxAjqx41zp9qlIAVFi0IhCNsJcXolEqLWhbFbEeL0PvYm4pcQ==}
 
@@ -2275,6 +2296,10 @@ packages:
     resolution: {integrity: sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
+  abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+
   acorn-import-attributes@1.9.5:
     resolution: {integrity: sha512-n02Vykv5uA3eHGM/Z2dQrcD56kL8TyDb2p1+0P83PClMnC/nc+anbQRhIOWnSq4Ke/KvDPrY3C9hDtC/A3eHnQ==}
     peerDependencies:
@@ -2293,6 +2318,10 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  agentkeepalive@4.6.0:
+    resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
+    engines: {node: '>= 8.0.0'}
 
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
@@ -2836,6 +2865,10 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+
   events-intercept@2.0.0:
     resolution: {integrity: sha512-blk1va0zol9QOrdZt0rFXo5KMkNPVSp92Eju/Qz8THwKWKRKeE0T8Br/1aW6+Edkyq9xHYgYxn2QtOnUKPUp+Q==}
 
@@ -2915,9 +2948,16 @@ packages:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
     engines: {node: '>= 0.4'}
 
+  form-data-encoder@1.7.2:
+    resolution: {integrity: sha512-qfqtYan3rxrnCk1VYaA4H+Ms9xdpPqvLZa6xmMgFvhO32x7/3J/ExcTd6qpxM0vH2GdMI+poehyBZvqfMTto8A==}
+
   form-data@4.0.6:
     resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
     engines: {node: '>= 6'}
+
+  formdata-node@4.4.1:
+    resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
+    engines: {node: '>= 12.20'}
 
   framer-motion@12.43.0:
     resolution: {integrity: sha512-1eaL3RvR/kAlbG7UYcpMptEyzPoENO0c6w7ZnB3/hh2vSAz/6uGAFn6fdoqTBguNstf3MsFhJHsD/0DHiclG+g==}
@@ -3078,6 +3118,9 @@ packages:
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
+
+  humanize-ms@1.2.1:
+    resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
 
   iceberg-js@0.8.1:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
@@ -3559,6 +3602,11 @@ packages:
         optional: true
       sass:
         optional: true
+
+  node-domexception@1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-exports-info@1.6.2:
     resolution: {integrity: sha512-kXs9Go0cah0qHVV2v389IXQLdLCeE1xfFtjOAF+iobu0OIoG1pje8At2vMHyaPMiPMnG/LWP50twML21eMcAag==}
@@ -4090,6 +4138,9 @@ packages:
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
 
+  three@0.183.2:
+    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
+
   throttleit@2.1.0:
     resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
     engines: {node: '>=18'}
@@ -4243,6 +4294,10 @@ packages:
     engines: {node: '>= 18'}
     hasBin: true
 
+  web-streams-polyfill@4.0.0-beta.3:
+    resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
+    engines: {node: '>= 14'}
+
   web-vitals@0.2.4:
     resolution: {integrity: sha512-6BjspCO9VriYy12z356nL6JBS0GYeEcA457YyRzD+dD6XYCQ75NKhcOHUMHentOE7OcVCIXXDvOm0jKFfQG2Gg==}
 
@@ -4335,6 +4390,18 @@ packages:
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
+
+  '@anthropic-ai/sdk@0.36.3':
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -4876,6 +4943,13 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
+  '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)':
+    dependencies:
+      '@emnapi/core': 1.10.0
+      '@emnapi/runtime': 1.11.3
+      '@tybys/wasm-util': 0.10.3
+    optional: true
+
   '@next/env@16.1.6': {}
 
   '@next/eslint-plugin-next@16.1.6':
@@ -4970,9 +5044,9 @@ snapshots:
   '@oxc-transform/binding-openharmony-arm64@0.111.0':
     optional: true
 
-  '@oxc-transform/binding-wasm32-wasi@0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+  '@oxc-transform/binding-wasm32-wasi@0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -5023,9 +5097,9 @@ snapshots:
   '@rolldown/binding-openharmony-arm64@1.0.0-rc.1':
     optional: true
 
-  '@rolldown/binding-wasm32-wasi@1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+  '@rolldown/binding-wasm32-wasi@1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -5221,6 +5295,15 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
+  '@types/node-fetch@2.6.13':
+    dependencies:
+      '@types/node': 20.19.43
+      form-data: 4.0.6
+
+  '@types/node@18.19.130':
+    dependencies:
+      undici-types: 5.26.5
+
   '@types/node@20.11.0':
     dependencies:
       undici-types: 5.26.5
@@ -5398,16 +5481,16 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
 
-  '@vercel/backends@0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)':
+  '@vercel/backends@0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)':
     dependencies:
       '@vercel/build-utils': 13.14.2
       '@vercel/nft': 1.5.0
       execa: 3.2.0
       fs-extra: 11.1.0
-      oxc-transform: 0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-transform: 0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
       path-to-regexp: 8.3.0
       resolve.exports: 2.0.3
-      rolldown: 1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      rolldown: 1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
       srvx: 0.8.9
       tsx: 4.21.0
       typescript: 5.9.3
@@ -5433,9 +5516,9 @@ snapshots:
       cjs-module-lexer: 1.2.3
       es-module-lexer: 1.5.0
 
-  '@vercel/cervel@0.0.46(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)':
+  '@vercel/cervel@0.0.46(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)':
     dependencies:
-      '@vercel/backends': 0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)
+      '@vercel/backends': 0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -5457,9 +5540,9 @@ snapshots:
 
   '@vercel/error-utils@2.0.3': {}
 
-  '@vercel/express@0.1.72(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)':
+  '@vercel/express@0.1.72(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)':
     dependencies:
-      '@vercel/cervel': 0.0.46(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)
+      '@vercel/cervel': 0.0.46(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)
       '@vercel/nft': 1.5.0
       '@vercel/node': 5.7.4
       '@vercel/static-config': 3.2.0
@@ -5703,6 +5786,10 @@ snapshots:
 
   abbrev@3.0.1: {}
 
+  abort-controller@3.0.0:
+    dependencies:
+      event-target-shim: 5.0.1
+
   acorn-import-attributes@1.9.5(acorn@8.18.0):
     dependencies:
       acorn: 8.18.0
@@ -5714,6 +5801,10 @@ snapshots:
   acorn@8.18.0: {}
 
   agent-base@7.1.4: {}
+
+  agentkeepalive@4.6.0:
+    dependencies:
+      humanize-ms: 1.2.1
 
   ajv@6.15.0:
     dependencies:
@@ -6493,6 +6584,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  event-target-shim@5.0.1: {}
+
   events-intercept@2.0.0: {}
 
   events-universal@1.0.1:
@@ -6590,6 +6683,8 @@ snapshots:
     dependencies:
       is-callable: 1.2.7
 
+  form-data-encoder@1.7.2: {}
+
   form-data@4.0.6:
     dependencies:
       asynckit: 0.4.0
@@ -6597,6 +6692,11 @@ snapshots:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.4
       mime-types: 2.1.35
+
+  formdata-node@4.4.1:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 4.0.0-beta.3
 
   framer-motion@12.43.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
@@ -6766,6 +6866,10 @@ snapshots:
   human-signals@1.1.1: {}
 
   human-signals@2.1.0: {}
+
+  humanize-ms@1.2.1:
+    dependencies:
+      ms: 2.1.3
 
   iceberg-js@0.8.1: {}
 
@@ -7193,6 +7297,8 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
+  node-domexception@1.0.0: {}
+
   node-exports-info@1.6.2:
     dependencies:
       array.prototype.flatmap: 1.3.3
@@ -7296,7 +7402,7 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
-  oxc-transform@0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
+  oxc-transform@0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3):
     optionalDependencies:
       '@oxc-transform/binding-android-arm-eabi': 0.111.0
       '@oxc-transform/binding-android-arm64': 0.111.0
@@ -7314,7 +7420,7 @@ snapshots:
       '@oxc-transform/binding-linux-x64-gnu': 0.111.0
       '@oxc-transform/binding-linux-x64-musl': 0.111.0
       '@oxc-transform/binding-openharmony-arm64': 0.111.0
-      '@oxc-transform/binding-wasm32-wasi': 0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@oxc-transform/binding-wasm32-wasi': 0.111.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
       '@oxc-transform/binding-win32-arm64-msvc': 0.111.0
       '@oxc-transform/binding-win32-ia32-msvc': 0.111.0
       '@oxc-transform/binding-win32-x64-msvc': 0.111.0
@@ -7506,7 +7612,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown@1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
+  rolldown@1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3):
     dependencies:
       '@oxc-project/types': 0.110.0
       '@rolldown/pluginutils': 1.0.0-rc.1
@@ -7521,7 +7627,7 @@ snapshots:
       '@rolldown/binding-linux-x64-gnu': 1.0.0-rc.1
       '@rolldown/binding-linux-x64-musl': 1.0.0-rc.1
       '@rolldown/binding-openharmony-arm64': 1.0.0-rc.1
-      '@rolldown/binding-wasm32-wasi': 1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@rolldown/binding-wasm32-wasi': 1.0.0-rc.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)
       '@rolldown/binding-win32-arm64-msvc': 1.0.0-rc.1
       '@rolldown/binding-win32-x64-msvc': 1.0.0-rc.1
     transitivePeerDependencies:
@@ -7836,6 +7942,8 @@ snapshots:
     transitivePeerDependencies:
       - react-native-b4a
 
+  three@0.183.2: {}
+
   throttleit@2.1.0: {}
 
   time-span@4.0.0:
@@ -8022,14 +8130,14 @@ snapshots:
       lodash.debounce: 4.0.8
       react: 19.2.3
 
-  vercel@50.44.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3):
+  vercel@50.44.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3):
     dependencies:
-      '@vercel/backends': 0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)
+      '@vercel/backends': 0.0.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)
       '@vercel/blob': 2.3.0
       '@vercel/build-utils': 13.14.2
       '@vercel/detect-agent': 1.2.2
       '@vercel/elysia': 0.1.62
-      '@vercel/express': 0.1.72(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(typescript@5.9.3)
+      '@vercel/express': 0.1.72(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(typescript@5.9.3)
       '@vercel/fastify': 0.1.65
       '@vercel/fun': 1.3.0
       '@vercel/go': 3.4.7
@@ -8064,6 +8172,8 @@ snapshots:
       - rollup
       - supports-color
       - typescript
+
+  web-streams-polyfill@4.0.0-beta.3: {}
 
   web-vitals@0.2.4: {}
 
