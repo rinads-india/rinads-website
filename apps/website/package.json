@@ -41,7 +41,6 @@
     "react": "19.2.3",
 
     "react-dom": "19.2.3",
-    "three": "^0.183.2",
     "@anthropic-ai/sdk": "^0.36.0"
   },
   "devDependencies": {
