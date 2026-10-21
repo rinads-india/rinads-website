@@ -11,6 +11,49 @@ type Lang = "en" | "ml";
  * Public RINPO chat — rule-based only (no LLM in Phase 0).
  * Supports English and Malayalam (lang: "en" | "ml").
  */
+async function getLLMReply(
+  message: string,
+  context: Record<string, unknown> | undefined,
+  lang: string,
+): Promise<{ reply: string; links: ChatLink[] } | null> {
+  const apiKey = process.env.RINPO_ANTHROPIC_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    const systemPrompt = `You are RINPO, the intelligence layer of the RINADS Business Technology Platform. Your role is to help business owners understand their operations, make decisions, and take action through the RINADS platform.
+
+RINADS platform surfaces:
+- /business-os — Business OS (CRM, projects, finance, tasks)
+- /services — RINADS Services catalog
+- /marketplace — RI Marketplace (browse and order services)
+- /space — RINASPACE (authenticated workspace)
+- /world — RINADS WORLD (immersive 3D experience)
+- /search — RI Search
+- /rinpo-intelligence — RINPO Intelligence dashboard
+- /cloud — RINADS Cloud
+
+Keep responses concise (2-4 sentences for simple questions, up to 8 for complex). Be helpful, direct, and business-focused. Respond in the same language the user writes in. Never make up specific business data. Suggest contacting the team when uncertain.${context ? `\n\nUser context: ${JSON.stringify(context)}` : ""}`;
+
+    const response = await client.messages.create({
+      model: "claude-haiku-5-5",
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{ role: "user", content: message }],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") return null;
+
+    return { reply: textBlock.text, links: [] };
+  } catch (err) {
+    console.error("RINPO LLM error (falling back to rules):", err);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip =
@@ -49,6 +92,17 @@ export async function POST(request: NextRequest) {
     // Auto-detect Malayalam in user input (Unicode \u0D00-\u0D7F) for true 2-way conversation
     const hasMalayalam = /[\u0D00-\u0D7F]/.test(message);
     const lang: Lang = hasMalayalam || requestedLang === "ml" ? "ml" : "en";
+
+    // Try LLM first; fall through to rule-based on null
+    const llmResult = await getLLMReply(message, validated.context, lang);
+    if (llmResult) {
+      return NextResponse.json({
+        reply: llmResult.reply,
+        links: llmResult.links,
+        intent: "llm",
+        effectiveLang: lang,
+      });
+    }
 
     const lower = message.toLowerCase();
     let reply: string;
