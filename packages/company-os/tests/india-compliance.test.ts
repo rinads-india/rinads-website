@@ -5,6 +5,7 @@ import {
   classifyIndiaSupply,
   gstStateCodeFromGstin,
   isValidGstinFormat,
+  isValidIndiaStateCode,
   isValidTaxClassificationCode,
   normalizeGstin,
 } from "../src/india-compliance";
@@ -15,6 +16,12 @@ describe("India compliance helpers", () => {
     assert.equal(isValidGstinFormat("32AABCK1234A1Z5"), true);
     assert.equal(isValidGstinFormat("bad"), false);
     assert.equal(gstStateCodeFromGstin("32AABCK1234A1Z5"), "32");
+  });
+
+  it("keeps state-code validation format-only instead of hard-coding a narrow list", () => {
+    assert.equal(isValidIndiaStateCode("32"), true);
+    assert.equal(isValidIndiaStateCode("97"), true);
+    assert.equal(isValidIndiaStateCode("00"), false);
   });
 
   it("classifies intra- and interstate evidence", () => {
@@ -64,9 +71,10 @@ describe("India compliance helpers", () => {
   });
 
   it("validates only tax-code shape, not legal applicability", () => {
+    assert.equal(isValidTaxClassificationCode("sac", "9997"), true);
     assert.equal(isValidTaxClassificationCode("sac", "999700"), true);
     assert.equal(isValidTaxClassificationCode("hsn", "7113"), true);
     assert.equal(isValidTaxClassificationCode("hsn", "71131990"), true);
-    assert.equal(isValidTaxClassificationCode("sac", "9997"), false);
+    assert.equal(isValidTaxClassificationCode("sac", "999"), false);
   });
 });
