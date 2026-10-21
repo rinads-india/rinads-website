@@ -36,7 +36,6 @@ create table if not exists public.india_gst_registrations (
   constraint india_gst_registration_location_same_org_fk
     foreign key (location_id, organization_id)
     references public.locations(id, organization_id)
-    on delete set null
     deferrable initially immediate
 );
 
@@ -105,17 +104,19 @@ create table if not exists public.india_tax_transaction_evidence (
   created_at timestamptz not null default now(),
   unique (organization_id, idempotency_key),
   constraint india_tax_evidence_registration_same_org_fk
-    foreign key (registration_id, organization_id)
-    references public.india_gst_registrations(id, organization_id)
+    foreign key (organization_id, registration_id)
+    references public.india_gst_registrations(organization_id, id)
     deferrable initially immediate,
   constraint india_tax_evidence_finance_entry_same_org_fk
-    foreign key (finance_entry_id, organization_id)
-    references public.finance_entries(id, organization_id)
+    foreign key (organization_id, finance_entry_id)
+    references public.finance_entries(organization_id, id)
     deferrable initially immediate,
   check (supplier_state_code is null or (supplier_state_code ~ '^[0-9]{2}$' and supplier_state_code <> '00')),
   check (place_of_supply_state_code is null or (place_of_supply_state_code ~ '^[0-9]{2}$' and place_of_supply_state_code <> '00')),
   check (supplier_gstin is null or supplier_gstin ~ '^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$'),
   check (recipient_gstin is null or recipient_gstin ~ '^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$'),
+  check (supplier_gstin is null or supplier_state_code is null or left(supplier_gstin, 2) = supplier_state_code),
+  check ((tax_code is null and tax_code_kind is null) or (tax_code is not null and tax_code_kind is not null)),
   check (
     tax_code is null
     or (tax_code_kind = 'hsn' and tax_code ~ '^[0-9]{4,8}$')
