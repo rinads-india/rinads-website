@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import type {
   WorldBootstrapPayload,
@@ -48,7 +48,7 @@ const PLACES: WorldPlace[] = [
   },
 ];
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const supabase = await createWebsiteServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -65,8 +65,14 @@ export async function GET(req: NextRequest) {
       .limit(1)
       .single();
 
-    const orgId = (membership as any)?.organization_id ?? null;
-    const role = (membership as any)?.roles?.name ?? null;
+    type MembershipRow = {
+      organization_id: string | null;
+      roles: { name: string } | { name: string }[] | null;
+    };
+    const row = membership as MembershipRow | null;
+    const orgId = row?.organization_id ?? null;
+    const roleValue = row?.roles;
+    const role = Array.isArray(roleValue) ? roleValue[0]?.name ?? null : roleValue?.name ?? null;
 
     // Session token: base64(userId:orgId:exp) — not a JWT, not a secret
     const exp = Math.floor(Date.now() / 1000) + 3600;

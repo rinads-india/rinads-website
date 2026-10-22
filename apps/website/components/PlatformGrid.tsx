@@ -26,8 +26,10 @@ export default function PlatformGrid() {
       <p className="text-gray-500 text-center mb-10">Everything your business needs, connected.</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {SURFACES.map(({ key, label, href, icon, desc }) => {
-          const cap = PLATFORM_AVAILABILITY[key];
-          const status = cap?.status ?? "COMING_SOON";
+          const status =
+            key in PLATFORM_AVAILABILITY
+              ? PLATFORM_AVAILABILITY[key as keyof typeof PLATFORM_AVAILABILITY]
+              : "COMING_SOON";
           return (
             <Link
               key={key}
