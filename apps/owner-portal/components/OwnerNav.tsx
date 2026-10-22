@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { RoleKey } from "@rinads/permissions";
 
 const links = [
+  { href: "/mobile", label: "RINADS WORK" },
   { href: "/operations", label: "Control Tower" },
   { href: "/jewellery", label: "Jewellery OS" },
   { href: "/runtime", label: "Runtime" },
@@ -31,10 +32,10 @@ export function OwnerNav({ role = "founder" }: OwnerNavProps) {
     <header className="border-b border-rinads-primary/15 bg-surface">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">RINADS Business OS</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-rinads-primary">RINADS WORK · Business OS</p>
           <h1 className="text-lg font-semibold text-foreground">Owner Operations</h1>
         </div>
-        <nav aria-label="Owner portal" className="flex flex-wrap gap-1">
+        <nav aria-label="Owner portal" className="flex gap-1 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible lg:pb-0">
           {links.map(({ href, label }) => {
             const active =
               href === "/operations"
@@ -44,7 +45,7 @@ export function OwnerNav({ role = "founder" }: OwnerNavProps) {
               <Link
                 key={href}
                 href={href === "/operations" ? "/operations" : href}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition sm:text-sm ${
+                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition sm:text-sm ${
                   active
                     ? "bg-rinads-primary text-white"
                     : "text-foreground hover:bg-surface-muted"
