@@ -3,6 +3,7 @@
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { provisionTenantViaRpc, seedTenantBundle, AMBADY_TENANT_SLUG, loadPublishedTemplates, parseVerticalTemplateKey } from "@rinads/platform";
+import { getIndustry } from "@rinads/platform/industries";
 import { seedOrgCommerceStore } from "@rinads/commerce-server";
 import { createSupabaseOperationsRepository } from "@rinads/operations-server";
 import { loadMemberships, type TenancySupabaseClient } from "@rinads/tenancy";
@@ -37,6 +38,14 @@ export async function provisionOrganizationAction(input: {
   templateKey: string;
   selectedModules?: string[];
   businessType?: string;
+  businessDescription?: string;
+  businessStage?: string;
+  websiteUrl?: string;
+  countryCode?: string;
+  stateRegion?: string;
+  city?: string;
+  employeeBand?: string;
+  annualRevenueBand?: string;
 }): Promise<{ ok: true; organizationId: string } | { ok: false; error: string }> {
   const name = input.name.trim();
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
@@ -48,8 +57,12 @@ export async function provisionOrganizationAction(input: {
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Unknown template" };
   }
+
   const selectedModules = input.selectedModules ?? [];
   const businessType = input.businessType ?? "other";
+  if (!getIndustry(businessType)) {
+    return { ok: false, error: "Unknown industry." };
+  }
 
   if (!isSupabaseMode()) {
     const orgId = slug === AMBADY_TENANT_SLUG ? "org_ambady_demo" : `org_${slug.replace(/-/g, "_")}`;
@@ -76,29 +89,56 @@ export async function provisionOrganizationAction(input: {
       { name, slug, templateKey, planKey: "starter" }
     );
 
-    if (!result.ok) {
-      return { ok: false, error: result.error };
-    }
-    if (!result.organizationId) {
-      return { ok: false, error: "Provision failed" };
+    if (!result.ok) return { ok: false, error: result.error };
+    if (!result.organizationId) return { ok: false, error: "Provision failed" };
+
+    const typedClient = supabase as unknown as {
+      from: (table: string) => {
+        update: (row: Record<string, unknown>) => {
+          eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+        };
+        upsert: (
+          row: Record<string, unknown>,
+          options?: { onConflict?: string }
+        ) => Promise<{ error: { message: string } | null }>;
+      };
+    };
+
+    const { error: settingsError } = await typedClient
+      .from("organization_settings")
+      .update({
+        enabled_modules: selectedModules,
+        business_type: businessType,
+        primary_industry_id: businessType,
+        business_description: input.businessDescription?.trim() || null,
+        business_stage: input.businessStage?.trim() || null,
+        website_url: input.websiteUrl?.trim() || null,
+        country_code: input.countryCode?.trim() || null,
+        state_region: input.stateRegion?.trim() || null,
+        city: input.city?.trim() || null,
+        employee_band: input.employeeBand?.trim() || null,
+        annual_revenue_band: input.annualRevenueBand?.trim() || null,
+      })
+      .eq("organization_id", result.organizationId);
+
+    if (settingsError) {
+      return { ok: false, error: `Workspace created, but business profile failed: ${settingsError.message}` };
     }
 
-    if (selectedModules.length || businessType) {
-      await (
-        supabase as unknown as {
-          from: (table: string) => {
-            update: (row: Record<string, unknown>) => {
-              eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
-            };
-          };
-        }
-      )
-        .from("organization_settings")
-        .update({
-          enabled_modules: selectedModules,
-          business_type: businessType,
-        })
-        .eq("organization_id", result.organizationId);
+    const { error: industryError } = await typedClient
+      .from("organization_industries")
+      .upsert(
+        {
+          organization_id: result.organizationId,
+          industry_id: businessType,
+          is_primary: true,
+          source: "onboarding",
+        },
+        { onConflict: "organization_id,industry_id" }
+      );
+
+    if (industryError) {
+      return { ok: false, error: `Workspace created, but industry mapping failed: ${industryError.message}` };
     }
 
     return { ok: true, organizationId: result.organizationId };

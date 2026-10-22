@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./templates/index";
 export * from "./templates/marketplace";
+export * from "./industries/index";
 export * from "./provisioning";
 export * from "./lifecycle";
 export * from "./audit";
