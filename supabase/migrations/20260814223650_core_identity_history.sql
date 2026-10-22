@@ -12,6 +12,7 @@
 -- This file intentionally performs no schema changes. It preserves the
 -- historical version for ledger reconciliation while keeping clean database
 -- replays safe after the canonical 20260814100001 migration has run.
+-- Keep this historical version permanently; do not renumber or delete it.
 
 DO $$
 BEGIN
