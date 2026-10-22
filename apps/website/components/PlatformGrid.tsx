@@ -1,15 +1,21 @@
 "use client";
 import Link from "next/link";
-import { PLATFORM_AVAILABILITY } from "@/lib/availability";
+import { PLATFORM_AVAILABILITY, type CapabilityKey } from "@/lib/availability";
 
 const SURFACES = [
-  { key: "rinads-one",   label: "Business OS",        href: "/business-os",       icon: "🏢", desc: "Run your company" },
-  { key: "rinpo-chat",   label: "RINPO Intelligence", href: "/rinpo-intelligence", icon: "🧠", desc: "Understand & decide" },
-  { key: "ri-search",    label: "RI Search",          href: "/search",            icon: "🔍", desc: "Discover services" },
-  { key: "rinaspace",    label: "RINASPACE",          href: "/space",             icon: "🚀", desc: "Your workspace" },
-  { key: "rinads-world", label: "RINADS WORLD",       href: "/world",             icon: "🌐", desc: "Immersive gateway" },
-  { key: "marketplace",  label: "RI Marketplace",     href: "/marketplace",       icon: "🛒", desc: "Order services" },
-];
+  { key: "business_os",        label: "Business OS",        href: "/business-os",        icon: "🏢", desc: "Run your company" },
+  { key: "rinpo_intelligence", label: "RINPO Intelligence", href: "/rinpo-intelligence", icon: "🧠", desc: "Understand & decide" },
+  { key: "ri_search",          label: "RI Search",          href: "/search",             icon: "🔍", desc: "Discover services" },
+  { key: "rinaspace",          label: "RINASPACE",          href: "/space",              icon: "🚀", desc: "Your workspace" },
+  { key: "rinads_world",       label: "RINADS WORLD",       href: "/world",              icon: "🌐", desc: "Immersive gateway" },
+  { key: "ri_marketplace",     label: "RI Marketplace",     href: "/marketplace",        icon: "🛒", desc: "Order services" },
+] satisfies ReadonlyArray<{
+  key: CapabilityKey;
+  label: string;
+  href: string;
+  icon: string;
+  desc: string;
+}>;
 
 const STATUS_STYLES: Record<string, string> = {
   AVAILABLE:       "bg-green-50 text-green-700",
@@ -26,10 +32,7 @@ export default function PlatformGrid() {
       <p className="text-gray-500 text-center mb-10">Everything your business needs, connected.</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {SURFACES.map(({ key, label, href, icon, desc }) => {
-          const status =
-            key in PLATFORM_AVAILABILITY
-              ? PLATFORM_AVAILABILITY[key as keyof typeof PLATFORM_AVAILABILITY]
-              : "COMING_SOON";
+          const status = PLATFORM_AVAILABILITY[key];
           return (
             <Link
               key={key}
