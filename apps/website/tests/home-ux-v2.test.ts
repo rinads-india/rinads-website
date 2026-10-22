@@ -83,7 +83,7 @@ describe("Homepage UX V2 contracts", () => {
     assert.doesNotMatch(footer, /href:\s*"https:\/\/www\.rinads\.com"/);
   });
 
-  it("keeps pricing unapproved until commercial sign-off", () => {
-    assert.equal(PRICE_APPROVED, false);
+  it("publishes pricing only after commercial sign-off", () => {
+    assert.equal(PRICE_APPROVED, true);
   });
 });

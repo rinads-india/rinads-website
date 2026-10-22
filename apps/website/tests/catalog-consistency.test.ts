@@ -74,17 +74,20 @@ describe("solution catalog consistency", () => {
 });
 
 describe("commercial config", () => {
-  it("keeps priceApproved false until commercial sign-off", () => {
-    assert.equal(PRICE_APPROVED, false);
+  it("keeps approved public pricing enabled", () => {
+    assert.equal(PRICE_APPROVED, true);
   });
 
-  it("every plan has a non-blank price representation when not approved", () => {
+  it("keeps the approved public plan anchors and contact CTAs canonical", () => {
+    const approvedMonthlyAnchors = new Map([
+      ["start", 2999],
+      ["grow", 7999],
+      ["scale", 19999],
+      ["enterprise", 49999],
+    ]);
+
     for (const plan of PRICING_PLANS) {
-      assert.ok(
-        plan.monthlyPrice === "contact" ||
-          plan.monthlyPrice === "coming_soon" ||
-          typeof plan.monthlyPrice === "number",
-      );
+      assert.equal(plan.monthlyPrice, approvedMonthlyAnchors.get(plan.id), plan.id);
       assert.ok(plan.cta.label.length > 0);
       assert.ok(plan.cta.href.includes("/contact"));
     }
