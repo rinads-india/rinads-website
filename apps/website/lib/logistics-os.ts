@@ -73,8 +73,11 @@ const PROVIDERS: ProviderDefinition[] = [
     label: "Shiprocket",
     role: "Aggregator fallback",
     capabilities: ["cod", "reverse", "scheduled"],
-    requiredEnv: ["RINADS_SHIPROCKET_API_TOKEN"],
-    credentialContractVerified: false,
+    requiredEnv: ["RINADS_SHIPROCKET_EMAIL", "RINADS_SHIPROCKET_PASSWORD"],
+    credentialContractVerified: true,
+    // The API client is implemented, but the canonical CourierAdapter cannot be
+    // marked complete until shipment intent carries the address/items Shiprocket
+    // requires for order creation.
     adapterImplemented: false,
     liveFlag: "RINADS_SHIPROCKET_LIVE",
   },
