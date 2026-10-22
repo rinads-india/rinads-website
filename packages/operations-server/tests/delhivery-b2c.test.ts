@@ -129,7 +129,7 @@ describe("DelhiveryB2cClient", () => {
     assert.equal(calls.length, 1);
     assert.equal(calls[0]!.url, "https://staging-express.delhivery.com/api/cmu/create.json");
     assert.equal(calls[0]!.init.headers["Content-Type"], "application/x-www-form-urlencoded");
-    const form = new URLSearchParams(calls[0]!.init.body);
+    const form = new URLSearchParams(calls[0]!.init.body ?? "");
     assert.equal(form.get("format"), "json");
     assert.match(form.get("data") ?? "", /"ORDER-1"/);
   });
