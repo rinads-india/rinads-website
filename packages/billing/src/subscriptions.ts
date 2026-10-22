@@ -24,7 +24,6 @@ export function mirrorSubscriptionToOrg(input: SubscriptionMirrorInput): {
       organization_id: input.organizationId,
       plan_key: input.planKey,
       status: input.organizationStatus,
-      updated_at: new Date().toISOString(),
     },
     billing_subscriptions: {
       organization_id: input.organizationId,
