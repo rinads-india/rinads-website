@@ -89,7 +89,7 @@ function repository(options: {
       priority: 20,
       capabilities: ["cod", "reverse", "scheduled"],
       credentialSource: "environment",
-      credentialKey: "RINADS_DTDC_API_TOKEN",
+      credentialKey: "dtdc_primary",
       verificationState: "controlled_shipment_passed",
     },
     {
@@ -99,7 +99,7 @@ function repository(options: {
       priority: 10,
       capabilities: ["same_day", "scheduled"],
       credentialSource: "environment",
-      credentialKey: "RINADS_PORTER_API_KEY",
+      credentialKey: "porter_primary",
       verificationState: "controlled_shipment_passed",
     },
   ];
@@ -150,7 +150,7 @@ describe("LogisticsRuntimeService", () => {
         priority: 1,
         capabilities: ["cod"],
         credentialSource: "environment",
-        credentialKey: "RINADS_DTDC_API_TOKEN",
+        credentialKey: "dtdc_primary",
         verificationState: "sandbox_passed",
       },
       {
@@ -160,7 +160,7 @@ describe("LogisticsRuntimeService", () => {
         priority: 2,
         capabilities: ["same_day"],
         credentialSource: "environment",
-        credentialKey: "RINADS_PORTER_API_KEY",
+        credentialKey: "porter_primary",
         verificationState: "controlled_shipment_passed",
       },
     ];
@@ -180,7 +180,7 @@ describe("LogisticsRuntimeService", () => {
         priority: 1,
         capabilities: [],
         credentialSource: "environment",
-        credentialKey: "RINADS_DTDC_API_TOKEN",
+        credentialKey: "dtdc_primary",
         verificationState: "sandbox_passed",
       },
     ];

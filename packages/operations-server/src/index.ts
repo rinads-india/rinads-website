@@ -230,3 +230,10 @@ export {
   type LogisticsSupabaseClient,
   type LogisticsSupabaseFilterQuery,
 } from "./logistics-supabase";
+export {
+  resolveLogisticsCredentialBinding,
+  getLogisticsCredentialBindingMetadata,
+  type LogisticsCredentialBindingStatus,
+  type LogisticsCredentialBundle,
+  type LogisticsCredentialResolution,
+} from "./logistics-secrets";
