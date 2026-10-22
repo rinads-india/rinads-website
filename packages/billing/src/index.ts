@@ -39,3 +39,4 @@ export * from "./subscriptions";
 export * from "./usage";
 export * from "./webhooks";
 export * from "./rglow-activation";
+export * from "./catalog-activation";
