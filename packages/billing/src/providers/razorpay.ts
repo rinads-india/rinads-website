@@ -143,13 +143,24 @@ export type RazorpaySubscriptionPayload = {
   total_count?: number;
   paid_count?: number;
   remaining_count?: number;
+  notes?: Record<string, string>;
 };
 
-export function mapRazorpaySubscriptionStatus(status: string): string {
+export type OrganizationSubscriptionStatus = "active" | "trialing" | "past_due" | "cancelled";
+
+/**
+ * Converts provider lifecycle into the deliberately smaller entitlement lifecycle.
+ * Only Razorpay `active` grants an active RINADS plan. `authenticated` means the
+ * mandate exists, but the subscription may still have a future start date.
+ */
+export function mapRazorpaySubscriptionStatus(status: string): OrganizationSubscriptionStatus {
   switch (status) {
     case "active":
-    case "authenticated":
       return "active";
+    case "authenticated":
+    case "created":
+      return "trialing";
+    case "pending":
     case "halted":
     case "paused":
       return "past_due";
@@ -157,11 +168,8 @@ export function mapRazorpaySubscriptionStatus(status: string): string {
     case "completed":
     case "expired":
       return "cancelled";
-    case "created":
-    case "pending":
-      return "created";
     default:
-      return status;
+      return "past_due";
   }
 }
 
