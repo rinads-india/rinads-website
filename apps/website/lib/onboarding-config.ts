@@ -66,6 +66,39 @@ const LEGACY_BUSINESS_TYPE_ALIASES: Record<string, string> = {
   education: "education-schools-tutoring",
 };
 
+const INDUSTRY_REGISTRY_SCHEMA_IDENTIFIERS = [
+  "primary_industry_id",
+  "business_description",
+  "business_stage",
+  "website_url",
+  "country_code",
+  "state_region",
+  "city",
+  "employee_band",
+  "annual_revenue_band",
+  "organization_industries",
+] as const;
+
 export function resolveTemplateForBusinessType(businessType: string): string {
   return resolveIndustryTemplate(LEGACY_BUSINESS_TYPE_ALIASES[businessType] ?? businessType);
+}
+
+/**
+ * During a production migration-history incident the application can deploy before
+ * the additive Industry Registry migration is accepted by Supabase. Only that
+ * narrow schema-missing case may be deferred; permission/RLS/data errors must fail.
+ */
+export function isIndustryRegistrySchemaUnavailable(message: string): boolean {
+  const normalized = message.toLowerCase();
+  const isMissingSchemaError =
+    normalized.includes("schema cache") ||
+    normalized.includes("does not exist") ||
+    normalized.includes("could not find the");
+
+  return (
+    isMissingSchemaError &&
+    INDUSTRY_REGISTRY_SCHEMA_IDENTIFIERS.some((identifier) =>
+      normalized.includes(identifier)
+    )
+  );
 }
