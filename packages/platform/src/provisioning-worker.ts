@@ -34,6 +34,43 @@ export type ProvisioningWorkerClient = ProvisioningJobClient &
     };
   };
 
+export type ProvisioningJobResult =
+  | { ok: true }
+  | { ok: false; error: string; blocked?: boolean };
+
+type SubscriptionLookupClient = {
+  from: (table: string) => {
+    select: (cols: string) => {
+      eq: (
+        col: string,
+        val: string
+      ) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+
+async function requireActiveSubscription(
+  client: ProvisioningWorkerClient,
+  organizationId: string
+): Promise<{ active: true } | { active: false; error: string }> {
+  const subscriptionClient = client as unknown as SubscriptionLookupClient;
+  const { data, error } = await subscriptionClient
+    .from("organization_subscriptions")
+    .select("status")
+    .eq("organization_id", organizationId);
+
+  if (error) {
+    return { active: false, error: "Could not verify subscription entitlement" };
+  }
+
+  const active = (data ?? []).some((row) => String(row.status ?? "") === "active");
+  if (!active) {
+    return { active: false, error: "Subscription is not active" };
+  }
+
+  return { active: true };
+}
+
 export async function listAllPendingJobs(client: ProvisioningWorkerClient): Promise<ProvisioningJobRow[]> {
   const { data, error } = await client.from("tenant_provisioning_jobs").select("*").eq("status", "pending");
   if (error || !data) return [];
@@ -43,7 +80,14 @@ export async function listAllPendingJobs(client: ProvisioningWorkerClient): Prom
 export async function processProvisioningJob(
   client: ProvisioningWorkerClient,
   job: ProvisioningJobRow
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<ProvisioningJobResult> {
+  // Defense in depth: even if a stale/legacy pending job exists, no tenant data
+  // may be seeded until the webhook-authoritative entitlement is active.
+  const entitlement = await requireActiveSubscription(client, job.organization_id);
+  if (!entitlement.active) {
+    return { ok: false, error: entitlement.error, blocked: true };
+  }
+
   const running = await markProvisioningJobRunning(client, job.id);
   if (!running) return { ok: false, error: "Could not mark job running" };
 
@@ -89,16 +133,18 @@ export async function processProvisioningJob(
 
 export async function runPendingProvisioningJobs(
   client: ProvisioningWorkerClient
-): Promise<{ processed: number; failed: number }> {
+): Promise<{ processed: number; failed: number; blocked: number }> {
   const jobs = await listAllPendingJobs(client);
   let processed = 0;
   let failed = 0;
+  let blocked = 0;
 
   for (const job of jobs) {
     const result = await processProvisioningJob(client, job);
     if (result.ok) processed++;
+    else if (result.blocked) blocked++;
     else failed++;
   }
 
-  return { processed, failed };
+  return { processed, failed, blocked };
 }

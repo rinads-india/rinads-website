@@ -161,6 +161,14 @@ export async function provisionOrganizationAction(input: {
       console.warn("Industry mapping persistence deferred until the production migration ledger is reconciled.");
     }
 
+    // Select the newly created organization before sending the user into billing.
+    // This cookie is shared across *.rinads.com in production and only affects
+    // organization context; it does not grant plan entitlements.
+    const activeOrgResult = await setActiveOrganizationAction(result.organizationId);
+    if (!activeOrgResult.ok) {
+      console.warn("Workspace created but active organization selection was deferred.");
+    }
+
     return { ok: true, organizationId: result.organizationId };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
@@ -219,25 +227,47 @@ export async function getProvisioningJobStatusAction(organizationId: string): Pr
   }
   try {
     const supabase = await createWebsiteServerClient();
-    const { data, error } = await (
-      supabase as unknown as {
-        from: (table: string) => {
-          select: (cols: string) => {
-            eq: (col: string, val: string) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
-          };
+    const typedClient = supabase as unknown as {
+      from: (table: string) => {
+        select: (cols: string) => {
+          eq: (col: string, val: string) => Promise<{
+            data: Record<string, unknown>[] | null;
+            error: { message: string } | null;
+          }>;
         };
-      }
-    )
+      };
+    };
+
+    const jobResult = await typedClient
       .from("tenant_provisioning_jobs")
       .select("status, error_message")
       .eq("organization_id", organizationId);
 
-    if (error) return { ok: false, error: error.message };
-    const row = data?.[0];
+    if (jobResult.error) return { ok: false, error: jobResult.error.message };
+    const job = jobResult.data?.[0];
+    if (job?.status) {
+      return {
+        ok: true,
+        status: String(job.status),
+        errorMessage: job.error_message ? String(job.error_message) : undefined,
+      };
+    }
+
+    const subscriptionResult = await typedClient
+      .from("organization_subscriptions")
+      .select("status")
+      .eq("organization_id", organizationId);
+    if (subscriptionResult.error) {
+      return { ok: false, error: subscriptionResult.error.message };
+    }
+
+    const subscriptionStatus = subscriptionResult.data?.[0]?.status
+      ? String(subscriptionResult.data[0].status)
+      : undefined;
+
     return {
       ok: true,
-      status: row?.status ? String(row.status) : "pending",
-      errorMessage: row?.error_message ? String(row.error_message) : undefined,
+      status: subscriptionStatus === "active" ? "activation_pending" : "awaiting_payment",
     };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
