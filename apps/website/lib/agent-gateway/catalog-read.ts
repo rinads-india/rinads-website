@@ -31,12 +31,18 @@ function numberValue(value: unknown): number | undefined {
   return undefined;
 }
 
-function parseInput(value: unknown):
+export function parseRinadsCatalogReadInput(value: unknown):
   | { ok: true; query?: string; limit: number }
   | { ok: false; reason: string } {
   if (value === undefined || value === null) return { ok: true, limit: 25 };
   const input = asRecord(value);
   if (!input) return { ok: false, reason: "Catalog input must be an object." };
+
+  const allowedKeys = new Set(["query", "limit"]);
+  const unsupportedKey = Object.keys(input).find((key) => !allowedKeys.has(key));
+  if (unsupportedKey) {
+    return { ok: false, reason: `Unsupported catalog argument: ${unsupportedKey}.` };
+  }
 
   const query = input.query === undefined ? undefined : text(input.query);
   if (input.query !== undefined && !query) {
@@ -54,7 +60,7 @@ function parseInput(value: unknown):
   return { ok: true, query, limit: rawLimit };
 }
 
-function rowEnabledForActor(
+export function isRinadsCatalogReadEnabledForActor(
   rows: readonly Record<string, unknown>[],
   actorId: string
 ): boolean {
@@ -81,7 +87,7 @@ export async function executeRinadsCatalogRead(input: {
   principal: RinadsAgentPrincipal;
   arguments?: unknown;
 }): Promise<RinadsCatalogReadResult> {
-  const parsed = parseInput(input.arguments);
+  const parsed = parseRinadsCatalogReadInput(input.arguments);
   if (!parsed.ok) return { ok: false, status: "invalid", reason: parsed.reason };
 
   if (!input.principal.permissionIds.includes(AGENT_CATALOG_READ_PERMISSION)) {
@@ -116,7 +122,7 @@ export async function executeRinadsCatalogRead(input: {
   }
 
   const normalizedFlagRows = (flagRows ?? []).map((row) => row as Record<string, unknown>);
-  if (!rowEnabledForActor(normalizedFlagRows, input.principal.actorId)) {
+  if (!isRinadsCatalogReadEnabledForActor(normalizedFlagRows, input.principal.actorId)) {
     return {
       ok: false,
       status: "disabled",
@@ -170,7 +176,6 @@ export async function executeRinadsCatalogRead(input: {
     ok: true,
     data: {
       capability: "commerce.catalog.read",
-      organizationId: input.principal.organizationId,
       query: parsed.query ?? null,
       count: products.length,
       products: products.map((product) => {
