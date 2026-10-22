@@ -18,6 +18,7 @@ export const MARKETING_OS_EVENTS = [
   "rinpo.recommendation.created",
   "rinpo.action.requested",
   "rinpo.action.approved",
+  "rinpo.action.rejected",
   "rinpo.action.executed",
 ] as const;
 
