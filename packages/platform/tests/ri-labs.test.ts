@@ -27,6 +27,15 @@ test("self-serve activation requires entitlement before provisioning", () => {
   assert.equal(canTransitionSelfServe("payment_pending", "active"), false);
 });
 
+test("blocked or failed activation cannot bypass verified payment and entitlement", () => {
+  assert.equal(canTransitionSelfServe("blocked", "entitled"), false);
+  assert.equal(canTransitionSelfServe("blocked", "provisioning"), false);
+  assert.equal(canTransitionSelfServe("failed", "entitled"), false);
+  assert.equal(canTransitionSelfServe("failed", "provisioning"), false);
+  assert.equal(canTransitionSelfServe("blocked", "payment_pending"), true);
+  assert.equal(canTransitionSelfServe("failed", "payment_pending"), true);
+});
+
 test("24x7 model covers sell, deliver, run, grow and support", () => {
   assert.deepEqual(
     RUN_BUSINESS_24X7_LOOPS.map((loop) => loop.key),
