@@ -52,6 +52,30 @@ function audienceMatches(audience: unknown, appId: string): boolean {
   return false;
 }
 
+function stringId(value: unknown): string | null {
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+/**
+ * Wix entity events carry a provider-generated event ID inside their event
+ * metadata envelope. Use it for at-least-once dedupe so a retry remains the
+ * same event even if Wix re-signs the outer JWT. Lifecycle events that do not
+ * expose such an ID fall back to a digest of the verified signed token.
+ */
+function providerEventId(eventData: unknown): string | null {
+  const data = asRecord(eventData);
+  if (!data) return null;
+
+  for (const key of ["createdEvent", "updatedEvent", "deletedEvent", "actionEvent"]) {
+    const envelope = asRecord(data[key]);
+    const id = stringId(envelope?.id);
+    if (id) return id;
+  }
+
+  const metadata = asRecord(data.metadata);
+  return stringId(metadata?.id);
+}
+
 export function verifyAndDecodeWixWebhook(
   token: string,
   options: VerifyWixWebhookOptions,
@@ -102,12 +126,15 @@ export function verifyAndDecodeWixWebhook(
     throw new Error("Wix webhook event is missing eventType or instanceId");
   }
 
+  const eventData = parseMaybeJson(event.data);
+  const stableProviderEventId = providerEventId(eventData);
+
   return {
     provider: "wix",
-    eventId: createHash("sha256").update(trimmedToken).digest("hex"),
+    eventId: stableProviderEventId ?? createHash("sha256").update(trimmedToken).digest("hex"),
     eventType,
     instanceId,
-    data: parseMaybeJson(event.data),
+    data: eventData,
     identity: parseMaybeJson(event.identity),
     receivedAt: new Date(nowSeconds * 1000).toISOString(),
   };
