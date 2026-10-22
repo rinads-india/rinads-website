@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createServiceRoleClient } from "@rinads/database";
+import {
+  createServiceRoleClient,
+  type ShipmentRow,
+} from "@rinads/database";
 import {
   normalizeShiprocketWebhook,
   shiprocketWebhookEventKey,
@@ -22,8 +25,8 @@ function persistenceConfigured(): boolean {
 function shipmentUpdateFor(event: {
   type: string;
   occurredAt: string;
-}): Record<string, unknown> {
-  const update: Record<string, unknown> = { status: event.type };
+}): Partial<ShipmentRow> {
+  const update: Partial<ShipmentRow> = { status: event.type };
   if (event.type === "delivered") update.delivered_at = event.occurredAt;
   return update;
 }
