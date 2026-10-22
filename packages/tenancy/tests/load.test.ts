@@ -21,7 +21,11 @@ function queryResult(rows: Record<string, unknown>[], singleRow?: Record<string,
   return result;
 }
 
-function tenancyClient(input?: { rinpoOverride?: boolean }): TenancySupabaseClient {
+function tenancyClient(input?: {
+  rinpoOverride?: boolean;
+  subscriptionStatus?: "active" | "trialing" | "past_due" | "cancelled";
+}): TenancySupabaseClient {
+  const subscriptionStatus = input?.subscriptionStatus ?? "active";
   return {
     auth: {
       getUser: async () => ({
@@ -48,7 +52,8 @@ function tenancyClient(input?: { rinpoOverride?: boolean }): TenancySupabaseClie
           }
           if (table === "role_permissions") return queryResult([]);
           if (table === "organization_subscriptions") {
-            return queryResult([{ plan_key: "platform" }], { plan_key: "platform" });
+            const row = { plan_key: "platform", status: subscriptionStatus };
+            return queryResult([row], row);
           }
           if (table === "organization_settings") {
             return queryResult([{ vertical_key: "salon-os" }], { vertical_key: "salon-os" });
@@ -109,11 +114,17 @@ describe("tenancy load helpers", () => {
     assert.equal(activeOrgCookieOptions("org_local").domain, undefined);
   });
 
-  it("maps plan to module flags", () => {
-    const flags = planFeatureFlags({ planKey: "starter" });
-    assert.equal(flags["erp.procurement"], false);
-    assert.equal(flags["erp.inventory"], true);
-    assert.equal(flags["salon.whatsapp.send_enabled"], false);
+  it("maps known plans to module flags and fails closed without a plan", () => {
+    const starter = planFeatureFlags({ planKey: "starter" });
+    assert.equal(starter["erp.procurement"], false);
+    assert.equal(starter["erp.inventory"], true);
+    assert.equal(starter["salon.whatsapp.send_enabled"], false);
+
+    const noPlan = planFeatureFlags({});
+    assert.equal(noPlan["commerce.enabled"], false);
+    assert.equal(noPlan["erp.inventory"], false);
+    assert.equal(noPlan["erp.fulfilment"], false);
+    assert.equal(noPlan["rinpo.ops"], false);
   });
 
   it("never returns invited or removed memberships as selectable tenancy contexts", async () => {
@@ -153,7 +164,7 @@ describe("tenancy load helpers", () => {
     assert.deepEqual(memberships.map((membership) => membership.organizationId), ["org_active"]);
   });
 
-  it("keeps platform plan defaults when no explicit feature override exists", async () => {
+  it("keeps platform plan defaults when the subscription is active", async () => {
     const ctx = await resolveTenancyFromSupabase(tenancyClient());
     assert.ok(ctx);
     assert.equal(ctx?.planKey, "platform");
@@ -162,7 +173,18 @@ describe("tenancy load helpers", () => {
     assert.equal(ctx?.featureFlags["rinpo.ops"], true);
   });
 
-  it("lets an explicit organization feature override win over the plan default", async () => {
+  it("removes paid plan entitlements when the subscription is not active", async () => {
+    const ctx = await resolveTenancyFromSupabase(
+      tenancyClient({ subscriptionStatus: "past_due" }),
+    );
+    assert.ok(ctx);
+    assert.equal(ctx?.planKey, undefined);
+    assert.equal(ctx?.featureFlags["commerce.enabled"], false);
+    assert.equal(ctx?.featureFlags["erp.fulfilment"], false);
+    assert.equal(ctx?.featureFlags["rinpo.ops"], false);
+  });
+
+  it("lets an explicit organization feature override win over an active plan default", async () => {
     const ctx = await resolveTenancyFromSupabase(tenancyClient({ rinpoOverride: false }));
     assert.ok(ctx);
     assert.equal(ctx?.featureFlags["rinpo.ops"], false);

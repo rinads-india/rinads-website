@@ -1,6 +1,46 @@
 import { NextResponse } from "next/server";
-import { processRazorpayWebhook, getRazorpayConfigFromEnv } from "@rinads/billing";
+import {
+  extractRazorpaySubscriptionEntity,
+  getRazorpayConfigFromEnv,
+  processRazorpayWebhook,
+} from "@rinads/billing";
 import { createPlatformServiceClient } from "@/lib/supabase/server";
+
+const ALLOWED_PLAN_KEYS = new Set(["starter", "growth", "platform"]);
+
+type ServiceQueryClient = {
+  from: (table: string) => {
+    select: (cols: string) => {
+      eq: (
+        col: string,
+        val: string,
+      ) => Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+
+async function lookupExistingSubscription(
+  service: ServiceQueryClient,
+  subscriptionId: string,
+): Promise<Record<string, unknown> | null> {
+  const { data } = await service
+    .from("billing_subscriptions")
+    .select("organization_id, plan_key")
+    .eq("provider_subscription_id", subscriptionId);
+  return data?.[0] ?? null;
+}
+
+async function validateOrganizationNote(
+  service: ServiceQueryClient,
+  organizationId: string | undefined,
+): Promise<string | null> {
+  if (!organizationId?.trim()) return null;
+  const { data } = await service
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId.trim());
+  return data?.[0]?.id ? String(data[0].id) : null;
+}
 
 export async function POST(request: Request) {
   const config = getRazorpayConfigFromEnv();
@@ -10,30 +50,35 @@ export async function POST(request: Request) {
 
   const rawBody = await request.text();
   const signature = request.headers.get("x-razorpay-signature") ?? "";
+  const eventId = request.headers.get("x-razorpay-event-id") ?? undefined;
   const service = createPlatformServiceClient();
+  const queryService = service as unknown as ServiceQueryClient;
 
   const result = await processRazorpayWebhook(service as never, {
     rawBody,
     signature,
+    eventId,
     webhookSecret: config.webhookSecret,
     resolveOrganizationId: async (payload) => {
-      const subId = (payload.payload as Record<string, unknown>)?.subscription as { id?: string } | undefined;
-      if (!subId?.id) return null;
-      const { data } = await (
-        service as unknown as {
-          from: (table: string) => {
-            select: (cols: string) => {
-              eq: (col: string, val: string) => Promise<{ data: Record<string, unknown>[] | null; error: null }>;
-            };
-          };
-        }
-      )
-        .from("billing_subscriptions")
-        .select("organization_id")
-        .eq("provider_subscription_id", subId.id);
-      return data?.[0]?.organization_id ? String(data[0].organization_id) : null;
+      const subscription = extractRazorpaySubscriptionEntity(payload);
+      const notedOrganization = subscription?.notes?.organization_id;
+      const validatedNote = await validateOrganizationNote(queryService, notedOrganization);
+      if (validatedNote) return validatedNote;
+
+      if (!subscription?.id) return null;
+      const existing = await lookupExistingSubscription(queryService, subscription.id);
+      return existing?.organization_id ? String(existing.organization_id) : null;
     },
-    resolvePlanKey: async () => "growth",
+    resolvePlanKey: async (payload) => {
+      const subscription = extractRazorpaySubscriptionEntity(payload);
+      const notedPlan = subscription?.notes?.plan_key;
+      if (notedPlan && ALLOWED_PLAN_KEYS.has(notedPlan)) return notedPlan;
+
+      if (!subscription?.id) return null;
+      const existing = await lookupExistingSubscription(queryService, subscription.id);
+      const existingPlan = existing?.plan_key ? String(existing.plan_key) : null;
+      return existingPlan && ALLOWED_PLAN_KEYS.has(existingPlan) ? existingPlan : null;
+    },
   });
 
   if (!result.ok) {
