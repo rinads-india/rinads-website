@@ -128,15 +128,14 @@ export async function executeRinadsCatalogRead(input: {
     .from("products")
     .select("id,name,slug,description,status,category_slug,tags,rating_avg,rating_count")
     .eq("organization_id", input.principal.organizationId)
-    .eq("status", "published")
-    .limit(parsed.limit);
+    .eq("status", "published");
 
   if (parsed.query) {
     const escaped = parsed.query.replace(/[\\%_]/g, (character) => `\\${character}`);
     productsQuery = productsQuery.ilike("name", `%${escaped}%`);
   }
 
-  const { data: productRows, error: productError } = await productsQuery;
+  const { data: productRows, error: productError } = await productsQuery.limit(parsed.limit);
   if (productError) {
     return {
       ok: false,
