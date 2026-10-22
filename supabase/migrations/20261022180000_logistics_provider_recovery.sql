@@ -10,21 +10,18 @@ alter table public.shipments
   add column if not exists updated_at timestamptz not null default now();
 
 -- A deterministic provider reference is the RINADS idempotency boundary for one
--- organization + carrier. It prevents a retry from representing the same package
--- as a second provider order.
+-- organization + carrier. PostgreSQL UNIQUE permits multiple NULL values, while
+-- the non-partial index is usable as a PostgREST/Supabase upsert conflict target.
 create unique index if not exists shipments_org_carrier_provider_reference_uq
-  on public.shipments (organization_id, carrier, provider_reference)
-  where provider_reference is not null;
+  on public.shipments (organization_id, carrier, provider_reference);
 
 -- Provider shipment IDs and AWBs must identify at most one canonical shipment
--- for a given carrier. Partial unique indexes preserve legacy rows with nulls.
+-- for a given carrier. NULL legacy rows remain permitted by PostgreSQL UNIQUE.
 create unique index if not exists shipments_carrier_provider_shipment_uq
-  on public.shipments (carrier, provider_shipment_id)
-  where provider_shipment_id is not null;
+  on public.shipments (carrier, provider_shipment_id);
 
 create unique index if not exists shipments_carrier_awb_uq
-  on public.shipments (carrier, awb)
-  where awb is not null;
+  on public.shipments (carrier, awb);
 
 comment on column public.shipments.provider_order_id is
   'Carrier/aggregator order identifier returned after execution; never a credential.';
