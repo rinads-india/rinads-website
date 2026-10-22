@@ -12,3 +12,6 @@ export * from "./ambady-migrate";
 export * from "./marketing/index";
 export * from "./capability-registry";
 export * from "./mcp-gateway";
+export * from "./ri-labs";
+export * from "./first-value";
+export * from "./commercial-catalog";
