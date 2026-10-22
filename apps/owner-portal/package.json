@@ -11,17 +11,18 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@rinads/auth": "workspace:*",
+    "@rinads/billing": "workspace:*",
     "@rinads/commerce": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
+    "@rinads/database": "workspace:*",
+    "@rinads/intelligence": "workspace:*",
     "@rinads/operations": "workspace:*",
     "@rinads/operations-server": "workspace:*",
-    "@rinads/intelligence": "workspace:*",
-    "@rinads/auth": "workspace:*",
-    "@rinads/database": "workspace:*",
-    "@rinads/tenancy": "workspace:*",
-    "@supabase/ssr": "^0.6.1",
     "@rinads/permissions": "workspace:*",
+    "@rinads/tenancy": "workspace:*",
     "@rinads/ui": "workspace:*",
+    "@supabase/ssr": "^0.6.1",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
