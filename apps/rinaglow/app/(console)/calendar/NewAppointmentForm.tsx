@@ -17,21 +17,26 @@ export function NewAppointmentForm({
   services,
   staff,
   defaultStartsAtLocal,
+  defaultBranchId,
 }: {
   branches: SalonBranch[];
   services: SalonService[];
   staff: SalonStaff[];
   defaultStartsAtLocal?: string;
+  defaultBranchId?: string;
 }) {
   const [state, action, pending] = useActionState(createFrontDeskBookingAction, INITIAL_STATE);
-  const [branchId, setBranchId] = useState(branches[0]?.id ?? "");
+  const initialBranchId = branches.some((branch) => branch.id === defaultBranchId)
+    ? defaultBranchId!
+    : branches[0]?.id ?? "";
+  const [branchId, setBranchId] = useState(initialBranchId);
   const idempotencyInput = useRef<HTMLInputElement | null>(null);
   const branch = branches.find((item) => item.id === branchId);
   const availableStaff = staff.filter((member) => member.branchId === branchId);
 
   return (
     <details className="rounded-xl border border-rinads-primary/20 bg-surface p-4">
-      <summary className="cursor-pointer text-sm font-semibold text-rinads-primary">+ New appointment</summary>
+      <summary className="cursor-pointer text-sm font-semibold text-rinads-primary">+ New appointment / walk-in</summary>
       <form action={action} className="mt-4 grid gap-3 sm:grid-cols-2">
         <input
           ref={(node) => {
