@@ -75,10 +75,9 @@ const PROVIDERS: ProviderDefinition[] = [
     capabilities: ["cod", "reverse", "scheduled"],
     requiredEnv: ["RINADS_SHIPROCKET_EMAIL", "RINADS_SHIPROCKET_PASSWORD"],
     credentialContractVerified: true,
-    // The API client is implemented, but the canonical CourierAdapter cannot be
-    // marked complete until shipment intent carries the address/items Shiprocket
-    // requires for order creation.
-    adapterImplemented: false,
+    // Adapter code exists, but live state remains separately gated by credentials,
+    // controlled-shipment verification, webhook/idempotency acceptance and LIVE=1.
+    adapterImplemented: true,
     liveFlag: "RINADS_SHIPROCKET_LIVE",
   },
   {

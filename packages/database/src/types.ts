@@ -157,6 +157,32 @@ export type SiteLead = {
   created_at: string;
 };
 
+/** Existing Operations ERP shipment table (20260815100001_operations_erp.sql). */
+export type ShipmentRow = {
+  id: string;
+  organization_id: string;
+  order_id: string;
+  package_id: string;
+  carrier: string;
+  service: string | null;
+  awb: string | null;
+  tracking_url: string | null;
+  status: string;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+};
+
+/** Existing Operations ERP delivery event table (20260815100001_operations_erp.sql). */
+export type DeliveryEventRow = {
+  id: string;
+  shipment_id: string;
+  event_type: string;
+  label: string;
+  occurred_at: string;
+  raw_payload: Json | null;
+};
+
 /** Minimal Database typing for CORE + platform tables (expand via supabase gen types). */
 export type Database = {
   public: {
@@ -230,6 +256,21 @@ export type Database = {
         Row: SiteLead;
         Insert: Omit<SiteLead, "id" | "created_at"> & { id?: string; created_at?: string };
         Update: never;
+        Relationships: [];
+      };
+      shipments: {
+        Row: ShipmentRow;
+        Insert: Omit<ShipmentRow, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<ShipmentRow>;
+        Relationships: [];
+      };
+      delivery_events: {
+        Row: DeliveryEventRow;
+        Insert: Omit<DeliveryEventRow, "id" | "occurred_at"> & {
+          id?: string;
+          occurred_at?: string;
+        };
+        Update: Partial<DeliveryEventRow>;
         Relationships: [];
       };
     };

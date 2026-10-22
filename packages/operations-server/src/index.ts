@@ -100,12 +100,26 @@ const returns = new ReturnService(opsRepo, ledger);
 const refunds = new RefundService(opsRepo);
 const tasks = new TaskService(opsRepo);
 const crm = new CrmOpsService();
-const workQueue = new WorkQueueService(opsRepo, fulfilment, returns, purchaseOrders, lowStock, shipments);
+const workQueue = new WorkQueueService(
+  opsRepo,
+  fulfilment,
+  returns,
+  purchaseOrders,
+  lowStock,
+  shipments
+);
 const pricing = new PricingService(opsRepo);
 const expenses = new ExpenseService(opsRepo);
 const documents = new DocumentService(opsRepo);
 const search = new SearchService(opsRepo, suppliers, purchaseOrders);
-const kpi = new KpiService(opsRepo, ledger, lowStock, fulfilment, purchaseOrders, refunds);
+const kpi = new KpiService(
+  opsRepo,
+  ledger,
+  lowStock,
+  fulfilment,
+  purchaseOrders,
+  refunds
+);
 const audit = new AuditService(opsRepo);
 const barcode = new BarcodeService();
 
@@ -168,10 +182,13 @@ export const operations = {
   alertEngine,
   jobRunner,
   runtime: runtimeService,
-  refreshStockProjections: () => inventoryPort.refreshProjections?.({ organizationId: AMBADY_ORG_ID }),
+  refreshStockProjections: () =>
+    inventoryPort.refreshProjections?.({ organizationId: AMBADY_ORG_ID }),
 };
 
-export function opsContext(overrides: Partial<OperationsContext> = {}): OperationsContext {
+export function opsContext(
+  overrides: Partial<OperationsContext> = {}
+): OperationsContext {
   return {
     organizationId: AMBADY_ORG_ID,
     userId: "user_owner_001",
@@ -181,7 +198,9 @@ export function opsContext(overrides: Partial<OperationsContext> = {}): Operatio
   };
 }
 
-export function demoContext(overrides: Partial<CommerceContext> = {}): CommerceContext {
+export function demoContext(
+  overrides: Partial<CommerceContext> = {}
+): CommerceContext {
   return {
     organizationId: AMBADY_ORG_ID,
     customerId: DEMO_CUSTOMER_ID,
@@ -214,8 +233,15 @@ export {
   type RuntimeSupabaseClient,
 } from "./runtime-supabase";
 export { createRuntimePersistenceHooks } from "./runtime-persistence";
-export { runSupabaseRuntimeWorker, type RunSupabaseRuntimeWorkerResult } from "./runtime-worker";
-export { wireRuntime, handleOrderPaidRuntime, type WireRuntimeOptions } from "./runtime-wiring";
+export {
+  runSupabaseRuntimeWorker,
+  type RunSupabaseRuntimeWorkerResult,
+} from "./runtime-worker";
+export {
+  wireRuntime,
+  handleOrderPaidRuntime,
+  type WireRuntimeOptions,
+} from "./runtime-wiring";
 export {
   createDemoRepositoryBundle,
   createOrgScopedRepositoryBundle,
@@ -269,3 +295,24 @@ export {
   type ShiprocketTrackingEvent,
   type ShiprocketTrackingResult,
 } from "./carriers/shiprocket";
+export {
+  ShiprocketExecutionClient,
+  createShiprocketExecutionClientFromProviderConfig,
+  type ShiprocketAddress,
+  type ShiprocketCreateOrderInput,
+  type ShiprocketCreateOrderResult,
+  type ShiprocketOrderItem,
+} from "./carriers/shiprocket-execution-client";
+export {
+  ShiprocketCourierAdapter,
+  createShiprocketProviderDefinition,
+  createShiprocketProviderFromConfig,
+  type ShiprocketAdapterOptions,
+} from "./carriers/shiprocket-adapter";
+export {
+  normalizeShiprocketTrackingResponse,
+  normalizeShiprocketWebhook,
+  shiprocketWebhookEventKey,
+  verifyShiprocketWebhookKey,
+  type ShiprocketNormalizedWebhook,
+} from "./carriers/shiprocket-webhook";
