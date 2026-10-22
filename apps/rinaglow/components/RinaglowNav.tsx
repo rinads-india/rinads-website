@@ -9,7 +9,8 @@ import { createRinaglowBrowserClient } from "@/lib/supabase/browser";
 import { BranchSwitcher, branchHref, type BranchOption } from "./BranchSwitcher";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Today" },
+  { href: "/front-desk", label: "Front Desk" },
   { href: "/calendar", label: "Calendar" },
   { href: "/pos", label: "POS" },
   { href: "/inventory", label: "Inventory" },
@@ -23,7 +24,7 @@ const links = [
   { href: "/settings", label: "Settings" },
 ] as const;
 
-const mobilePrimary = ["/dashboard", "/calendar", "/pos", "/clients"] as const;
+const mobilePrimary = ["/dashboard", "/front-desk", "/pos", "/clients"] as const;
 const mobileSecondary = links.filter((link) => !mobilePrimary.includes(link.href as (typeof mobilePrimary)[number]));
 
 function isActivePath(pathname: string, href: string) {
@@ -39,6 +40,15 @@ function NavGlyph({ href }: { href: string }) {
         <rect x="14" y="3" width="7" height="7" rx="2" />
         <rect x="3" y="14" width="7" height="7" rx="2" />
         <rect x="14" y="14" width="7" height="7" rx="2" />
+      </svg>
+    );
+  }
+  if (href === "/front-desk") {
+    return (
+      <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M4 20v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7" />
+        <path d="M2 20h20M7 11V8a5 5 0 0 1 10 0v3" />
+        <path d="M9 8h6" />
       </svg>
     );
   }
