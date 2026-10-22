@@ -1,5 +1,6 @@
 export type LogisticsProviderState =
   | "not_configured"
+  | "credential_contract_pending"
   | "credentials_detected"
   | "verification_pending"
   | "live";
@@ -10,6 +11,7 @@ export type LogisticsProviderReadiness = {
   role: string;
   capabilities: string[];
   requiredEnv: string[];
+  credentialContractVerified: boolean;
   credentialsDetected: boolean;
   adapterImplemented: boolean;
   liveVerified: boolean;
@@ -29,7 +31,10 @@ const PROVIDERS: ProviderDefinition[] = [
     label: "DTDC",
     role: "National parcel / documents",
     capabilities: ["cod", "reverse", "scheduled"],
+    // Provisional binding only. The exact auth fields must be confirmed directly
+    // against the DTDC account/API product before this contract is marked verified.
     requiredEnv: ["RINADS_DTDC_API_TOKEN"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_DTDC_LIVE",
   },
@@ -39,6 +44,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "E-commerce / national parcel",
     capabilities: ["cod", "reverse", "scheduled"],
     requiredEnv: ["RINADS_DELHIVERY_API_TOKEN"],
+    credentialContractVerified: true,
     adapterImplemented: false,
     liveFlag: "RINADS_DELHIVERY_LIVE",
   },
@@ -48,6 +54,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "Local / on-demand movement",
     capabilities: ["same_day", "scheduled"],
     requiredEnv: ["RINADS_PORTER_API_KEY", "RINADS_PORTER_API_SECRET"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_PORTER_LIVE",
   },
@@ -57,6 +64,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "Network logistics discovery / orchestration",
     capabilities: ["same_day", "scheduled", "reverse"],
     requiredEnv: ["RINADS_ONDC_SUBSCRIBER_ID", "RINADS_ONDC_SIGNING_PRIVATE_KEY"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_ONDC_DELIVERY_LIVE",
   },
@@ -66,6 +74,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "Aggregator fallback",
     capabilities: ["cod", "reverse", "scheduled"],
     requiredEnv: ["RINADS_SHIPROCKET_API_TOKEN"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_SHIPROCKET_LIVE",
   },
@@ -75,6 +84,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "High-value logistics",
     capabilities: ["high_value", "reverse", "scheduled"],
     requiredEnv: ["RINADS_SEQUEL_API_TOKEN"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_SEQUEL_LIVE",
   },
@@ -84,6 +94,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "High-value logistics",
     capabilities: ["high_value", "reverse", "scheduled"],
     requiredEnv: ["RINADS_BVC_API_TOKEN"],
+    credentialContractVerified: false,
     adapterImplemented: false,
     liveFlag: "RINADS_BVC_LIVE",
   },
@@ -93,6 +104,7 @@ const PROVIDERS: ProviderDefinition[] = [
     role: "RINADS / partner driver network",
     capabilities: ["same_day", "scheduled", "reverse"],
     requiredEnv: [],
+    credentialContractVerified: true,
     adapterImplemented: false,
     liveFlag: "RINADS_LOCAL_FLEET_LIVE",
   },
@@ -105,11 +117,18 @@ function envPresent(key: string): boolean {
 export function getLogisticsProviderReadiness(): LogisticsProviderReadiness[] {
   return PROVIDERS.map((provider) => {
     const credentialsDetected =
-      provider.requiredEnv.length > 0 && provider.requiredEnv.every(envPresent);
+      provider.credentialContractVerified &&
+      provider.requiredEnv.length > 0 &&
+      provider.requiredEnv.every(envPresent);
     const liveVerified =
-      provider.adapterImplemented && credentialsDetected && process.env[provider.liveFlag] === "1";
+      provider.credentialContractVerified &&
+      provider.adapterImplemented &&
+      credentialsDetected &&
+      process.env[provider.liveFlag] === "1";
 
-    let state: LogisticsProviderState = "not_configured";
+    let state: LogisticsProviderState = provider.credentialContractVerified
+      ? "not_configured"
+      : "credential_contract_pending";
     if (credentialsDetected) state = "credentials_detected";
     if (provider.adapterImplemented && credentialsDetected) state = "verification_pending";
     if (liveVerified) state = "live";
@@ -120,6 +139,7 @@ export function getLogisticsProviderReadiness(): LogisticsProviderReadiness[] {
       role: provider.role,
       capabilities: provider.capabilities,
       requiredEnv: provider.requiredEnv,
+      credentialContractVerified: provider.credentialContractVerified,
       credentialsDetected,
       adapterImplemented: provider.adapterImplemented,
       liveVerified,
