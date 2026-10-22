@@ -1,4 +1,4 @@
-export type RinpoLlmProvider = "openai" | "xai" | "custom";
+export type RinpoLlmProvider = "openai" | "anthropic" | "google" | "xai" | "custom";
 
 export type RinpoModelRouteConfig = {
   provider?: RinpoLlmProvider;
@@ -28,7 +28,7 @@ function readEnv(key: string): string | undefined {
 }
 
 function normalizeProvider(value: string | undefined): RinpoLlmProvider {
-  if (value === "xai" || value === "custom") return value;
+  if (value === "anthropic" || value === "google" || value === "xai" || value === "custom") return value;
   return "openai";
 }
 
@@ -37,16 +37,16 @@ function trimBaseUrl(value: string | undefined): string {
 }
 
 /**
- * Resolve the OpenAI-compatible inference route used by RINPO NLU.
+ * Resolve the server-side inference route used by RINPO.
  *
  * Backwards compatibility is deliberate: if no provider is explicitly
  * selected, only the legacy RINADS_RINPO_LLM_API_KEY (or an explicit config
- * key) activates LLM NLU. This prevents an unrelated OPENAI_API_KEY from
- * silently changing the production-safe deterministic default.
+ * key) activates LLM NLU. This prevents unrelated vendor keys from silently
+ * changing the production-safe deterministic default.
  *
  * Provider-specific environment variables are used once a provider is
- * explicitly selected. This resolver is server-side only and never changes
- * RINPO's tenancy, permission, approval, or audit boundaries.
+ * explicitly selected. This resolver never changes RINPO tenancy,
+ * permissions, approvals, runtime policy or audit boundaries.
  */
 export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): RinpoResolvedModelRoute {
   const envProviderSelector = readEnv("RINADS_RINPO_LLM_PROVIDER");
@@ -62,6 +62,58 @@ export function resolveRinpoModelRoute(config: RinpoModelRouteConfig = {}): Rinp
         : config.provider === "openai"
       : true);
   const legacyApiKey = legacyFallbackApplies ? readEnv("RINADS_RINPO_LLM_API_KEY") : undefined;
+
+  if (provider === "anthropic") {
+    const apiKey =
+      config.apiKey ?? readEnv("RINADS_ANTHROPIC_API_KEY") ?? readEnv("ANTHROPIC_API_KEY") ?? legacyApiKey;
+    const baseUrl = trimBaseUrl(
+      config.baseUrl ??
+        readEnv("RINADS_ANTHROPIC_BASE_URL") ??
+        readEnv("RINADS_RINPO_LLM_BASE_URL") ??
+        "https://api.anthropic.com/v1"
+    );
+    const model =
+      config.model ??
+      readEnv("RINADS_ANTHROPIC_MODEL") ??
+      readEnv("RINADS_RINPO_LLM_MODEL") ??
+      "claude-sonnet-5-5";
+
+    return {
+      provider,
+      apiKey,
+      baseUrl,
+      model,
+      configured: Boolean(apiKey && baseUrl && model),
+    };
+  }
+
+  if (provider === "google") {
+    const apiKey =
+      config.apiKey ??
+      readEnv("RINADS_GOOGLE_AI_API_KEY") ??
+      readEnv("GEMINI_API_KEY") ??
+      readEnv("GOOGLE_API_KEY") ??
+      legacyApiKey;
+    const baseUrl = trimBaseUrl(
+      config.baseUrl ??
+        readEnv("RINADS_GOOGLE_AI_BASE_URL") ??
+        readEnv("RINADS_RINPO_LLM_BASE_URL") ??
+        "https://generativelanguage.googleapis.com/v1beta"
+    );
+    const model =
+      config.model ??
+      readEnv("RINADS_GOOGLE_AI_MODEL") ??
+      readEnv("RINADS_RINPO_LLM_MODEL") ??
+      "gemini-3.8-flash";
+
+    return {
+      provider,
+      apiKey,
+      baseUrl,
+      model,
+      configured: Boolean(apiKey && baseUrl && model),
+    };
+  }
 
   if (provider === "xai") {
     const apiKey = config.apiKey ?? readEnv("RINADS_XAI_API_KEY") ?? readEnv("XAI_API_KEY") ?? legacyApiKey;

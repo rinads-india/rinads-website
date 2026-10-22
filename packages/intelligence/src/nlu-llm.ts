@@ -1,6 +1,7 @@
 import type { RinpoNluAdapter, RinpoNluContext, RinpoParsedIntent } from "./nlu-types";
 import type { RinpoToolInput } from "./types";
 import { deterministicRinpoNluAdapter } from "./nlu-deterministic";
+import { RinpoModelClient } from "./model-client";
 import {
   resolveRinpoModelRoute,
   type RinpoLlmProvider,
@@ -19,89 +20,56 @@ export type LlmRinpoNluConfig = {
 
 export type RinpoLlmRouteInfo = Omit<RinpoResolvedModelRoute, "apiKey">;
 
+const RINPO_NLU_SYSTEM_PROMPT =
+  "You are RINPO NLU for R GLOW. Reply with JSON only: " +
+  '{"kind":"tool_calls","summary":"...","calls":[{"tool":"...","args":{...}}]} ' +
+  'or {"kind":"clarify","question":"..."}. Never invent money-moving actions without explicit user intent.';
+
 /**
- * Optional OpenAI-compatible NLU adapter.
+ * Optional provider-neutral NLU adapter.
  *
- * Provider resolution lives in `provider-router.ts`. Existing
- * `RINADS_RINPO_LLM_*` configuration remains supported; provider-specific
- * variables can select xAI/Grok or OpenAI without changing RINPO's tool,
- * tenancy, permission, approval, or audit boundaries.
+ * Inference transport is delegated to `RinpoModelClient`, while RINPO's
+ * tenancy, permission, approval, tool and audit boundaries remain unchanged.
+ * Unsupported/unavailable model output always falls back to the deterministic
+ * parser rather than bypassing governance.
  */
 export class LlmRinpoNluAdapter implements RinpoNluAdapter {
-  private readonly apiKey: string | undefined;
-  private readonly baseUrl: string;
-  private readonly model: string;
-  private readonly provider: RinpoLlmProvider;
+  private readonly route: RinpoResolvedModelRoute;
   private readonly fallback: RinpoNluAdapter;
-  private readonly fetchImpl: typeof fetch;
+  private readonly client: RinpoModelClient;
 
   constructor(config: LlmRinpoNluConfig = {}) {
-    const route = resolveRinpoModelRoute(config);
-    this.apiKey = route.apiKey;
-    this.baseUrl = route.baseUrl;
-    this.model = route.model;
-    this.provider = route.provider;
+    this.route = resolveRinpoModelRoute(config);
     this.fallback = config.fallback ?? deterministicRinpoNluAdapter;
-    this.fetchImpl = config.fetchImpl ?? fetch;
+    this.client = new RinpoModelClient(this.route, config.fetchImpl ?? fetch);
   }
 
   /** Safe runtime metadata for observability/admin UI. Never returns the key. */
   getRouteInfo(): RinpoLlmRouteInfo {
     return {
-      provider: this.provider,
-      baseUrl: this.baseUrl,
-      model: this.model,
-      configured: Boolean(this.apiKey && this.baseUrl && this.model),
+      provider: this.route.provider,
+      baseUrl: this.route.baseUrl,
+      model: this.route.model,
+      configured: this.route.configured,
     };
   }
 
   async parse(text: string, context: RinpoNluContext): Promise<RinpoParsedIntent> {
-    if (!this.apiKey || !this.baseUrl || !this.model) {
+    if (!this.route.configured) {
       return {
         kind: "clarify",
         question:
-          `RINPO ${this.provider} NLU is not configured. Use deterministic command patterns or configure the server-side provider route.`,
+          `RINPO ${this.route.provider} NLU is not configured. Use deterministic command patterns or configure the server-side provider route.`,
       };
     }
 
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          temperature: 0,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are RINPO NLU for R GLOW. Reply with JSON only: " +
-                '{"kind":"tool_calls","summary":"...","calls":[{"tool":"...","args":{...}}]} ' +
-                'or {"kind":"clarify","question":"..."}. Never invent money-moving actions without explicit user intent.',
-            },
-            {
-              role: "user",
-              content: JSON.stringify({ text, context }),
-            },
-          ],
-        }),
+      const content = await this.client.generateJsonText({
+        system: RINPO_NLU_SYSTEM_PROMPT,
+        user: { text, context },
+        maxOutputTokens: 1024,
       });
-
-      if (!response.ok) {
-        return this.fallback.parse(text, context);
-      }
-
-      const json = (await response.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-      };
-      const content = json.choices?.[0]?.message?.content;
-      if (!content) {
-        return this.fallback.parse(text, context);
-      }
+      if (!content) return this.fallback.parse(text, context);
 
       const parsed = JSON.parse(content) as {
         kind?: string;
@@ -132,5 +100,11 @@ export function createRinpoNluAdapter(config: LlmRinpoNluConfig = {}): RinpoNluA
   if (!route.configured) {
     return config.fallback ?? deterministicRinpoNluAdapter;
   }
-  return new LlmRinpoNluAdapter({ ...config, provider: route.provider, apiKey: route.apiKey, baseUrl: route.baseUrl, model: route.model });
+  return new LlmRinpoNluAdapter({
+    ...config,
+    provider: route.provider,
+    apiKey: route.apiKey,
+    baseUrl: route.baseUrl,
+    model: route.model,
+  });
 }

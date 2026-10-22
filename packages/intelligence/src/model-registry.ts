@@ -46,7 +46,7 @@ export type RinpoModelSelection =
       reason: string;
     };
 
-const PROVIDERS: RinpoLlmProvider[] = ["openai", "xai", "custom"];
+const PROVIDERS: RinpoLlmProvider[] = ["openai", "anthropic", "google", "xai", "custom"];
 
 function selectedProvider(): RinpoLlmProvider {
   return resolveRinpoModelRoute().provider;
@@ -70,6 +70,13 @@ function safeRoute(route: RinpoResolvedModelRoute): Omit<RinpoResolvedModelRoute
 
 function isAllowed(provider: RinpoLlmProvider, policy: RinpoRoutingPolicy): boolean {
   return !policy.allowedProviders || policy.allowedProviders.includes(provider);
+}
+
+function selectConfiguredProvider(
+  configured: RinpoResolvedModelRoute[],
+  provider: RinpoLlmProvider
+): RinpoResolvedModelRoute | undefined {
+  return configured.find((route) => route.provider === provider);
 }
 
 /**
@@ -97,7 +104,8 @@ export function listRinpoModelRegistry(): RinpoModelRegistryEntry[] {
  * Invariants:
  * - restricted data never leaves the deterministic/local path;
  * - research only prefers xAI when external research is explicitly allowed;
- * - provider allowlists are enforced before preferences;
+ * - coding prefers Anthropic when configured, vision prefers Google when configured;
+ * - provider allowlists are enforced before task preferences;
  * - an unavailable provider never becomes a hard dependency;
  * - no API key is returned to callers.
  */
@@ -130,7 +138,7 @@ export function selectRinpoModel(
   }
 
   if (policy.preferredProvider) {
-    const preferred = configured.find((route) => route.provider === policy.preferredProvider);
+    const preferred = selectConfiguredProvider(configured, policy.preferredProvider);
     if (preferred) {
       return {
         mode: "model",
@@ -143,7 +151,7 @@ export function selectRinpoModel(
   }
 
   if (task === "research" && policy.allowExternalResearch) {
-    const xai = configured.find((route) => route.provider === "xai");
+    const xai = selectConfiguredProvider(configured, "xai");
     if (xai) {
       return {
         mode: "model",
@@ -151,6 +159,32 @@ export function selectRinpoModel(
         sensitivity,
         route: safeRoute(xai),
         reason: "Research task may use the configured xAI route because external research is allowed.",
+      };
+    }
+  }
+
+  if (task === "code") {
+    const anthropic = selectConfiguredProvider(configured, "anthropic");
+    if (anthropic) {
+      return {
+        mode: "model",
+        task,
+        sensitivity,
+        route: safeRoute(anthropic),
+        reason: "Coding task prefers the configured Anthropic route under the current task policy.",
+      };
+    }
+  }
+
+  if (task === "vision" || task === "translation") {
+    const google = selectConfiguredProvider(configured, "google");
+    if (google) {
+      return {
+        mode: "model",
+        task,
+        sensitivity,
+        route: safeRoute(google),
+        reason: `${task === "vision" ? "Vision" : "Translation"} task prefers the configured Google route under the current task policy.`,
       };
     }
   }
