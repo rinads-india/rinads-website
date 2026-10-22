@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import {
   normalizeWixBusinessEvent,
   type WixInboundEvent,
 } from "../../../supabase/functions/_shared/wix-event-normalizer";
+import { parseSignedWixInstance } from "../lib/integrations/wix-instance";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const migration = readFileSync(
@@ -28,6 +30,12 @@ function wixEvent(eventType: string, data: unknown = {}): WixInboundEvent {
     data,
     receivedAt: "2026-10-22T00:00:00.000Z",
   };
+}
+
+function signedInstance(payload: Record<string, unknown>, secret: string): string {
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = createHmac("sha256", secret).update(encodedPayload).digest("base64url");
+  return `${signature}.${encodedPayload}`;
 }
 
 describe("Wix data plane", () => {
@@ -72,6 +80,16 @@ describe("Wix data plane", () => {
     assert.equal(extractWixProviderEntityId({ entityId: "a" }), "a");
     assert.equal(extractWixProviderEntityId({ entity: { _id: "b" } }), "b");
     assert.equal(extractWixProviderEntityId({ createdEvent: { entityId: "c" } }), "c");
+  });
+
+  it("accepts only Wix app instance data signed with the app secret", () => {
+    const secret = "test-app-secret";
+    const valid = signedInstance({ instanceId: "instance-1", permissions: "OWNER" }, secret);
+    assert.equal(parseSignedWixInstance(valid, secret)?.instanceId, "instance-1");
+
+    const tampered = `${valid.slice(0, -1)}x`;
+    assert.equal(parseSignedWixInstance(tampered, secret), null);
+    assert.equal(parseSignedWixInstance(valid, "wrong-secret"), null);
   });
 
   it("enforces idempotency, quarantine and tenant-admin visibility at the schema boundary", () => {
