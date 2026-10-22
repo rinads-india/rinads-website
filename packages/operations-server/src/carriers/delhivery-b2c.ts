@@ -193,7 +193,8 @@ export class DelhiveryB2cClient {
     );
 
     const root = asRecord(payload);
-    const codes = Array.isArray(root?.delivery_codes) ? root?.delivery_codes : [];
+    const deliveryCodes = root?.delivery_codes;
+    const codes = Array.isArray(deliveryCodes) ? deliveryCodes : [];
     const first = asRecord(codes[0]);
     const postal = asRecord(first?.postal_code);
     if (!postal) {
