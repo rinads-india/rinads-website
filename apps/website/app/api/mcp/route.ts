@@ -45,16 +45,17 @@ function executionContext(resolution: RinadsAgentPrincipalResolution): RinadsMcp
   return { principalStatus: resolution.status };
 }
 
-function isCatalogToolCall(payload: unknown): boolean {
-  const request = asRecord(payload);
-  if (request?.method !== "tools/call") return false;
-  const params = asRecord(request.params);
-  return params?.name === CATALOG_TOOL;
-}
-
 function requestId(payload: unknown): string | number | null {
   const id = asRecord(payload)?.id;
   return typeof id === "string" || typeof id === "number" || id === null ? id : null;
+}
+
+function isCatalogToolCall(payload: unknown): boolean {
+  const request = asRecord(payload);
+  if (request?.jsonrpc !== "2.0" || request.method !== "tools/call") return false;
+  if (typeof request.id !== "string" && typeof request.id !== "number") return false;
+  const params = asRecord(request.params);
+  return params?.name === CATALOG_TOOL;
 }
 
 function catalogArguments(payload: unknown): unknown {
