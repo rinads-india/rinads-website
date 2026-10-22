@@ -56,13 +56,25 @@ export async function authorizeRinadsAgentRead(input: {
     };
   }
 
-  const { data: flagRows, error: flagError } = await client
-    .from("feature_flag_overrides")
-    .select("enabled,user_id")
-    .eq("organization_id", input.principal.organizationId)
-    .eq("flag_key", input.entitlementFlag);
+  // The schema supports both organization-scoped overrides and global
+  // user-specific overrides (organization_id = null). Load both explicitly.
+  // Organization-scoped user rows are included in the first query and take
+  // precedence through isRinadsAgentReadEnabledForActor().
+  const [organizationOverrides, userOverrides] = await Promise.all([
+    client
+      .from("feature_flag_overrides")
+      .select("enabled,user_id")
+      .eq("organization_id", input.principal.organizationId)
+      .eq("flag_key", input.entitlementFlag),
+    client
+      .from("feature_flag_overrides")
+      .select("enabled,user_id")
+      .eq("user_id", input.principal.actorId)
+      .is("organization_id", null)
+      .eq("flag_key", input.entitlementFlag),
+  ]);
 
-  if (flagError) {
+  if (organizationOverrides.error || userOverrides.error) {
     return {
       ok: false,
       status: "unavailable",
@@ -70,7 +82,11 @@ export async function authorizeRinadsAgentRead(input: {
     };
   }
 
-  const normalizedRows = (flagRows ?? []).map((row) => row as Record<string, unknown>);
+  const normalizedRows = [
+    ...(organizationOverrides.data ?? []),
+    ...(userOverrides.data ?? []),
+  ].map((row) => row as Record<string, unknown>);
+
   if (!isRinadsAgentReadEnabledForActor(normalizedRows, input.principal.actorId)) {
     return {
       ok: false,
