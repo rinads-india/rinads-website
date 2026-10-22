@@ -257,7 +257,10 @@ export class LogisticsRuntimeService {
     correlationId: string,
     input: CourierQuoteInput,
     policy: LogisticsRoutingPolicyConfig,
-    event: Omit<LogisticsDecisionEvent, "organizationId" | "correlationId" | "orderId" | "packageId" | "policySnapshot" | "occurredAt">
+    event: Omit<
+      LogisticsDecisionEvent,
+      "organizationId" | "correlationId" | "orderId" | "packageId" | "policySnapshot" | "occurredAt"
+    >
   ): Promise<void> {
     await this.repository.appendDecisionEvent({
       organizationId: ctx.organizationId,
@@ -452,12 +455,10 @@ export class LogisticsRuntimeService {
     });
 
     try {
-      const shipment = await provider.adapter.createShipment({
-        orderId: input.orderId,
-        packageId: input.packageId,
-        weightGrams: input.weightGrams,
-        destinationPincode: input.destinationPincode,
-      });
+      // CourierQuoteInput is a strict superset of CourierShipmentInput. The
+      // sensitive execution payload is forwarded only after authorization and
+      // is never included in the decision/audit evidence above.
+      const shipment = await provider.adapter.createShipment(input);
 
       await this.append(ctx, decision.correlationId, input, policy, {
         stage: "act",

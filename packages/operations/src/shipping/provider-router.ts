@@ -1,4 +1,4 @@
-import type { CourierAdapter } from "./shipment-service";
+import type { CourierAdapter, CourierShipmentInput } from "./shipment-service";
 
 export const RINADS_COURIER_PROVIDER_KEYS = [
   "delhivery",
@@ -17,13 +17,9 @@ export type CourierCapability = "cod" | "reverse" | "same_day" | "scheduled" | "
 
 export type CourierParcelType = "document" | "parcel" | "commerce" | "bulk" | "high_value" | "other";
 
-export type CourierQuoteInput = {
+export type CourierQuoteInput = CourierShipmentInput & {
   organizationId: string;
-  orderId: string;
-  packageId: string;
-  weightGrams?: number;
   pickupPincode?: string;
-  destinationPincode?: string;
   dimensionsCm?: {
     length: number;
     width: number;
@@ -387,12 +383,11 @@ export class CourierProviderRouter {
     const route = await this.route(input, policy);
     if (!route.ok) throw new Error(route.message);
 
-    const shipment = await route.candidate.provider.adapter.createShipment({
-      orderId: input.orderId,
-      packageId: input.packageId,
-      weightGrams: input.weightGrams,
-      destinationPincode: input.destinationPincode,
-    });
+    // Routing fields are a strict superset of CourierShipmentInput. Passing the
+    // original object preserves the post-authorization execution payload while
+    // adapters remain free to ignore routing-only fields structurally.
+    const shipmentInput: CourierShipmentInput = input;
+    const shipment = await route.candidate.provider.adapter.createShipment(shipmentInput);
 
     return {
       providerKey: route.candidate.provider.key,

@@ -21,6 +21,10 @@ export {
   ShipmentService,
   DemoCourierAdapter,
   type CourierAdapter,
+  type CourierContactAddress,
+  type CourierShipmentExecution,
+  type CourierShipmentInput,
+  type CourierShipmentItem,
 } from "./shipping/shipment-service";
 export {
   CourierProviderRouter,

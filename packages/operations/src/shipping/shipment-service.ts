@@ -9,23 +9,84 @@ import type {
   ShipmentStatus,
 } from "../types";
 
+export type CourierContactAddress = {
+  name: string;
+  lastName?: string;
+  companyName?: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+  email: string;
+  phone: string;
+  alternatePhone?: string;
+};
+
+export type CourierShipmentItem = {
+  name: string;
+  sku: string;
+  units: number;
+  sellingPriceMinor: number;
+  discountMinor?: number;
+  taxMinor?: number;
+  hsn?: string;
+};
+
+/**
+ * Sensitive fulfilment data needed only after RI/policy authorization.
+ * Keep this payload out of provider scoring/audit evidence unless a field is
+ * explicitly required for routing (for example destination PIN, weight or COD).
+ */
+export type CourierShipmentExecution = {
+  orderDate: string;
+  pickupLocation?: string;
+  paymentMethod: "prepaid" | "cod";
+  billing: CourierContactAddress;
+  shipping?: CourierContactAddress;
+  items: CourierShipmentItem[];
+  subtotalMinor: number;
+  shippingChargesMinor?: number;
+  totalDiscountMinor?: number;
+  dimensionsCm?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+};
+
+export type CourierShipmentInput = {
+  orderId: string;
+  packageId: string;
+  weightGrams?: number;
+  destinationPincode?: string;
+  execution?: CourierShipmentExecution;
+};
+
 export type CourierAdapter = {
-  createShipment(input: {
-    orderId: string;
-    packageId: string;
-    weightGrams?: number;
-    destinationPincode?: string;
-  }): Promise<{ carrier: string; awb: string; trackingUrl: string; service?: string }>;
+  createShipment(input: CourierShipmentInput): Promise<{
+    carrier: string;
+    awb: string;
+    trackingUrl: string;
+    service?: string;
+    providerShipmentId?: string;
+    providerOrderId?: string;
+  }>;
   cancelShipment(awb: string): Promise<{ cancelled: boolean }>;
-  trackShipment(awb: string): Promise<{ events: { type: DeliveryEventType; label: string; occurredAt: string }[] }>;
+  trackShipment(awb: string): Promise<{
+    events: { type: DeliveryEventType; label: string; occurredAt: string }[];
+  }>;
   getLabel(awb: string): Promise<{ labelUrl?: string }>;
 };
 
 export class DemoCourierAdapter implements CourierAdapter {
-  async createShipment(input: {
-    orderId: string;
-    packageId: string;
-  }): Promise<{ carrier: string; awb: string; trackingUrl: string; service?: string }> {
+  async createShipment(input: CourierShipmentInput): Promise<{
+    carrier: string;
+    awb: string;
+    trackingUrl: string;
+    service?: string;
+  }> {
     const awb = `DEMO${Date.now()}`;
     return {
       carrier: "demo_courier",
@@ -39,7 +100,9 @@ export class DemoCourierAdapter implements CourierAdapter {
     return { cancelled: true };
   }
 
-  async trackShipment(awb: string): Promise<{ events: { type: DeliveryEventType; label: string; occurredAt: string }[] }> {
+  async trackShipment(awb: string): Promise<{
+    events: { type: DeliveryEventType; label: string; occurredAt: string }[];
+  }> {
     return {
       events: [
         { type: "label_created", label: "Label created", occurredAt: new Date().toISOString() },
@@ -61,7 +124,7 @@ export class ShipmentService {
 
   async createShipment(
     ctx: OperationsContext,
-    input: { orderId: string; packageId: string; weightGrams?: number; destinationPincode?: string }
+    input: CourierShipmentInput
   ): Promise<Result<Shipment>> {
     const store = this.repo.getStore();
     const pkg = store.packages.find(
