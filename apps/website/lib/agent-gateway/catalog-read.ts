@@ -80,7 +80,8 @@ export function isRinadsCatalogReadEnabledForActor(
  * - canonical `commerce.catalog.read` permission;
  * - explicit tenant/user feature-flag opt in;
  * - the caller's normal Supabase RLS context;
- * - explicit organization filters on every data query.
+ * - explicit organization filters on every data query;
+ * - successful append-only audit evidence before the result leaves RINADS.
  */
 export async function executeRinadsCatalogRead(input: {
   request: Request;
@@ -170,6 +171,33 @@ export async function executeRinadsCatalogRead(input: {
       };
     }
     variants = (variantRows ?? []).map((row) => row as Record<string, unknown>);
+  }
+
+  const { error: auditError } = await client.from("audit_logs").insert({
+    organization_id: input.principal.organizationId,
+    actor_type: "ai",
+    actor_id: input.principal.actorId,
+    approved_by: null,
+    action: "commerce.catalog.read",
+    entity: "commerce_catalog",
+    entity_id: null,
+    before: null,
+    after: {
+      query: parsed.query ?? null,
+      limit: parsed.limit,
+      result_count: products.length,
+    },
+    source: `agent-gateway:${input.principal.authMethod}`,
+    ip: null,
+    user_agent: input.request.headers.get("user-agent"),
+  });
+
+  if (auditError) {
+    return {
+      ok: false,
+      status: "unavailable",
+      reason: "Catalog read audit evidence could not be appended.",
+    };
   }
 
   return {
