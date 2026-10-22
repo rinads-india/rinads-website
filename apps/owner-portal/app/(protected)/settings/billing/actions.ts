@@ -1,6 +1,5 @@
 "use server";
 
-import { createRazorpaySubscription, getRazorpayCheckoutConfigFromEnv } from "@rinads/billing";
 import { redirect } from "next/navigation";
 import { createOwnerServerClient } from "@/lib/supabase/server";
 import { loadOwnerAccess } from "@/lib/tenancy";
@@ -8,6 +7,10 @@ import {
   getOwnerBillingPlanConfig,
   isOwnerBillingPlanKey,
 } from "@/lib/billing-plans";
+import {
+  createOwnerRazorpaySubscription,
+  getOwnerRazorpayConfigFromEnv,
+} from "@/lib/razorpay-subscriptions";
 
 const BILLING_ROLES = new Set(["owner", "founder", "admin"]);
 
@@ -37,16 +40,15 @@ export async function startRazorpaySubscriptionCheckout(formData: FormData): Pro
     billingError(configuredPlan.error);
   }
 
-  const razorpayConfig = getRazorpayCheckoutConfigFromEnv();
+  const razorpayConfig = getOwnerRazorpayConfigFromEnv();
   if (!razorpayConfig) {
     billingError("razorpay_not_configured");
   }
 
-  const result = await createRazorpaySubscription({
+  const result = await createOwnerRazorpaySubscription({
     config: razorpayConfig,
     planId: configuredPlan.planId,
     totalCount: configuredPlan.totalCount,
-    customerNotify: false,
     notes: {
       organization_id: access.tenancy.organizationId,
       plan_key: planKeyRaw,
@@ -54,11 +56,8 @@ export async function startRazorpaySubscriptionCheckout(formData: FormData): Pro
     },
   });
 
-  if ("error" in result) {
+  if (!result.ok) {
     billingError("provider_error");
-  }
-  if (!result.shortUrl) {
-    billingError("authorization_url_missing");
   }
 
   redirect(result.shortUrl);
