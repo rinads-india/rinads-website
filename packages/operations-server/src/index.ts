@@ -256,6 +256,7 @@ export {
   ShiprocketApiError,
   ShiprocketClient,
   createShiprocketClientFromProviderConfig,
+  normalizeShiprocketTrackingPayload,
   type ShiprocketAwbAssignment,
   type ShiprocketClientOptions,
   type ShiprocketCourierOption,
@@ -265,4 +266,6 @@ export {
   type ShiprocketPickupResult,
   type ShiprocketServiceabilityInput,
   type ShiprocketServiceabilityResult,
+  type ShiprocketTrackingEvent,
+  type ShiprocketTrackingResult,
 } from "./carriers/shiprocket";
