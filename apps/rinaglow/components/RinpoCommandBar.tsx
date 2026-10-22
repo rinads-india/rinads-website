@@ -62,7 +62,7 @@ function ApprovalRow({ actionId, canApprove }: { actionId: string; canApprove: b
 function ResultCard({ result, canApprove }: { result: ToolResult; canApprove: boolean }) {
   const pending = isPendingApproval(result.data);
   return (
-    <div className={`rounded-lg border p-2.5 text-xs ${result.ok ? "border-rinads-primary/20 bg-surface-muted" : "border-danger/30 bg-danger/5"}`}>
+    <div className={`rounded-xl border p-2.5 text-xs ${result.ok ? "border-rinads-primary/20 bg-surface-muted" : "border-danger/30 bg-danger/5"}`}>
       <p className="font-medium text-foreground">{result.tool}</p>
       <p className="mt-0.5 text-muted-foreground">{result.message}</p>
       {pending ? <ApprovalRow actionId={(result.data as { actionId: string }).actionId} canApprove={canApprove} /> : null}
@@ -103,8 +103,6 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
         const items = (summaryResult.data as { attentionItems?: AttentionItem[] }).attentionItems;
         if (items) setLastAttentionItems(items);
       }
-      // "Preview the audience" / "approve it" / "send it" resolve against
-      // whichever campaign was most recently drafted in this session.
       const draftResult = outcome.results.find(
         (r) => r.tool === "create_campaign_draft" || r.tool === "create_reactivation_draft"
       );
@@ -116,22 +114,45 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-4 pb-4">
-      <div className="rounded-2xl border border-rinads-primary/20 bg-surface shadow-lg">
+    <div className="rinpo-command-bar fixed inset-x-0 bottom-[5.2rem] z-[45] mx-auto max-w-5xl px-3 pb-2 lg:bottom-0 lg:px-4 lg:pb-4">
+      <div className="rounded-[1.25rem] border border-rinads-primary/20 bg-surface/95 shadow-[0_18px_45px_rgba(42,15,66,0.16)] backdrop-blur-xl">
         {open ? (
-          <div className="max-h-80 space-y-2 overflow-y-auto border-b border-rinads-primary/10 p-3">
+          <div className="rg-popover max-h-[42dvh] space-y-2 overflow-y-auto border-b border-rinads-primary/10 p-3 sm:max-h-80">
+            <div className="sticky top-0 z-10 -mx-1 -mt-1 flex items-center justify-between rounded-xl bg-surface/95 px-1 py-1 backdrop-blur">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/assets/rinpo-face.png"
+                  alt="RINPO"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 rounded-full object-cover ring-2 ring-rinads-primary/20"
+                />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">RINPO</p>
+                  <p className="text-[10px] text-muted-foreground">Context-aware salon assistant</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full bg-surface-muted text-lg text-foreground"
+                aria-label="Collapse RINPO"
+              >
+                ×
+              </button>
+            </div>
             {history.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="rounded-xl bg-surface-muted p-3 text-xs text-muted-foreground">
                 Try &ldquo;What needs attention?&rdquo; then &ldquo;Do the first three.&rdquo;
               </p>
             ) : (
               history.map((entry, i) =>
                 entry.role === "user" ? (
-                  <p key={i} className="text-sm font-medium text-foreground">
+                  <p key={i} className="ml-auto max-w-[88%] rounded-xl bg-rinads-primary px-3 py-2 text-sm font-medium text-white">
                     {entry.text}
                   </p>
                 ) : entry.kind === "clarify" ? (
-                  <p key={i} className="text-sm text-muted-foreground">
+                  <p key={i} className="max-w-[92%] rounded-xl bg-surface-muted px-3 py-2 text-sm text-foreground">
                     {entry.question}
                   </p>
                 ) : (
@@ -144,7 +165,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
                 )
               )
             )}
-            {isPending ? <p className="text-xs text-muted-foreground">RINPO is working…</p> : null}
+            {isPending ? <p className="text-xs font-medium text-rinads-primary">RINPO is working…</p> : null}
           </div>
         ) : null}
         <form
@@ -153,25 +174,38 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
             setOpen(true);
             handleSubmit();
           }}
-          className="flex items-center gap-2 p-3"
+          className="flex items-center gap-2 p-2.5 sm:p-3"
         >
-          <Image
-            src="/assets/rinpo-face.png"
-            alt=""
-            width={36}
-            height={36}
-            className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-rinads-primary/25"
-            aria-hidden
-          />
-          <span className="text-xs font-semibold uppercase tracking-wide text-rinads-primary">RINPO</span>
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary/50"
+            aria-label={open ? "Collapse RINPO" : "Open RINPO"}
+            aria-expanded={open}
+          >
+            <Image
+              src="/assets/rinpo-face.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover ring-2 ring-rinads-primary/25"
+              aria-hidden
+            />
+          </button>
+          <span className="hidden text-xs font-semibold uppercase tracking-wide text-rinads-primary sm:inline">RINPO</span>
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             onFocus={() => setOpen(true)}
-            placeholder="Ask RINPO — e.g. &quot;What needs attention?&quot;"
-            className="flex-1 rounded-lg border border-rinads-primary/15 bg-surface-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            placeholder="Ask RINPO…"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-rinads-primary/15 bg-surface-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           />
-          <button type="submit" disabled={isPending || !text.trim()} className="btn-primary" aria-label="Send to RINPO">
+          <button
+            type="submit"
+            disabled={isPending || !text.trim()}
+            className="btn-primary h-11 shrink-0 rounded-xl px-3 sm:px-4"
+            aria-label="Send to RINPO"
+          >
             {isPending ? "…" : "Ask"}
           </button>
         </form>
