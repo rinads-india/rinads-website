@@ -126,8 +126,8 @@ describe("ShiprocketV1Client", () => {
       },
       {},
       {
-        RINADS_SHIPROCKET_API_EMAIL: "api-user@example.com",
-        RINADS_SHIPROCKET_API_PASSWORD: "secret-password",
+        RINADS_SHIPROCKET_EMAIL: "api-user@example.com",
+        RINADS_SHIPROCKET_PASSWORD: "secret-password",
       }
     );
 
