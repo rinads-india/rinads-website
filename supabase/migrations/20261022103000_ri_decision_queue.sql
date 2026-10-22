@@ -43,7 +43,7 @@ create table if not exists public.ri_decisions (
   rationale text not null default '',
   risk text not null check (risk in ('low', 'medium', 'high', 'critical')),
   priority_score smallint not null default 0 check (priority_score between 0 and 100),
-  authorization jsonb not null default '{}'::jsonb,
+  "authorization" jsonb not null default '{}'::jsonb,
   evidence jsonb not null default '[]'::jsonb,
   action jsonb,
   status text not null default 'PROPOSED'
