@@ -81,7 +81,8 @@ const input = {
   orderId: "ord_1",
   packageId: "pkg_1",
   weightGrams: 500,
-  destinationPincode: "680651",
+  pickupPincode: "641008",
+  destinationPincode: "680004",
 };
 
 describe("CourierProviderRouter", () => {
@@ -143,5 +144,80 @@ describe("CourierProviderRouter", () => {
     assert.equal(result.providerKey, "porter");
     assert.equal(result.shipment.carrier, "porter");
     assert.equal(result.shipment.awb, "porter-awb");
+  });
+
+  it("lets RINADS Intelligence prefer route reliability over a marginally cheaper quote", async () => {
+    const intelligentProviders: CourierProviderDefinition[] = [
+      {
+        key: "cheap_route",
+        adapter: adapter("cheap_route"),
+        enabled: true,
+        priority: 10,
+        capabilities: ["cod"],
+        async quote() {
+          return { providerKey: "cheap_route", serviceable: true, estimatedCostMinor: 10_000, etaHours: 24 };
+        },
+        async intelligence() {
+          return { deliverySuccessRate: 0.72, rtoRate: 0.24, slaConfidence: 0.7, estimatedMarginMinor: 2_400 };
+        },
+      },
+      {
+        key: "reliable_route",
+        adapter: adapter("reliable_route"),
+        enabled: true,
+        priority: 20,
+        capabilities: ["cod"],
+        async quote() {
+          return { providerKey: "reliable_route", serviceable: true, estimatedCostMinor: 11_000, etaHours: 26 };
+        },
+        async intelligence() {
+          return { deliverySuccessRate: 0.98, rtoRate: 0.03, slaConfidence: 0.96, estimatedMarginMinor: 2_000 };
+        },
+      },
+    ];
+
+    const router = new CourierProviderRouter(intelligentProviders);
+    const result = await router.route(
+      { ...input, requiredCapabilities: ["cod"] },
+      {
+        strategy: "intelligence",
+        intelligenceWeights: {
+          deliverySuccess: 0.4,
+          rto: 0.25,
+          slaConfidence: 0.2,
+          cost: 0.05,
+          eta: 0.05,
+          margin: 0.025,
+          priority: 0.025,
+        },
+      }
+    );
+
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.candidate.provider.key, "reliable_route");
+      assert.ok((result.candidate.intelligence?.score ?? 0) > 50);
+    }
+  });
+
+  it("treats invalid intelligence telemetry as unknown instead of trusting bad evidence", async () => {
+    const invalidTelemetry: CourierProviderDefinition = {
+      key: "invalid_telemetry",
+      adapter: adapter("invalid_telemetry"),
+      enabled: true,
+      priority: 1,
+      capabilities: [],
+      async quote() {
+        return { providerKey: "invalid_telemetry", serviceable: true, estimatedCostMinor: 9_000, etaHours: 20 };
+      },
+      async intelligence() {
+        return { deliverySuccessRate: 4 };
+      },
+    };
+
+    const router = new CourierProviderRouter([invalidTelemetry]);
+    const result = await router.route(input, { strategy: "intelligence" });
+    assert.equal(result.ok, true);
+    if (result.ok) assert.deepEqual(result.candidate.intelligence?.evidence, {});
   });
 });
