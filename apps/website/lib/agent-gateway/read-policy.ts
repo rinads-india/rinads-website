@@ -83,8 +83,12 @@ export async function authorizeRinadsAgentRead(input: {
 }
 
 /**
- * Append the governance evidence for a successful external-agent read. The
- * caller must not release business data unless this insert succeeds.
+ * Append governance evidence for a successful external-agent read. The audit
+ * actor remains the authenticated RINADS user because that is the principal
+ * whose membership/permissions authorize the action. The `source` field
+ * records that an AI/agent channel initiated the read.
+ *
+ * The caller must not release business data unless this insert succeeds.
  */
 export async function appendRinadsAgentReadAudit(input: {
   client: SupabaseClient;
@@ -97,14 +101,17 @@ export async function appendRinadsAgentReadAudit(input: {
 }): Promise<{ ok: true } | { ok: false; reason: string }> {
   const { error } = await input.client.from("audit_logs").insert({
     organization_id: input.principal.organizationId,
-    actor_type: "ai",
+    actor_type: "user",
     actor_id: input.principal.actorId,
     approved_by: null,
     action: input.action,
     entity: input.entity,
     entity_id: input.entityId ?? null,
     before: null,
-    after: input.metadata ?? {},
+    after: {
+      ...(input.metadata ?? {}),
+      agent_channel: true,
+    },
     source: `agent-gateway:${input.principal.authMethod}`,
     ip: null,
     user_agent: input.request.headers.get("user-agent"),
