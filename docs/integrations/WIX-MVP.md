@@ -82,7 +82,7 @@ Initial mappings:
 | `wix.bookings.v2.booking_created` | `booking.created.v1` |
 | Other verified Wix events | `integration.event_received.v1` |
 
-Every emitted provider event uses `wix:<provider-event-id>` as the canonical idempotency key.
+Every emitted provider event uses `wix:<provider-event-id>` as the canonical idempotency key when Wix provides a stable event ID. Lifecycle formats without a provider event ID fall back to a digest of the verified signed token.
 
 ## Verified webhook behavior
 
@@ -95,7 +95,7 @@ Every emitted provider event uses `wix:<provider-event-id>` as the canonical ide
 5. verifies the JWT signature with `WIX_WEBHOOK_PUBLIC_KEY`;
 6. validates `exp`, `nbf`, and, when supplied by Wix, `iss` and `aud`;
 7. extracts `eventType`, `instanceId`, event data, and identity;
-8. creates a deterministic SHA-256 event ID from the signed token;
+8. uses Wix's provider-generated event ID from the event metadata when present so re-signed retries dedupe to the same event; lifecycle formats without such an ID fall back to a SHA-256 digest of the verified signed token;
 9. forwards only the verified normalized event to `RINADS_WIX_EVENT_SINK_URL` with the server-only integration secret;
 10. returns HTTP 200 only after the internal sink accepts the delivery.
 
@@ -173,7 +173,7 @@ The integration can move from Private Preview only when all are true:
 - real Wix app ID, app secret, and webhook public key are configured server-side;
 - AppInstalled creates or resolves the expected `integration_connections` row;
 - signed-instance confirmation binds the correct active RINADS organization;
-- a duplicate Wix webhook produces one inbox row and one business effect;
+- a duplicate or re-signed retry of the same Wix event produces one inbox row and one business effect;
 - an unbound instance is quarantined, never auto-assigned;
 - Order Created maps to `order.created.v1` for the bound tenant;
 - Contact Created maps to `contact.created.v1` for the bound tenant;
