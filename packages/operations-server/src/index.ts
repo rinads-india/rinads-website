@@ -237,3 +237,18 @@ export {
   type LogisticsCredentialBundle,
   type LogisticsCredentialResolution,
 } from "./logistics-secrets";
+export {
+  DelhiveryApiError,
+  DelhiveryB2cClient,
+  createDelhiveryB2cClientFromProviderConfig,
+  type DelhiveryClientOptions,
+  type DelhiveryEnvironment,
+  type DelhiveryFetch,
+  type DelhiveryHttpResponse,
+  type DelhiveryManifestRequest,
+  type DelhiveryManifestShipment,
+  type DelhiveryPickupRequest,
+  type DelhiveryServiceability,
+  type DelhiveryShippingCostInput,
+  type DelhiveryTrackingInput,
+} from "./carriers/delhivery-b2c";
