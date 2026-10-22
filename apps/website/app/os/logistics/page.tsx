@@ -44,7 +44,7 @@ export default function OsLogisticsPage() {
             <Link href="/os/work" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">Work</Link>
             <Link href="/os/money" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">Money</Link>
             <Link href="/os/automate" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">Automate</Link>
-            <Link href="/track" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">Track</Link>
+            <Link href="/os/customers" className="rounded-2xl border border-white/15 px-3 py-2.5 text-center font-medium hover:bg-white/10">Customers</Link>
           </div>
         </div>
       </section>
@@ -149,7 +149,7 @@ export default function OsLogisticsPage() {
               ["Shopify", "Merchant acquisition + order/fulfilment connector. Not the logistics system of record."],
               ["ONDC", "Delivery-network adapter/discovery layer behind the same capability registry."],
               ["Hostinger / n8n", "Workflow plane for notifications and non-critical integrations. Never booking authority."],
-              ["Supabase", "Tenant, policy, audit and shipment persistence once carrier configuration migrations are added."],
+              ["Supabase", "Tenant provider configuration, routing policy and append-only RI decision evidence under RLS."],
             ].map(([title, copy]) => (
               <div key={title} className="rounded-2xl border border-black/5 bg-white/75 p-4">
                 <h3 className="font-semibold text-gray-950">{title}</h3>
