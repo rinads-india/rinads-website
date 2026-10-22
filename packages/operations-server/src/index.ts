@@ -252,3 +252,14 @@ export {
   type DelhiveryShippingCostInput,
   type DelhiveryTrackingInput,
 } from "./carriers/delhivery-b2c";
+export {
+  ShiprocketApiError,
+  ShiprocketV1Client,
+  createShiprocketV1ClientFromProviderConfig,
+  type ShiprocketClientOptions,
+  type ShiprocketCreateOrderRequest,
+  type ShiprocketFetch,
+  type ShiprocketHttpResponse,
+  type ShiprocketOrderItem,
+  type ShiprocketServiceabilityInput,
+} from "./carriers/shiprocket-v1";
