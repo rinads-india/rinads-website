@@ -84,6 +84,30 @@ export type ShiprocketLabelResult = {
   labelUrl?: string;
 };
 
+export type ShiprocketTrackingEvent = {
+  occurredAt?: string;
+  status?: string;
+  activity?: string;
+  location?: string;
+  shiprocketStatusCode?: string;
+  shiprocketStatusLabel?: string;
+};
+
+export type ShiprocketTrackingResult = {
+  trackingAvailable: boolean;
+  awb?: string;
+  shipmentId?: number;
+  orderId?: number;
+  courierName?: string;
+  currentStatus?: string;
+  currentStatusId?: number;
+  shipmentStatusId?: number;
+  estimatedDeliveryAt?: string;
+  deliveredAt?: string;
+  trackingUrl?: string;
+  events: ShiprocketTrackingEvent[];
+};
+
 export class ShiprocketApiError extends Error {
   constructor(
     message: string,
@@ -123,6 +147,12 @@ function stringValue(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function scalarString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return undefined;
+}
+
 function numberValue(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value.trim()) {
@@ -156,6 +186,120 @@ function positiveInteger(value: number, field: string): number {
     throw new ShiprocketApiError(`${field} must be a positive integer.`);
   }
   return value;
+}
+
+function validateAwb(awb: string): string {
+  const normalized = awb.trim();
+  if (!normalized || normalized.length > 128 || !/^[A-Za-z0-9._/-]+$/.test(normalized)) {
+    throw new ShiprocketApiError("awb must be a valid carrier tracking identifier.");
+  }
+  return normalized;
+}
+
+function firstRecord(value: unknown): Record<string, unknown> | null {
+  if (!Array.isArray(value)) return null;
+  for (const entry of value) {
+    const record = asRecord(entry);
+    if (record) return record;
+  }
+  return null;
+}
+
+function trackingEvents(value: unknown): ShiprocketTrackingEvent[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry): ShiprocketTrackingEvent[] => {
+    const event = asRecord(entry);
+    if (!event) return [];
+    const normalized: ShiprocketTrackingEvent = {
+      occurredAt: stringValue(event.date) ?? stringValue(event.current_timestamp),
+      status: scalarString(event.status),
+      activity: stringValue(event.activity),
+      location: stringValue(event.location),
+      shiprocketStatusCode: scalarString(event["sr-status"] ?? event.sr_status),
+      shiprocketStatusLabel: stringValue(event["sr-status-label"] ?? event.sr_status_label),
+    };
+    if (!Object.values(normalized).some(Boolean)) return [];
+    return [normalized];
+  });
+}
+
+/**
+ * Normalize the non-sensitive tracking evidence RINADS needs from either a
+ * Shiprocket tracking response or Shiprocket's documented tracking-webhook
+ * shape. Customer names, addresses, phones and other provider payload fields
+ * are deliberately not projected into this result.
+ */
+export function normalizeShiprocketTrackingPayload(payload: unknown): ShiprocketTrackingResult {
+  const root = asRecord(payload) ?? {};
+  const trackingData = asRecord(root.tracking_data) ?? root;
+  const shipmentTrack = firstRecord(trackingData.shipment_track);
+  const events = trackingEvents(
+    trackingData.shipment_track_activities ?? trackingData.scans ?? root.scans
+  );
+
+  const awb =
+    scalarString(trackingData.awb) ??
+    scalarString(trackingData.awb_code) ??
+    scalarString(shipmentTrack?.awb_code) ??
+    scalarString(root.awb);
+  const shipmentId =
+    numberValue(trackingData.shipment_id) ??
+    numberValue(shipmentTrack?.shipment_id) ??
+    numberValue(root.shipment_id);
+  const orderId =
+    numberValue(trackingData.order_id) ??
+    numberValue(shipmentTrack?.order_id) ??
+    numberValue(root.sr_order_id);
+  const currentStatus =
+    stringValue(trackingData.current_status) ??
+    stringValue(shipmentTrack?.current_status) ??
+    stringValue(root.current_status) ??
+    stringValue(root.shipment_status);
+  const currentStatusId =
+    numberValue(trackingData.current_status_id) ??
+    numberValue(root.current_status_id);
+  const shipmentStatusId =
+    numberValue(trackingData.shipment_status_id) ??
+    numberValue(trackingData.shipment_status) ??
+    numberValue(root.shipment_status_id);
+  const courierName =
+    stringValue(trackingData.courier_name) ??
+    stringValue(shipmentTrack?.courier_name) ??
+    stringValue(root.courier_name);
+  const estimatedDeliveryAt =
+    stringValue(trackingData.etd) ??
+    stringValue(shipmentTrack?.etd) ??
+    stringValue(root.etd);
+  const deliveredAt =
+    stringValue(trackingData.delivered_date) ??
+    stringValue(shipmentTrack?.delivered_date) ??
+    stringValue(root.delivered_date);
+  const trackingUrl =
+    stringValue(trackingData.track_url) ??
+    stringValue(root.track_url);
+
+  return {
+    trackingAvailable: Boolean(
+      awb ||
+        shipmentId ||
+        currentStatus ||
+        currentStatusId ||
+        shipmentStatusId ||
+        courierName ||
+        events.length > 0
+    ),
+    awb,
+    shipmentId,
+    orderId,
+    courierName,
+    currentStatus,
+    currentStatusId,
+    shipmentStatusId,
+    estimatedDeliveryAt,
+    deliveredAt,
+    trackingUrl,
+    events,
+  };
 }
 
 export class ShiprocketClient {
@@ -325,6 +469,28 @@ export class ShiprocketClient {
       currency: stringValue(payload?.currency) ?? "INR",
       couriers,
     };
+  }
+
+  async trackByAwb(awb: string): Promise<ShiprocketTrackingResult> {
+    const normalizedAwb = validateAwb(awb);
+    const payload = await this.request(
+      "AWB tracking",
+      `/v1/external/courier/track/awb/${encodeURIComponent(normalizedAwb)}`,
+      { method: "GET" }
+    );
+    const normalized = normalizeShiprocketTrackingPayload(payload);
+    return normalized.awb ? normalized : { ...normalized, awb: normalizedAwb };
+  }
+
+  async trackByShipmentId(shipmentId: number): Promise<ShiprocketTrackingResult> {
+    const id = positiveInteger(shipmentId, "shipmentId");
+    const payload = await this.request(
+      "shipment tracking",
+      `/v1/external/courier/track/shipment/${id}`,
+      { method: "GET" }
+    );
+    const normalized = normalizeShiprocketTrackingPayload(payload);
+    return normalized.shipmentId ? normalized : { ...normalized, shipmentId: id };
   }
 
   async assignAwb(shipmentId: number, courierId?: number): Promise<ShiprocketAwbAssignment> {
