@@ -139,7 +139,8 @@ describe("ShiprocketCourierAdapter", () => {
       "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc"
     );
     const orderBody = JSON.parse(calls[3]!.init.body ?? "{}");
-    assert.equal(orderBody.order_id, "ORDER-1001");
+    assert.equal(orderBody.order_id, result.providerReference);
+    assert.match(orderBody.order_id, /^RIN-/);
     assert.equal(orderBody.pickup_location, "Mannuthy");
     assert.equal(orderBody.billing_customer_name, "Test Customer");
     assert.equal(orderBody.payment_method, "Prepaid");
