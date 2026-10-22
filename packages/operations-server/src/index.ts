@@ -225,3 +225,8 @@ export {
   isSupabasePersistenceMode,
   type RepositoryBundle,
 } from "./factory";
+export {
+  createSupabaseLogisticsRuntimeRepository,
+  type LogisticsSupabaseClient,
+  type LogisticsSupabaseFilterQuery,
+} from "./logistics-supabase";

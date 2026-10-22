@@ -39,6 +39,24 @@ export {
   type CourierRoutingStrategy,
   type RinadsCourierProviderKey,
 } from "./shipping/provider-router";
+export {
+  LogisticsRuntimeService,
+  hydrateCourierProviders,
+  type LogisticsApproval,
+  type LogisticsAutonomyMode,
+  type LogisticsCreateShipmentResult,
+  type LogisticsCredentialSource,
+  type LogisticsDecisionActorType,
+  type LogisticsDecisionEvent,
+  type LogisticsDecisionStage,
+  type LogisticsProviderConfig,
+  type LogisticsRoutingPolicyConfig,
+  type LogisticsRuntimeContext,
+  type LogisticsRuntimeMode,
+  type LogisticsRuntimeRepository,
+  type LogisticsRuntimeRouteResult,
+  type LogisticsVerificationState,
+} from "./shipping/logistics-runtime";
 export { ReturnService, RefundService } from "./returns/return-service";
 export { TaskService, CrmOpsService, WorkQueueService } from "./tasks/task-service";
 export {
