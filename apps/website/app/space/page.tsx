@@ -1,45 +1,63 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  ACTIVE_ORG_COOKIE,
+  resolveTenancyFromSupabase,
+  type TenancySupabaseClient,
+} from "@rinads/tenancy";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { RINASPACEClient } from "./RINASPACEClient";
 
 export const metadata: Metadata = {
   title: "RINASPACE — RINADS",
-  description: "Your authenticated workspace for RINADS Business OS and services.",
+  description: "Your authenticated workspace for RINADS capabilities, industry packs and services.",
 };
 
 export default async function RINASPACEPage() {
   const supabase = await createWebsiteServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect("/signup?returnTo=/space");
   }
 
-  // Resolve organization and role
-  let orgName = "Your Organization";
-  let role = "member";
+  const cookieStore = await cookies();
+  const activeOrgCookie = cookieStore.get(ACTIVE_ORG_COOKIE)?.value;
+  const tenancy = await resolveTenancyFromSupabase(
+    supabase as unknown as TenancySupabaseClient,
+    activeOrgCookie,
+  );
 
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("organization_id, organizations(name), roles(name)")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (membership) {
-    type MembershipRow = {
-      organizations: { name: string } | { name: string }[] | null;
-      roles: { name: string } | { name: string }[] | null;
-    };
-    const row = membership as MembershipRow;
-    const org = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
-    if (org?.name) orgName = org.name;
-    const r = Array.isArray(row.roles) ? row.roles[0] : row.roles;
-    if (r?.name) role = r.name;
+  if (!tenancy) {
+    redirect("/onboarding");
   }
 
-  return <RINASPACEClient role={role} orgName={orgName} />;
+  const activeMembership =
+    tenancy.memberships.find(
+      (membership) => membership.organizationId === tenancy.organizationId,
+    ) ?? tenancy.memberships[0];
+
+  const orgName = activeMembership?.organizationName ?? "Your Organization";
+  const memberships = tenancy.memberships
+    .filter((membership) => membership.organizationStatus === "active")
+    .map((membership) => ({
+      organizationId: membership.organizationId,
+      organizationName: membership.organizationName,
+      roleKey: membership.roleKey,
+    }));
+
+  return (
+    <RINASPACEClient
+      role={tenancy.roleKey}
+      orgName={orgName}
+      activeOrganizationId={tenancy.organizationId}
+      memberships={memberships}
+      planKey={tenancy.planKey}
+      verticalKey={tenancy.verticalKey}
+      featureFlags={tenancy.featureFlags}
+    />
+  );
 }
