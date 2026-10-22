@@ -4,6 +4,7 @@ import { ACADEMY_PROGRAMS } from "@/lib/content/academy";
 import { VERTICALS } from "@/lib/content/verticals";
 import { SERVICE_LINES } from "@/lib/content/services";
 import { INTEGRATIONS, getPublishedCaseStudies } from "@/lib/content/case-studies";
+import { WIX_INTEGRATION } from "@/lib/integrations/wix";
 import { getIndexableRoutes } from "@/lib/route-registry";
 
 const EXCLUDED_PREFIXES = [
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const line of SERVICE_LINES) {
     merged.set(`/services/${line.slug}`, new Date());
   }
-  for (const integration of INTEGRATIONS) {
+  for (const integration of [...INTEGRATIONS, WIX_INTEGRATION]) {
     merged.set(integration.href, new Date());
   }
   for (const study of getPublishedCaseStudies()) {
