@@ -55,6 +55,24 @@ function assertRateBps(rateBps: number): void {
 }
 
 /**
+ * Multiply a safe-integer minor amount by basis points without ever performing
+ * the potentially unsafe intermediate multiplication in JavaScript Number
+ * space. All GST inputs are non-negative, so adding half the denominator gives
+ * deterministic half-up rounding equivalent to Math.round for valid inputs.
+ */
+function applyRateBpsToMinor(amountMinor: number, rateBps: number): number {
+  const denominator = 10_000n;
+  const numerator = BigInt(amountMinor) * BigInt(rateBps);
+  const rounded = (numerator + denominator / 2n) / denominator;
+
+  if (rounded > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new Error("GST amount exceeds safe integer precision.");
+  }
+
+  return Number(rounded);
+}
+
+/**
  * Deterministic GST component evidence helper.
  *
  * This is arithmetic only. It does not decide whether a supply is taxable,
@@ -71,11 +89,7 @@ export function calculateIndiaGstComponents(input: {
   assertRateBps(input.rateBps);
 
   const supplyType = classifyIndiaSupply(input.supplierStateCode, input.placeOfSupplyStateCode);
-  const totalTaxMinor = Math.round((input.taxableMinor * input.rateBps) / 10_000);
-
-  if (!Number.isSafeInteger(totalTaxMinor)) {
-    throw new Error("GST amount exceeds safe integer precision.");
-  }
+  const totalTaxMinor = applyRateBpsToMinor(input.taxableMinor, input.rateBps);
 
   if (supplyType === "intrastate") {
     const cgstMinor = Math.floor(totalTaxMinor / 2);
