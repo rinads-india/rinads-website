@@ -1,5 +1,9 @@
 import type { RinadsAgentPrincipal } from "./principal";
-import { createRinadsAgentDataClient } from "./data-client";
+import {
+  appendRinadsAgentReadAudit,
+  authorizeRinadsAgentRead,
+  isRinadsAgentReadEnabledForActor,
+} from "./read-policy";
 
 export const AGENT_CATALOG_READ_FLAG = "agent.commerce.catalog.read" as const;
 export const AGENT_CATALOG_READ_PERMISSION = "commerce.catalog.read" as const;
@@ -31,6 +35,8 @@ function numberValue(value: unknown): number | undefined {
   return undefined;
 }
 
+export const isRinadsCatalogReadEnabledForActor = isRinadsAgentReadEnabledForActor;
+
 export function parseRinadsCatalogReadInput(value: unknown):
   | { ok: true; query?: string; limit: number }
   | { ok: false; reason: string } {
@@ -60,29 +66,6 @@ export function parseRinadsCatalogReadInput(value: unknown):
   return { ok: true, query, limit: rawLimit };
 }
 
-export function isRinadsCatalogReadEnabledForActor(
-  rows: readonly Record<string, unknown>[],
-  actorId: string
-): boolean {
-  const userOverride = rows.find((row) => text(row.user_id) === actorId);
-  if (userOverride) return userOverride.enabled === true;
-
-  const organizationOverride = rows.find((row) => !text(row.user_id));
-  return organizationOverride?.enabled === true;
-}
-
-/**
- * Execute the first externally callable RINADS READ capability.
- *
- * The capability is intentionally fail-closed behind all of:
- * - authenticated Agent Principal;
- * - server-resolved organization scope;
- * - canonical `commerce.catalog.read` permission;
- * - explicit tenant/user feature-flag opt in;
- * - the caller's normal Supabase RLS context;
- * - explicit organization filters on every data query;
- * - successful append-only audit evidence before the result leaves RINADS.
- */
 export async function executeRinadsCatalogRead(input: {
   request: Request;
   principal: RinadsAgentPrincipal;
@@ -91,47 +74,15 @@ export async function executeRinadsCatalogRead(input: {
   const parsed = parseRinadsCatalogReadInput(input.arguments);
   if (!parsed.ok) return { ok: false, status: "invalid", reason: parsed.reason };
 
-  if (!input.principal.permissionIds.includes(AGENT_CATALOG_READ_PERMISSION)) {
-    return {
-      ok: false,
-      status: "forbidden",
-      reason: `Missing required permission: ${AGENT_CATALOG_READ_PERMISSION}.`,
-    };
-  }
+  const policy = await authorizeRinadsAgentRead({
+    request: input.request,
+    principal: input.principal,
+    permission: AGENT_CATALOG_READ_PERMISSION,
+    entitlementFlag: AGENT_CATALOG_READ_FLAG,
+  });
+  if (!policy.ok) return policy;
 
-  const client = await createRinadsAgentDataClient(input.request);
-  if (!client) {
-    return {
-      ok: false,
-      status: "unavailable",
-      reason: "A valid RLS-scoped data client could not be established.",
-    };
-  }
-
-  const { data: flagRows, error: flagError } = await client
-    .from("feature_flag_overrides")
-    .select("enabled,user_id")
-    .eq("organization_id", input.principal.organizationId)
-    .eq("flag_key", AGENT_CATALOG_READ_FLAG);
-
-  if (flagError) {
-    return {
-      ok: false,
-      status: "unavailable",
-      reason: "Catalog capability entitlement could not be verified.",
-    };
-  }
-
-  const normalizedFlagRows = (flagRows ?? []).map((row) => row as Record<string, unknown>);
-  if (!isRinadsCatalogReadEnabledForActor(normalizedFlagRows, input.principal.actorId)) {
-    return {
-      ok: false,
-      status: "disabled",
-      reason: `Capability requires explicit ${AGENT_CATALOG_READ_FLAG}=true entitlement.`,
-    };
-  }
-
-  let productsQuery = client
+  let productsQuery = policy.client
     .from("products")
     .select("id,name,slug,description,status,category_slug,tags,rating_avg,rating_count")
     .eq("organization_id", input.principal.organizationId)
@@ -156,7 +107,7 @@ export async function executeRinadsCatalogRead(input: {
 
   let variants: Record<string, unknown>[] = [];
   if (productIds.length > 0) {
-    const { data: variantRows, error: variantError } = await client
+    const { data: variantRows, error: variantError } = await policy.client
       .from("product_variants")
       .select("id,product_id,name,sku,price,compare_at_price,stock,weight_grams,status")
       .eq("organization_id", input.principal.organizationId)
@@ -173,31 +124,20 @@ export async function executeRinadsCatalogRead(input: {
     variants = (variantRows ?? []).map((row) => row as Record<string, unknown>);
   }
 
-  const { error: auditError } = await client.from("audit_logs").insert({
-    organization_id: input.principal.organizationId,
-    actor_type: "ai",
-    actor_id: input.principal.actorId,
-    approved_by: null,
+  const audit = await appendRinadsAgentReadAudit({
+    client: policy.client,
+    request: input.request,
+    principal: input.principal,
     action: "commerce.catalog.read",
     entity: "commerce_catalog",
-    entity_id: null,
-    before: null,
-    after: {
+    metadata: {
       query_supplied: Boolean(parsed.query),
       limit: parsed.limit,
       result_count: products.length,
     },
-    source: `agent-gateway:${input.principal.authMethod}`,
-    ip: null,
-    user_agent: input.request.headers.get("user-agent"),
   });
-
-  if (auditError) {
-    return {
-      ok: false,
-      status: "unavailable",
-      reason: "Catalog read audit evidence could not be appended.",
-    };
+  if (!audit.ok) {
+    return { ok: false, status: "unavailable", reason: audit.reason };
   }
 
   return {

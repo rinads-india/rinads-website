@@ -5,6 +5,7 @@ import {
   type RinadsMcpExecutionContext,
 } from "@rinads/platform";
 import { executeRinadsCatalogRead } from "@/lib/agent-gateway/catalog-read";
+import { executeRinadsOrderRead } from "@/lib/agent-gateway/order-read";
 import {
   resolveRinadsAgentPrincipal,
   type RinadsAgentPrincipalResolution,
@@ -20,8 +21,23 @@ const JSON_HEADERS = {
 } as const;
 
 const CATALOG_TOOL = capabilityKeyToMcpToolName("commerce.catalog.read");
+const ORDER_TOOL = capabilityKeyToMcpToolName("commerce.order.read");
 
 type JsonObject = Record<string, unknown>;
+type AuthenticatedResolution = Extract<
+  RinadsAgentPrincipalResolution,
+  { status: "authenticated" }
+>;
+
+type ReadCapabilityFailure = {
+  ok: false;
+  status: "invalid" | "forbidden" | "disabled" | "not_found" | "unavailable";
+  reason: string;
+};
+
+type ReadCapabilityResult =
+  | { ok: true; data: Record<string, unknown> }
+  | ReadCapabilityFailure;
 
 function asRecord(value: unknown): JsonObject | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -50,52 +66,53 @@ function requestId(payload: unknown): string | number | null {
   return typeof id === "string" || typeof id === "number" || id === null ? id : null;
 }
 
-function isCatalogToolCall(payload: unknown): boolean {
+function toolName(payload: unknown): string | undefined {
   const request = asRecord(payload);
-  if (request?.jsonrpc !== "2.0" || request.method !== "tools/call") return false;
-  if (typeof request.id !== "string" && typeof request.id !== "number") return false;
+  if (request?.jsonrpc !== "2.0" || request.method !== "tools/call") return undefined;
+  if (typeof request.id !== "string" && typeof request.id !== "number") return undefined;
   const params = asRecord(request.params);
-  return params?.name === CATALOG_TOOL;
+  return typeof params?.name === "string" ? params.name : undefined;
 }
 
-function catalogArguments(payload: unknown): unknown {
+function toolArguments(payload: unknown): unknown {
   const params = asRecord(asRecord(payload)?.params);
   return params?.arguments;
 }
 
-async function executeCatalogMcpCall(
-  request: Request,
-  payload: unknown,
-  resolution: Extract<RinadsAgentPrincipalResolution, { status: "authenticated" }>
-): Promise<Response> {
-  const catalog = await executeRinadsCatalogRead({
-    request,
-    principal: resolution.principal,
-    arguments: catalogArguments(payload),
-  });
+function failureCode(status: ReadCapabilityFailure["status"]): string {
+  switch (status) {
+    case "invalid":
+      return "INVALID_CAPABILITY_ARGUMENTS";
+    case "forbidden":
+      return "CAPABILITY_PERMISSION_DENIED";
+    case "disabled":
+      return "CAPABILITY_NOT_ENTITLED";
+    case "not_found":
+      return "RESOURCE_NOT_FOUND";
+    case "unavailable":
+      return "CAPABILITY_UNAVAILABLE";
+  }
+}
 
-  if (!catalog.ok) {
-    const reason =
-      catalog.status === "invalid"
-        ? "INVALID_CAPABILITY_ARGUMENTS"
-        : catalog.status === "forbidden"
-          ? "CAPABILITY_PERMISSION_DENIED"
-          : catalog.status === "disabled"
-            ? "CAPABILITY_NOT_ENTITLED"
-            : "CAPABILITY_UNAVAILABLE";
-
+function readMcpResponse(input: {
+  payload: unknown;
+  capabilityKey: "commerce.catalog.read" | "commerce.order.read";
+  successText: string;
+  result: ReadCapabilityResult;
+}): Response {
+  if (!input.result.ok) {
     return Response.json(
       {
         jsonrpc: "2.0",
-        id: requestId(payload),
+        id: requestId(input.payload),
         result: {
-          content: [{ type: "text", text: catalog.reason }],
+          content: [{ type: "text", text: input.result.reason }],
           isError: true,
           _meta: {
             "com.rinads/authenticated": true,
-            "com.rinads/capabilityKey": "commerce.catalog.read",
+            "com.rinads/capabilityKey": input.capabilityKey,
             "com.rinads/executionEnabled": false,
-            "com.rinads/reason": reason,
+            "com.rinads/reason": failureCode(input.result.status),
           },
         },
       },
@@ -106,14 +123,14 @@ async function executeCatalogMcpCall(
   return Response.json(
     {
       jsonrpc: "2.0",
-      id: requestId(payload),
+      id: requestId(input.payload),
       result: {
-        content: [{ type: "text", text: "Authorized RINADS commerce catalog read completed." }],
-        structuredContent: catalog.data,
+        content: [{ type: "text", text: input.successText }],
+        structuredContent: input.result.data,
         isError: false,
         _meta: {
           "com.rinads/authenticated": true,
-          "com.rinads/capabilityKey": "commerce.catalog.read",
+          "com.rinads/capabilityKey": input.capabilityKey,
           "com.rinads/executionEnabled": true,
           "com.rinads/risk": "READ",
         },
@@ -121,6 +138,43 @@ async function executeCatalogMcpCall(
     },
     { status: 200, headers: JSON_HEADERS }
   );
+}
+
+async function executeEnabledRead(
+  request: Request,
+  payload: unknown,
+  resolution: AuthenticatedResolution
+): Promise<Response | null> {
+  const name = toolName(payload);
+  if (name === CATALOG_TOOL) {
+    const result = await executeRinadsCatalogRead({
+      request,
+      principal: resolution.principal,
+      arguments: toolArguments(payload),
+    });
+    return readMcpResponse({
+      payload,
+      capabilityKey: "commerce.catalog.read",
+      successText: "Authorized RINADS commerce catalog read completed.",
+      result,
+    });
+  }
+
+  if (name === ORDER_TOOL) {
+    const result = await executeRinadsOrderRead({
+      request,
+      principal: resolution.principal,
+      arguments: toolArguments(payload),
+    });
+    return readMcpResponse({
+      payload,
+      capabilityKey: "commerce.order.read",
+      successText: "Authorized RINADS tenant-owned order read completed.",
+      result,
+    });
+  }
+
+  return null;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -139,8 +193,9 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const resolution = await resolveRinadsAgentPrincipal(request);
-  if (resolution.status === "authenticated" && isCatalogToolCall(payload)) {
-    return executeCatalogMcpCall(request, payload, resolution);
+  if (resolution.status === "authenticated") {
+    const enabledRead = await executeEnabledRead(request, payload, resolution);
+    if (enabledRead) return enabledRead;
   }
 
   const handled = handleRinadsMcpRequest(payload, executionContext(resolution));
@@ -170,7 +225,7 @@ export async function GET(): Promise<Response> {
       organizationScope: "server-resolved",
       execution: {
         default: "disabled_until_capability_policy_binding",
-        enabledReadCapabilities: ["commerce.catalog.read"],
+        enabledReadCapabilities: ["commerce.catalog.read", "commerce.order.read"],
         entitlementRequired: true,
       },
       endpoint: "/api/mcp",
