@@ -59,7 +59,7 @@ describe("createSupabaseLogisticsRuntimeRepository", () => {
           priority: 10,
           capabilities: ["cod", "reverse", "not_real"],
           credential_source: "environment",
-          credential_key: "RINADS_DTDC_API_TOKEN",
+          credential_key: "dtdc_primary",
           verification_state: "controlled_shipment_passed",
         },
       ],
@@ -85,6 +85,7 @@ describe("createSupabaseLogisticsRuntimeRepository", () => {
 
     assert.equal(providers.length, 1);
     assert.deepEqual(providers[0]?.capabilities, ["cod", "reverse"]);
+    assert.equal(providers[0]?.credentialKey, "dtdc_primary");
     assert.equal(providers[0]?.verificationState, "controlled_shipment_passed");
     assert.equal(policy?.strategy, "intelligence");
     assert.equal(policy?.autonomyMode, "auto_low_risk");
