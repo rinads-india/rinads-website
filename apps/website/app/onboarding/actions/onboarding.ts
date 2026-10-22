@@ -2,6 +2,7 @@
 
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
+import { isIndustryRegistrySchemaUnavailable } from "@/lib/onboarding-config";
 import { provisionTenantViaRpc, seedTenantBundle, AMBADY_TENANT_SLUG, loadPublishedTemplates, parseVerticalTemplateKey } from "@rinads/platform";
 import { getIndustry } from "@rinads/platform/industries";
 import { seedOrgCommerceStore } from "@rinads/commerce-server";
@@ -104,11 +105,24 @@ export async function provisionOrganizationAction(input: {
       };
     };
 
-    const { error: settingsError } = await typedClient
+    // Persist the fields that predate Industry Registry first. A delayed additive
+    // registry migration must not turn a successfully created tenant into a false
+    // onboarding failure or discard the user's module/business-type choices.
+    const { error: coreSettingsError } = await typedClient
       .from("organization_settings")
       .update({
         enabled_modules: selectedModules,
         business_type: businessType,
+      })
+      .eq("organization_id", result.organizationId);
+
+    if (coreSettingsError) {
+      return { ok: false, error: `Workspace created, but core settings failed: ${coreSettingsError.message}` };
+    }
+
+    const { error: profileError } = await typedClient
+      .from("organization_settings")
+      .update({
         primary_industry_id: businessType,
         business_description: input.businessDescription?.trim() || null,
         business_stage: input.businessStage?.trim() || null,
@@ -121,8 +135,11 @@ export async function provisionOrganizationAction(input: {
       })
       .eq("organization_id", result.organizationId);
 
-    if (settingsError) {
-      return { ok: false, error: `Workspace created, but business profile failed: ${settingsError.message}` };
+    if (profileError && !isIndustryRegistrySchemaUnavailable(profileError.message)) {
+      return { ok: false, error: `Workspace created, but business profile failed: ${profileError.message}` };
+    }
+    if (profileError) {
+      console.warn("Industry Registry profile persistence deferred until the production migration ledger is reconciled.");
     }
 
     const { error: industryError } = await typedClient
@@ -137,8 +154,11 @@ export async function provisionOrganizationAction(input: {
         { onConflict: "organization_id,industry_id" }
       );
 
-    if (industryError) {
+    if (industryError && !isIndustryRegistrySchemaUnavailable(industryError.message)) {
       return { ok: false, error: `Workspace created, but industry mapping failed: ${industryError.message}` };
+    }
+    if (industryError) {
+      console.warn("Industry mapping persistence deferred until the production migration ledger is reconciled.");
     }
 
     return { ok: true, organizationId: result.organizationId };

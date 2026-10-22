@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  isIndustryRegistrySchemaUnavailable,
   resolveTemplateForBusinessType,
   ONBOARDING_MODULES,
 } from "../lib/onboarding-config";
@@ -18,6 +19,29 @@ describe("onboarding-config", () => {
 
   it("defines six onboarding modules", () => {
     assert.equal(ONBOARDING_MODULES.length, 6);
+  });
+
+  it("defers only missing Industry Registry schema errors", () => {
+    assert.equal(
+      isIndustryRegistrySchemaUnavailable(
+        "Could not find the 'primary_industry_id' column of 'organization_settings' in the schema cache"
+      ),
+      true
+    );
+    assert.equal(
+      isIndustryRegistrySchemaUnavailable(
+        'relation "public.organization_industries" does not exist'
+      ),
+      true
+    );
+    assert.equal(
+      isIndustryRegistrySchemaUnavailable("new row violates row-level security policy"),
+      false
+    );
+    assert.equal(
+      isIndustryRegistrySchemaUnavailable("permission denied for table organization_industries"),
+      false
+    );
   });
 });
 
