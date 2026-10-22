@@ -101,7 +101,7 @@ export default function RinadsOneMobilePage() {
                 <p className="text-xs text-muted-foreground">Commerce & customer services</p>
               </div>
             </div>
-            <Badge tone={recentOrder ? "success" : "neutral"}>
+            <Badge tone={recentOrder ? "success" : "default"}>
               {recentOrder ? `${orders.length} orders` : "Connected"}
             </Badge>
           </div>
