@@ -79,8 +79,11 @@ const ENVIRONMENT_BINDINGS: readonly EnvironmentBinding[] = [
   {
     providerKey: "shiprocket",
     bindingId: "shiprocket_primary",
-    contractVerified: false,
-    fields: {},
+    contractVerified: true,
+    fields: {
+      apiEmail: "RINADS_SHIPROCKET_API_EMAIL",
+      apiPassword: "RINADS_SHIPROCKET_API_PASSWORD",
+    },
   },
   {
     providerKey: "sequel",
