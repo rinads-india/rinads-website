@@ -47,8 +47,6 @@ export async function loadMemberships(
   }> = [];
 
   for (const row of rows) {
-    // Revoked/invited rows may still be visible to the user through membership RLS.
-    // They must never become selectable tenancy contexts.
     if (String(row.status ?? "") !== "active") continue;
 
     const org = row.organizations as Record<string, unknown> | undefined;
@@ -98,10 +96,10 @@ async function loadRolePermissions(
 export async function loadOrgPlanAndSettings(
   client: TenancySupabaseClient,
   organizationId: string
-): Promise<{ planKey?: string; verticalKey?: string }> {
+): Promise<{ planKey?: string; subscriptionStatus?: string; verticalKey?: string }> {
   const { data: sub } = await client
     .from("organization_subscriptions")
-    .select("plan_key")
+    .select("plan_key, status")
     .eq("organization_id", organizationId)
     .single();
 
@@ -111,8 +109,12 @@ export async function loadOrgPlanAndSettings(
     .eq("organization_id", organizationId)
     .single();
 
+  const subscriptionStatus = sub?.status ? String(sub.status) : undefined;
+  const planKey = subscriptionStatus === "active" && sub?.plan_key ? String(sub.plan_key) : undefined;
+
   return {
-    planKey: sub?.plan_key ? String(sub.plan_key) : undefined,
+    planKey,
+    subscriptionStatus,
     verticalKey: settings?.vertical_key ? String(settings.vertical_key) : undefined,
   };
 }
@@ -143,9 +145,6 @@ export async function resolveTenancyFromSupabase(
     organizationId: active.organizationId,
     userId: userData.user.id,
   });
-  // Plans supply the baseline entitlement; explicit org/user feature overrides
-  // are evaluated on top of those defaults rather than replacing plan values
-  // with unrelated static defaults.
   const featureFlags = { ...planDefaults, ...evaluated };
 
   return buildTenancyContext({
@@ -224,8 +223,8 @@ async function loadFeatureFlagOverridesForOrg(
 
 function defaultFlagDefinitions(planDefaults: Record<string, boolean>): FeatureFlagDefinition[] {
   return [
-    { key: "commerce.enabled", defaultEnabled: planDefaults["commerce.enabled"] ?? true },
-    { key: "erp.inventory", defaultEnabled: planDefaults["erp.inventory"] ?? true },
+    { key: "commerce.enabled", defaultEnabled: planDefaults["commerce.enabled"] ?? false },
+    { key: "erp.inventory", defaultEnabled: planDefaults["erp.inventory"] ?? false },
     { key: "erp.procurement", defaultEnabled: planDefaults["erp.procurement"] ?? false },
     { key: "erp.fulfilment", defaultEnabled: planDefaults["erp.fulfilment"] ?? false },
     { key: "rinpo.ops", defaultEnabled: planDefaults["rinpo.ops"] ?? false },
