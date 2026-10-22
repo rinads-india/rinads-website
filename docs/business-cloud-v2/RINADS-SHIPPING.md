@@ -49,6 +49,10 @@ Order → Fulfilment → Package
 - carrier credential bindings persist opaque references only; secret values remain outside PostgreSQL
 - append-only `logistics_decision_events` for RI/RINPO recommendation, authorization, action and audit evidence
 - tests for price/speed/capability/intelligence routing, failure handling and creation
+- Shiprocket API-user credential contract verified against current provider documentation
+- Shiprocket server client for token authentication, serviceability/rate evidence, AWB assignment, pickup scheduling, label generation, shipment cancellation and shipment detail reads
+- Shiprocket mutations fail closed unless the explicit server-side `writeEnabled` gate is enabled
+- Shiprocket bearer tokens are cached server-side and refreshed before the documented 10-day validity window
 
 ## RINADS Intelligence / RINPO Runtime boundary
 
@@ -60,7 +64,7 @@ Do not let a conversational RINPO surface directly choose or call a carrier outs
 
 ## Persistence boundary
 
-`logistics_provider_configs` stores tenant enablement, priority, capabilities, non-secret configuration and an opaque credential binding key. It must never store a DTDC/Delhivery/Porter token, password or private key.
+`logistics_provider_configs` stores tenant enablement, priority, capabilities, non-secret configuration and an opaque credential binding key. It must never store a DTDC/Delhivery/Porter/Shiprocket token, password or private key.
 
 `logistics_routing_policies` stores tenant strategy, ceilings, intelligence weights and autonomy/approval thresholds.
 
@@ -68,11 +72,24 @@ Do not let a conversational RINPO surface directly choose or call a carrier outs
 
 Provider secret values remain in server-side environment/vault/connector infrastructure and are resolved only by the provider adapter at execution time.
 
+## Shiprocket contract
+
+Shiprocket's current seller API requires a dedicated API user. The API user's email plus password/API key is exchanged at `/v1/external/auth/login` for a bearer JWT. Provider documentation states that the token is valid for 10 days.
+
+RINADS secret bindings therefore use:
+
+- `RINADS_SHIPROCKET_EMAIL`
+- `RINADS_SHIPROCKET_PASSWORD`
+
+The database continues to store only the opaque binding ID `shiprocket_primary`.
+
+The Shiprocket client is deliberately **not** yet exposed as a complete `CourierAdapter`. The current canonical `CourierAdapter.createShipment()` request only carries order/package IDs, weight and destination PIN, while Shiprocket order creation requires customer address, contact, payment and order-item details. The canonical RINADS shipment execution command must be enriched first rather than inventing or duplicating those values inside a provider adapter.
+
+Shiprocket webhooks should terminate at a provider-neutral RINADS endpoint. Shiprocket's current webhook documentation specifically warns against putting `shiprocket`, `kartrocket`, `sr` or `kr` in the webhook URL and supports an `x-api-key` security token. Keep that constraint when the webhook normalization slice is implemented.
+
 ## Important boundary
 
-The provider keys are **not** claims that those carrier APIs are integrated or enabled. The repository still needs real credentialed adapters for each carrier.
-
-Do not use `DemoCourierAdapter` for production fulfilment.
+The provider keys are **not** claims that all carrier APIs are integrated or enabled. Do not use `DemoCourierAdapter` for production fulfilment.
 
 Current carrier credential contract names are intentionally server-only setup metadata:
 
@@ -80,6 +97,7 @@ Current carrier credential contract names are intentionally server-only setup me
 - `RINADS_DELHIVERY_API_TOKEN`
 - `RINADS_PORTER_API_KEY` + `RINADS_PORTER_API_SECRET`
 - `RINADS_ONDC_SUBSCRIBER_ID` + `RINADS_ONDC_SIGNING_PRIVATE_KEY`
+- `RINADS_SHIPROCKET_EMAIL` + `RINADS_SHIPROCKET_PASSWORD`
 
 Additional provider contracts are defined in `apps/website/lib/logistics-os.ts`. Secret values must never be prefixed with `NEXT_PUBLIC_`.
 
@@ -87,19 +105,22 @@ A `*_LIVE=1` flag must never be set merely because credentials exist. Live statu
 
 ## Next slices
 
-1. repository/service adapter that loads tenant provider config + routing policy into `CourierProviderRouter`;
-2. DTDC adapter against the existing Mannuthy API account + sandbox/controlled contract tests;
-3. Delhivery adapter + staging contract tests;
-4. Porter Enterprise adapter for local/on-demand delivery;
-5. ONDC Delivery protocol adapter/discovery layer;
-6. webhook normalization into canonical delivery events;
-7. carrier ownership on cancel/track/label paths;
-8. routing policy enforcement by pincode, parcel type, COD, reverse, SLA, cost ceiling and tenant preference;
-9. observability: provider error rate, SLA variance, cost/order, delivery success and RTO;
-10. Shopify merchant connector for order ingest + fulfilment updates;
-11. Hostinger/n8n notification workflows that never become the shipment system of record;
-12. Shiprocket/Sequel/BVC adapters where commercially useful.
+1. enrich the canonical shipment execution command with the customer/address/payment/item data required by real carrier order creation;
+2. repository/service adapter that loads tenant provider config + routing policy into `CourierProviderRouter`;
+3. map Shiprocket serviceability options into provider-neutral `CourierQuote` candidates for RI ranking;
+4. complete the Shiprocket `CourierAdapter` only after the enriched shipment command exists;
+5. DTDC adapter against the existing Mannuthy API account + sandbox/controlled contract tests;
+6. Delhivery adapter + staging contract tests;
+7. Porter Enterprise adapter for local/on-demand delivery;
+8. ONDC Delivery protocol adapter/discovery layer;
+9. webhook normalization into canonical delivery events, including Shiprocket `x-api-key` verification;
+10. carrier ownership on cancel/track/label paths;
+11. routing policy enforcement by pincode, parcel type, COD, reverse, SLA, cost ceiling and tenant preference;
+12. observability: provider error rate, SLA variance, cost/order, delivery success and RTO;
+13. Shopify merchant connector for order ingest + fulfilment updates;
+14. Hostinger/n8n notification workflows that never become the shipment system of record;
+15. Sequel/BVC adapters where commercially useful.
 
 ## Production gate
 
-A provider becomes `live` only after credentials, sandbox/staging tests, webhook verification, idempotency, cancellation, tracking, label retrieval and one real controlled shipment are verified. Until then the UI must show `not configured`, `credentials detected` or `verification pending`, never simulated success.
+A provider becomes `live` only after credentials, sandbox/staging where available, controlled contract tests, webhook verification, idempotency, cancellation, tracking, label retrieval and one real controlled shipment are verified. Until then the UI must show `not configured`, `credentials detected` or `verification pending`, never simulated success.
