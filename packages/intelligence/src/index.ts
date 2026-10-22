@@ -20,5 +20,6 @@ export * from "./nlu-types";
 export * from "./nlu-deterministic";
 export * from "./provider-router";
 export * from "./model-registry";
+export * from "./model-client";
 export * from "./nlu-llm";
 export * from "./retrieval";

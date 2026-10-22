@@ -10,3 +10,4 @@ export * from "./runtime-jobs";
 export * from "./provisioning-worker";
 export * from "./ambady-migrate";
 export * from "./marketing/index";
+export * from "./capability-registry";

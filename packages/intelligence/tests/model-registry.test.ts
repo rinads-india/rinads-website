@@ -7,12 +7,21 @@ const MANAGED_ENV = [
   "RINADS_RINPO_LLM_API_KEY",
   "RINADS_OPENAI_API_KEY",
   "OPENAI_API_KEY",
+  "RINADS_ANTHROPIC_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "RINADS_GOOGLE_AI_API_KEY",
+  "GEMINI_API_KEY",
+  "GOOGLE_API_KEY",
   "RINADS_XAI_API_KEY",
   "XAI_API_KEY",
   "RINADS_RINPO_LLM_BASE_URL",
   "RINADS_RINPO_LLM_MODEL",
   "RINADS_OPENAI_BASE_URL",
   "RINADS_OPENAI_MODEL",
+  "RINADS_ANTHROPIC_BASE_URL",
+  "RINADS_ANTHROPIC_MODEL",
+  "RINADS_GOOGLE_AI_BASE_URL",
+  "RINADS_GOOGLE_AI_MODEL",
   "RINADS_XAI_BASE_URL",
   "RINADS_XAI_MODEL",
 ] as const;
@@ -40,11 +49,15 @@ describe("RINPO model registry", () => {
       const registry = listRinpoModelRegistry();
       const xai = registry.find((entry) => entry.provider === "xai");
       const openai = registry.find((entry) => entry.provider === "openai");
+      const anthropic = registry.find((entry) => entry.provider === "anthropic");
+      const google = registry.find((entry) => entry.provider === "google");
       const custom = registry.find((entry) => entry.provider === "custom");
 
       assert.equal(xai?.configured, true);
       assert.equal(xai?.selectedByDefault, true);
       assert.equal(openai?.configured, false);
+      assert.equal(anthropic?.configured, false);
+      assert.equal(google?.configured, false);
       assert.equal(custom?.configured, false);
     });
   });
@@ -80,6 +93,38 @@ describe("RINPO model registry", () => {
     });
   });
 
+  it("prefers Anthropic for coding when it is configured and allowed", () => {
+    withCleanEnv(() => {
+      process.env.RINADS_RINPO_LLM_PROVIDER = "openai";
+      process.env.RINADS_OPENAI_API_KEY = "openai-test";
+      process.env.RINADS_ANTHROPIC_API_KEY = "anthropic-test";
+
+      const selection = selectRinpoModel("code", "internal");
+
+      assert.equal(selection.mode, "model");
+      if (selection.mode === "model") {
+        assert.equal(selection.route.provider, "anthropic");
+        assert.equal(selection.route.model, "claude-sonnet-5-5");
+      }
+    });
+  });
+
+  it("prefers Google for vision when it is configured and allowed", () => {
+    withCleanEnv(() => {
+      process.env.RINADS_RINPO_LLM_PROVIDER = "openai";
+      process.env.RINADS_OPENAI_API_KEY = "openai-test";
+      process.env.RINADS_GOOGLE_AI_API_KEY = "google-test";
+
+      const selection = selectRinpoModel("vision", "internal");
+
+      assert.equal(selection.mode, "model");
+      if (selection.mode === "model") {
+        assert.equal(selection.route.provider, "google");
+        assert.equal(selection.route.model, "gemini-3.8-flash");
+      }
+    });
+  });
+
   it("uses the configured default route for research when external research is not allowed", () => {
     withCleanEnv(() => {
       process.env.RINADS_RINPO_LLM_PROVIDER = "openai";
@@ -93,13 +138,14 @@ describe("RINPO model registry", () => {
     });
   });
 
-  it("enforces provider allowlists before provider preferences", () => {
+  it("enforces provider allowlists before task or provider preferences", () => {
     withCleanEnv(() => {
       process.env.RINADS_RINPO_LLM_PROVIDER = "openai";
       process.env.RINADS_OPENAI_API_KEY = "openai-test";
+      process.env.RINADS_ANTHROPIC_API_KEY = "anthropic-test";
       process.env.RINADS_XAI_API_KEY = "xai-test";
 
-      const selection = selectRinpoModel("reasoning", "internal", {
+      const selection = selectRinpoModel("code", "internal", {
         allowedProviders: ["openai"],
         preferredProvider: "xai",
       });
