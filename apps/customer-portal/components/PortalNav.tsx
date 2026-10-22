@@ -8,10 +8,12 @@ import {
   LayoutDashboard,
   MapPin,
   Package,
+  Smartphone,
   User,
 } from "lucide-react";
 
 const links = [
+  { href: "/mobile", label: "RINADS ONE", icon: Smartphone },
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orders", label: "Orders", icon: Package },
   { href: "/addresses", label: "Addresses", icon: MapPin },
@@ -30,9 +32,9 @@ export function PortalNav() {
     >
       <div className="border-b border-rinads-primary/15 px-5 py-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-rinads-primary">
-          Ambady
+          RINADS ONE · Ambady
         </p>
-        <h1 className="text-lg font-bold text-foreground">Customer Portal</h1>
+        <h1 className="text-lg font-bold text-foreground">Customer Workspace</h1>
       </div>
       <ul className="flex flex-1 flex-col gap-1 p-3">
         {links.map(({ href, label, icon: Icon }) => {
@@ -57,7 +59,7 @@ export function PortalNav() {
         })}
       </ul>
       <p className="border-t border-rinads-primary/15 px-5 py-4 text-xs text-muted-foreground">
-        Powered by RINADS Commerce
+        Powered by RINADS Intelligence
       </p>
     </nav>
   );
