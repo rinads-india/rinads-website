@@ -1,5 +1,3 @@
-import type { BillingProvider } from "./index";
-
 export type CatalogActivationNotes = {
   organizationId: string;
   productKey: string;
@@ -9,6 +7,7 @@ export type CatalogActivationNotes = {
 };
 
 export type CatalogBillingMode = "one_time" | "subscription";
+export type CatalogBillingProvider = "razorpay" | "stripe";
 
 /**
  * Trusted commercial policy loaded from the server-side RINADS catalog.
@@ -27,7 +26,7 @@ export type CatalogActivationPolicy = {
  * the provider webhook signature and deduplicating the provider event ID.
  */
 export type VerifiedCatalogBillingSignal = {
-  provider: BillingProvider;
+  provider: CatalogBillingProvider;
   providerEventId: string;
   kind: "one_time_paid" | "subscription_active";
   status: "paid" | "active";
@@ -39,7 +38,7 @@ export type CatalogActivationDecision =
   | {
       activate: true;
       notes: CatalogActivationNotes;
-      provider: BillingProvider;
+      provider: CatalogBillingProvider;
       providerEventId: string;
     }
   | {
