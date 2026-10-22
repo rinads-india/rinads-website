@@ -79,7 +79,7 @@ describe("RINADS MCP gateway", () => {
     assert.equal(cancel?.annotations.destructiveHint, true);
   });
 
-  it("fails closed for tool calls until authenticated execution is bound", () => {
+  it("requires agent authentication before tool execution", () => {
     const handled = handleRinadsMcpRequest({
       jsonrpc: "2.0",
       id: 9,
@@ -102,9 +102,69 @@ describe("RINADS MCP gateway", () => {
       content?: Array<{ text?: string }>;
     };
     assert.equal(result.isError, true);
+    assert.equal(result._meta?.["com.rinads/authenticated"], false);
     assert.equal(result._meta?.["com.rinads/executionEnabled"], false);
-    assert.equal(result._meta?.["com.rinads/reason"], "AUTHENTICATED_AGENT_GATEWAY_NOT_BOUND");
-    assert.match(result.content?.[0]?.text ?? "", /actor \+ organization/);
+    assert.equal(result._meta?.["com.rinads/reason"], "AGENT_AUTH_REQUIRED");
+  });
+
+  it("fails closed when an authenticated identity has ambiguous organization scope", () => {
+    const handled = handleRinadsMcpRequest(
+      {
+        jsonrpc: "2.0",
+        id: 10,
+        method: "tools/call",
+        params: {
+          name: capabilityKeyToMcpToolName("logistics.shipment.track"),
+          arguments: { awb: "123456" },
+        },
+      },
+      { principalStatus: "scope_required" }
+    );
+
+    assert.equal(handled.kind, "response");
+    if (handled.kind !== "response" || !("result" in handled.body)) return;
+    const result = handled.body.result as {
+      isError?: boolean;
+      _meta?: Record<string, unknown>;
+      content?: Array<{ text?: string }>;
+    };
+    assert.equal(result.isError, true);
+    assert.equal(result._meta?.["com.rinads/reason"], "AGENT_ORGANIZATION_SCOPE_REQUIRED");
+    assert.match(result.content?.[0]?.text ?? "", /will not accept an organization_id/);
+  });
+
+  it("keeps capability execution disabled even after principal and tenant scope resolve", () => {
+    const handled = handleRinadsMcpRequest(
+      {
+        jsonrpc: "2.0",
+        id: 11,
+        method: "tools/call",
+        params: {
+          name: capabilityKeyToMcpToolName("intelligence.business_summary.read"),
+          arguments: { period: "7d" },
+        },
+      },
+      {
+        principal: {
+          actorId: "user_1",
+          organizationId: "org_1",
+          roleKey: "founder",
+          permissionIds: ["org.read"],
+          authMethod: "bearer",
+        },
+      }
+    );
+
+    assert.equal(handled.kind, "response");
+    if (handled.kind !== "response" || !("result" in handled.body)) return;
+    const result = handled.body.result as {
+      isError?: boolean;
+      _meta?: Record<string, unknown>;
+    };
+    assert.equal(result.isError, true);
+    assert.equal(result._meta?.["com.rinads/authenticated"], true);
+    assert.equal(result._meta?.["com.rinads/executionEnabled"], false);
+    assert.equal(result._meta?.["com.rinads/reason"], "CAPABILITY_EXECUTION_NOT_ENABLED");
   });
 
   it("rejects unknown tools and invalid requests", () => {

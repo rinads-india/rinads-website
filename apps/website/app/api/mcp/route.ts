@@ -1,7 +1,9 @@
 import {
   handleRinadsMcpRequest,
   RINADS_MCP_MODERN_PROTOCOL_VERSION,
+  type RinadsMcpExecutionContext,
 } from "@rinads/platform";
+import { resolveRinadsAgentPrincipal } from "@/lib/agent-gateway/principal";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +13,23 @@ const JSON_HEADERS = {
   "Cache-Control": "no-store",
   "MCP-Protocol-Version": RINADS_MCP_MODERN_PROTOCOL_VERSION,
 } as const;
+
+async function executionContext(request: Request): Promise<RinadsMcpExecutionContext> {
+  const resolution = await resolveRinadsAgentPrincipal(request);
+  if (resolution.status === "authenticated") {
+    return {
+      principal: {
+        actorId: resolution.principal.actorId,
+        organizationId: resolution.principal.organizationId,
+        roleKey: resolution.principal.roleKey,
+        permissionIds: resolution.principal.permissionIds,
+        authMethod: resolution.principal.authMethod,
+      },
+    };
+  }
+
+  return { principalStatus: resolution.status };
+}
 
 export async function POST(request: Request): Promise<Response> {
   let payload: unknown;
@@ -27,7 +46,8 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const handled = handleRinadsMcpRequest(payload);
+  const context = await executionContext(request);
+  const handled = handleRinadsMcpRequest(payload, context);
   if (handled.kind === "notification") {
     return new Response(null, {
       status: handled.status,
@@ -50,7 +70,9 @@ export async function GET(): Promise<Response> {
       name: "RINADS MCP Gateway",
       protocol: RINADS_MCP_MODERN_PROTOCOL_VERSION,
       transport: "streamable-http/stateless-json",
-      execution: "disabled_until_authenticated_agent_gateway",
+      authentication: "rinads-session-or-bearer",
+      organizationScope: "server-resolved",
+      execution: "disabled_until_capability_policy_binding",
       endpoint: "/api/mcp",
     },
     {

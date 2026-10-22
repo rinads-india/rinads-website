@@ -24,11 +24,11 @@ Capability Registry
 Shopify / Shiprocket / Delhivery / DTDC / Porter / Meta / Google / ...
 ```
 
-## Delivered in this slice
+## Delivered foundation
 
 ### Multi-model AI Gateway
 
-`@rinads/intelligence` now supports server-side provider routes for:
+`@rinads/intelligence` supports server-side provider routes for:
 
 - OpenAI
 - Anthropic / Claude
@@ -59,7 +59,7 @@ Google credentials use an HTTP header, not a query-string secret. The model clie
 
 ### Canonical Capability Registry
 
-`@rinads/platform` now contains a provider-neutral registry covering the first agentic domains:
+`@rinads/platform` contains a provider-neutral registry covering the first agentic domains:
 
 - Commerce
 - Logistics
@@ -83,35 +83,49 @@ Provider presence in this registry means the capability may be implemented by th
 
 The endpoint exposes safe static capability metadata only. It deliberately reports `execution.enabled = false` for every capability.
 
-It must never expose:
-
-- tenant data;
-- API keys/tokens;
-- provider configuration state;
-- customer/order PII;
-- Runtime approval tokens;
-- service-role credentials.
+It must never expose tenant data, API keys/tokens, provider configuration state, customer/order PII, Runtime approval tokens or service-role credentials.
 
 ### MCP discovery endpoint
 
 `POST /api/mcp`
 
-The stacked MCP slice exposes the same canonical capability registry as MCP tools while keeping execution fail-closed. It supports:
+The MCP layer exposes the canonical capability registry as tools while keeping execution fail-closed. It supports:
 
 - modern MCP `2026-07-28` discovery through `server/discover`;
 - legacy `2025-11-25` `initialize` discovery for compatibility;
 - `tools/list` mapped from canonical RINADS capability keys;
 - tool annotations derived from RINADS risk classes;
 - no `organization_id` argument in tool schemas;
-- `tools/call` returning a governed execution-disabled result until authenticated Agent Gateway execution is bound.
+- stateless JSON-RPC handling.
 
-The MCP endpoint is stateless. It does not treat MCP client identity metadata as authorization evidence. Server identity is presentation/diagnostic metadata only.
+MCP client identity metadata is presentation/diagnostic data only and is never treated as authorization evidence.
+
+### Authenticated Agent Principal
+
+The Agent Gateway now reuses the existing RINADS Supabase identity and tenancy model rather than creating a parallel account or tenant system.
+
+First-party/session requests:
+
+1. validate the existing Supabase user session;
+2. load active `organization_members`, role and permission evidence;
+3. reuse the existing active-organization cookie only when it matches an active membership;
+4. resolve organization scope server-side.
+
+Bearer requests:
+
+1. parse `Authorization: Bearer <token>`;
+2. validate the access token through Supabase `auth.getUser(token)`;
+3. load active RINADS memberships server-side;
+4. resolve automatically only when exactly one active organization exists;
+5. fail closed with `AGENT_ORGANIZATION_SCOPE_REQUIRED` when the identity belongs to multiple active organizations.
+
+A bearer client cannot choose an organization through a tool argument, custom header or request payload. Multi-organization remote agents require a future RINADS organization-bound delegation/OAuth token.
+
+Even after actor and organization scope resolve, `tools/call` remains disabled with `CAPABILITY_EXECUTION_NOT_ENABLED`. Authentication is necessary but is not authorization to perform business actions.
 
 ## External-agent execution contract
 
-External execution is intentionally not activated by this slice.
-
-Before ChatGPT, Claude, Gemini or another remote agent can call a RINADS tool, the request path must provide all of the following:
+Before ChatGPT, Claude, Gemini or another remote agent can execute a RINADS capability, the request path must provide all of the following:
 
 1. authenticated actor identity;
 2. canonical `organization_id` resolved server-side;
@@ -124,7 +138,7 @@ Before ChatGPT, Claude, Gemini or another remote agent can call a RINADS tool, t
 9. provider execution receipt;
 10. append-only audit/business event.
 
-No browser-supplied `organization_id`, role or permission may become an authorization boundary.
+No browser/client-supplied `organization_id`, role or permission may become an authorization boundary.
 
 ## Commerce rule
 
@@ -135,13 +149,15 @@ Initial provider mapping:
 - product/catalog read -> RINADS / Shopify;
 - order read -> RINADS / Shopify;
 - cart creation -> approval-gated external agent policy;
-- checkout creation -> blocked for unauthenticated external agents.
+- checkout creation -> blocked for generic external agents.
 
 ## Logistics rule
 
 RINADS Shipping remains provider-neutral. Shiprocket and direct carriers such as Delhivery are adapters beneath the RINADS routing/governance layer.
 
-Initial provider mapping covers normalized quote, tracking, shipment creation, cancellation and reverse-logistics intents. Cancellation is blocked for external agents by default.
+The merged Shiprocket foundation now includes normalized serviceability/rate evidence and read-only tracking by AWB or shipment ID. The tracking projection deliberately avoids unnecessary customer PII. Carrier mutations remain behind the existing live/write gates and are not exposed through MCP.
+
+Initial provider mapping covers normalized quote, tracking, shipment creation, cancellation and reverse-logistics intents. Cancellation remains blocked for external agents by default.
 
 ## Growth rule
 
@@ -178,17 +194,17 @@ RINADS_RINPO_LLM_MODEL=
 
 ## Next implementation slices
 
-1. authenticated Agent Gateway principal/token model;
-2. MCP/OAuth resource-server authorization for external agents;
+1. capability entitlement + permission binding for a deliberately small READ-only allowlist;
+2. RINADS organization-bound OAuth/delegation tokens for multi-organization remote agents;
 3. tenant-scoped READ execution through existing service contracts;
-4. Shopify adapter binding to canonical commerce commands and read projections;
-5. Shiprocket canonical adapter completion after shipment intent is enriched;
-6. Shiprocket tracking/webhook normalization into RINADS shipment events;
+4. Shopify adapter binding to canonical commerce reads/commands;
+5. Shiprocket tracking webhook verification and shipment-event projection;
+6. approval + idempotency + audit binding for DRAFT/WRITE/ACTION capabilities;
 7. Delhivery production gate after staging evidence and founder approval;
-8. Meta/Google campaign adapters bound to existing marketing publication approvals;
+8. Meta/Google campaign adapters bound to marketing publication approvals;
 9. customer/business graph event normalization across commerce, growth and fulfilment;
-10. RINPO Phone UI showing recommendation -> authorization -> action -> receipt.
+10. RINPO Phone UI showing observe -> recommend -> authorize -> act -> verify -> audit.
 
 ## Production gate
 
-These slices are source-only. Do not enable external tool execution, add production credentials, activate a carrier, launch ads, apply production database migrations, or promote a production deployment solely because this code is merged. Each external-effect adapter needs its own staging evidence and explicit production authorization.
+These slices do not by themselves authorize external side effects. Do not add production credentials to source, activate a carrier write path, launch ads, apply production database migrations, or expose payment/checkout mutations merely because gateway code is merged. Each external-effect adapter needs staging evidence, explicit capability authorization and production approval.
