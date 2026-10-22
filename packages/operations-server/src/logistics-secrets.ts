@@ -81,8 +81,8 @@ const ENVIRONMENT_BINDINGS: readonly EnvironmentBinding[] = [
     bindingId: "shiprocket_primary",
     contractVerified: true,
     fields: {
-      apiEmail: "RINADS_SHIPROCKET_API_EMAIL",
-      apiPassword: "RINADS_SHIPROCKET_API_PASSWORD",
+      apiEmail: "RINADS_SHIPROCKET_EMAIL",
+      apiPassword: "RINADS_SHIPROCKET_PASSWORD",
     },
   },
   {
