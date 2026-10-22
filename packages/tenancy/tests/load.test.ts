@@ -1,6 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buildDemoTenancyContext } from "../src/load";
+import {
+  buildDemoTenancyContext,
+  loadMemberships,
+  type TenancySupabaseClient,
+} from "../src/load";
 import { requireOrgActive, requirePermission } from "../src/context";
 import { planFeatureFlags } from "../src/feature-flags";
 import { activeOrgCookieOptions, readActiveOrgIdFromCookie } from "../src/org-switch";
@@ -45,5 +49,42 @@ describe("tenancy load helpers", () => {
     assert.equal(flags["erp.procurement"], false);
     assert.equal(flags["erp.inventory"], true);
     assert.equal(flags["salon.whatsapp.send_enabled"], false);
+  });
+
+  it("never returns invited or removed memberships as selectable tenancy contexts", async () => {
+    const rows = [
+      {
+        status: "active",
+        organizations: { id: "org_active", name: "Active Org", slug: "active", status: "active" },
+        roles: { id: "role_staff", key: "staff" },
+      },
+      {
+        status: "removed",
+        organizations: { id: "org_removed", name: "Removed Org", slug: "removed", status: "active" },
+        roles: { id: "role_staff", key: "staff" },
+      },
+      {
+        status: "invited",
+        organizations: { id: "org_invited", name: "Invited Org", slug: "invited", status: "active" },
+        roles: { id: "role_staff", key: "staff" },
+      },
+    ];
+
+    const client = {
+      auth: {
+        getUser: async () => ({ data: { user: null }, error: null }),
+      },
+      from: (table: string) => ({
+        select: () => ({
+          eq: async () => ({
+            data: table === "organization_members" ? rows : [],
+            error: null,
+          }),
+        }),
+      }),
+    } as unknown as TenancySupabaseClient;
+
+    const memberships = await loadMemberships(client, "user_1");
+    assert.deepEqual(memberships.map((membership) => membership.organizationId), ["org_active"]);
   });
 });
