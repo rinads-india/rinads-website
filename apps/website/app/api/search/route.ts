@@ -14,6 +14,18 @@ type ServiceRow = {
   currency: string;
 };
 
+type EntityRow = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  entity_type: string;
+  pillar: string | null;
+  href: string | null;
+  tags: string[] | null;
+};
+
 type SearchResult = {
   id: string;
   slug: string;
@@ -116,14 +128,14 @@ export async function GET(req: NextRequest) {
 
       const { data } = await query;
       if (data) {
-        for (const row of data as any[]) {
+        for (const row of data as EntityRow[]) {
           results.push({
             id: row.id,
             slug: row.slug,
             name: row.title,
             description: row.description ?? row.subtitle ?? "",
             kind: row.entity_type ?? "entity",
-            pillar: row.pillar,
+            pillar: row.pillar ?? undefined,
             href: row.href ?? `/${row.entity_type}/${row.slug}`,
             entityType: row.entity_type,
           });
