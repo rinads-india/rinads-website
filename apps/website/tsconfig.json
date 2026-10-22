@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@rinads/world-contract": ["../../packages/world-contract/src/index.ts"]
     }
   },
   "include": [
