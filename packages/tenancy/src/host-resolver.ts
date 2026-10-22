@@ -57,7 +57,10 @@ export async function resolveTenancyFromHost(
     return { ok: false, reason: "Store not found.", status: 404 };
   }
 
-  const { data: orgRows } = await client.from("organizations").select("id, name, slug, status").eq("id", organizationId);
+  const { data: orgRows } = await client
+    .from("organizations")
+    .select("id, name, slug, status")
+    .eq("id", organizationId);
   const org = orgRows?.[0];
   if (!org) {
     return { ok: false, reason: "Organization not found.", status: 404 };
@@ -72,8 +75,7 @@ export async function resolveTenancyFromHost(
     roleKey: "client",
     permissions: [],
     memberships: [],
-    planKey: "starter",
-    featureFlags: planFeatureFlags({ planKey: "starter" }),
+    featureFlags: planFeatureFlags({}),
   };
 
   const active = requireOrgActive(draftContext);
@@ -83,18 +85,25 @@ export async function resolveTenancyFromHost(
 
   const { data: subRows } = await client
     .from("organization_subscriptions")
-    .select("plan_key")
+    .select("plan_key, status")
     .eq("organization_id", organizationId);
-  const planKey = subRows?.[0]?.plan_key ? String(subRows[0].plan_key) : "starter";
+  const subscription = subRows?.[0];
+  const planKey =
+    subscription?.status === "active" && subscription.plan_key
+      ? String(subscription.plan_key)
+      : undefined;
 
   const { data: settingsRows } = await client
     .from("organization_settings")
     .select("vertical_key")
     .eq("organization_id", organizationId);
-  const verticalKey = settingsRows?.[0]?.vertical_key ? String(settingsRows[0].vertical_key) : undefined;
+  const verticalKey = settingsRows?.[0]?.vertical_key
+    ? String(settingsRows[0].vertical_key)
+    : undefined;
 
+  const planDefaults = planFeatureFlags({ planKey, verticalKey });
   const overrides = await loadFeatureFlagOverrides(client, organizationId);
-  const definitions = defaultFlagDefinitions();
+  const definitions = defaultFlagDefinitions(planDefaults);
   const evaluated = evaluateFeatureFlags(definitions, overrides, { organizationId });
 
   const context: TenancyContext = {
@@ -107,7 +116,7 @@ export async function resolveTenancyFromHost(
     memberships: [],
     planKey,
     verticalKey,
-    featureFlags: { ...planFeatureFlags({ planKey, verticalKey }), ...evaluated },
+    featureFlags: { ...planDefaults, ...evaluated },
   };
 
   return { ok: true, context };
@@ -130,13 +139,16 @@ async function loadFeatureFlagOverrides(
   }));
 }
 
-function defaultFlagDefinitions(): FeatureFlagDefinition[] {
+function defaultFlagDefinitions(planDefaults: Record<string, boolean>): FeatureFlagDefinition[] {
   return [
-    { key: "commerce.enabled", defaultEnabled: true },
-    { key: "erp.inventory", defaultEnabled: true },
-    { key: "erp.procurement", defaultEnabled: false },
-    { key: "erp.fulfilment", defaultEnabled: false },
-    { key: "rinpo.ops", defaultEnabled: false },
-    { key: "salon.whatsapp.send_enabled", defaultEnabled: false },
+    { key: "commerce.enabled", defaultEnabled: planDefaults["commerce.enabled"] ?? false },
+    { key: "erp.inventory", defaultEnabled: planDefaults["erp.inventory"] ?? false },
+    { key: "erp.procurement", defaultEnabled: planDefaults["erp.procurement"] ?? false },
+    { key: "erp.fulfilment", defaultEnabled: planDefaults["erp.fulfilment"] ?? false },
+    { key: "rinpo.ops", defaultEnabled: planDefaults["rinpo.ops"] ?? false },
+    {
+      key: "salon.whatsapp.send_enabled",
+      defaultEnabled: planDefaults["salon.whatsapp.send_enabled"] ?? false,
+    },
   ];
 }
