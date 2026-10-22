@@ -9,6 +9,13 @@ export type RinaSpaceSectionId =
   | "learn"
   | "experience";
 
+export type RinaSpaceEntitlement = {
+  plans?: string[];
+  verticals?: string[];
+  /** Every listed feature flag must evaluate true. */
+  requiredFlags?: string[];
+};
+
 export type RinaSpaceCapability = {
   id: string;
   label: string;
@@ -16,6 +23,7 @@ export type RinaSpaceCapability = {
   href: string;
   roles: string[];
   status: RinaSpaceCapabilityStatus;
+  entitlement?: RinaSpaceEntitlement;
 };
 
 export type RinaSpaceSection = {
@@ -25,17 +33,23 @@ export type RinaSpaceSection = {
   capabilities: RinaSpaceCapability[];
 };
 
+export type RinaSpaceAccessContext = {
+  role: string;
+  planKey?: string;
+  verticalKey?: string;
+  featureFlags?: Record<string, boolean>;
+};
+
 const ALL_AUTHENTICATED = ["owner", "founder", "admin", "staff", "member", "customer"];
 const BUSINESS_USERS = ["owner", "founder", "admin", "staff", "member"];
 const ADMIN_USERS = ["owner", "founder", "admin"];
 
 /**
- * Wave 0 RINASPACE capability registry.
+ * Canonical RINASPACE capability registry.
  *
- * This registry intentionally points only at routes that exist in the canonical
- * website application. Entitlement-based filtering will replace role-only
- * filtering in a later wave; keeping the registry centralized prevents new
- * workspace shells from hard-coding their own navigation models.
+ * Routes here must resolve in the canonical platform. Access is an experience
+ * filter only; database/RPC authorization remains authoritative through RLS,
+ * permissions and server-side policy.
  */
 export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
   {
@@ -50,6 +64,15 @@ export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
         href: "/os",
         roles: BUSINESS_USERS,
         status: "live",
+      },
+      {
+        id: "r-glow",
+        label: "R GLOW",
+        description: "Salon operations, appointments, customers, POS and team workflows.",
+        href: "https://glow.rinads.com",
+        roles: BUSINESS_USERS,
+        status: "live",
+        entitlement: { verticals: ["salon-os"] },
       },
       {
         id: "customers",
@@ -74,6 +97,7 @@ export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
         href: "/os/finance",
         roles: ADMIN_USERS,
         status: "preview",
+        entitlement: { plans: ["growth", "platform"] },
       },
       {
         id: "approvals",
@@ -128,6 +152,7 @@ export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
         href: "/os/commerce",
         roles: BUSINESS_USERS,
         status: "live",
+        entitlement: { requiredFlags: ["commerce.enabled"] },
       },
       {
         id: "logistics",
@@ -136,6 +161,7 @@ export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
         href: "/os/logistics",
         roles: BUSINESS_USERS,
         status: "preview",
+        entitlement: { requiredFlags: ["erp.fulfilment"] },
       },
     ],
   },
@@ -190,6 +216,7 @@ export const RINASPACE_SECTIONS: RinaSpaceSection[] = [
         href: "/os/ai",
         roles: ADMIN_USERS,
         status: "preview",
+        entitlement: { requiredFlags: ["rinpo.ops"] },
       },
     ],
   },
@@ -238,11 +265,45 @@ export function canAccessRinaSpaceCapability(role: string, capability: RinaSpace
   return capability.roles.includes(normalizedRole) || normalizedRole === "owner" || normalizedRole === "founder";
 }
 
-export function getRinaSpaceSectionsForRole(role: string): RinaSpaceSection[] {
+export function entitlementAllowsCapability(
+  context: RinaSpaceAccessContext,
+  capability: RinaSpaceCapability,
+): boolean {
+  const entitlement = capability.entitlement;
+  if (!entitlement) return true;
+
+  if (entitlement.plans?.length && (!context.planKey || !entitlement.plans.includes(context.planKey))) {
+    return false;
+  }
+
+  if (
+    entitlement.verticals?.length &&
+    (!context.verticalKey || !entitlement.verticals.includes(context.verticalKey))
+  ) {
+    return false;
+  }
+
+  if (
+    entitlement.requiredFlags?.some((flag) => context.featureFlags?.[flag] !== true)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+export function getRinaSpaceSectionsForContext(context: RinaSpaceAccessContext): RinaSpaceSection[] {
   return RINASPACE_SECTIONS.map((section) => ({
     ...section,
-    capabilities: section.capabilities.filter((capability) =>
-      canAccessRinaSpaceCapability(role, capability),
+    capabilities: section.capabilities.filter(
+      (capability) =>
+        canAccessRinaSpaceCapability(context.role, capability) &&
+        entitlementAllowsCapability(context, capability),
     ),
   })).filter((section) => section.capabilities.length > 0);
+}
+
+/** Compatibility helper for callers/tests that only know role. */
+export function getRinaSpaceSectionsForRole(role: string): RinaSpaceSection[] {
+  return getRinaSpaceSectionsForContext({ role });
 }
