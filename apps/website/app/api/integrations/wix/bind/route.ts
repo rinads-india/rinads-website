@@ -38,7 +38,22 @@ export async function POST(request: NextRequest) {
   if (!tenancy.permissions.includes("org.manage")) return redirect(request, "forbidden");
 
   const supabase = await createWebsiteServerClient();
-  const { error } = await supabase.rpc("bind_integration_connection", {
+  // The repo still carries handwritten database types rather than generated
+  // project types, so RPC argument inference is incomplete. Keep this cast
+  // narrow to the single reviewed function signature until `supabase gen types`
+  // becomes the platform source of truth.
+  const { error } = await (
+    supabase as unknown as {
+      rpc: (
+        fn: "bind_integration_connection",
+        args: {
+          p_provider: string;
+          p_external_instance_id: string;
+          p_organization_id: string;
+        },
+      ) => Promise<{ data: string | null; error: { code?: string; message: string } | null }>;
+    }
+  ).rpc("bind_integration_connection", {
     p_provider: "wix",
     p_external_instance_id: instance.instanceId,
     p_organization_id: tenancy.organizationId,
