@@ -93,6 +93,23 @@ export type Address = {
   isDefault: boolean;
 };
 
+/**
+ * Immutable delivery-address evidence captured at checkout. Logistics must use
+ * this snapshot instead of a mutable customer address row when executing an
+ * order later.
+ */
+export type OrderShippingAddressSnapshot = {
+  sourceAddressId?: string;
+  name: string;
+  phone: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: "IN";
+};
+
 export type CustomerProfile = {
   id: string;
   organizationId: string;
@@ -163,6 +180,7 @@ export type Order = {
   shippingMethodCode?: string;
   promotionCode?: string;
   guestEmail?: string;
+  shippingAddress?: OrderShippingAddressSnapshot;
   lines: OrderLineSnapshot[];
   events: OrderEvent[];
   createdAt: string;
