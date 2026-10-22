@@ -4,6 +4,10 @@ import { isRinaglowPublicPath } from "../lib/public-paths";
 import fs from "node:fs";
 
 describe("R GLOW middleware public path contract", () => {
+  it("allows the public product front door", () => {
+    assert.equal(isRinaglowPublicPath("/"), true);
+  });
+
   it("allows the feedback capability route and descendants", () => {
     assert.equal(isRinaglowPublicPath("/feedback"), true);
     assert.equal(isRinaglowPublicPath("/feedback/opaque-token"), true);
@@ -13,6 +17,8 @@ describe("R GLOW middleware public path contract", () => {
     assert.equal(isRinaglowPublicPath("/feedback-private"), false);
     assert.equal(isRinaglowPublicPath("/feedbackish/token"), false);
     assert.equal(isRinaglowPublicPath("/calendar"), false);
+    assert.equal(isRinaglowPublicPath("/clients"), false);
+    assert.equal(isRinaglowPublicPath("/growth"), false);
   });
 
   it("keeps the production environment contract ahead of auth routing", () => {
