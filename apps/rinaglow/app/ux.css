@@ -1,0 +1,126 @@
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 12% -8%, color-mix(in srgb, var(--rinads-primary) 10%, transparent), transparent 28rem),
+    var(--background);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+select {
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rinads-primary) 82%, white);
+  outline-offset: 2px;
+}
+
+.rg-page-enter {
+  animation: rg-page-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.rg-sheet {
+  transform-origin: bottom center;
+  animation: rg-sheet-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.rg-popover {
+  transform-origin: bottom center;
+  animation: rg-popover-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rg-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rg-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rg-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 639px) {
+  .btn-primary,
+  .btn-secondary {
+    min-height: 2.75rem;
+  }
+
+  .field-input {
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  .today-checkin-banner,
+  .rinpo-brief,
+  .gst-invoice {
+    border-radius: 1.25rem;
+  }
+
+  table {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .rg-page-enter,
+  .rg-sheet,
+  .rg-popover {
+    animation: none !important;
+    transform: none !important;
+  }
+}

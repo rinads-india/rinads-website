@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import "./globals.css";
+import "./ux.css";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${figtree.variable} min-h-screen bg-background font-sans antialiased`}>{children}</body>
+      <body className={`${figtree.variable} min-h-dvh overflow-x-hidden bg-background font-sans antialiased`}>{children}</body>
     </html>
   );
 }
