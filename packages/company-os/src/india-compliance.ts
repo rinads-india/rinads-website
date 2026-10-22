@@ -55,21 +55,30 @@ function assertRateBps(rateBps: number): void {
 }
 
 /**
- * Multiply a safe-integer minor amount by basis points without ever performing
- * the potentially unsafe intermediate multiplication in JavaScript Number
- * space. All GST inputs are non-negative, so adding half the denominator gives
- * deterministic half-up rounding equivalent to Math.round for valid inputs.
+ * Multiply a safe-integer minor amount by basis points without creating an
+ * unsafe intermediate product. Split the amount around the 10,000-bps
+ * denominator so every multiplication remains inside Number safe-integer
+ * precision, then apply deterministic half-up rounding to the remainder.
  */
 function applyRateBpsToMinor(amountMinor: number, rateBps: number): number {
-  const denominator = 10_000n;
-  const numerator = BigInt(amountMinor) * BigInt(rateBps);
-  const rounded = (numerator + denominator / 2n) / denominator;
+  if (amountMinor === 0 || rateBps === 0) return 0;
 
-  if (rounded > BigInt(Number.MAX_SAFE_INTEGER)) {
+  const denominator = 10_000;
+  const quotient = Math.floor(amountMinor / denominator);
+  const remainder = amountMinor % denominator;
+
+  if (quotient > Math.floor(Number.MAX_SAFE_INTEGER / rateBps)) {
     throw new Error("GST amount exceeds safe integer precision.");
   }
 
-  return Number(rounded);
+  const wholeMinor = quotient * rateBps;
+  const fractionalMinor = Math.round((remainder * rateBps) / denominator);
+
+  if (wholeMinor > Number.MAX_SAFE_INTEGER - fractionalMinor) {
+    throw new Error("GST amount exceeds safe integer precision.");
+  }
+
+  return wholeMinor + fractionalMinor;
 }
 
 /**
