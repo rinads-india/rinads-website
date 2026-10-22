@@ -12,7 +12,10 @@ import type { BillingWebhookEvent } from "./index";
 export type WebhookHandlerClient = {
   from: (table: string) => {
     insert: (row: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-    upsert: (rows: Record<string, unknown>[]) => Promise<{ error: { message: string } | null }>;
+    upsert: (
+      rows: Record<string, unknown>[],
+      options?: { onConflict?: string },
+    ) => Promise<{ error: { message: string } | null }>;
     select: (cols?: string) => {
       eq: (
         col: string,
@@ -129,29 +132,18 @@ export async function processRazorpayWebhook(
 
     const orgUpsert = await client
       .from("organization_subscriptions")
-      .upsert([rows.organization_subscriptions]);
+      .upsert([rows.organization_subscriptions], { onConflict: "organization_id" });
     if (orgUpsert.error) {
       return { ok: false, error: "Could not reconcile organization subscription", status: 500 };
     }
 
     const billingUpsert = await client
       .from("billing_subscriptions")
-      .upsert([rows.billing_subscriptions]);
+      .upsert([rows.billing_subscriptions], {
+        onConflict: "provider,provider_subscription_id",
+      });
     if (billingUpsert.error) {
       return { ok: false, error: "Could not reconcile provider subscription", status: 500 };
-    }
-  }
-
-  if (organizationId && eventType === "payment.failed") {
-    const failedPaymentUpsert = await client.from("organization_subscriptions").upsert([
-      {
-        organization_id: organizationId,
-        status: "past_due",
-        updated_at: new Date().toISOString(),
-      },
-    ]);
-    if (failedPaymentUpsert.error) {
-      return { ok: false, error: "Could not mark subscription past due", status: 500 };
     }
   }
 
