@@ -1,6 +1,31 @@
-import type { CommerceStore } from "@rinads/commerce";
+import type { CommerceStore, OrderShippingAddressSnapshot } from "@rinads/commerce";
 
 type Row = Record<string, unknown>;
+
+function mapOrderShippingAddressSnapshot(value: unknown): OrderShippingAddressSnapshot | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const row = value as Record<string, unknown>;
+  const required = ["name", "phone", "line1", "city", "state", "pincode"] as const;
+  if (required.some((key) => typeof row[key] !== "string" || String(row[key]).trim() === "")) {
+    return undefined;
+  }
+  if (row.country !== undefined && row.country !== "IN") return undefined;
+
+  return {
+    sourceAddressId:
+      typeof row.sourceAddressId === "string" && row.sourceAddressId.trim()
+        ? row.sourceAddressId
+        : undefined,
+    name: String(row.name),
+    phone: String(row.phone),
+    line1: String(row.line1),
+    line2: typeof row.line2 === "string" && row.line2.trim() ? row.line2 : undefined,
+    city: String(row.city),
+    state: String(row.state),
+    pincode: String(row.pincode),
+    country: "IN",
+  };
+}
 
 export function mapProductRow(row: Row, organizationId: string) {
   return {
@@ -125,6 +150,7 @@ export function mapOrderRow(
     shippingMethodCode: row.shipping_method_code ? String(row.shipping_method_code) : undefined,
     promotionCode: row.promotion_code ? String(row.promotion_code) : undefined,
     guestEmail: row.guest_email ? String(row.guest_email) : undefined,
+    shippingAddress: mapOrderShippingAddressSnapshot(row.shipping_address_snapshot),
     lines,
     events,
     createdAt: String(row.created_at ?? new Date().toISOString()),
