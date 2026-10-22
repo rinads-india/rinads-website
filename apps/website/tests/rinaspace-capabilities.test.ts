@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   RINASPACE_SECTIONS,
-  getRinaSpaceSectionsForRole,
+  getRinaSpaceSectionsForContext,
 } from "../lib/rinaspace-capabilities";
+
+function capabilityIds(input: Parameters<typeof getRinaSpaceSectionsForContext>[0]): string[] {
+  return getRinaSpaceSectionsForContext(input).flatMap((section) =>
+    section.capabilities.map((capability) => capability.id),
+  );
+}
 
 describe("RINASPACE capability registry", () => {
   it("uses the locked workspace taxonomy", () => {
@@ -24,28 +30,74 @@ describe("RINASPACE capability registry", () => {
     assert.equal(hrefs.includes("/os/notifications"), false);
   });
 
-  it("keeps founder/owner access to the complete Wave 0 registry", () => {
+  it("lets a fully entitled salon founder see the complete P1 registry", () => {
     const total = RINASPACE_SECTIONS.reduce(
       (count, section) => count + section.capabilities.length,
       0,
     );
-    const founderTotal = getRinaSpaceSectionsForRole("founder").reduce(
-      (count, section) => count + section.capabilities.length,
-      0,
-    );
-    const ownerTotal = getRinaSpaceSectionsForRole("owner").reduce(
-      (count, section) => count + section.capabilities.length,
-      0,
-    );
+    const visible = capabilityIds({
+      role: "founder",
+      planKey: "platform",
+      verticalKey: "salon-os",
+      featureFlags: {
+        "commerce.enabled": true,
+        "erp.fulfilment": true,
+        "rinpo.ops": true,
+      },
+    });
 
-    assert.equal(founderTotal, total);
-    assert.equal(ownerTotal, total);
+    assert.equal(visible.length, total);
+    assert.equal(visible.includes("r-glow"), true);
+  });
+
+  it("applies plan, vertical and feature entitlements independently of role", () => {
+    const visible = capabilityIds({
+      role: "owner",
+      planKey: "starter",
+      verticalKey: "generic-retail",
+      featureFlags: {
+        "commerce.enabled": true,
+        "erp.fulfilment": false,
+        "rinpo.ops": false,
+      },
+    });
+
+    assert.equal(visible.includes("commerce"), true);
+    assert.equal(visible.includes("finance"), false);
+    assert.equal(visible.includes("logistics"), false);
+    assert.equal(visible.includes("ai"), false);
+    assert.equal(visible.includes("r-glow"), false);
+  });
+
+  it("shows R GLOW only for the salon industry pack", () => {
+    const salon = capabilityIds({
+      role: "admin",
+      planKey: "growth",
+      verticalKey: "salon-os",
+      featureFlags: { "commerce.enabled": true, "erp.fulfilment": true },
+    });
+    const retail = capabilityIds({
+      role: "admin",
+      planKey: "growth",
+      verticalKey: "generic-retail",
+      featureFlags: { "commerce.enabled": true, "erp.fulfilment": true },
+    });
+
+    assert.equal(salon.includes("r-glow"), true);
+    assert.equal(retail.includes("r-glow"), false);
   });
 
   it("does not give ordinary members admin-only capability visibility", () => {
-    const memberIds = getRinaSpaceSectionsForRole("member").flatMap((section) =>
-      section.capabilities.map((capability) => capability.id),
-    );
+    const memberIds = capabilityIds({
+      role: "member",
+      planKey: "platform",
+      verticalKey: "generic-retail",
+      featureFlags: {
+        "commerce.enabled": true,
+        "erp.fulfilment": true,
+        "rinpo.ops": true,
+      },
+    });
 
     assert.equal(memberIds.includes("finance"), false);
     assert.equal(memberIds.includes("approvals"), false);
@@ -55,13 +107,34 @@ describe("RINASPACE capability registry", () => {
     assert.equal(memberIds.includes("automate"), false);
   });
 
-  it("keeps customer access limited to experience capabilities in Wave 0", () => {
-    const customerSections = getRinaSpaceSectionsForRole("customer");
+  it("keeps customer access limited to experience capabilities", () => {
+    const customerSections = getRinaSpaceSectionsForContext({
+      role: "customer",
+      planKey: "platform",
+      verticalKey: "salon-os",
+      featureFlags: {
+        "commerce.enabled": true,
+        "erp.fulfilment": true,
+        "rinpo.ops": true,
+      },
+    });
 
     assert.deepEqual(customerSections.map((section) => section.id), ["experience"]);
     assert.deepEqual(
       customerSections[0]?.capabilities.map((capability) => capability.id),
       ["phone", "world"],
     );
+  });
+
+  it("allows an explicit feature override to remove commerce from the launcher", () => {
+    const ids = capabilityIds({
+      role: "owner",
+      planKey: "growth",
+      verticalKey: "generic-retail",
+      featureFlags: { "commerce.enabled": false, "erp.fulfilment": true },
+    });
+
+    assert.equal(ids.includes("commerce"), false);
+    assert.equal(ids.includes("logistics"), true);
   });
 });

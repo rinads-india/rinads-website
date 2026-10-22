@@ -47,6 +47,10 @@ export async function loadMemberships(
   }> = [];
 
   for (const row of rows) {
+    // Revoked/invited rows may still be visible to the user through membership RLS.
+    // They must never become selectable tenancy contexts.
+    if (String(row.status ?? "") !== "active") continue;
+
     const org = row.organizations as Record<string, unknown> | undefined;
     const role = row.roles as Record<string, unknown> | undefined;
     if (!org || !role) continue;
@@ -125,16 +129,24 @@ export async function resolveTenancyFromSupabase(
 
   const activeOrganizationId = readActiveOrgIdFromCookie(activeOrgCookie);
   const active =
-    memberships.find((m) => m.organizationId === activeOrganizationId) ?? memberships[0];
+    memberships.find(
+      (m) => m.organizationId === activeOrganizationId && m.organizationStatus === "active"
+    ) ??
+    memberships.find((m) => m.organizationStatus === "active") ??
+    memberships[0];
 
   const { planKey, verticalKey } = await loadOrgPlanAndSettings(client, active.organizationId);
   const overrides = await loadFeatureFlagOverridesForOrg(client, active.organizationId);
-  const definitions = defaultFlagDefinitions();
+  const planDefaults = planFeatureFlags({ planKey, verticalKey });
+  const definitions = defaultFlagDefinitions(planDefaults);
   const evaluated = evaluateFeatureFlags(definitions, overrides, {
     organizationId: active.organizationId,
     userId: userData.user.id,
   });
-  const featureFlags = { ...planFeatureFlags({ planKey, verticalKey }), ...evaluated };
+  // Plans supply the baseline entitlement; explicit org/user feature overrides
+  // are evaluated on top of those defaults rather than replacing plan values
+  // with unrelated static defaults.
+  const featureFlags = { ...planDefaults, ...evaluated };
 
   return buildTenancyContext({
     userId: userData.user.id,
@@ -210,13 +222,16 @@ async function loadFeatureFlagOverridesForOrg(
   }));
 }
 
-function defaultFlagDefinitions(): FeatureFlagDefinition[] {
+function defaultFlagDefinitions(planDefaults: Record<string, boolean>): FeatureFlagDefinition[] {
   return [
-    { key: "commerce.enabled", defaultEnabled: true },
-    { key: "erp.inventory", defaultEnabled: true },
-    { key: "erp.procurement", defaultEnabled: false },
-    { key: "erp.fulfilment", defaultEnabled: false },
-    { key: "rinpo.ops", defaultEnabled: false },
-    { key: "salon.whatsapp.send_enabled", defaultEnabled: false },
+    { key: "commerce.enabled", defaultEnabled: planDefaults["commerce.enabled"] ?? true },
+    { key: "erp.inventory", defaultEnabled: planDefaults["erp.inventory"] ?? true },
+    { key: "erp.procurement", defaultEnabled: planDefaults["erp.procurement"] ?? false },
+    { key: "erp.fulfilment", defaultEnabled: planDefaults["erp.fulfilment"] ?? false },
+    { key: "rinpo.ops", defaultEnabled: planDefaults["rinpo.ops"] ?? false },
+    {
+      key: "salon.whatsapp.send_enabled",
+      defaultEnabled: planDefaults["salon.whatsapp.send_enabled"] ?? false,
+    },
   ];
 }

@@ -1,11 +1,28 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { getRinaSpaceSectionsForRole, type RinaSpaceCapabilityStatus } from "@/lib/rinaspace-capabilities";
+import { useRouter } from "next/navigation";
+import { setActiveOrganizationAction } from "@/lib/org-context";
+import {
+  getRinaSpaceSectionsForContext,
+  type RinaSpaceCapabilityStatus,
+} from "@/lib/rinaspace-capabilities";
+
+type MembershipOption = {
+  organizationId: string;
+  organizationName: string;
+  roleKey: string;
+};
 
 type Props = {
   role: string;
   orgName: string;
+  activeOrganizationId: string;
+  memberships: MembershipOption[];
+  planKey?: string;
+  verticalKey?: string;
+  featureFlags?: Record<string, boolean>;
 };
 
 const STATUS_BADGE: Record<RinaSpaceCapabilityStatus, string> = {
@@ -20,8 +37,19 @@ const STATUS_LABEL: Record<RinaSpaceCapabilityStatus, string> = {
   soon: "Soon",
 };
 
-export function RINASPACEClient({ role, orgName }: Props) {
-  const sections = getRinaSpaceSectionsForRole(role);
+export function RINASPACEClient({
+  role,
+  orgName,
+  activeOrganizationId,
+  memberships,
+  planKey,
+  verticalKey,
+  featureFlags,
+}: Props) {
+  const router = useRouter();
+  const [isSwitching, startSwitch] = useTransition();
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const sections = getRinaSpaceSectionsForContext({ role, planKey, verticalKey, featureFlags });
   const liveCount = sections.reduce(
     (count, section) => count + section.capabilities.filter((capability) => capability.status === "live").length,
     0,
@@ -31,6 +59,19 @@ export function RINASPACEClient({ role, orgName }: Props) {
     0,
   );
 
+  function switchOrganization(organizationId: string) {
+    if (!organizationId || organizationId === activeOrganizationId) return;
+    setSwitchError(null);
+    startSwitch(async () => {
+      const result = await setActiveOrganizationAction(organizationId);
+      if (!result.ok) {
+        setSwitchError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  }
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
       <section className="overflow-hidden rounded-[2rem] border border-black/5 bg-black p-6 text-white shadow-xl sm:p-8">
@@ -39,29 +80,55 @@ export function RINASPACEClient({ role, orgName }: Props) {
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">RINADS / SPACE</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Your business. Your work. Your AI.</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
-              RINASPACE is the authenticated workspace for your RINADS capabilities. Open what you are entitled to use without switching identity, tenant or operating context.
+              RINASPACE is the authenticated workspace for your RINADS capabilities. Your organization, plan, industry pack and governed feature entitlements determine what appears here.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-white/70">
               <span className="rounded-full border border-white/15 px-3 py-1.5">{orgName}</span>
               <span className="rounded-full border border-white/15 px-3 py-1.5 capitalize">{role}</span>
+              {planKey ? <span className="rounded-full border border-white/15 px-3 py-1.5">Plan: {planKey}</span> : null}
+              {verticalKey ? <span className="rounded-full border border-white/15 px-3 py-1.5">Pack: {verticalKey}</span> : null}
               <span className="rounded-full border border-white/15 px-3 py-1.5">{liveCount} live</span>
               <span className="rounded-full border border-white/15 px-3 py-1.5">{previewCount} preview</span>
             </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2 lg:w-[23rem]">
-            <Link
-              href="/os"
-              className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
-            >
-              Open Business OS
-            </Link>
-            <Link
-              href="/phone"
-              className="rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Open RINPO Phone
-            </Link>
+          <div className="space-y-3 lg:w-[25rem]">
+            {memberships.length > 1 ? (
+              <div>
+                <label htmlFor="rinaspace-org" className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                  Active organization
+                </label>
+                <select
+                  id="rinaspace-org"
+                  value={activeOrganizationId}
+                  disabled={isSwitching}
+                  onChange={(event) => switchOrganization(event.target.value)}
+                  className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white outline-none disabled:opacity-60"
+                >
+                  {memberships.map((membership) => (
+                    <option key={membership.organizationId} value={membership.organizationId} className="text-black">
+                      {membership.organizationName} · {membership.roleKey}
+                    </option>
+                  ))}
+                </select>
+                {switchError ? <p className="mt-1.5 text-xs text-red-300">{switchError}</p> : null}
+              </div>
+            ) : null}
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Link
+                href="/os"
+                className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
+              >
+                Open Business OS
+              </Link>
+              <Link
+                href="/phone"
+                className="rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Open RINPO Phone
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -70,17 +137,17 @@ export function RINASPACEClient({ role, orgName }: Props) {
         <article className="rounded-2xl border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Identity</p>
           <p className="mt-2 font-semibold text-gray-950">One RINADS sign-in</p>
-          <p className="mt-1 text-sm leading-5 text-gray-600">Organization, role and capability context follow you across the workspace.</p>
+          <p className="mt-1 text-sm leading-5 text-gray-600">Switch only between organizations where your authenticated identity has an active membership.</p>
+        </article>
+        <article className="rounded-2xl border border-gray-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Entitlements</p>
+          <p className="mt-2 font-semibold text-gray-950">Plan + pack + policy</p>
+          <p className="mt-1 text-sm leading-5 text-gray-600">Capabilities are filtered by plan, industry pack and evaluated feature flags in addition to your role.</p>
         </article>
         <article className="rounded-2xl border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Intelligence</p>
           <p className="mt-2 font-semibold text-gray-950">RINPO across the platform</p>
-          <p className="mt-1 text-sm leading-5 text-gray-600">RINADS Intelligence reasons; RINPO Runtime executes governed work.</p>
-        </article>
-        <article className="rounded-2xl border border-gray-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Workspace</p>
-          <p className="mt-2 font-semibold text-gray-950">Capabilities, not silos</p>
-          <p className="mt-1 text-sm leading-5 text-gray-600">Run, Grow, Sell, Create, Build, Learn and Experience from one workspace.</p>
+          <p className="mt-1 text-sm leading-5 text-gray-600">RINADS Intelligence reasons; RINPO Runtime executes governed work under tenant permissions.</p>
         </article>
       </section>
 
@@ -121,11 +188,11 @@ export function RINASPACEClient({ role, orgName }: Props) {
         ))}
       </div>
 
-      <section className="mt-12 rounded-3xl border border-violet-200 bg-violet-50 p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-700">Wave 0 foundation</p>
-        <h2 className="mt-2 text-xl font-semibold text-gray-950">Role filtering is active. Entitlement filtering is next.</h2>
+      <section className="mt-12 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">RINASPACE P1</p>
+        <h2 className="mt-2 text-xl font-semibold text-gray-950">Tenant context now follows the existing RINADS control plane.</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-700">
-          This workspace now uses one canonical capability registry and avoids links to routes that do not exist. The next migration replaces role-only visibility with plan, tenant and industry-pack entitlements while preserving the same RINASPACE shell.
+          The workspace consumes the canonical membership, active-organization cookie, plan, vertical template and feature-flag model. UI filtering does not replace server authorization: Supabase RLS, permissions and governed runtime policy remain authoritative.
         </p>
       </section>
     </main>
