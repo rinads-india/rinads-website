@@ -18,9 +18,9 @@ const RINADS_MCP_SERVER_INFO = {
 
 const RINADS_MCP_INSTRUCTIONS =
   "RINADS is the authorization and business-action boundary. Organization scope is resolved server-side. " +
-  "Never ask a user to provide organization_id, roles, API keys or provider secrets. This endpoint currently " +
-  "supports capability discovery only; execution is fail-closed until authenticated principal, entitlement, " +
-  "RINADS Intelligence policy, RINPO Runtime approval and audit are bound.";
+  "Never ask a user to provide organization_id, roles, API keys or provider secrets. Capability execution " +
+  "remains fail-closed unless authenticated principal, entitlement, RINADS Intelligence policy, RINPO Runtime " +
+  "approval/idempotency and audit are all bound.";
 
 type JsonObject = Record<string, unknown>;
 
@@ -50,6 +50,25 @@ export type RinadsMcpJsonRpcResponse =
 export type RinadsMcpHandlerResult =
   | { kind: "response"; status: number; body: RinadsMcpJsonRpcResponse }
   | { kind: "notification"; status: 202 };
+
+export type RinadsMcpAuthenticatedPrincipal = {
+  actorId: string;
+  organizationId: string;
+  roleKey?: string;
+  permissionIds?: readonly string[];
+  authMethod: "session" | "bearer";
+};
+
+export type RinadsMcpPrincipalStatus =
+  | "unauthenticated"
+  | "scope_required"
+  | "membership_required"
+  | "unavailable";
+
+export type RinadsMcpExecutionContext = {
+  principal?: RinadsMcpAuthenticatedPrincipal;
+  principalStatus?: RinadsMcpPrincipalStatus;
+};
 
 export type RinadsMcpTool = {
   name: string;
@@ -285,7 +304,51 @@ function toolsList(id: string | number | null): RinadsMcpHandlerResult {
   });
 }
 
-function toolCallBlocked(request: RinadsMcpJsonRpcRequest): RinadsMcpHandlerResult {
+function blockedReason(context: RinadsMcpExecutionContext): {
+  reason: string;
+  text: string;
+} {
+  if (context.principal) {
+    return {
+      reason: "CAPABILITY_EXECUTION_NOT_ENABLED",
+      text:
+        "RINADS authenticated the agent principal and resolved organization scope, but external capability " +
+        "execution remains disabled until entitlement, RI policy, RINPO Runtime approval/idempotency and audit " +
+        "are bound to this capability.",
+    };
+  }
+
+  switch (context.principalStatus) {
+    case "scope_required":
+      return {
+        reason: "AGENT_ORGANIZATION_SCOPE_REQUIRED",
+        text:
+          "This authenticated agent identity has multiple active organizations. RINADS will not accept an " +
+          "organization_id from the tool call; use an organization-bound RINADS delegation token.",
+      };
+    case "membership_required":
+      return {
+        reason: "AGENT_MEMBERSHIP_REQUIRED",
+        text: "The authenticated identity has no active RINADS organization membership for agent execution.",
+      };
+    case "unavailable":
+      return {
+        reason: "AGENT_AUTH_UNAVAILABLE",
+        text: "RINADS agent authentication is unavailable in this environment.",
+      };
+    case "unauthenticated":
+    default:
+      return {
+        reason: "AGENT_AUTH_REQUIRED",
+        text: "Authenticate with a valid RINADS session or bearer access token before calling RINADS tools.",
+      };
+  }
+}
+
+function toolCallBlocked(
+  request: RinadsMcpJsonRpcRequest,
+  context: RinadsMcpExecutionContext
+): RinadsMcpHandlerResult {
   const id = requestId(request);
   const params = request.params;
   const name = params && typeof params.name === "string" ? params.name : "unknown";
@@ -293,26 +356,23 @@ function toolCallBlocked(request: RinadsMcpJsonRpcRequest): RinadsMcpHandlerResu
 
   if (!known) return error(id, -32602, `Unknown RINADS tool: ${name}`);
 
+  const blocked = blockedReason(context);
   return result(id, {
-    content: [
-      {
-        type: "text",
-        text:
-          "RINADS capability execution is currently disabled for external MCP clients. " +
-          "The authenticated Agent Gateway must resolve actor + organization, entitlement, RI policy, " +
-          "RINPO Runtime approval/idempotency and audit before this tool can execute.",
-      },
-    ],
+    content: [{ type: "text", text: blocked.text }],
     isError: true,
     _meta: {
       ...responseMeta(),
+      "com.rinads/authenticated": Boolean(context.principal),
       "com.rinads/executionEnabled": false,
-      "com.rinads/reason": "AUTHENTICATED_AGENT_GATEWAY_NOT_BOUND",
+      "com.rinads/reason": blocked.reason,
     },
   });
 }
 
-export function handleRinadsMcpRequest(value: unknown): RinadsMcpHandlerResult {
+export function handleRinadsMcpRequest(
+  value: unknown,
+  context: RinadsMcpExecutionContext = {}
+): RinadsMcpHandlerResult {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return error(null, -32600, "Invalid JSON-RPC request.", undefined, 400);
   }
@@ -343,7 +403,7 @@ export function handleRinadsMcpRequest(value: unknown): RinadsMcpHandlerResult {
     case "tools/list":
       return toolsList(id);
     case "tools/call":
-      return toolCallBlocked(normalized);
+      return toolCallBlocked(normalized, context);
     default:
       return error(id, -32601, `Method not found: ${normalized.method}`);
   }
