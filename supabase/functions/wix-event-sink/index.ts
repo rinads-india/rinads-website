@@ -13,6 +13,12 @@ type WixEvent = {
   receivedAt: string;
 };
 
+type CanonicalDescriptor = {
+  eventType: string;
+  entityType: string;
+  entityId?: string;
+};
+
 function json(body: JsonRecord, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -34,9 +40,15 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+function asRecord(value: unknown): JsonRecord | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as JsonRecord
+    : null;
+}
+
 function parseEvent(value: unknown): WixEvent | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const event = value as JsonRecord;
+  const event = asRecord(value);
+  if (!event) return null;
   if (
     event.provider !== "wix" ||
     typeof event.eventId !== "string" || !event.eventId ||
@@ -49,10 +61,49 @@ function parseEvent(value: unknown): WixEvent | null {
   return event as unknown as WixEvent;
 }
 
-function canonicalEventType(providerEventType: string): string {
-  if (providerEventType === "AppInstalled") return "integration.connected.v1";
-  if (providerEventType === "AppRemoved") return "integration.disconnected.v1";
-  return "integration.event_received.v1";
+function firstString(...values: unknown[]): string | undefined {
+  return values.find((value): value is string => typeof value === "string" && value.length > 0);
+}
+
+function extractProviderEntityId(data: unknown): string | undefined {
+  const record = asRecord(data);
+  if (!record) return undefined;
+  const createdEvent = asRecord(record.createdEvent);
+  const entity = asRecord(record.entity);
+  const createdEntity = asRecord(createdEvent?.entity);
+  return firstString(
+    record.entityId,
+    record.id,
+    entity?._id,
+    entity?.id,
+    createdEvent?.entityId,
+    createdEvent?.id,
+    createdEntity?._id,
+    createdEntity?.id,
+  );
+}
+
+function canonicalDescriptor(event: WixEvent, connectionId: string): CanonicalDescriptor {
+  const providerEntityId = extractProviderEntityId(event.data);
+
+  switch (event.eventType) {
+    case "AppInstalled":
+      return { eventType: "integration.connected.v1", entityType: "integration_connection", entityId: connectionId };
+    case "AppRemoved":
+      return { eventType: "integration.disconnected.v1", entityType: "integration_connection", entityId: connectionId };
+    case "wix.ecom.v1.order_created":
+      return { eventType: "order.created.v1", entityType: "order", entityId: providerEntityId };
+    case "wix.contacts.v4.contact_created":
+      return { eventType: "contact.created.v1", entityType: "contact", entityId: providerEntityId };
+    case "wix.bookings.v2.booking_created":
+      return { eventType: "booking.created.v1", entityType: "booking", entityId: providerEntityId };
+    default:
+      return {
+        eventType: "integration.event_received.v1",
+        entityType: "integration_connection",
+        entityId: connectionId,
+      };
+  }
 }
 
 serve(async (req) => {
@@ -189,15 +240,16 @@ serve(async (req) => {
       }, 202);
     }
 
-    const canonicalType = canonicalEventType(event.eventType);
+    const canonical = canonicalDescriptor(event, connection.id);
     const { error: businessEventError } = await supabase.from("business_events").insert({
       organization_id: organizationId,
-      event_type: canonicalType,
-      entity_type: "integration_connection",
-      entity_id: connection.id,
+      event_type: canonical.eventType,
+      entity_type: canonical.entityType,
+      entity_id: canonical.entityId ?? connection.id,
       payload: {
         provider: "wix",
         providerEventType: event.eventType,
+        providerEntityId: canonical.entityId ?? null,
         externalInstanceId: event.instanceId,
         data: event.data,
       },
@@ -217,7 +269,7 @@ serve(async (req) => {
     return json({
       status: "accepted",
       eventId: event.eventId,
-      eventType: canonicalType,
+      eventType: canonical.eventType,
     });
   } catch (error) {
     console.error("wix-event-sink", error);
