@@ -96,6 +96,24 @@ comment on column public.india_gst_registrations.verification_status is
 alter table public.india_tax_transaction_evidence
   add column if not exists supersedes_evidence_id uuid;
 
+-- The existing evidence table has a globally unique primary key on id, but a
+-- same-organization composite foreign key requires a matching unique key on the
+-- exact referenced column pair. Add the pair explicitly so organization_id can
+-- be enforced by PostgreSQL rather than only by application logic.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'india_tax_evidence_org_id_unique'
+      and conrelid = 'public.india_tax_transaction_evidence'::regclass
+  ) then
+    alter table public.india_tax_transaction_evidence
+      add constraint india_tax_evidence_org_id_unique
+      unique (organization_id, id);
+  end if;
+end $$;
+
 do $$
 begin
   if not exists (
