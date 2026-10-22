@@ -13,9 +13,5 @@
     "typecheck": "tsc --noEmit",
     "build": "echo 'build: @rinads/communication (source package)'",
     "test": "node --import tsx --test tests/*.test.ts"
-  },
-  "devDependencies": {
-    "tsx": "^4.19.4",
-    "typescript": "^5"
   }
 }
