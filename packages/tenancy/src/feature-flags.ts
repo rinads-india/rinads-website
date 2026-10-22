@@ -27,7 +27,11 @@ export function isModuleEnabled(
   return flags[`erp.${moduleKey}`] ?? flags[`commerce.${moduleKey}`] ?? flags[moduleKey] ?? true;
 }
 
-/** Plan-based defaults when DB flag rows are unavailable (demo / partial Supabase). */
+/**
+ * Plan-based defaults when DB flag rows are unavailable.
+ * Missing or unknown plan keys fail closed: an absent active subscription must
+ * never inherit Growth capabilities by falling through a default branch.
+ */
 export function planFeatureFlags(input: {
   planKey?: string;
   verticalKey?: string;
@@ -35,11 +39,13 @@ export function planFeatureFlags(input: {
   const modules =
     input.planKey === "starter"
       ? ["commerce", "inventory"]
-      : input.planKey === "platform"
-        ? ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"]
-        : ["commerce", "inventory", "procurement", "fulfilment"];
+      : input.planKey === "growth"
+        ? ["commerce", "inventory", "procurement", "fulfilment"]
+        : input.planKey === "platform"
+          ? ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"]
+          : [];
 
-  const flags: Record<string, boolean> = {
+  return {
     "commerce.enabled": modules.includes("commerce"),
     "erp.inventory": modules.includes("inventory"),
     "erp.procurement": modules.includes("procurement"),
@@ -47,5 +53,4 @@ export function planFeatureFlags(input: {
     "rinpo.ops": input.planKey === "platform",
     "salon.whatsapp.send_enabled": false,
   };
-  return flags;
 }
