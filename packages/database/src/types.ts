@@ -183,6 +183,37 @@ export type DeliveryEventRow = {
   raw_payload: Json | null;
 };
 
+export type IntegrationConnection = {
+  id: string;
+  organization_id: string | null;
+  provider: string;
+  external_instance_id: string;
+  status: "pending" | "connected" | "removed" | "error";
+  capabilities: string[];
+  metadata: Json;
+  connected_at: string | null;
+  removed_at: string | null;
+  last_event_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProviderEventInboxRow = {
+  id: string;
+  provider: string;
+  event_id: string;
+  event_type: string;
+  external_instance_id: string;
+  connection_id: string | null;
+  organization_id: string | null;
+  status: "quarantined" | "accepted" | "ignored" | "failed";
+  payload: Json;
+  error: string | null;
+  received_at: string;
+  processed_at: string | null;
+  created_at: string;
+};
+
 /** Minimal Database typing for CORE + platform tables (expand via supabase gen types). */
 export type Database = {
   public: {
@@ -273,6 +304,23 @@ export type Database = {
         Update: Partial<DeliveryEventRow>;
         Relationships: [];
       };
+      integration_connections: {
+        Row: IntegrationConnection;
+        Insert: Partial<IntegrationConnection> & { provider: string; external_instance_id: string };
+        Update: Partial<IntegrationConnection>;
+        Relationships: [];
+      };
+      provider_event_inbox: {
+        Row: ProviderEventInboxRow;
+        Insert: Partial<ProviderEventInboxRow> & {
+          provider: string;
+          event_id: string;
+          event_type: string;
+          external_instance_id: string;
+        };
+        Update: Partial<ProviderEventInboxRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -291,6 +339,14 @@ export type Database = {
       get_public_service_order_status: {
         Args: { p_order_id: string };
         Returns: Json;
+      };
+      bind_integration_connection: {
+        Args: {
+          p_provider: string;
+          p_external_instance_id: string;
+          p_organization_id: string;
+        };
+        Returns: string;
       };
     };
     Enums: Record<string, never>;
