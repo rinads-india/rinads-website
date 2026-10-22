@@ -5,6 +5,7 @@ import {
   INTEGRATIONS,
   type IntegrationStatus,
 } from "@/lib/content/case-studies";
+import { WIX_INTEGRATION } from "@/lib/integrations/wix";
 import { metadataFromRegistry } from "@/lib/route-registry";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,6 +26,8 @@ const INTEGRATION_STATUS_CLASS: Record<IntegrationStatus, string> = {
   planned: "border-white/15 bg-transparent text-white/45",
 };
 
+const INTEGRATION_ITEMS = [...INTEGRATIONS, WIX_INTEGRATION];
+
 export default function IntegrationsPage() {
   return (
     <MarketingPageShell>
@@ -40,7 +43,7 @@ export default function IntegrationsPage() {
 
       <section className="px-6 pb-24 md:px-12 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {INTEGRATIONS.map((item) => (
+          {INTEGRATION_ITEMS.map((item) => (
             <Link
               key={item.slug}
               href={item.href}
