@@ -47,6 +47,10 @@ export async function loadMemberships(
   }> = [];
 
   for (const row of rows) {
+    // Revoked/invited rows may still be visible to the user through membership RLS.
+    // They must never become selectable tenancy contexts.
+    if (String(row.status ?? "") !== "active") continue;
+
     const org = row.organizations as Record<string, unknown> | undefined;
     const role = row.roles as Record<string, unknown> | undefined;
     if (!org || !role) continue;
@@ -125,7 +129,11 @@ export async function resolveTenancyFromSupabase(
 
   const activeOrganizationId = readActiveOrgIdFromCookie(activeOrgCookie);
   const active =
-    memberships.find((m) => m.organizationId === activeOrganizationId) ?? memberships[0];
+    memberships.find(
+      (m) => m.organizationId === activeOrganizationId && m.organizationStatus === "active"
+    ) ??
+    memberships.find((m) => m.organizationStatus === "active") ??
+    memberships[0];
 
   const { planKey, verticalKey } = await loadOrgPlanAndSettings(client, active.organizationId);
   const overrides = await loadFeatureFlagOverridesForOrg(client, active.organizationId);
