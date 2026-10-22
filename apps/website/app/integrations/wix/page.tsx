@@ -12,15 +12,15 @@ export const metadata: Metadata = {
 const CAPABILITIES = [
   {
     title: "Commerce",
-    description: "Prepare Wix orders, catalog activity, and customer events for RINADS business workflows.",
+    description: "Normalize Wix order events into the canonical RINADS business event stream.",
   },
   {
     title: "Customers & leads",
-    description: "Bring Wix contact and lead signals into a governed RINADS customer context.",
+    description: "Bring Wix contact signals into a tenant-bound, governed RINADS customer context.",
   },
   {
     title: "Bookings",
-    description: "Connect appointment and service activity to industry workflows such as R GLOW.",
+    description: "Connect booking activity to industry workflows such as R GLOW without making Wix the system of record.",
   },
   {
     title: "RINPO intelligence",
@@ -30,13 +30,50 @@ const CAPABILITIES = [
 
 const FLOW = [
   "Wix business",
-  "RINADS Wix Adapter",
-  "Business Graph",
-  "RINADS Intelligence",
+  "Verified webhook",
+  "Tenant-bound event inbox",
+  "Business Graph + RI",
   "RINPO Runtime",
 ] as const;
 
-export default function WixIntegrationPage() {
+const CONNECTION_MESSAGES: Record<string, { title: string; body: string }> = {
+  connected: {
+    title: "Wix instance connected to the active RINADS organization",
+    body: "The tenant boundary is stored. RINADS will still keep Wix in Private Preview until live provider credentials, the production event sink, and a real business event are verified end to end.",
+  },
+  failed: {
+    title: "Wix connection was not changed",
+    body: "The signed Wix instance was valid enough to reach the binding step, but RINADS could not complete the tenant mapping. No cross-tenant fallback is attempted.",
+  },
+  "invalid-instance": {
+    title: "Wix instance verification failed",
+    body: "RINADS rejected the request rather than trusting an unsigned or tampered instance identifier.",
+  },
+  "auth-required": {
+    title: "RINADS sign-in is required",
+    body: "Sign in, select the organization you intend to connect, and reopen the Wix installation flow.",
+  },
+  forbidden: {
+    title: "Organization manager permission required",
+    body: "Only a RINADS user with org.manage can bind a Wix installation to the active tenant.",
+  },
+  "not-configured": {
+    title: "Wix server credentials are not configured",
+    body: "The provider remains Private Preview and no tenant connection was changed.",
+  },
+};
+
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function WixIntegrationPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const connectionMessage = CONNECTION_MESSAGES[first(params.connection) ?? ""];
   const wix = getWixConfigurationStatus();
   const activationHref = wix.installUrl ?? "/contact?intent=implementation&integration=wix";
 
@@ -52,6 +89,15 @@ export default function WixIntegrationPage() {
         secondaryLabel="All integrations"
       />
 
+      {connectionMessage ? (
+        <section className="px-6 pb-6 md:px-12 lg:px-20">
+          <div className="mx-auto max-w-7xl border border-white/10 bg-white/[0.03] p-5">
+            <p className="font-semibold text-foreground">{connectionMessage.title}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{connectionMessage.body}</p>
+          </div>
+        </section>
+      ) : null}
+
       <section className="px-6 pb-10 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl border border-white/10 p-6 md:p-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -65,11 +111,11 @@ export default function WixIntegrationPage() {
           </div>
           <p className="mt-4 max-w-4xl text-sm leading-6 text-muted-foreground">
             The Wix provider connection remains a private preview until a RINADS-owned Wix app is configured with
-            its server-side app credentials and webhook verification key. No Wix credential is exposed to the
-            browser, and this page does not claim an unconfigured provider connection is live.
+            its server-side credentials, the production event sink is deployed, and a real Wix tenant passes the
+            verified install → bind → event flow. No Wix credential is exposed to the browser.
           </p>
           <div className="mt-6 inline-flex rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            {wix.configured ? "Wix app credentials configured" : "Wix app credentials required"}
+            {wix.configured ? "Wix activation path configured" : "Wix activation configuration required"}
           </div>
         </div>
       </section>
@@ -107,15 +153,15 @@ export default function WixIntegrationPage() {
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <div className="border border-white/10 p-5">
               <p className="font-semibold text-foreground">1. RINADS Wix app</p>
-              <p className="mt-2 text-sm text-muted-foreground">Create the self-managed Wix app and required permissions.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Create and release the self-managed Wix app with only the pilot permissions required.</p>
             </div>
             <div className="border border-white/10 p-5">
-              <p className="font-semibold text-foreground">2. Server credentials</p>
-              <p className="mt-2 text-sm text-muted-foreground">Configure app ID, secret, and webhook public key as server-only secrets.</p>
+              <p className="font-semibold text-foreground">2. Secure tenant binding</p>
+              <p className="mt-2 text-sm text-muted-foreground">Verify Wix-signed instance data and require a RINADS organization manager to confirm the tenant boundary.</p>
             </div>
             <div className="border border-white/10 p-5">
               <p className="font-semibold text-foreground">3. Verified events</p>
-              <p className="mt-2 text-sm text-muted-foreground">Subscribe Wix lifecycle and business events to the RINADS webhook endpoint before live data sync.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Persist events idempotently, quarantine unbound instances, and emit tenant-bound canonical events into Business Graph.</p>
             </div>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
