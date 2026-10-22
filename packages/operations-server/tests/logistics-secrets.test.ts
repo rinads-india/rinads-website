@@ -32,8 +32,8 @@ describe("logistics credential bindings", () => {
         credentialKey: "shiprocket_primary",
       },
       {
-        RINADS_SHIPROCKET_API_EMAIL: "api-user@example.com",
-        RINADS_SHIPROCKET_API_PASSWORD: "shiprocket-password",
+        RINADS_SHIPROCKET_EMAIL: "api-user@example.com",
+        RINADS_SHIPROCKET_PASSWORD: "shiprocket-password",
       }
     );
 
@@ -88,13 +88,13 @@ describe("logistics credential bindings", () => {
         credentialSource: "environment",
         credentialKey: "shiprocket_primary",
       },
-      { RINADS_SHIPROCKET_API_EMAIL: "api-user@example.com" }
+      { RINADS_SHIPROCKET_EMAIL: "api-user@example.com" }
     );
 
     assert.equal(result.ok, false);
     if (!result.ok) {
       assert.equal(result.status, "missing_secret");
-      assert.deepEqual(result.missingKeys, ["RINADS_SHIPROCKET_API_PASSWORD"]);
+      assert.deepEqual(result.missingKeys, ["RINADS_SHIPROCKET_PASSWORD"]);
     }
   });
 
@@ -137,8 +137,8 @@ describe("logistics credential bindings", () => {
     assert.equal(shiprocket.bindingId, "shiprocket_primary");
     assert.equal(shiprocket.contractVerified, true);
     assert.deepEqual(shiprocket.requiredSecretNames, [
-      "RINADS_SHIPROCKET_API_EMAIL",
-      "RINADS_SHIPROCKET_API_PASSWORD",
+      "RINADS_SHIPROCKET_EMAIL",
+      "RINADS_SHIPROCKET_PASSWORD",
     ]);
   });
 });
