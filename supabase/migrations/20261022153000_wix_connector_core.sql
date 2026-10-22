@@ -98,11 +98,13 @@ as $$
 declare
   v_connection public.integration_connections%rowtype;
   v_connection_id uuid;
+  v_provider text := lower(btrim(p_provider));
+  v_instance_id text := btrim(p_external_instance_id);
 begin
-  if nullif(btrim(p_provider), '') is null then
+  if nullif(v_provider, '') is null then
     raise exception 'provider is required';
   end if;
-  if nullif(btrim(p_external_instance_id), '') is null then
+  if nullif(v_instance_id, '') is null then
     raise exception 'external_instance_id is required';
   end if;
   if not private.has_permission(p_organization_id, 'org.manage') then
@@ -111,8 +113,8 @@ begin
 
   select * into v_connection
   from public.integration_connections
-  where provider = lower(btrim(p_provider))
-    and external_instance_id = btrim(p_external_instance_id)
+  where provider = v_provider
+    and external_instance_id = v_instance_id
   for update;
 
   if found and v_connection.organization_id is not null
@@ -133,8 +135,8 @@ begin
     updated_at
   ) values (
     p_organization_id,
-    lower(btrim(p_provider)),
-    btrim(p_external_instance_id),
+    v_provider,
+    v_instance_id,
     'connected',
     now(),
     now()
@@ -147,12 +149,76 @@ begin
         updated_at = now()
   returning id into v_connection_id;
 
+  -- Replay events that arrived after install but before the Wix instance was
+  -- bound to a tenant. AppInstalled itself is represented by the explicit
+  -- integration.connected event emitted below; other events keep their Wix
+  -- provider event ID as the canonical idempotency key.
+  insert into public.business_events (
+    organization_id,
+    event_type,
+    entity_type,
+    entity_id,
+    payload,
+    metadata,
+    idempotency_key,
+    source,
+    actor_type,
+    actor_id,
+    schema_version
+  )
+  select
+    p_organization_id,
+    case e.event_type
+      when 'wix.ecom.v1.order_created' then 'order.created.v1'
+      when 'wix.contacts.v4.contact_created' then 'contact.created.v1'
+      when 'wix.bookings.v2.booking_created' then 'booking.created.v1'
+      else 'integration.event_received.v1'
+    end,
+    case e.event_type
+      when 'wix.ecom.v1.order_created' then 'order'
+      when 'wix.contacts.v4.contact_created' then 'contact'
+      when 'wix.bookings.v2.booking_created' then 'booking'
+      else 'integration_connection'
+    end,
+    coalesce(
+      e.payload #>> '{data,entityId}',
+      e.payload #>> '{data,id}',
+      e.payload #>> '{data,entity,_id}',
+      e.payload #>> '{data,entity,id}',
+      e.payload #>> '{data,createdEvent,entityId}',
+      e.payload #>> '{data,createdEvent,id}',
+      v_connection_id::text
+    ),
+    jsonb_build_object(
+      'provider', v_provider,
+      'providerEventType', e.event_type,
+      'externalInstanceId', v_instance_id,
+      'data', e.payload -> 'data'
+    ),
+    jsonb_build_object(
+      'provider', v_provider,
+      'providerEventId', e.event_id,
+      'replayedAfterBinding', true
+    ),
+    v_provider || ':' || e.event_id,
+    v_provider,
+    'system',
+    v_provider,
+    'v1'
+  from public.provider_event_inbox e
+  where e.provider = v_provider
+    and e.external_instance_id = v_instance_id
+    and e.status = 'quarantined'
+    and e.event_type <> 'AppInstalled'
+  on conflict (organization_id, idempotency_key) do nothing;
+
   update public.provider_event_inbox
   set organization_id = p_organization_id,
       connection_id = v_connection_id,
-      status = case when status = 'quarantined' then 'accepted' else status end
-  where provider = lower(btrim(p_provider))
-    and external_instance_id = btrim(p_external_instance_id)
+      status = case when status = 'quarantined' then 'accepted' else status end,
+      processed_at = case when status = 'quarantined' then now() else processed_at end
+  where provider = v_provider
+    and external_instance_id = v_instance_id
     and organization_id is null;
 
   insert into public.business_events (
@@ -173,11 +239,11 @@ begin
     'integration_connection',
     v_connection_id::text,
     jsonb_build_object(
-      'provider', lower(btrim(p_provider)),
-      'externalInstanceId', btrim(p_external_instance_id)
+      'provider', v_provider,
+      'externalInstanceId', v_instance_id
     ),
-    jsonb_build_object('binding', 'manual_or_authenticated'),
-    'integration.bind:' || lower(btrim(p_provider)) || ':' || btrim(p_external_instance_id),
+    jsonb_build_object('binding', 'authenticated_org_manager'),
+    'integration.bind:' || v_provider || ':' || v_instance_id,
     'integration',
     'human',
     auth.uid()::text,
@@ -202,8 +268,8 @@ begin
     'integration_connection',
     v_connection_id::text,
     jsonb_build_object(
-      'provider', lower(btrim(p_provider)),
-      'externalInstanceId', btrim(p_external_instance_id)
+      'provider', v_provider,
+      'externalInstanceId', v_instance_id
     ),
     'integration'
   );
