@@ -92,6 +92,21 @@ It must never expose:
 - Runtime approval tokens;
 - service-role credentials.
 
+### MCP discovery endpoint
+
+`POST /api/mcp`
+
+The stacked MCP slice exposes the same canonical capability registry as MCP tools while keeping execution fail-closed. It supports:
+
+- modern MCP `2026-07-28` discovery through `server/discover`;
+- legacy `2025-11-25` `initialize` discovery for compatibility;
+- `tools/list` mapped from canonical RINADS capability keys;
+- tool annotations derived from RINADS risk classes;
+- no `organization_id` argument in tool schemas;
+- `tools/call` returning a governed execution-disabled result until authenticated Agent Gateway execution is bound.
+
+The MCP endpoint is stateless. It does not treat MCP client identity metadata as authorization evidence. Server identity is presentation/diagnostic metadata only.
+
 ## External-agent execution contract
 
 External execution is intentionally not activated by this slice.
@@ -164,11 +179,11 @@ RINADS_RINPO_LLM_MODEL=
 ## Next implementation slices
 
 1. authenticated Agent Gateway principal/token model;
-2. tenant-scoped read-tool execution through existing service contracts;
-3. modern MCP endpoint with discovery + tools/list mapped from the canonical registry;
-4. MCP/OAuth resource-server authorization for external agents;
-5. Shopify adapter binding to canonical commerce commands and read projections;
-6. Shiprocket adapter implementation behind RINADS Shipping;
+2. MCP/OAuth resource-server authorization for external agents;
+3. tenant-scoped READ execution through existing service contracts;
+4. Shopify adapter binding to canonical commerce commands and read projections;
+5. Shiprocket canonical adapter completion after shipment intent is enriched;
+6. Shiprocket tracking/webhook normalization into RINADS shipment events;
 7. Delhivery production gate after staging evidence and founder approval;
 8. Meta/Google campaign adapters bound to existing marketing publication approvals;
 9. customer/business graph event normalization across commerce, growth and fulfilment;
@@ -176,4 +191,4 @@ RINADS_RINPO_LLM_MODEL=
 
 ## Production gate
 
-This slice is source-only. Do not enable external tool execution, add production credentials, activate a carrier, launch ads, apply production database migrations, or promote a production deployment solely because this code is merged. Each external-effect adapter needs its own staging evidence and explicit production authorization.
+These slices are source-only. Do not enable external tool execution, add production credentials, activate a carrier, launch ads, apply production database migrations, or promote a production deployment solely because this code is merged. Each external-effect adapter needs its own staging evidence and explicit production authorization.
