@@ -1,23 +1,42 @@
 import Link from "next/link";
 import { getLogisticsOsSnapshot } from "@/lib/logistics-os";
+import { getTenantLogisticsSnapshot } from "@/lib/logistics-tenant-server";
+import { requireOsShellAccess } from "@/lib/os-shell-access";
 import { LogisticsRoutePlanner } from "./LogisticsRoutePlanner";
 
 const panel = "rounded-3xl border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur";
 
 function stateClass(state: string): string {
-  if (state === "live") return "bg-emerald-100 text-emerald-900";
-  if (state === "verification_pending") return "bg-sky-100 text-sky-900";
+  if (state === "live" || state === "controlled_shipment_passed") return "bg-emerald-100 text-emerald-900";
+  if (state === "verification_pending" || state === "sandbox_passed") return "bg-sky-100 text-sky-900";
   if (state === "credentials_detected") return "bg-amber-100 text-amber-950";
+  if (state === "suspended") return "bg-rose-100 text-rose-900";
   return "bg-gray-100 text-gray-700";
 }
 
-export default function OsLogisticsPage() {
+function formatMinor(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "No ceiling";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value / 100);
+}
+
+export default async function OsLogisticsPage() {
   const snapshot = getLogisticsOsSnapshot();
+  const access = await requireOsShellAccess("/os/logistics");
+  const tenant = await getTenantLogisticsSnapshot(access.organizationId);
+  const tenantEnabled = tenant.providers.filter((provider) => provider.enabled).length;
+  const tenantControlled = tenant.providers.filter(
+    (provider) => provider.enabled && provider.verificationState === "controlled_shipment_passed"
+  ).length;
+
   const metrics = [
     ["Registered providers", snapshot.registeredProviders],
     ["Credentials detected", snapshot.credentialedProviders],
-    ["Verified live", snapshot.liveProviders],
-    ["Routing modes", snapshot.routingStrategies.length],
+    ["Tenant enabled", tenantEnabled],
+    ["Controlled verified", tenantControlled],
   ] as const;
 
   return (
@@ -37,7 +56,7 @@ export default function OsLogisticsPage() {
               One shipment intent. Multiple logistics capabilities. One governed decision.
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300 md:text-base">
-              RINADS Intelligence controls provider selection and policy. RINPO Runtime will execute approved bookings and lifecycle work. Carrier APIs remain adapters behind the existing ShipmentService — never a second order stack.
+              RINADS Intelligence controls provider selection and policy. RINPO Runtime executes only authorized bookings and lifecycle work. Carrier APIs remain adapters behind the existing ShipmentService — never a second order stack.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
@@ -63,6 +82,70 @@ export default function OsLogisticsPage() {
           No courier adapter is currently verified live in this repository contract. Logistics OS will validate capability and policy, but it will not show invented rates, create fake AWBs or claim a pickup until provider credentials, adapter contract tests, webhooks and a controlled shipment pass the production gate.
         </section>
       ) : null}
+
+      <section className={panel}>
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rinads-primary">Tenant control plane</p>
+            <h2 className="mt-1 text-xl font-semibold text-gray-950">Routing + autonomy policy</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-gray-600">
+              This is loaded through the active organization and Supabase RLS. Credential values are never rendered here.
+            </p>
+          </div>
+          <span className="rounded-full bg-gray-950 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+            {tenant.source.replaceAll("_", " ")}
+          </span>
+        </div>
+
+        {tenant.policy ? (
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              ["Routing", tenant.policy.strategy.replaceAll("_", " ")],
+              ["Autonomy", tenant.policy.autonomyMode.replaceAll("_", " ")],
+              ["Cost ceiling", formatMinor(tenant.policy.maxCostMinor)],
+              ["ETA ceiling", tenant.policy.maxEtaHours === null ? "No ceiling" : `${tenant.policy.maxEtaHours} h`],
+              ["Declared-value approval", formatMinor(tenant.policy.humanApprovalDeclaredValueMinor)],
+              ["COD approval", formatMinor(tenant.policy.humanApprovalCodMinor)],
+              ["High-value gate", tenant.policy.requireApprovalForHighValue ? "Required" : "Policy disabled"],
+              ["First-provider gate", tenant.policy.requireApprovalForFirstProviderUse ? "Required" : "Policy disabled"],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl border border-black/5 bg-white/75 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-500">{label}</p>
+                <p className="mt-1 text-sm font-semibold capitalize text-gray-950">{value}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            No tenant routing policy is currently readable for this active organization. Runtime defaults remain recommendation-only and fail closed.
+          </div>
+        )}
+
+        {tenant.providers.length > 0 ? (
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {tenant.providers.map((provider) => (
+              <div key={provider.providerKey} className="rounded-2xl border border-black/5 bg-white/75 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold uppercase text-gray-950">{provider.providerKey.replaceAll("_", " ")}</h3>
+                    <p className="mt-1 text-xs text-gray-500">Priority {provider.priority} · {provider.credentialSource}</p>
+                  </div>
+                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${stateClass(provider.verificationState)}`}>
+                    {provider.verificationState.replaceAll("_", " ")}
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {provider.capabilities.map((capability) => (
+                    <span key={capability} className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-medium text-gray-700">
+                      {capability.replaceAll("_", " ")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </section>
 
       <section className={panel}>
         <div className="mb-5">
