@@ -63,6 +63,18 @@ describe("India compliance helpers", () => {
     assert.equal(result.sgstMinor, 0);
   });
 
+  it("keeps large-value GST arithmetic exact when Number multiplication would lose precision", () => {
+    const result = calculateIndiaGstComponents({
+      taxableMinor: 4_388_200_369_055_097,
+      rateBps: 1_800,
+      supplierStateCode: "32",
+      placeOfSupplyStateCode: "29",
+    });
+
+    assert.equal(result.totalTaxMinor, 789_876_066_429_917);
+    assert.equal(result.igstMinor, 789_876_066_429_917);
+  });
+
   it("does not invent a component allocation when place of supply is unknown", () => {
     const result = calculateIndiaGstComponents({ taxableMinor: 100_00, rateBps: 1_800 });
     assert.equal(result.supplyType, "unknown");
