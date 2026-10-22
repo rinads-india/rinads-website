@@ -14,6 +14,12 @@ export type FrontDeskBookingState = {
   customerId?: string;
 };
 
+function revalidateAppointmentSurfaces() {
+  revalidatePath("/calendar");
+  revalidatePath("/front-desk");
+  revalidatePath("/dashboard");
+}
+
 export async function createFrontDeskBookingAction(
   _previous: FrontDeskBookingState,
   formData: FormData
@@ -40,7 +46,7 @@ export async function createFrontDeskBookingAction(
     createdBy: tenancy.userId,
   });
   if (!result.ok) return { error: result.error.message };
-  revalidatePath("/calendar");
+  revalidateAppointmentSurfaces();
   revalidatePath("/clients");
   return {
     success: true,
@@ -58,7 +64,7 @@ export async function updateAppointmentStatusAction(
   await requireTenancy();
   const repo = await getSalonRepository();
   const result = await repo.updateAppointmentStatus(appointmentId, fromStatus, toStatus, reason);
-  revalidatePath("/calendar");
+  revalidateAppointmentSurfaces();
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
@@ -75,7 +81,7 @@ export async function rescheduleAppointmentAction(
   const durationMs = new Date(apptResult.data.endsAt).getTime() - new Date(apptResult.data.startsAt).getTime();
   const newEndsAt = new Date(new Date(newStartsAt).getTime() + durationMs).toISOString();
   const result = await repo.rescheduleAppointment(appointmentId, currentStatus, newStartsAt, newEndsAt);
-  revalidatePath("/calendar");
+  revalidateAppointmentSurfaces();
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
@@ -92,7 +98,7 @@ export async function addAppointmentNoteAction(_prevState: FormActionState, form
     body,
     createdBy: tenancy.userId,
   });
-  revalidatePath("/calendar");
+  revalidateAppointmentSurfaces();
   if (!result.ok) return { error: result.error.message };
   return undefined;
 }

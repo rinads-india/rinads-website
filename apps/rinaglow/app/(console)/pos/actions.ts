@@ -11,13 +11,19 @@ function randomIdempotencyKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function revalidateCheckoutSurfaces() {
+  revalidatePath("/pos");
+  revalidatePath("/front-desk");
+  revalidatePath("/dashboard");
+}
+
 export async function createSaleFromAppointmentAction(appointmentId: string): Promise<{ ok: boolean; error?: string }> {
   const tenancy = await requireTenancy();
   const { repo } = await getSalonDeps();
   const apptResult = await repo.getAppointment(appointmentId);
   if (!apptResult.ok) return { ok: false, error: apptResult.error.message };
   const result = await repo.createSaleFromAppointment(tenancy.organizationId, apptResult.data, tenancy.userId);
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
@@ -33,7 +39,7 @@ export async function addSaleLineAction(_prevState: FormActionState, formData: F
     return { error: "A description and a non-negative price are required." };
   }
   const result = await repo.addSaleLine(tenancy.organizationId, saleId, { description, unitPrice, quantity });
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { error: result.error.message };
   return undefined;
 }
@@ -42,7 +48,7 @@ export async function finalizeSaleAction(saleId: string): Promise<{ ok: boolean;
   const tenancy = await requireTenancy();
   const { repo } = await getSalonDeps();
   const result = await repo.finalizeSale(tenancy.organizationId, saleId);
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
@@ -62,7 +68,7 @@ export async function recordPaymentAction(_prevState: FormActionState, formData:
     idempotencyKey: randomIdempotencyKey(`pos-payment-${saleId}`),
     recordedBy: tenancy.userId,
   });
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { error: result.error.message };
   return undefined;
 }
@@ -77,7 +83,7 @@ export async function requestRefundAction(_prevState: FormActionState, formData:
     return { error: "A sale, positive amount, and reason are required." };
   }
   const result = await repo.requestRefund(tenancy.organizationId, { saleId, amount, reason, requestedBy: tenancy.userId });
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { error: result.error.message };
   return undefined;
 }
@@ -92,7 +98,7 @@ export async function redeemLoyaltyAction(_prevState: FormActionState, formData:
   const result = await loyalty.redeem(
     tenancy.organizationId, customerId, points, saleId, randomIdempotencyKey(`pos-loyalty-${saleId}`)
   );
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   revalidatePath(`/clients/${customerId}`);
   revalidatePath("/loyalty");
   if (!result.ok) return { error: result.error.message };
@@ -112,7 +118,7 @@ export async function resolveRefundAction(
       : decision === "process"
         ? await repo.processRefund(refundId, currentStatus)
         : await repo.rejectRefund(refundId, currentStatus);
-  revalidatePath("/pos");
+  revalidateCheckoutSurfaces();
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
