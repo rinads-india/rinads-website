@@ -17,15 +17,19 @@ type WixConfigurationStatus = {
 };
 
 /**
- * Wix app credentials are server-only. Never expose the app secret or webhook
- * verification key to the browser. The app ID is intentionally public once an
- * install URL is enabled.
+ * Wix app credentials and the internal RINADS event sink are server-only.
+ * The installer stays disabled until both authentication and verified event
+ * delivery are configured so an install cannot silently drop lifecycle events.
  */
 export function getWixConfigurationStatus(): WixConfigurationStatus {
   const appId = process.env.WIX_APP_ID?.trim();
   const appSecret = process.env.WIX_APP_SECRET?.trim();
   const webhookPublicKey = process.env.WIX_WEBHOOK_PUBLIC_KEY?.trim();
-  const configured = Boolean(appId && appSecret && webhookPublicKey);
+  const eventSinkUrl = process.env.RINADS_WIX_EVENT_SINK_URL?.trim();
+  const eventSinkSecret = process.env.RINADS_WIX_EVENT_SINK_SECRET?.trim();
+  const configured = Boolean(
+    appId && appSecret && webhookPublicKey && eventSinkUrl && eventSinkSecret,
+  );
 
   return {
     configured,
