@@ -55,6 +55,12 @@ export type SelfServeActivationState =
   | "failed"
   | "suspended";
 
+/**
+ * State-only transitions are intentionally conservative. In particular,
+ * blocked/failed recovery can never jump into entitled or provisioning.
+ * Production retry handlers must re-enter the verified payment/entitlement
+ * path so stale state cannot bypass the server-authoritative billing gate.
+ */
 const ACTIVATION_TRANSITIONS: Record<SelfServeActivationState, readonly SelfServeActivationState[]> = {
   discovered: ["identity_ready", "failed"],
   identity_ready: ["tenant_reserved", "failed"],
@@ -66,8 +72,8 @@ const ACTIVATION_TRANSITIONS: Record<SelfServeActivationState, readonly SelfServ
   pack_installed: ["first_value", "blocked", "failed"],
   first_value: ["active", "blocked", "failed"],
   active: ["suspended"],
-  blocked: ["payment_pending", "entitled", "provisioning", "pack_installed", "first_value", "failed"],
-  failed: ["identity_ready", "tenant_reserved", "payment_pending", "provisioning"],
+  blocked: ["payment_pending", "failed"],
+  failed: ["identity_ready", "tenant_reserved", "payment_pending"],
   suspended: ["active"],
 };
 
