@@ -90,10 +90,6 @@ function HeaderTools({
   const moreActive = useMemo(() => mobileSecondary.some((link) => isActivePath(pathname, link.href)), [pathname]);
 
   useEffect(() => {
-    setMobileMoreOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!mobileMoreOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMobileMoreOpen(false);
@@ -215,6 +211,7 @@ function HeaderTools({
                   <Link
                     key={href}
                     href={branchHref(href, branchId)}
+                    onClick={() => setMobileMoreOpen(false)}
                     className={`flex min-h-14 items-center justify-between rounded-2xl border px-4 text-sm font-semibold transition active:scale-[0.99] ${
                       active
                         ? "border-rinads-primary/30 bg-rinads-primary/10 text-rinads-primary"
