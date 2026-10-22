@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --filter @rinads/platform-admin...",
-  "buildCommand": "cd ../.. && pnpm --filter @rinads/platform-admin build"
+  "buildCommand": "cd ../.. && pnpm --filter @rinads/platform-admin build",
+  "crons": [
+    {
+      "path": "/api/cron/provisioning",
+      "schedule": "* * * * *"
+    }
+  ]
 }

@@ -5,6 +5,7 @@ import {
 } from "./subscriptions";
 import {
   verifyRazorpayWebhookSignature,
+  type OrganizationSubscriptionStatus,
   type RazorpaySubscriptionPayload,
 } from "./providers/razorpay";
 import type { BillingWebhookEvent } from "./index";
@@ -30,6 +31,15 @@ export type WebhookHandlerClient = {
 export type WebhookProcessResult =
   | { ok: true; duplicate?: boolean }
   | { ok: false; error: string; status: number };
+
+export type SubscriptionReconciledEvent = {
+  organizationId: string;
+  planKey: string;
+  eventType: string;
+  providerSubscriptionId: string;
+  providerStatus: string;
+  organizationStatus: OrganizationSubscriptionStatus;
+};
 
 const SUBSCRIPTION_EVENTS = new Set([
   "subscription.authenticated",
@@ -84,6 +94,9 @@ export async function processRazorpayWebhook(
     eventId?: string;
     resolveOrganizationId: (payload: Record<string, unknown>) => Promise<string | null>;
     resolvePlanKey: (payload: Record<string, unknown>) => Promise<string | null>;
+    onSubscriptionReconciled?: (
+      event: SubscriptionReconciledEvent,
+    ) => Promise<{ ok: true } | { ok: false; error: string }>;
   },
 ): Promise<WebhookProcessResult> {
   if (!verifyRazorpayWebhookSignature(input.rawBody, input.signature, input.webhookSecret)) {
@@ -144,6 +157,24 @@ export async function processRazorpayWebhook(
       });
     if (billingUpsert.error) {
       return { ok: false, error: "Could not reconcile provider subscription", status: 500 };
+    }
+
+    // Run activation side effects before recording the billing event. If the
+    // callback fails, Razorpay can retry the same event: subscription upserts are
+    // idempotent and the event remains unacknowledged until provisioning handoff
+    // succeeds.
+    if (input.onSubscriptionReconciled) {
+      const callback = await input.onSubscriptionReconciled({
+        organizationId,
+        planKey,
+        eventType,
+        providerSubscriptionId: entity.id,
+        providerStatus: entity.status,
+        organizationStatus: mirror.organizationStatus,
+      });
+      if (!callback.ok) {
+        return { ok: false, error: callback.error, status: 500 };
+      }
     }
   }
 

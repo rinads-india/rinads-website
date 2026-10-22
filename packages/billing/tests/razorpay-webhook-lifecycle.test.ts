@@ -90,6 +90,61 @@ describe("Razorpay subscription webhooks", () => {
     assert.equal(recorder.inserts.at(-1)?.row.idempotency_key, "event_activated_123");
   });
 
+  it("runs the provisioning handoff after active subscription reconciliation", async () => {
+    const { rawBody, secret, signature } = signedBody("active", "subscription.activated");
+    const recorder = recordingClient();
+    const reconciled: Record<string, unknown>[] = [];
+
+    const result = await processRazorpayWebhook(recorder.client as never, {
+      rawBody,
+      signature,
+      webhookSecret: secret,
+      eventId: "event_activation_handoff",
+      resolveOrganizationId: async () => "org_123",
+      resolvePlanKey: async () => "growth",
+      onSubscriptionReconciled: async (event) => {
+        reconciled.push(event as unknown as Record<string, unknown>);
+        return { ok: true };
+      },
+    });
+
+    assert.deepEqual(result, { ok: true });
+    assert.equal(reconciled.length, 1);
+    assert.equal(reconciled[0]?.organizationId, "org_123");
+    assert.equal(reconciled[0]?.planKey, "growth");
+    assert.equal(reconciled[0]?.organizationStatus, "active");
+    assert.equal(reconciled[0]?.providerSubscriptionId, "sub_live_123");
+  });
+
+  it("leaves the billing event retryable when the activation handoff fails", async () => {
+    const { rawBody, secret, signature } = signedBody("active", "subscription.activated");
+    const recorder = recordingClient();
+
+    const result = await processRazorpayWebhook(recorder.client as never, {
+      rawBody,
+      signature,
+      webhookSecret: secret,
+      eventId: "event_activation_retry",
+      resolveOrganizationId: async () => "org_123",
+      resolvePlanKey: async () => "growth",
+      onSubscriptionReconciled: async () => ({
+        ok: false,
+        error: "Could not enqueue tenant provisioning",
+      }),
+    });
+
+    assert.deepEqual(result, {
+      ok: false,
+      error: "Could not enqueue tenant provisioning",
+      status: 500,
+    });
+    assert.equal(recorder.upserts.length, 2);
+    assert.equal(
+      recorder.inserts.some((write) => write.table === "billing_events"),
+      false,
+    );
+  });
+
   it("revokes paid entitlement when Razorpay marks the subscription pending", async () => {
     const { rawBody, secret, signature } = signedBody("pending", "subscription.pending");
     const recorder = recordingClient();
@@ -133,6 +188,7 @@ describe("Razorpay subscription webhooks", () => {
   it("deduplicates an already recorded provider event before side effects", async () => {
     const { rawBody, secret, signature } = signedBody("active", "subscription.activated");
     const recorder = recordingClient(true);
+    let callbackCalls = 0;
 
     const result = await processRazorpayWebhook(recorder.client as never, {
       rawBody,
@@ -141,10 +197,15 @@ describe("Razorpay subscription webhooks", () => {
       eventId: "event_duplicate",
       resolveOrganizationId: async () => "org_123",
       resolvePlanKey: async () => "growth",
+      onSubscriptionReconciled: async () => {
+        callbackCalls += 1;
+        return { ok: true };
+      },
     });
 
     assert.deepEqual(result, { ok: true, duplicate: true });
     assert.equal(recorder.inserts.length, 0);
     assert.equal(recorder.upserts.length, 0);
+    assert.equal(callbackCalls, 0);
   });
 });

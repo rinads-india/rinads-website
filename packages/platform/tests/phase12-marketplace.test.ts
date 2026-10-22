@@ -18,7 +18,7 @@ describe("Phase 12 marketplace", () => {
     assert.ok(templates.some((t) => t.key === "generic-retail"));
   });
 
-  it("processes pending provisioning jobs with mock client", async () => {
+  it("processes pending provisioning jobs only for an active subscription", async () => {
     const jobs = [
       {
         id: "job_1",
@@ -35,6 +35,9 @@ describe("Phase 12 marketplace", () => {
           eq: async (col: string, val: string) => {
             if (table === "tenant_provisioning_jobs" && col === "status" && val === "pending") {
               return { data: jobs, error: null };
+            }
+            if (table === "organization_subscriptions" && col === "organization_id") {
+              return { data: [{ status: "active" }], error: null };
             }
             if (table === "products" && col === "organization_id") {
               return { data: tables.get("products") ?? [], error: null };
@@ -64,6 +67,52 @@ describe("Phase 12 marketplace", () => {
 
     const result = await runPendingProvisioningJobs(client as never);
     assert.equal(result.processed, 1);
+    assert.equal(result.blocked, 0);
     assert.equal(jobs[0]?.status, "completed");
+  });
+
+  it("leaves a pending job untouched until the subscription is active", async () => {
+    const jobs = [
+      {
+        id: "job_waiting_for_payment",
+        organization_id: "org_waiting_for_payment",
+        template_key: "generic-retail",
+        status: "pending" as const,
+      },
+    ];
+    let updateCalls = 0;
+    let seedWrites = 0;
+
+    const client = {
+      from: (table: string) => ({
+        select: () => ({
+          eq: async (col: string, val: string) => {
+            if (table === "tenant_provisioning_jobs" && col === "status" && val === "pending") {
+              return { data: jobs, error: null };
+            }
+            if (table === "organization_subscriptions" && col === "organization_id") {
+              return { data: [{ status: "trialing" }], error: null };
+            }
+            return { data: [], error: null };
+          },
+        }),
+        update: () => ({
+          eq: async () => {
+            updateCalls += 1;
+            return { error: null };
+          },
+        }),
+        upsert: async () => {
+          seedWrites += 1;
+          return { error: null };
+        },
+      }),
+    };
+
+    const result = await runPendingProvisioningJobs(client as never);
+    assert.deepEqual(result, { processed: 0, failed: 0, blocked: 1 });
+    assert.equal(jobs[0]?.status, "pending");
+    assert.equal(updateCalls, 0);
+    assert.equal(seedWrites, 0);
   });
 });
