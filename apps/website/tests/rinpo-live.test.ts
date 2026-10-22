@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { CASE_STUDIES } from "../lib/content/case-studies";
-import { COMMERCIAL_CONFIG } from "../lib/content/commercialConfig";
+import { COMMERCIAL_CONFIG, PRICING_PLANS } from "../lib/content/commercialConfig";
 import { OS_PAGES } from "../lib/content/platform-os";
 import { USE_CASES } from "../lib/content/use-cases";
 import { metadataFromRegistry } from "../lib/route-registry";
@@ -142,7 +142,8 @@ describe("RINPO Live personality", () => {
   it("keeps the honesty rules in every language", () => {
     for (const language of LIVE_LANGUAGES) {
       const prompt = buildPersonality(language.code);
-      assert.match(prompt, /Never quote a price/);
+      assert.match(prompt, /Quote only prices explicitly published/);
+      assert.match(prompt, /Never invent, negotiate or promise discounts/);
       assert.match(prompt, /never present a preview or roadmap item/i);
       assert.match(prompt, /AI character, not a human/);
       assert.match(prompt, /Never ask for or accept passwords/);
@@ -253,11 +254,19 @@ describe("RINPO Live knowledge", () => {
     }
   });
 
-  it("publishes no numeric price while prices are unapproved", () => {
-    assert.equal(COMMERCIAL_CONFIG.priceApproved, false, "update this test when prices are approved");
+  it("publishes only approved canonical plan prices", () => {
+    assert.equal(COMMERCIAL_CONFIG.priceApproved, true);
     const pricing = buildGeneratedKnowledge().find((d) => d.key === "pricing")!.content;
-    assert.match(pricing, /Never quote a number/);
-    assert.doesNotMatch(pricing, /(INR|USD|₹|\$)\s?\d/);
+    assert.match(pricing, /Published plan prices are listed below/);
+    for (const plan of PRICING_PLANS) {
+      if (typeof plan.monthlyPrice === "number") {
+        assert.ok(
+          pricing.includes(`Monthly: ${plan.currency} ${plan.monthlyPrice}`),
+          `${plan.name} monthly price is missing from RINPO pricing knowledge`,
+        );
+      }
+    }
+    assert.doesNotMatch(pricing, /Never quote a number/);
   });
 
   it("includes the verified contact line", () => {
