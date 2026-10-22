@@ -17,6 +17,7 @@
   "dependencies": {
     "@rinads/commerce": "workspace:*",
     "@rinads/commerce-server": "workspace:*",
+    "@rinads/database": "workspace:*",
     "@rinads/operations": "workspace:*",
     "@rinads/runtime": "workspace:*"
   },
