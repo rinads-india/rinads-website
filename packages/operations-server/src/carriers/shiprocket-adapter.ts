@@ -17,6 +17,14 @@ import {
   ShiprocketExecutionClient,
   createShiprocketExecutionClientFromProviderConfig,
 } from "./shiprocket-execution-client";
+import {
+  createShiprocketOrderRecoveryClientFromProviderConfig,
+  createShiprocketProviderReference,
+  createShiprocketSupabaseRecoveryStoreFromEnv,
+  type ShiprocketOrderRecoveryClient,
+  type ShiprocketRecoveredOrder,
+  type ShiprocketRecoveryStore,
+} from "./shiprocket-recovery";
 import { normalizeShiprocketWebhook } from "./shiprocket-webhook";
 
 export type ShiprocketAdapterOptions = {
@@ -39,7 +47,9 @@ function minorToRupees(value: number | undefined, field: string): number | undef
   return value / 100;
 }
 
-function bestCourier(couriers: readonly ShiprocketCourierOption[]): ShiprocketCourierOption | null {
+function bestCourier(
+  couriers: readonly ShiprocketCourierOption[]
+): ShiprocketCourierOption | null {
   const candidates = couriers.filter((courier) => courier.rateRupees !== undefined);
   candidates.sort((a, b) => {
     const rate =
@@ -140,13 +150,126 @@ function requireExecution(input: CourierShipmentInput): {
   };
 }
 
+function toCustomOrderInput(
+  providerReference: string,
+  execution: ValidatedExecution,
+  weightGrams: number
+) {
+  return {
+    orderId: providerReference,
+    orderDate: execution.orderDate,
+    pickupLocation: execution.pickupLocation,
+    companyName: execution.billing.companyName,
+    billing: {
+      customerName: execution.billing.name,
+      lastName: execution.billing.lastName,
+      address: execution.billing.address1,
+      address2: execution.billing.address2,
+      city: execution.billing.city,
+      pincode: execution.billing.pincode,
+      state: execution.billing.state,
+      country: execution.billing.country,
+      email: execution.billing.email,
+      phone: execution.billing.phone,
+      alternatePhone: execution.billing.alternatePhone,
+    },
+    shipping: execution.shipping
+      ? {
+          customerName: execution.shipping.name,
+          lastName: execution.shipping.lastName,
+          address: execution.shipping.address1,
+          address2: execution.shipping.address2,
+          city: execution.shipping.city,
+          pincode: execution.shipping.pincode,
+          state: execution.shipping.state,
+          country: execution.shipping.country,
+          email: execution.shipping.email,
+          phone: execution.shipping.phone,
+          alternatePhone: execution.shipping.alternatePhone,
+        }
+      : undefined,
+    items: execution.items.map((item) => ({
+      name: item.name,
+      sku: item.sku,
+      units: item.units,
+      sellingPriceRupees:
+        minorToRupees(item.sellingPriceMinor, "item.sellingPriceMinor") ?? 0,
+      discountRupees: minorToRupees(item.discountMinor, "item.discountMinor"),
+      taxRupees: minorToRupees(item.taxMinor, "item.taxMinor"),
+      hsn: item.hsn,
+    })),
+    paymentMethod: execution.paymentMethod === "cod" ? ("COD" as const) : ("Prepaid" as const),
+    shippingChargesRupees: minorToRupees(
+      execution.shippingChargesMinor,
+      "shippingChargesMinor"
+    ),
+    totalDiscountRupees: minorToRupees(
+      execution.totalDiscountMinor,
+      "totalDiscountMinor"
+    ),
+    subTotalRupees:
+      minorToRupees(execution.subtotalMinor, "subtotalMinor") ?? 0,
+    dimensionsCm: {
+      length: execution.dimensionsCm.length,
+      breadth: execution.dimensionsCm.width,
+      height: execution.dimensionsCm.height,
+    },
+    weightKg: weightGrams / 1000,
+  };
+}
+
 export class ShiprocketCourierAdapter implements CourierAdapter {
   private readonly shipmentIdByAwb = new Map<string, number>();
 
   constructor(
     private readonly client: ShiprocketExecutionClient,
-    private readonly options: ShiprocketAdapterOptions = {}
+    private readonly options: ShiprocketAdapterOptions = {},
+    private readonly recoveryClient?: ShiprocketOrderRecoveryClient,
+    private readonly recoveryStore?: ShiprocketRecoveryStore,
+    private readonly organizationId?: string
   ) {}
+
+  private async findExisting(
+    providerReference: string
+  ): Promise<ShiprocketRecoveredOrder | null> {
+    if (!this.recoveryClient) return null;
+    return this.recoveryClient.findByMerchantReference(providerReference);
+  }
+
+  private async persist(input: {
+    orderId: string;
+    packageId: string;
+    providerReference: string;
+    providerOrderId?: number;
+    providerShipmentId?: number;
+    awb?: string;
+    service?: string;
+    providerStatus?: string;
+    providerStatusCode?: number;
+    recovered: boolean;
+  }): Promise<void> {
+    if (!this.recoveryStore || !this.organizationId) return;
+    await this.recoveryStore.save({
+      organizationId: this.organizationId,
+      orderId: input.orderId,
+      packageId: input.packageId,
+      providerReference: input.providerReference,
+      providerOrderId:
+        input.providerOrderId === undefined ? undefined : String(input.providerOrderId),
+      providerShipmentId:
+        input.providerShipmentId === undefined
+          ? undefined
+          : String(input.providerShipmentId),
+      awb: input.awb,
+      service: input.service,
+      trackingUrl: input.awb
+        ? `https://shiprocket.co/tracking/${encodeURIComponent(input.awb)}`
+        : undefined,
+      providerStatus: input.providerStatus,
+      providerStatusCode: input.providerStatusCode,
+      recovered: input.recovered,
+    });
+  }
 
   async createShipment(input: CourierShipmentInput): Promise<{
     carrier: string;
@@ -155,6 +278,7 @@ export class ShiprocketCourierAdapter implements CourierAdapter {
     service?: string;
     providerShipmentId?: string;
     providerOrderId?: string;
+    providerReference?: string;
   }> {
     const { execution, weightGrams } = requireExecution(input);
     const routing = input as CourierShipmentInput & Partial<CourierQuoteInput>;
@@ -165,108 +289,132 @@ export class ShiprocketCourierAdapter implements CourierAdapter {
       );
     }
 
-    const order = await this.client.createCustomOrder({
-      orderId: input.orderId,
-      orderDate: execution.orderDate,
-      pickupLocation: execution.pickupLocation,
-      companyName: execution.billing.companyName,
-      billing: {
-        customerName: execution.billing.name,
-        lastName: execution.billing.lastName,
-        address: execution.billing.address1,
-        address2: execution.billing.address2,
-        city: execution.billing.city,
-        pincode: execution.billing.pincode,
-        state: execution.billing.state,
-        country: execution.billing.country,
-        email: execution.billing.email,
-        phone: execution.billing.phone,
-        alternatePhone: execution.billing.alternatePhone,
-      },
-      shipping: execution.shipping
-        ? {
-            customerName: execution.shipping.name,
-            lastName: execution.shipping.lastName,
-            address: execution.shipping.address1,
-            address2: execution.shipping.address2,
-            city: execution.shipping.city,
-            pincode: execution.shipping.pincode,
-            state: execution.shipping.state,
-            country: execution.shipping.country,
-            email: execution.shipping.email,
-            phone: execution.shipping.phone,
-            alternatePhone: execution.shipping.alternatePhone,
-          }
-        : undefined,
-      items: execution.items.map((item) => ({
-        name: item.name,
-        sku: item.sku,
-        units: item.units,
-        sellingPriceRupees:
-          minorToRupees(item.sellingPriceMinor, "item.sellingPriceMinor") ?? 0,
-        discountRupees: minorToRupees(
-          item.discountMinor,
-          "item.discountMinor"
-        ),
-        taxRupees: minorToRupees(item.taxMinor, "item.taxMinor"),
-        hsn: item.hsn,
-      })),
-      paymentMethod: execution.paymentMethod === "cod" ? "COD" : "Prepaid",
-      shippingChargesRupees: minorToRupees(
-        execution.shippingChargesMinor,
-        "shippingChargesMinor"
-      ),
-      totalDiscountRupees: minorToRupees(
-        execution.totalDiscountMinor,
-        "totalDiscountMinor"
-      ),
-      subTotalRupees:
-        minorToRupees(execution.subtotalMinor, "subtotalMinor") ?? 0,
-      dimensionsCm: {
-        length: execution.dimensionsCm.length,
-        breadth: execution.dimensionsCm.width,
-        height: execution.dimensionsCm.height,
-      },
-      weightKg: weightGrams / 1000,
-    });
-
-    const awb = await this.client.assignAwb(
-      order.shipmentId,
-      selectedCourier.courierCompanyId
+    const providerReference = createShiprocketProviderReference(
+      input.orderId,
+      input.packageId
     );
-    if (!awb.assigned || !awb.awb) {
+
+    let existing = await this.findExisting(providerReference);
+    let recovered = Boolean(existing);
+    if (existing?.cancelled) {
       throw new ShiprocketApiError(
-        `Shiprocket created shipment ${order.shipmentId} but did not assign an AWB.`
+        `Shiprocket provider reference ${providerReference} belongs to a cancelled order and cannot be reused; manual reconciliation is required.`
       );
     }
 
-    this.shipmentIdByAwb.set(awb.awb, order.shipmentId);
+    let providerOrderId: number;
+    let providerShipmentId: number | undefined;
+    let awb = existing?.awb;
+    let service = existing?.courierName ?? selectedCourier.courierName;
 
-    if (this.options.requestPickup === true) {
-      const pickup = await this.client.requestPickup(order.shipmentId);
+    if (existing) {
+      providerOrderId = existing.providerOrderId;
+      providerShipmentId = existing.providerShipmentId;
+    } else {
+      try {
+        const order = await this.client.createCustomOrder(
+          toCustomOrderInput(providerReference, execution, weightGrams)
+        );
+        providerOrderId = order.orderId;
+        providerShipmentId = order.shipmentId;
+      } catch (error) {
+        // A request can succeed at Shiprocket and still lose its HTTP response.
+        // On validation/duplicate-style failures, read by the deterministic
+        // merchant reference before deciding whether it is safe to create again.
+        if (error instanceof ShiprocketApiError && error.status === 422 && this.recoveryClient) {
+          existing = await this.findExisting(providerReference);
+          if (!existing) throw error;
+          if (existing.cancelled) {
+            throw new ShiprocketApiError(
+              `Shiprocket provider reference ${providerReference} is cancelled; manual reconciliation is required.`
+            );
+          }
+          recovered = true;
+          providerOrderId = existing.providerOrderId;
+          providerShipmentId = existing.providerShipmentId;
+          awb = existing.awb;
+          service = existing.courierName ?? service;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (!providerShipmentId) {
+      // Get-all-orders documents shipment details as sub-arrays. Missing a
+      // shipment id means RINADS cannot safely continue with AWB/pickup/label.
+      throw new ShiprocketApiError(
+        `Shiprocket order ${providerOrderId} has no recoverable shipment id; manual reconciliation is required.`
+      );
+    }
+
+    await this.persist({
+      orderId: input.orderId,
+      packageId: input.packageId,
+      providerReference,
+      providerOrderId,
+      providerShipmentId,
+      awb,
+      service,
+      providerStatus: existing?.status,
+      providerStatusCode: existing?.statusCode,
+      recovered,
+    });
+
+    if (!awb) {
+      const assignment = await this.client.assignAwb(
+        providerShipmentId,
+        selectedCourier.courierCompanyId
+      );
+      if (!assignment.assigned || !assignment.awb) {
+        throw new ShiprocketApiError(
+          `Shiprocket shipment ${providerShipmentId} did not receive an AWB.`
+        );
+      }
+      awb = assignment.awb;
+      service = assignment.courierName ?? service;
+      await this.persist({
+        orderId: input.orderId,
+        packageId: input.packageId,
+        providerReference,
+        providerOrderId,
+        providerShipmentId,
+        awb,
+        service,
+        providerStatus: existing?.status,
+        providerStatusCode: existing?.statusCode,
+        recovered,
+      });
+    }
+
+    this.shipmentIdByAwb.set(awb, providerShipmentId);
+
+    if (this.options.requestPickup === true && !existing?.pickupAlreadyProgressed) {
+      const pickup = await this.client.requestPickup(providerShipmentId);
       if (!pickup.scheduled) {
         throw new ShiprocketApiError(
-          `Shiprocket assigned AWB ${awb.awb} but pickup scheduling was not confirmed.`
+          `Shiprocket assigned AWB ${awb} but pickup scheduling was not confirmed.`
         );
       }
     }
 
     if (this.options.generateLabel === true) {
-      const label = await this.client.generateLabel([order.shipmentId]);
+      const label = await this.client.generateLabel([providerShipmentId]);
       if (!label.created) {
         throw new ShiprocketApiError(
-          `Shiprocket assigned AWB ${awb.awb} but label generation was not confirmed.`
+          `Shiprocket assigned AWB ${awb} but label generation was not confirmed.`
         );
       }
     }
 
     return {
       carrier: "shiprocket",
-      awb: awb.awb,
-      trackingUrl: `https://shiprocket.co/tracking/${encodeURIComponent(awb.awb)}`,
-      service: awb.courierName ?? selectedCourier.courierName,
-      providerShipmentId: String(order.shipmentId),
-      providerOrderId: String(order.orderId),
+      awb,
+      trackingUrl: `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`,
+      service,
+      providerShipmentId: String(providerShipmentId),
+      providerOrderId: String(providerOrderId),
+      providerReference,
     };
   }
 
@@ -316,7 +464,12 @@ export class ShiprocketCourierAdapter implements CourierAdapter {
   }
 
   async getLabel(awb: string): Promise<{ labelUrl?: string }> {
-    const shipmentId = this.shipmentIdByAwb.get(awb);
+    let shipmentId = this.shipmentIdByAwb.get(awb);
+    if (!shipmentId && this.recoveryClient) {
+      const recovered = await this.recoveryClient.findByAwb(awb);
+      shipmentId = recovered?.providerShipmentId;
+      if (shipmentId) this.shipmentIdByAwb.set(awb, shipmentId);
+    }
     if (!shipmentId) return { labelUrl: undefined };
     const label = await this.client.generateLabel([shipmentId]);
     return { labelUrl: label.labelUrl };
@@ -391,7 +544,22 @@ export function createShiprocketProviderFromConfig(
     { writeEnabled },
     env
   );
-  const adapter = new ShiprocketCourierAdapter(client, options);
+  const recoveryClient = createShiprocketOrderRecoveryClientFromProviderConfig(
+    config,
+    {},
+    env
+  );
+  const recoveryStore = createShiprocketSupabaseRecoveryStoreFromEnv(
+    config.organizationId,
+    env
+  );
+  const adapter = new ShiprocketCourierAdapter(
+    client,
+    options,
+    recoveryClient,
+    recoveryStore ?? undefined,
+    config.organizationId
+  );
   return createShiprocketProviderDefinition({
     client,
     adapter,
