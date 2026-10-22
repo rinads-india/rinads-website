@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import type {
   WorldBootstrapPayload,
@@ -12,6 +12,12 @@ export const runtime = "nodejs";
 // WORLD is currently in PREVIEW — set to true when the Unity build is live
 const WORLD_LIVE = false;
 const WORLD_URL = process.env.NEXT_PUBLIC_WORLD_URL ?? "https://world.rinads.com";
+
+type NamedRelation = { name: string };
+type MembershipProjection = {
+  organization_id: string | null;
+  roles: NamedRelation | NamedRelation[] | null;
+};
 
 const PLACES: WorldPlace[] = [
   {
@@ -48,7 +54,12 @@ const PLACES: WorldPlace[] = [
   },
 ];
 
-export async function GET(req: NextRequest) {
+function firstRelation(value: NamedRelation | NamedRelation[] | null | undefined): NamedRelation | null {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+export async function GET() {
   const supabase = await createWebsiteServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -65,8 +76,9 @@ export async function GET(req: NextRequest) {
       .limit(1)
       .single();
 
-    const orgId = (membership as any)?.organization_id ?? null;
-    const role = (membership as any)?.roles?.name ?? null;
+    const typedMembership = membership as MembershipProjection | null;
+    const orgId = typedMembership?.organization_id ?? null;
+    const role = firstRelation(typedMembership?.roles)?.name ?? null;
 
     // Session token: base64(userId:orgId:exp) — not a JWT, not a secret
     const exp = Math.floor(Date.now() / 1000) + 3600;
