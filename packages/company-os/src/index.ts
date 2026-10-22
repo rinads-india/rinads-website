@@ -7,6 +7,9 @@ export * from "./health";
 export * from "./finance-core";
 export * from "./india-compliance";
 export * from "./demo-store";
+export * from "./work-graph";
+export * from "./growth-engine";
+export * from "./studios";
 
 /** Resolve whether an organization should render Company OS shell. */
 export function isCompanyOsOrg(flags: {
