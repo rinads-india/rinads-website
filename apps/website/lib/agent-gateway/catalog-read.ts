@@ -183,7 +183,7 @@ export async function executeRinadsCatalogRead(input: {
     entity_id: null,
     before: null,
     after: {
-      query: parsed.query ?? null,
+      query_supplied: Boolean(parsed.query),
       limit: parsed.limit,
       result_count: products.length,
     },
