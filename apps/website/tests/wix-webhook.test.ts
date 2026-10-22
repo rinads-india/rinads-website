@@ -43,6 +43,50 @@ describe("Wix webhook verification", () => {
     assert.match(event.eventId, /^[a-f0-9]{64}$/);
   });
 
+  it("keeps a stable provider event ID across re-signed retries", () => {
+    const eventEnvelope = {
+      eventType: "wix.ecom.v1.order_created",
+      instanceId: "instance-123",
+      data: JSON.stringify({
+        createdEvent: {
+          id: "provider-event-1",
+          entityId: "order-1",
+        },
+      }),
+      identity: JSON.stringify({ identityType: "APP", appId }),
+    };
+
+    const firstToken = createJwt({
+      iss: "wix.com",
+      aud: appId,
+      exp: 2_000_000_000,
+      iat: 1_900_000_000,
+      data: JSON.stringify(eventEnvelope),
+    });
+    const retryToken = createJwt({
+      iss: "wix.com",
+      aud: appId,
+      exp: 2_000_000_100,
+      iat: 1_900_000_100,
+      data: JSON.stringify(eventEnvelope),
+    });
+
+    const first = verifyAndDecodeWixWebhook(firstToken, {
+      publicKey: publicKeyPem,
+      appId,
+      nowSeconds: 1_900_000_000,
+    });
+    const retry = verifyAndDecodeWixWebhook(retryToken, {
+      publicKey: publicKeyPem,
+      appId,
+      nowSeconds: 1_900_000_100,
+    });
+
+    assert.notEqual(firstToken, retryToken);
+    assert.equal(first.eventId, "provider-event-1");
+    assert.equal(retry.eventId, "provider-event-1");
+  });
+
   it("rejects a token whose signed content was tampered with", () => {
     const token = createJwt({
       data: JSON.stringify({ eventType: "AppInstalled", instanceId: "instance-123", data: "{}" }),
