@@ -71,10 +71,13 @@ create policy integration_connections_manage_org
     and private.has_permission(organization_id, 'org.manage')
   );
 
-drop policy if exists provider_event_inbox_select_member on public.provider_event_inbox;
-create policy provider_event_inbox_select_member
+drop policy if exists provider_event_inbox_select_manager on public.provider_event_inbox;
+create policy provider_event_inbox_select_manager
   on public.provider_event_inbox for select to authenticated
-  using (organization_id is not null and private.is_org_member(organization_id));
+  using (
+    organization_id is not null
+    and private.has_permission(organization_id, 'org.manage')
+  );
 
 revoke all on public.integration_connections from anon;
 revoke all on public.provider_event_inbox from anon;
