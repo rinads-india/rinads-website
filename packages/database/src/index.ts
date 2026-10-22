@@ -6,6 +6,8 @@ export type {
   Organization,
   OrganizationMember,
   AuditLog,
+  ShipmentRow,
+  DeliveryEventRow,
 } from "./types";
 export { isDatabaseConfigured } from "./types";
 export {
