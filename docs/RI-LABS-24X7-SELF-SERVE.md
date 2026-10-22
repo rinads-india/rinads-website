@@ -58,6 +58,8 @@ Each catalog item declares:
 - cancellation/suspension behavior
 - support policy
 
+The server-side catalog is the trusted source of capabilities, entitlements, quotas and provisioning templates. Payment-provider metadata contains stable identifiers only and must never be trusted as a source of privileges.
+
 ## Global self-serve activation state machine
 
 Discover -> Identity -> Tenant reserve -> Payment pending -> Paid -> Entitled -> Provisioning -> Pack installed -> First value -> Active
@@ -67,6 +69,14 @@ Failure paths are explicit: Blocked, Failed, Suspended.
 ### Security invariant
 
 Browser-side payment success must never provision a production tenant. Provisioning begins only after a verified server-side billing event has created an active entitlement. Provisioning jobs must be idempotent and tenant-scoped.
+
+Blocked or failed recovery must not jump directly to Entitled or Provisioning. Recovery re-enters the pre-entitlement commercial path so the verified payment -> entitlement gate is crossed again.
+
+### Catalog activation gate
+
+`@rinads/billing` defines a provider-neutral activation contract for server-verified commercial signals. It supports Razorpay/Stripe normalization, one-time/subscription billing modes, policy-approved currencies and stable product/offer/catalog-version identifiers. The signal is compared against trusted catalog policy before activation can proceed.
+
+Provider adapters remain responsible for webhook signature verification and provider-event deduplication before emitting the normalized signal.
 
 ### Idempotency
 
@@ -153,6 +163,8 @@ Each product declares a first-value event, for example:
 - Growth: first attributable qualified lead
 - Digital product: first successful access/download/use
 
+`@rinads/platform` now includes a deterministic first-value evaluator with tenant scope, definition versioning, required evidence properties and idempotency keys. Persistence must enforce uniqueness for those keys within tenant scope.
+
 Track payment-to-tenant-ready and payment-to-first-value separately.
 
 ## Reliability / 24x7 requirements
@@ -196,6 +208,30 @@ Track payment-to-tenant-ready and payment-to-first-value separately.
 8. Productize repeatable services so they enter the same catalog and fulfillment engine.
 9. Add Scale/Kill economics to RI LABS.
 10. Add enterprise isolation only after the shared multi-tenant path is reliable.
+
+## Implementation status — PR #211
+
+Implemented in the current branch:
+
+- RI LABS module/lifecycle contract
+- SELL / DELIVER / RUN / GROW / SUPPORT 24x7 operating loops
+- L0-L4 governed autonomy contract
+- global catalog item type contract
+- self-serve activation state machine
+- security recovery bypass fix plus regression coverage
+- provider-neutral catalog payment activation contract
+- first-value definition/event evaluator
+- upgraded RI LABS operator UI
+
+Still required before production self-serve activation:
+
+- persistent global catalog offers and entitlement manifests
+- generic webhook-to-catalog activation wiring
+- durable activation event/idempotency persistence
+- retry/dead-letter orchestration across activation steps
+- first-value event persistence and activation dashboards
+- tenant-configurable autonomy policies and cost ceilings
+- capability publication bound to RI LABS release gates
 
 ## Release gates
 
