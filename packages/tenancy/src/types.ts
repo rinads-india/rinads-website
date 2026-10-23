@@ -1,5 +1,12 @@
 import type { PermissionKey, RoleKey } from "@rinads/permissions";
 
+export type EntitlementState =
+  | "paid_active"
+  | "trialing"
+  | "expiring"
+  | "expired_read_only"
+  | "none";
+
 export type OrgMembership = {
   organizationId: string;
   organizationName: string;
@@ -22,6 +29,8 @@ export type TenancyContext = {
   requestId?: string;
   planKey?: string;
   verticalKey?: string;
+  entitlementState?: EntitlementState;
+  entitlementEndsAt?: string;
   featureFlags: Record<string, boolean>;
 };
 
@@ -32,6 +41,8 @@ export type TenancyLoadInput = {
   memberships: OrgMembership[];
   planKey?: string;
   verticalKey?: string;
+  entitlementState?: EntitlementState;
+  entitlementEndsAt?: string;
   featureFlags?: Record<string, boolean>;
   requestId?: string;
 };
