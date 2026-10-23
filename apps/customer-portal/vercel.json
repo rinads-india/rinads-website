@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "ignoreCommand": "cd ../.. && if [ -z \"$VERCEL_GIT_PREVIOUS_SHA\" ]; then exit 1; fi; git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- apps/customer-portal packages package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json",
   "installCommand": "cd ../.. && pnpm install --filter @rinads/customer-portal...",
   "buildCommand": "cd ../.. && pnpm --filter @rinads/customer-portal build"
 }
