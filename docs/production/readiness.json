@@ -1,0 +1,335 @@
+{
+ "generated": "2026-10-23",
+ "head": "56ff776e81e370151d7892daadf1e06fe4033620",
+ "production_connected": false,
+ "allowed_statuses": [
+  "LIVE",
+  "READY",
+  "BETA",
+  "PREVIEW",
+  "BLOCKED",
+  "PLANNED"
+ ],
+ "build": {
+  "install": "pass",
+  "lint": "pass",
+  "typecheck": "pass",
+  "test": "pass",
+  "build": "23/27 in sandbox; 4 fail only on Google Fonts fetch; all compile with mocked fonts (webpack)"
+ },
+ "summary": {
+  "READY": 11,
+  "BLOCKED": 7,
+  "PLANNED": 4,
+  "BETA": 8,
+  "PREVIEW": 3
+ },
+ "p0": [
+  "P0-1 payment_webhook_events has no RLS",
+  "P0-2 trial semantics conflict (trialing = non-entitled)",
+  "P0-3 production migration ledger + R GLOW DB unknown/inactive",
+  "P0-4 no live tenant Business OS data path",
+  "P0-5 provisioning not durable; default template ambady-nursery",
+  "P0-6 no executable cross-tenant tests",
+  "P0-7 legal pages are placeholders"
+ ],
+ "components": [
+  {
+   "id": 1,
+   "component": "Build pipeline",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "\u00a72",
+   "blocker": "Font fetch is sandbox-only",
+   "next_gate": "Confirm green Vercel builds for all apps"
+  },
+  {
+   "id": 2,
+   "component": "Auth (Supabase Auth, signup, callback, reset)",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`apps/website/app/signup`, `app/auth/callback/route.ts` (code exchange + OTP verify)",
+   "blocker": "Email confirmation is not configured in repo `supabase/config.toml`; production setting unknown",
+   "next_gate": "Confirm \"Confirm email\" is ON in production Auth; trial gate must check `email_confirmed_at` server-side"
+  },
+  {
+   "id": 3,
+   "component": "Production env contract / demo safety",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`packages/auth` `allowDevelopmentAuthBypass` (development runtime only), `checkProductionEnvContract` \u2192 503 in every app middleware; tests assert no `NEXT_PUBLIC_*SERVICE_ROLE*`",
+   "blocker": null,
+   "next_gate": "Keep"
+  },
+  {
+   "id": 4,
+   "component": "Organization creation (`create_organization`, `provision_tenant`)",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "Migrations `20260814100001`, `20261022030000`; SECURITY DEFINER, audit row, payment-gated",
+   "blocker": "Default template `ambady-nursery`",
+   "next_gate": "Add `starter-business` template; change defaults"
+  },
+  {
+   "id": 5,
+   "component": "Active organization context",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`apps/website/lib/org-context.ts` \u2014 cookie set only after server membership check",
+   "blocker": null,
+   "next_gate": "Keep"
+  },
+  {
+   "id": 6,
+   "component": "RLS coverage",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "214 tables / 69 migrations; 213 have RLS enabled (31 via `DO` loops); `payment_webhook_events` has none",
+   "blocker": "P0-1",
+   "next_gate": "Additive migration enabling RLS (service-role only)"
+  },
+  {
+   "id": 7,
+   "component": "RLS `FORCE`",
+   "status": "PLANNED",
+   "status_note": "decision",
+   "evidence": "0 tables forced",
+   "blocker": "Forcing breaks SECURITY DEFINER functions owned by the table owner unless reviewed",
+   "next_gate": "ADR: target FORCE only on tables not written by definer functions, or amend spec \u00a75"
+  },
+  {
+   "id": 8,
+   "component": "Executable RLS / cross-tenant tests",
+   "status": "PLANNED",
+   "status_note": null,
+   "evidence": "`packages/runtime/tests/rls.test.ts` and others regex-match SQL text; nothing queries a database",
+   "blocker": "Spec \u00a715 tests 1, 2, 9 unproven",
+   "next_gate": "Local Supabase in CI + seeded two-tenant tests"
+  },
+  {
+   "id": 9,
+   "component": "Self-serve trial entitlement",
+   "status": "PLANNED",
+   "status_note": null,
+   "evidence": "No `trial_grants`; `trialing` = non-entitled payment pending",
+   "blocker": "P0-2 semantic conflict",
+   "next_gate": "ADR + additive `trial_grants` (Release B)"
+  },
+  {
+   "id": 10,
+   "component": "Provisioning worker",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`packages/platform/src/provisioning-worker.ts`: entitlement-gated (active subscription), idempotent job key `provision:<org>`",
+   "blocker": "No retry/backoff/attempts/error class/DLQ; statuses only pending/running/completed/failed; trial grants not accepted",
+   "next_gate": "Release B task B4"
+  },
+  {
+   "id": 11,
+   "component": "Global catalog resolver",
+   "status": "READY",
+   "status_note": "code",
+   "evidence": "`packages/platform/src/commercial-catalog.ts` + tests: fail-closed, version-pinned, provider-route checks",
+   "blocker": "Not persisted; not used by pricing or checkout",
+   "next_gate": "Persist catalog; render pricing from it (Release C)"
+  },
+  {
+   "id": 12,
+   "component": "First-value evaluator",
+   "status": "READY",
+   "status_note": "code",
+   "evidence": "`packages/platform/src/first-value.ts`",
+   "blocker": "No `first_value_events` table; not called by any flow",
+   "next_gate": "Release B task B9"
+  },
+  {
+   "id": 13,
+   "component": "Entitlement resolution (tenancy)",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`packages/tenancy/src/load.ts`: `planKey` only when subscription `active`; `planFeatureFlags` returns all-false without a plan",
+   "blocker": "Latent fail-open: `requirePlanModule` falls back to starter modules when `planKey` is undefined, and `planIncludesModule` allows everything when `modules` is empty. Currently unused outside tests.",
+   "next_gate": "Make both fail closed (B3)"
+  },
+  {
+   "id": 14,
+   "component": "Recurring billing (Razorpay subscriptions + platform-admin webhook)",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "`apps/owner-portal/.../billing/actions.ts` (role + server plan check), `apps/platform-admin/app/api/webhooks/razorpay/route.ts` (signature, `x-razorpay-event-id` idempotency, enqueue provisioning on `active`)",
+   "blocker": "Per cutover doc: Razorpay keys, webhook secret, plan IDs and cycle counts not configured in deploy envs",
+   "next_gate": "Founder config (OPEN-QUESTIONS Q4), then Release C"
+  },
+  {
+   "id": 15,
+   "component": "One-time service checkout (edge `payment-webhook`)",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "`supabase/functions/payment-webhook/index.ts` verifies signature",
+   "blocker": "P0-1 (table has no RLS) and P1-1 (dedup keyed on payment id, not event id)",
+   "next_gate": "Fix both, then test with Razorpay test mode"
+  },
+  {
+   "id": 16,
+   "component": "Capability / availability registries",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "Three registries: `apps/website/lib/availability.ts`, `apps/website/lib/rinaspace-capabilities.ts`, `packages/platform/src/capability-registry.ts` (+ runtime action registry)",
+   "blocker": "Vocabulary differs from spec; `isLive()` returns true for PREVIEW; `payment_checkout` and `whatsapp_notify` marked AVAILABLE without production proof",
+   "next_gate": "Consolidate onto one registry with spec statuses (P1-4)"
+  },
+  {
+   "id": 17,
+   "component": "RI SPACE shell (`/space`)",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`apps/website/app/space/page.tsx`: auth redirect, server tenancy, onboarding redirect",
+   "blocker": "Page title and UI say \"RINASPACE\"; no trial banner; Business OS data is demo",
+   "next_gate": "B8"
+  },
+  {
+   "id": 18,
+   "component": "Onboarding",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`app/onboarding/create-organization`, `actions/onboarding.ts`",
+   "blocker": "~11 inputs vs spec's 5; leads to payment, not trial",
+   "next_gate": "B6"
+  },
+  {
+   "id": 19,
+   "component": "Generic Business OS (customers, projects, tasks, invoices)",
+   "status": "PREVIEW",
+   "status_note": null,
+   "evidence": "`/os/*` render demo stores (`docs/COMPANY-OS-PHASE1-READINESS.md`); `cos_*` tables have member RLS",
+   "blocker": "No live loaders for tenant mode",
+   "next_gate": "B7 \u2014 wire `cos_contacts` / `cos_tasks` (or chosen tables) for tenants"
+  },
+  {
+   "id": 20,
+   "component": "Team invites",
+   "status": "PLANNED",
+   "status_note": null,
+   "evidence": "`organization_invites` table + RLS exists; no app code references it",
+   "blocker": "Gate step 11",
+   "next_gate": "Release B stretch or C"
+  },
+  {
+   "id": 21,
+   "component": "RINPO Runtime",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`packages/runtime`: 12-stage pipeline, approvals gated on `org.manage`, DLQ replay RPC, immutable business events",
+   "blocker": "Production not verified; action contract not yet mapped field-by-field to spec \u00a710.3",
+   "next_gate": "Release F"
+  },
+  {
+   "id": 22,
+   "component": "Model gateway",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`packages/intelligence/src/provider-router.ts` with deterministic NLU fallback",
+   "blocker": "`apps/platform-admin/lib/rinpo-control/adapters.ts` duplicates provider config for founder health checks (server-only; minor)",
+   "next_gate": "Fold into gateway post-launch"
+  },
+  {
+   "id": 23,
+   "component": "RINPO Phone",
+   "status": "PREVIEW",
+   "status_note": null,
+   "evidence": "`apps/website/lib/rinpo-phone`, `packages/runtime/src/rinpo-phone`",
+   "blocker": "Demo money view etc.",
+   "next_gate": "Release F"
+  },
+  {
+   "id": 24,
+   "component": "Audit logging",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`audit_logs` table; written by `provision_tenant`, `set_organization_status`, and 4 app modules",
+   "blocker": "Not on all writes (spec gate)",
+   "next_gate": "Add audit to trial grant, provisioning transitions, entitlement changes"
+  },
+  {
+   "id": 25,
+   "component": "Control Plane (`apps/platform-admin`)",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "Platform-privileged gate, tenants, billing events, webhook receiver",
+   "blocker": "No trial/first-value/provisioning-retry views",
+   "next_gate": "B4/B9 surfaces"
+  },
+  {
+   "id": 26,
+   "component": "R GLOW",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "Salon OS migrations, `apps/rinaglow` builds",
+   "blocker": "RINGLOW Supabase `wqhhhouzattipxjarlji` INACTIVE on 22 Oct (cutover doc)",
+   "next_gate": "Founder decision Q2"
+  },
+  {
+   "id": 27,
+   "component": "Production migration ledger",
+   "status": "BLOCKED",
+   "status_note": "unknown",
+   "evidence": "`onboarding.ts` warns \"deferred until the production migration ledger is reconciled\"",
+   "blocker": "Not inspected \u2014 this audit did not connect to production",
+   "next_gate": "Founder runs read-only ledger diff (Q1)"
+  },
+  {
+   "id": 28,
+   "component": "Custom domains (Vercel)",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "`packages/domains/src/vercel.ts`",
+   "blocker": "Returns `ok: true` with `mock_\u2026` id when credentials are absent (P1-2)",
+   "next_gate": "Fail closed"
+  },
+  {
+   "id": 29,
+   "component": "Legal pages",
+   "status": "BLOCKED",
+   "status_note": null,
+   "evidence": "Terms, Privacy, Cookies, DPA, Subprocessors use `AwaitingCounselNotice`",
+   "blocker": "Counsel copy",
+   "next_gate": "Founder Q5"
+  },
+  {
+   "id": 30,
+   "component": "n8n boundary (spec D3)",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "No n8n code integration; only an archived reference JSON",
+   "blocker": null,
+   "next_gate": "Keep"
+  },
+  {
+   "id": 31,
+   "component": "World bridge",
+   "status": "PREVIEW",
+   "status_note": null,
+   "evidence": "`packages/world-contract` (83-line typed contract)",
+   "blocker": "Out of launch scope (D4)",
+   "next_gate": "Release G"
+  },
+  {
+   "id": 32,
+   "component": "Status / health pages",
+   "status": "BETA",
+   "status_note": null,
+   "evidence": "`/status`, `/trust/status` are honest stubs; `health-check` edge function",
+   "blocker": "No live health feed",
+   "next_gate": "Post-launch"
+  },
+  {
+   "id": 33,
+   "component": "Public WhatsApp/world insert endpoints",
+   "status": "READY",
+   "status_note": null,
+   "evidence": "`world_wishlist`, `world_reports`: insert-only grants to `anon`",
+   "blocker": "No rate limit on anon insert",
+   "next_gate": "Optional rate limit"
+  }
+ ]
+}
