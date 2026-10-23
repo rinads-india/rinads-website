@@ -128,24 +128,29 @@ function normalizeScopes(
 function parseClaims(value: unknown): RinadsAgentDelegationClaims | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const claims = value as Partial<RinadsAgentDelegationClaims>;
+  const { jti, sub, org, client, scopes, iat, exp } = claims;
+
   if (claims.v !== RINADS_AGENT_DELEGATION_VERSION) return null;
-  if (!isNonEmptyString(claims.jti)) return null;
-  if (!isNonEmptyString(claims.sub)) return null;
-  if (!isNonEmptyString(claims.org)) return null;
-  if (!isClient(claims.client)) return null;
-  if (!Array.isArray(claims.scopes) || claims.scopes.length === 0) return null;
-  if (!claims.scopes.every(isReadScope)) return null;
-  if (!Number.isInteger(claims.iat) || !Number.isInteger(claims.exp)) return null;
-  if ((claims.exp ?? 0) <= (claims.iat ?? 0)) return null;
+  if (!isNonEmptyString(jti)) return null;
+  if (!isNonEmptyString(sub)) return null;
+  if (!isNonEmptyString(org)) return null;
+  if (!isClient(client)) return null;
+  if (!Array.isArray(scopes) || scopes.length === 0 || !scopes.every(isReadScope)) {
+    return null;
+  }
+  if (typeof iat !== "number" || !Number.isInteger(iat)) return null;
+  if (typeof exp !== "number" || !Number.isInteger(exp)) return null;
+  if (exp <= iat) return null;
+
   return {
     v: RINADS_AGENT_DELEGATION_VERSION,
-    jti: claims.jti,
-    sub: claims.sub,
-    org: claims.org,
-    client: claims.client,
-    scopes: normalizeScopes(claims.scopes),
-    iat: claims.iat,
-    exp: claims.exp,
+    jti,
+    sub,
+    org,
+    client,
+    scopes: normalizeScopes(scopes),
+    iat,
+    exp,
   };
 }
 
