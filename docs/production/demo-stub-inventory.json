@@ -1,0 +1,4078 @@
+{
+ "generated": "2026-10-23",
+ "head": "56ff776e81e370151d7892daadf1e06fe4033620",
+ "scope": "git-tracked .ts/.tsx/.js/.mjs/.sql excluding tests, docs, archive, fixtures",
+ "classes": {
+  "A": "intentional demo",
+  "B": "intentional preview/status label",
+  "C": "needs production implementation",
+  "D": "remove"
+ },
+ "method": "Regex marker scan + heuristic classification + manual verification of every class C row. Rows with needs_review=true were classified by heuristic only.",
+ "counts": {
+  "A": 397,
+  "B": 44,
+  "C": 10
+ },
+ "rows": [
+  {
+   "file": "apps/customer-portal/app/(protected)/layout.tsx",
+   "line": 23,
+   "marker": "demo",
+   "snippet": "<WorkspaceDataNotice demo={access.demo} />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/app/(protected)/profile/page.tsx",
+   "line": 12,
+   "marker": "demo",
+   "snippet": "description=\"No customer profile is linked to this demo account.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/components/WorkspaceDataNotice.tsx",
+   "line": 1,
+   "marker": "demo",
+   "snippet": "export function WorkspaceDataNotice({ demo }: { demo: boolean }) {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/components/WorkspaceDataNotice.tsx",
+   "line": 4,
+   "marker": "demo",
+   "snippet": "{demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/components/WorkspaceDataNotice.tsx",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "? \"Explicit development demo mode. Orders, addresses, and tickets are sample data \u2014 not live production owner/customer data.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/lib/supabase/env.ts",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "/** Explicit development-only demo. Preview and production fail closed. */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/lib/tenancy.ts",
+   "line": 16,
+   "marker": "demo",
+   "snippet": "| { status: \"ok\"; userId: string; email?: string; tenancy: TenancyContext | null; demo: boolean }",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/lib/tenancy.ts",
+   "line": 36,
+   "marker": "demo",
+   "snippet": "return { status: \"ok\", userId: tenancy.userId, email: tenancy.email, tenancy, demo: true };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/lib/tenancy.ts",
+   "line": 58,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/middleware.ts",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. This must",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/customer-portal/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/jewellery/page.tsx",
+   "line": 35,
+   "marker": "demo",
+   "snippet": "const disabled = dashboard.demo;",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/jewellery/page.tsx",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "<span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${dashboard.demo ? \"bg-amber-300 text-amber-950\" : \"bg-emerald-300 text-emerald-950\"}`}>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/jewellery/page.tsx",
+   "line": 54,
+   "marker": "demo",
+   "snippet": "{dashboard.demo ? \"Demo data \u2014 writes disabled\" : \"Tenant-bound production data\"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/jewellery/page.tsx",
+   "line": 70,
+   "marker": "demo",
+   "snippet": "{dashboard.demo ? (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/jewellery/page.tsx",
+   "line": 72,
+   "marker": "demo",
+   "snippet": "This environment is running the demo tenant path. Jewellery OS write actions are intentionally blocked until a live Supabase tenant and the Jewellery OS migration are available.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/layout.tsx",
+   "line": 23,
+   "marker": "demo",
+   "snippet": "<WorkspaceDataNotice demo={access.demo} />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/[id]/edit/actions.ts",
+   "line": 111,
+   "marker": "demo",
+   "snippet": "return { ok: true, message: \"Demo product saved.\" };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/[id]/edit/page.tsx",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "<Badge tone={runtime.demo ? \"warning\" : \"success\"}>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/[id]/edit/page.tsx",
+   "line": 30,
+   "marker": "demo",
+   "snippet": "{runtime.demo ? \"Demo data\" : \"Production tenant\"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/[id]/edit/page.tsx",
+   "line": 40,
+   "marker": "demo",
+   "snippet": "<ProductEditorForm product={product} variants={variants} stockEditable={runtime.demo} />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/page.tsx",
+   "line": 28,
+   "marker": "demo",
+   "snippet": "<Badge tone={runtime.demo ? \"warning\" : \"success\"}>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/products/page.tsx",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "{runtime.demo ? \"Demo data\" : \"Production tenant\"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/settings/billing/actions.ts",
+   "line": 31,
+   "marker": "demo",
+   "snippet": "if (access.demo) {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/app/(protected)/settings/billing/page.tsx",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "demo_mode: \"Billing checkout is disabled in demo mode.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/components/WorkspaceDataNotice.tsx",
+   "line": 1,
+   "marker": "demo",
+   "snippet": "export function WorkspaceDataNotice({ demo }: { demo: boolean }) {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/components/WorkspaceDataNotice.tsx",
+   "line": 4,
+   "marker": "demo",
+   "snippet": "{demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/components/WorkspaceDataNotice.tsx",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "? \"Explicit development demo mode. Catalog, orders, and tickets are sample data \u2014 not live production owner/customer data.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/catalog-runtime.ts",
+   "line": 14,
+   "marker": "demo",
+   "snippet": "demo: true as const,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/catalog-runtime.ts",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "demo: false as const,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/jewellery.ts",
+   "line": 64,
+   "marker": "demo",
+   "snippet": "demo: boolean;",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/jewellery.ts",
+   "line": 109,
+   "marker": "demo",
+   "snippet": "demo: true,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/jewellery.ts",
+   "line": 210,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/supabase/env.ts",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "/** Explicit development-only demo. Preview and production fail closed. */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/tenancy.ts",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "| { status: \"ok\"; tenancy: TenancyContext; demo: boolean }",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/tenancy.ts",
+   "line": 42,
+   "marker": "demo",
+   "snippet": "return { status: \"ok\", tenancy: buildDemoTenancyContext({ roleKey: \"founder\" }), demo: true };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/lib/tenancy.ts",
+   "line": 59,
+   "marker": "demo",
+   "snippet": "return { status: \"ok\", tenancy, demo: false };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/middleware.ts",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. This must",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/owner-portal/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/(founder)/rinpo/page.tsx",
+   "line": 94,
+   "marker": "demo",
+   "snippet": "Live source health, canonical RINPO data, model routing configuration, approval pressure and safety boundaries are shown here without demo counters or inferred operational status.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/(protected)/layout.tsx",
+   "line": 25,
+   "marker": "demo",
+   "snippet": "{access.demo ? <DemoDataNotice workspace=\"platform-admin\" /> : null}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/(protected)/page.tsx",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "{process.env.USE_DEMO_STORE === \"1\" || process.env.USE_SUPABASE !== \"1\" ? \"Demo store\" : \"Supabase\"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/actions/billing.ts",
+   "line": 100,
+   "marker": "hardcoded_org",
+   "snippet": "organizationId: \"org_ambady_demo\",",
+   "class": "A",
+   "note": "Gated by isDemoMode(), which is development-runtime only (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/actions/domains.ts",
+   "line": 37,
+   "marker": "demo",
+   "snippet": "verificationToken: \"rinads-verify-demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/app/actions/tenants.ts",
+   "line": 113,
+   "marker": "hardcoded_org",
+   "snippet": "{ id: \"org_ambady_demo\", name: \"Ambady Nursery\", slug: \"ambady\", status: \"active\" },",
+   "class": "A",
+   "note": "Demo-mode fallback list; demo mode is development-only (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/components/DemoDataNotice.tsx",
+   "line": 4,
+   "marker": "demo",
+   "snippet": "{workspace} is running in explicit development demo mode. This is not production data.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/lib/supabase/env.ts",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "/** Explicit development-only demo. Preview and production fail closed. */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/lib/tenancy.ts",
+   "line": 13,
+   "marker": "demo",
+   "snippet": "| { status: \"ok\"; tenancy: TenancyContext; demo: boolean }",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/lib/tenancy.ts",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "return { status: \"ok\", tenancy, demo: true };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/lib/tenancy.ts",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "return { status: \"ok\", tenancy, demo: false };",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/middleware.ts",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. This must",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/platform-admin/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/app/(console)/inventory/page.tsx",
+   "line": 47,
+   "marker": "demo",
+   "snippet": "Products and stock per store, with adjustments and transfers. Quantities come from live salon stock rows \u2014 never demo data.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/app/page.tsx",
+   "line": 60,
+   "marker": "demo",
+   "snippet": "Book demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/app/page.tsx",
+   "line": 91,
+   "marker": "demo",
+   "snippet": "Book an R GLOW demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/lib/supabase/server.ts",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "* apps/rinaglow is Supabase-auth-only \u2014 there is no demo-mode fallback here",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/lib/supabase/server.ts",
+   "line": 13,
+   "marker": "demo",
+   "snippet": "* demo data.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/middleware.ts",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. apps/rinaglow",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/middleware.ts",
+   "line": 16,
+   "marker": "demo",
+   "snippet": "// has no demo-mode fallback at all \u2014 it is the first real-tenant surface.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/middleware.ts",
+   "line": 40,
+   "marker": "demo",
+   "snippet": "// clear \"not configured\" state rather than silently degrading to demo data.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/rinaglow/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/app/checkout/page.tsx",
+   "line": 28,
+   "marker": "demo",
+   "snippet": "<p className=\"text-sm text-muted-foreground\">Review shipping and complete your demo order.</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/app/page.tsx",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "demo powered by RINADS.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/components/CheckoutForm.tsx",
+   "line": 56,
+   "marker": "demo",
+   "snippet": "<span className=\"font-medium text-foreground\">Payment reference (demo)</span>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/lib/actions.ts",
+   "line": 63,
+   "marker": "demo",
+   "snippet": "paymentProvider: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/middleware.ts",
+   "line": 12,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. This must",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/storefront/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/about/page.tsx",
+   "line": 51,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/about/page.tsx",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/about/page.tsx",
+   "line": 108,
+   "marker": "demo",
+   "snippet": "summary=\"Book a demo or start a project conversation \u2014 we will meet you where your operations are today.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/about/page.tsx",
+   "line": 109,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/api/chat/route.ts",
+   "line": 180,
+   "marker": "demo",
+   "snippet": "\"Book a demo to connect your workspace, or explore the platform architecture.\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/api/chat/route.ts",
+   "line": 182,
+   "marker": "demo",
+   "snippet": "{ label: \"Book a demo\", href: \"/contact?intent=demo\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/api/v1/world/bootstrap/route.ts",
+   "line": 12,
+   "marker": "preview",
+   "snippet": "// WORLD is currently in PREVIEW \u2014 set to true when the Unity build is live",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/app/business-os/BusinessOsClient.tsx",
+   "line": 35,
+   "marker": "demo",
+   "snippet": "href=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/business-os/BusinessOsClient.tsx",
+   "line": 38,
+   "marker": "demo",
+   "snippet": "Book a demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/careers/page.tsx",
+   "line": 16,
+   "marker": "fake",
+   "snippet": "summary=\"We publish open roles only when they are real. This page does not invent job listings, fake headcount, or urgency theatre.\"",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/changelog/page.tsx",
+   "line": 16,
+   "marker": "fake",
+   "snippet": "summary=\"This page will list meaningful platform changes. We do not invent release notes or backdated fake shipping history.\"",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/changelog/page.tsx",
+   "line": 23,
+   "marker": "demo",
+   "snippet": "honest availability notes. Until then, ask the team about recent work during a demo.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/changelog/page.tsx",
+   "line": 26,
+   "marker": "demo",
+   "snippet": "href=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/changelog/page.tsx",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "Book a demo \u2192",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/CompanyClient.tsx",
+   "line": 24,
+   "marker": "demo",
+   "snippet": "secondaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/CompanyClient.tsx",
+   "line": 25,
+   "marker": "demo",
+   "snippet": "secondaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/CompanyClient.tsx",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "Book a demo, start a project conversation, or sign in to an existing workspace.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/CompanyClient.tsx",
+   "line": 56,
+   "marker": "demo",
+   "snippet": "href=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/CompanyClient.tsx",
+   "line": 59,
+   "marker": "demo",
+   "snippet": "Book a demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/careers/page.tsx",
+   "line": 28,
+   "marker": "fake",
+   "snippet": "summary=\"We publish open roles only when they are real. This page does not invent job listings, fake headcount, or urgency theatre.\"",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/contact/page.tsx",
+   "line": 23,
+   "marker": "demo",
+   "snippet": "intent === \"demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/contact/page.tsx",
+   "line": 24,
+   "marker": "demo",
+   "snippet": "? \"Book a demo with the RINADS team.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/contact/page.tsx",
+   "line": 31,
+   "marker": "demo",
+   "snippet": ": \"Book a demo or talk to the RINADS team.\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/rinpo-story/page.tsx",
+   "line": 21,
+   "marker": "demo",
+   "snippet": "secondaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/rinpo-story/page.tsx",
+   "line": 22,
+   "marker": "demo",
+   "snippet": "secondaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/rinpo-story/page.tsx",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "summary=\"Explore the product, or book a demo to see how governed assistance fits your workflows.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/story/page.tsx",
+   "line": 50,
+   "marker": "demo",
+   "snippet": "<CTASection headline=\"Start from your operating reality.\" summary=\"Book a demo or talk through implementation when you are ready.\" />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/contact/ContactClient.tsx",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "intent === \"demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/contact/ContactClient.tsx",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "? \"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/contact/page.tsx",
+   "line": 22,
+   "marker": "demo",
+   "snippet": "intent === \"demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/contact/page.tsx",
+   "line": 23,
+   "marker": "demo",
+   "snippet": "? \"Book a demo with the RINADS team.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/contact/page.tsx",
+   "line": 32,
+   "marker": "demo",
+   "snippet": ": \"Book a demo or talk to the RINADS team.\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/customers/[slug]/page.tsx",
+   "line": 38,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/customers/[slug]/page.tsx",
+   "line": 39,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/customers/page.tsx",
+   "line": 33,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/customers/page.tsx",
+   "line": 34,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/developers/authentication/page.tsx",
+   "line": 30,
+   "marker": "fake",
+   "snippet": "interfaces are contractually stable. We do not publish placeholder credentials or fake token",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/legal/dpa/page.tsx",
+   "line": 24,
+   "marker": "placeholder",
+   "snippet": "heading: \"Intended scope (placeholder)\",",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker for paid/trial signup.",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/legal/subprocessors/page.tsx",
+   "line": 16,
+   "marker": "placeholder",
+   "snippet": "intro=\"Placeholder for the counsel-approved list of subprocessors engaged to deliver RINADS services.\"",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker.",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/onboarding/actions/onboarding.ts",
+   "line": 69,
+   "marker": "hardcoded_org",
+   "snippet": "const orgId = slug === AMBADY_TENANT_SLUG ? \"org_ambady_demo\" : `org_${slug.replace(/-/g, \"_\")}`;",
+   "class": "A",
+   "note": "Synthetic org id only in non-Supabase demo branch (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/os/growth/page.tsx",
+   "line": 10,
+   "marker": "demo",
+   "snippet": "[\"Act\", \"Qualified follow-up becomes governed work, demo, proposal or handoff\"],",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/os/jewellery/page.tsx",
+   "line": 68,
+   "marker": "demo",
+   "snippet": "{data.live ? \"Tenant-bound live data\" : \"Demo shell \u2014 writes disabled\"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/os/logistics/page.tsx",
+   "line": 82,
+   "marker": "fake",
+   "snippet": "No courier adapter is currently verified live in this repository contract. Logistics OS will validate capability and policy, but it will not show invented rates, create fake AWBs or claim a pickup unt",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/platform/PlatformClient.tsx",
+   "line": 103,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/platform/PlatformClient.tsx",
+   "line": 104,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/platform/rinads-cloud/CloudClient.tsx",
+   "line": 84,
+   "marker": "demo",
+   "snippet": "\"Public RINPO demo chat is distinct from authenticated product-side intelligence and tool execution.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/platform/rinads-intelligence/IntelligenceClient.tsx",
+   "line": 141,
+   "marker": "demo",
+   "snippet": "<p className=\"text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary\">Recommendation demo</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/platform/rinads-intelligence/IntelligenceClient.tsx",
+   "line": 146,
+   "marker": "demo",
+   "snippet": "Demo workspace \u00b7 synthetic data",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/pricing/PricingClient.tsx",
+   "line": 66,
+   "marker": "demo",
+   "snippet": "secondaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/pricing/PricingClient.tsx",
+   "line": 67,
+   "marker": "demo",
+   "snippet": "secondaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/resources/ResourcesClient.tsx",
+   "line": 119,
+   "marker": "demo",
+   "snippet": "summary=\"Book a demo or start a project conversation with the team.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/resources/business-readiness/page.tsx",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/resources/business-readiness/page.tsx",
+   "line": 44,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/3d/Rinpo3DClient.tsx",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "router.push(\"/contact?intent=demo\");",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/3d/Rinpo3DClient.tsx",
+   "line": 45,
+   "marker": "preview",
+   "snippet": "RINPO \u00b7 OPTIONAL 3D PREVIEW",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/app/rinpo/3d/Rinpo3DClient.tsx",
+   "line": 97,
+   "marker": "demo",
+   "snippet": "<Link href=\"/contact?intent=demo\">Book a demonstration \u2192</Link>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/RinpoChannelPage.tsx",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/RinpoChannelPage.tsx",
+   "line": 21,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/RinpoClient.tsx",
+   "line": 46,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/RinpoClient.tsx",
+   "line": 47,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/live/LiveClient.tsx",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "secondaryLabel=\"Browser voice demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/live/LiveClient.tsx",
+   "line": 37,
+   "marker": "demo",
+   "snippet": "summary=\"Book a demo or a free consultation and we will walk through workflows that match your business.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/phone/PhoneClient.tsx",
+   "line": 77,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-1 text-sm text-white/45\">Demo customer \u00b7 fictional transcript</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/phone/PhoneClient.tsx",
+   "line": 119,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-2 text-sm font-semibold\">Draft next step \u00b7 no mutation executed in this demo</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/phone/PhoneClient.tsx",
+   "line": 200,
+   "marker": "demo",
+   "snippet": "RINPO Phone demonstrates how governed calling could connect to business context, approvals, and follow-up. Live PSTN/telephony calling is not available on this public demo. Treat this page as product ",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/voice/VoiceClient.tsx",
+   "line": 69,
+   "marker": "demo",
+   "snippet": "summary=\"RINPO Voice turns speech into a RINPO interaction. The public demo uses your browser's speech-recognition and speech-synthesis capabilities; production voice channels require their own suppor",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/rinpo/voice/VoiceClient.tsx",
+   "line": 80,
+   "marker": "demo",
+   "snippet": "Browser voice demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/robots.ts",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "// Authenticated app surfaces, checkout, tracking, concept/demo-only paths,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/solutions/SolutionsClient.tsx",
+   "line": 59,
+   "marker": "demo",
+   "snippet": "secondaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/solutions/SolutionsClient.tsx",
+   "line": 60,
+   "marker": "demo",
+   "snippet": "secondaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/solutions/SolutionsClient.tsx",
+   "line": 215,
+   "marker": "coming_soon",
+   "snippet": "summary=\"Choose an available vertical, explore a coming-soon direction, or start from the shared RINADS core and define a custom workflow.\"",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/app/start/StartClient.tsx",
+   "line": 48,
+   "marker": "demo",
+   "snippet": "title: \"Book a 30-minute demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/start/StartClient.tsx",
+   "line": 50,
+   "marker": "demo",
+   "snippet": "href: appendAttribution(\"/contact?intent=demo\", attribution),",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/start/StartClient.tsx",
+   "line": 104,
+   "marker": "demo",
+   "snippet": "Choose the fastest path into RINADS \u2014 a business audit, an industry demo, RINPO, Academy, or a conversation with the team.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/start/page.tsx",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "\"Choose the fastest path into RINADS: a free Business Simplified Audit, a 30-minute industry demo, RINPO, Academy, industry solutions, or a conversation with the team.\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/status/page.tsx",
+   "line": 28,
+   "marker": "stub",
+   "snippet": "percentages. Until then, treat this page as an honest stub.",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/trust/status/page.tsx",
+   "line": 40,
+   "marker": "stub",
+   "snippet": "percentages. Until then, treat this page as an honest stub.",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/world/WorldGatewayClient.tsx",
+   "line": 33,
+   "marker": "preview",
+   "snippet": "WORLD PREVIEW",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/app/world/WorldGatewayClient.tsx",
+   "line": 69,
+   "marker": "coming_soon",
+   "snippet": "{d.status === \"soon\" ? \"Coming soon\" : d.status}",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 22,
+   "marker": "preview",
+   "snippet": "PREVIEW:         \"bg-blue-50 text-blue-700\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 23,
+   "marker": "preview",
+   "snippet": "PRIVATE_PREVIEW: \"bg-purple-50 text-purple-700\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 24,
+   "marker": "coming_soon",
+   "snippet": "COMING_SOON:     \"bg-amber-50 text-amber-700\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 25,
+   "marker": "roadmap",
+   "snippet": "ROADMAP:         \"bg-gray-100 text-gray-500\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 47,
+   "marker": "coming_soon",
+   "snippet": "<span className={`self-start text-xs font-medium px-2 py-0.5 rounded-full mt-auto ${STATUS_STYLES[status] ?? STATUS_STYLES.COMING_SOON}`}>",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/PlatformGrid.tsx",
+   "line": 48,
+   "marker": "coming_soon",
+   "snippet": "{status === \"AVAILABLE\" ? \"Live\" : status === \"PREVIEW\" ? \"Preview\" : status === \"COMING_SOON\" ? \"Soon\" : status}",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/auth/RinadsSignUpApp.tsx",
+   "line": 188,
+   "marker": "coming_soon",
+   "snippet": "onClick={() => setSocialHint(\"Google sign-in is coming soon to RINADS Business OS.\")}",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/auth/RinadsSignUpApp.tsx",
+   "line": 193,
+   "marker": "coming_soon",
+   "snippet": "onClick={() => setSocialHint(\"LinkedIn sign-in is coming soon to RINADS Business OS.\")}",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/auth/RinadsSignUpApp.tsx",
+   "line": 383,
+   "marker": "placeholder",
+   "snippet": "placeholder,",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/home/HomeHero.tsx",
+   "line": 125,
+   "marker": "demo",
+   "snippet": "RINPO \u00b7 Demo character asset \u00b7 Talk to open the Phone experience",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/home/HomeSections.tsx",
+   "line": 210,
+   "marker": "demo",
+   "snippet": "summary=\"Talk to RINPO, explore the platform, or book a demo with the team.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/home/RinpoSection.tsx",
+   "line": 47,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-1 text-xs text-white/40\">Demo workspace \u00b7 synthetic data</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsOrgRoleProvider.tsx",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "* Server-provided membership role. When unresolved (demo mode / no tenancy),",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsOrgRoleProvider.tsx",
+   "line": 16,
+   "marker": "demo",
+   "snippet": "* demo sessions may use explicit demo role; live Supabase never trusts AuthContext role.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsOrgRoleProvider.tsx",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "// Demo auth only: explicit demo session role is the trusted demo model.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsOrgRoleProvider.tsx",
+   "line": 44,
+   "marker": "demo",
+   "snippet": "if (isDemoMode && user?.demo) {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsRoomsContent.tsx",
+   "line": 12,
+   "marker": "demo",
+   "snippet": "* Demo auth: existing prototype cards remain available and tagged.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsRoomsContent.tsx",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "Demo mode \u2014 sample room cards below are tagged prototypes, not live tenant data.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsSystemStatus.tsx",
+   "line": 4,
+   "marker": "demo",
+   "snippet": "* Demo workspace status \u2014 never presents illustrative metrics as live SLA.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsSystemStatus.tsx",
+   "line": 10,
+   "marker": "demo",
+   "snippet": "Demo workspace",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/OsSystemStatus.tsx",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "<p className=\"text-sm font-semibold\">Guided demo mode</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyApprovalsInbox.tsx",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "setToast(`${label} recorded locally (demo UI only \u2014 not saved).`);",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyHome.tsx",
+   "line": 85,
+   "marker": "demo",
+   "snippet": "\"Daily closing captured locally (demo). Nothing was persisted \u2014 connect cos_daily_closings in a later phase.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyHome.tsx",
+   "line": 186,
+   "marker": "demo",
+   "snippet": "description=\"End-of-day capture (cos_daily_closings fields). Demo submit only.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyHome.tsx",
+   "line": 214,
+   "marker": "demo",
+   "snippet": "Submit closing (demo)",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyOsPanel.tsx",
+   "line": 37,
+   "marker": "demo",
+   "snippet": "Sample demo data from <code className=\"text-[11px]\">@rinads/company-os</code> \u2014 not live",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/company/CompanyWorkHub.tsx",
+   "line": 94,
+   "marker": "demo",
+   "snippet": "Top demo pick: <span className=\"font-semibold\">{top.displayName}</span> (score{\" \"}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/AttentionSummary.tsx",
+   "line": 25,
+   "marker": "demo",
+   "snippet": "{items.some((i) => i.source === \"demo\") && (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/BusinessPulse.tsx",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "{metrics.some((m) => m.source === \"demo\") && (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/ContinueWorking.tsx",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "{entities.some((e) => e.source === \"demo\") && (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/RinpoDailyBrief.tsx",
+   "line": 30,
+   "marker": "demo",
+   "snippet": "{brief.source === \"demo\" && (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/RoomsOverview.tsx",
+   "line": 27,
+   "marker": "demo",
+   "snippet": "{rooms.some((r) => r.source === \"demo\") && (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/WorkspaceStatusBanner.tsx",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "const isDemo = workspace.mode === \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/WorkspaceStatusBanner.tsx",
+   "line": 62,
+   "marker": "demo",
+   "snippet": "<span className=\"font-semibold\">Organisation context:</span> Sample / demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/os/home/WorkspaceStatusBanner.tsx",
+   "line": 71,
+   "marker": "demo",
+   "snippet": "<span className=\"font-semibold\">Data source:</span> Demo adapter (`source: demo`)",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 6,
+   "marker": "demo",
+   "snippet": "import { DEMO_ALLOWED_ROLES, type DemoAllowedRole } from \"@/lib/demo-auth\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 71,
+   "marker": "demo",
+   "snippet": "setError(\"Privileged roles cannot be selected in demo mode.\");",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 83,
+   "marker": "demo",
+   "snippet": ": \"Demo session could not start. Check username and role.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 92,
+   "marker": "demo",
+   "snippet": ": \"Demo session could not start. Check username and role.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 139,
+   "marker": "demo",
+   "snippet": "<p className=\"font-semibold tracking-wide\">DEMO MODE \u2014 NOT FOR PRODUCTION</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 160,
+   "marker": "demo",
+   "snippet": "? \"Demo Login\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 163,
+   "marker": "demo",
+   "snippet": "? \"Demo Sign Up\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 227,
+   "marker": "demo",
+   "snippet": "Demo role",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 258,
+   "marker": "demo",
+   "snippet": "? \"Start Demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/LoginModal.tsx",
+   "line": 261,
+   "marker": "demo",
+   "snippet": "? \"Start Demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 97,
+   "marker": "demo",
+   "snippet": "description=\"Demo view \u2014 signed-in workspaces route sensitive actions through human approval.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 109,
+   "marker": "demo",
+   "snippet": "description=\"Demo agenda \u2014 connect your organisation to see attention items, meetings, and RINPO briefings.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 127,
+   "marker": "demo",
+   "snippet": "description=\"Demo work queue \u2014 live work items appear when Business OS is activated for your tenant.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 138,
+   "marker": "demo",
+   "snippet": "description=\"Demo CRM slice \u2014 customer timelines require an authenticated organisation.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 149,
+   "marker": "demo",
+   "snippet": "description=\"Demo money view \u2014 invoices and payments connect after finance modules are configured.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhone.tsx",
+   "line": 160,
+   "marker": "demo",
+   "snippet": "description=\"Demo growth systems \u2014 campaigns and attribution need Marketing OS context.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/AppDetailModal.tsx",
+   "line": 56,
+   "marker": "demo",
+   "snippet": "{ id: \"dashboard\", name: \"Dashboard\", icon: TrendingUp, category: \"analytics\", description: \"Sample metrics and KPI overview for the demo workspace.\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/AppDetailModal.tsx",
+   "line": 58,
+   "marker": "demo",
+   "snippet": "{ id: \"leads\", name: \"Leads\", icon: Users, badge: \"+12\", category: \"growth\", description: \"Inbound prospects and follow-up queues in the demo workspace.\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/AppDetailModal.tsx",
+   "line": 67,
+   "marker": "demo",
+   "snippet": "{ id: \"support-app\", name: \"Support\", icon: Headphones, category: \"tools\", description: \"Support queue views for the demo workspace.\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/ClientPortal.tsx",
+   "line": 22,
+   "marker": "demo",
+   "snippet": "if (!ok) setError(\"Sign-in failed. Check credentials or demo settings.\");",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/PhoneExtraScreens.tsx",
+   "line": 246,
+   "marker": "placeholder",
+   "snippet": "className=\"flex-1 rounded-xl bg-black/40 border border-white/15 px-2.5 py-1 text-xs text-white placeholder-white/40 focus:outline-none focus:border-purple-400\"",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/PlansReminders.tsx",
+   "line": 48,
+   "marker": "placeholder",
+   "snippet": "className=\"w-full rounded-xl bg-white/5 border border-[var(--rinads-primary)]/50 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-[var(--rinads-primary)]\"",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/RinpoChat.tsx",
+   "line": 370,
+   "marker": "placeholder",
+   "snippet": "className=\"flex-1 min-w-0 rounded-xl bg-white/5 border border-[var(--rinads-primary)]/50 px-3 py-2.5 sm:py-2 text-base sm:text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/RinpoModePlaceholder.tsx",
+   "line": 9,
+   "marker": "placeholder",
+   "snippet": "/** Public-safe placeholder for modes that require an authenticated workspace. */",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/RinpoModePlaceholder.tsx",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "onClick={() => onOpenChat(`Show me a demo of ${title} in RINADS.`)}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/rinpo/RinpoPhoneScreens/SearchServices.tsx",
+   "line": 45,
+   "marker": "placeholder",
+   "snippet": "className=\"w-full rounded-xl bg-white/5 border border-[var(--rinads-primary)]/50 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-[var(--rinads-primary)]\"",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/AcademyProgramPage.tsx",
+   "line": 26,
+   "marker": "demo",
+   "snippet": "primaryHref=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/AcademyProgramPage.tsx",
+   "line": 27,
+   "marker": "demo",
+   "snippet": "primaryLabel=\"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/AwaitingCounselNotice.tsx",
+   "line": 20,
+   "marker": "placeholder",
+   "snippet": "{documentLabel} is a placeholder structure pending final, counsel-approved legal copy. It is",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/BusinessAssessment.tsx",
+   "line": 161,
+   "marker": "demo",
+   "snippet": "href=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/BusinessAssessment.tsx",
+   "line": 164,
+   "marker": "demo",
+   "snippet": "Book a demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/BusinessPulse.tsx",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "detail: \"Inventory below reorder point in demo warehouse.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/BusinessPulse.tsx",
+   "line": 35,
+   "marker": "demo",
+   "snippet": "* All figures are sample/demo \u2014 never presented as live customer metrics.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/BusinessPulse.tsx",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "Demo workspace \u00b7 Synthetic data",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/CommandBar.tsx",
+   "line": 11,
+   "marker": "placeholder",
+   "snippet": "placeholder?: string;",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/LeadForm.tsx",
+   "line": 202,
+   "marker": "demo",
+   "snippet": "if (defaultIntent === \"demo\") {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/LeadForm.tsx",
+   "line": 521,
+   "marker": "demo",
+   "snippet": ": defaultIntent === \"demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/LeadForm.tsx",
+   "line": 522,
+   "marker": "demo",
+   "snippet": "? \"Book a demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/LegalPage.tsx",
+   "line": 19,
+   "marker": "placeholder",
+   "snippet": "* Content is a structural placeholder pending counsel-approved copy \u2014 see",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "} from \"@/lib/os-demo-config\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 58,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-1 text-sm font-semibold text-[var(--text-primary)]\">Demo company</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 102,
+   "marker": "demo",
+   "snippet": "The demo queue suggests a customer-response risk before the financial and project items.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 152,
+   "marker": "demo",
+   "snippet": "Two demo variants are approaching the reorder threshold.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 168,
+   "marker": "demo",
+   "snippet": "[\"\u20b948K\", \"Demo spend\"],",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 201,
+   "marker": "demo",
+   "snippet": "The demo acquisition volume is healthy enough to review, but the follow-up rate suggests the next improvement is operational rather than more spend.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 367,
+   "marker": "demo",
+   "snippet": "The demo learner has enough foundation to apply the current module to a small business workflow instead of consuming another lesson.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 482,
+   "marker": "demo",
+   "snippet": "const Demo = DEMOS[config.slug];",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OperatingSystemDemo.tsx",
+   "line": 486,
+   "marker": "demo",
+   "snippet": "<Demo />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "import { getOperatingSystemDemo } from \"@/lib/os-demo-config\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 28,
+   "marker": "demo",
+   "snippet": "const demo = getOperatingSystemDemo(content.slug);",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "{demo ? <OperatingSystemDemo config={demo} /> : null}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 54,
+   "marker": "demo",
+   "snippet": "{demo ? (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 66,
+   "marker": "demo",
+   "snippet": "{demo.workflow.map((step, index) => (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 71,
+   "marker": "demo",
+   "snippet": "{index < demo.workflow.length - 1 ? (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 88,
+   "marker": "demo",
+   "snippet": "{demo ? (",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 106,
+   "marker": "demo",
+   "snippet": "onClick={() => openPhoneScreen(\"chat\", demo.rinpoPrompt)}",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 116,
+   "marker": "demo",
+   "snippet": "Example recommendation \u00b7 demo only",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/OsMarketingPage.tsx",
+   "line": 118,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-4 text-xl font-semibold\">{demo.rinpoExample}</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/PlatformPillarPage.tsx",
+   "line": 116,
+   "marker": "demo",
+   "snippet": "summary=\"Book a demo to see how this pillar connects to RINPO, Intelligence, Runtime, and your industry edition.\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/RinpoDemo.tsx",
+   "line": 21,
+   "marker": "demo",
+   "snippet": "* Always labels demo / synthetic data; recommendation \u2260 execution.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/RinpoDemo.tsx",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "<p className=\"mt-1 text-xs text-white/45\">Demo workspace \u00b7 Synthetic data</p>",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 67,
+   "marker": "demo",
+   "snippet": "The demo connects catalogue, stock, order state, customers, and growth instead of treating each as a separate app.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 194,
+   "marker": "coming_soon",
+   "snippet": "This is a coming-soon vertical configuration preview, not a claim that a production jewellery OS is currently available.",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 260,
+   "marker": "coming_soon",
+   "snippet": "This coming-soon concept is intentionally limited to practice operations. It does not claim diagnosis, treatment recommendations, clinical decision support, or healthcare compliance certification.",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 285,
+   "marker": "coming_soon",
+   "snippet": "Coming-soon concept for service scheduling, customers, parts, and follow-ups. Demo numbers are synthetic \u2014 not",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 308,
+   "marker": "demo",
+   "snippet": "const Demo = DEMOS[config.slug];",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 353,
+   "marker": "coming_soon",
+   "snippet": "This page is a product-direction preview. Coming-soon visuals do not imply production availability.",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 357,
+   "marker": "demo",
+   "snippet": "Demo / sample configuration \u2014 not a claim that a production vertical is generally available.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 363,
+   "marker": "demo",
+   "snippet": "<Demo />",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 449,
+   "marker": "demo",
+   "snippet": "href=\"/contact?intent=demo\"",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/components/system/VerticalSolutionExperience.tsx",
+   "line": 452,
+   "marker": "demo",
+   "snippet": "Book a demo",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 12,
+   "marker": "demo",
+   "snippet": "import { isDemoAllowedRole } from \"@/lib/demo-auth\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 31,
+   "marker": "demo",
+   "snippet": "demo: boolean;",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 41,
+   "marker": "demo",
+   "snippet": "authMode: \"demo\" | \"supabase\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 72,
+   "marker": "demo",
+   "snippet": "demo: true,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 97,
+   "marker": "demo",
+   "snippet": "demo: true,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 112,
+   "marker": "demo",
+   "snippet": "demo: true,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 121,
+   "marker": "demo",
+   "snippet": "const authMode: \"demo\" | \"supabase\" = isSupabaseMode() ? \"supabase\" : \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 127,
+   "marker": "demo",
+   "snippet": "if (authMode === \"demo\") {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 146,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 158,
+   "marker": "demo",
+   "snippet": "if (authMode === \"demo\") {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 167,
+   "marker": "demo",
+   "snippet": "demo: true,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 187,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 199,
+   "marker": "demo",
+   "snippet": "if (authMode === \"demo\") {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 219,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 232,
+   "marker": "demo",
+   "snippet": "if (authMode === \"demo\") {",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/contexts/AuthContext.tsx",
+   "line": 254,
+   "marker": "demo",
+   "snippet": "isDemoMode: authMode === \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 3,
+   "marker": "preview",
+   "snippet": "| \"PREVIEW\"",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 4,
+   "marker": "preview",
+   "snippet": "| \"PRIVATE_PREVIEW\"",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 5,
+   "marker": "coming_soon",
+   "snippet": "| \"COMING_SOON\"",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 6,
+   "marker": "roadmap",
+   "snippet": "| \"ROADMAP\";",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 27,
+   "marker": "preview",
+   "snippet": "rinpo_intelligence: \"PREVIEW\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 32,
+   "marker": "preview",
+   "snippet": "ri_search: \"PREVIEW\",      // Supabase-backed but not production-tested",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 33,
+   "marker": "preview",
+   "snippet": "rinaspace: \"PREVIEW\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 34,
+   "marker": "preview",
+   "snippet": "rinads_world: \"PREVIEW\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 37,
+   "marker": "preview",
+   "snippet": "ri_marketplace: \"PREVIEW\", // Built Phase 3, not production-tested",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 41,
+   "marker": "preview",
+   "snippet": "ri_entity: \"PREVIEW\",      // /entity/[slug] built Phase 2",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 42,
+   "marker": "preview",
+   "snippet": "morning_digest: \"PREVIEW\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 60,
+   "marker": "preview",
+   "snippet": "return s === \"AVAILABLE\" || s === \"PREVIEW\" || s === \"PRIVATE_PREVIEW\";",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 65,
+   "marker": "preview",
+   "snippet": "PREVIEW: \"Preview\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 66,
+   "marker": "preview",
+   "snippet": "PRIVATE_PREVIEW: \"Private Preview\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 67,
+   "marker": "coming_soon",
+   "snippet": "COMING_SOON: \"Coming Soon\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/availability.ts",
+   "line": 68,
+   "marker": "roadmap",
+   "snippet": "ROADMAP: \"Roadmap\",",
+   "class": "B",
+   "note": "availability/IA status label \u2014 map to spec status vocabulary",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/company-os-mode.ts",
+   "line": 7,
+   "marker": "demo",
+   "snippet": "* Demo/unenforced: NEXT_PUBLIC_COMPANY_OS=true or founder role.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/case-studies.ts",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "ctaHref: \"/contact?intent=demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/case-studies.ts",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "ctaLabel: \"Book a demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/case-studies.ts",
+   "line": 59,
+   "marker": "demo",
+   "snippet": "ctaHref: \"/contact?intent=demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/case-studies.ts",
+   "line": 60,
+   "marker": "demo",
+   "snippet": "ctaLabel: \"Request a demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/case-studies.ts",
+   "line": 133,
+   "marker": "fake",
+   "snippet": "* Only list integrations that are real. Do not display fake partner logos.",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 13,
+   "marker": "coming_soon",
+   "snippet": "monthlyPrice: number | \"contact\" | \"coming_soon\";",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 14,
+   "marker": "coming_soon",
+   "snippet": "annualPrice: number | \"contact\" | \"coming_soon\";",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 58,
+   "marker": "coming_soon",
+   "snippet": "monthlyPrice: \"coming_soon\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 59,
+   "marker": "coming_soon",
+   "snippet": "annualPrice: \"coming_soon\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 76,
+   "marker": "demo",
+   "snippet": "href: \"/contact?intent=demo&plan=start\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/commercialConfig.ts",
+   "line": 201,
+   "marker": "demo",
+   "snippet": "\"Yes. You can try RINPO on the website with a demo workspace, and you can book a demo to walk through workflows that match your business.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/outcome-journeys.ts",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "summary: \"Book a demo or describe your project \u2014 leads are validated before persistence.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/outcome-journeys.ts",
+   "line": 54,
+   "marker": "demo",
+   "snippet": "href: \"/contact?intent=demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/outcome-journeys.ts",
+   "line": 55,
+   "marker": "demo",
+   "snippet": "cta: \"Book a demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/content/verticals.ts",
+   "line": 30,
+   "marker": "demo",
+   "snippet": "\"Nursery inventory, projects, and customer work configured on Business OS \u2014 currently shown as a demo / configuration path.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ctas.ts",
+   "line": 3,
+   "marker": "demo",
+   "snippet": "* Prefer intent-specific labels; avoid repeating \"Book a demo\" everywhere.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ctas.ts",
+   "line": 10,
+   "marker": "demo",
+   "snippet": "bookDemo: { label: \"Book a Demo\", href: \"/company/contact?intent=demo\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ctas.ts",
+   "line": 11,
+   "marker": "demo",
+   "snippet": "/** Alias for forms that still use contact?intent=demo on /contact. */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ctas.ts",
+   "line": 12,
+   "marker": "demo",
+   "snippet": "bookDemoContact: { label: \"Book a Demo\", href: \"/contact?intent=demo\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ctas.ts",
+   "line": 46,
+   "marker": "demo",
+   "snippet": "* primary = Book Demo; secondary = Explore RINADS; rinpo = Talk to RINPO.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/demo-auth.ts",
+   "line": 3,
+   "marker": "demo",
+   "snippet": "/** Public demo roles only \u2014 founder/super-admin self-registration is forbidden. */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/json-ld.ts",
+   "line": 117,
+   "marker": "demo",
+   "snippet": "url: input?.offerUrl ?? `${root}/contact?intent=demo`,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/ops/go-live-checks.ts",
+   "line": 35,
+   "marker": "demo",
+   "snippet": "problems.push('NEXT_PUBLIC_AUTH_PROVIDER must be \"supabase\" in production (demo auth is forbidden).');",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 25,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Business OS demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 34,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Commerce OS demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 38,
+   "marker": "demo",
+   "snippet": "rinpoExample: \"Two popular variants are approaching their demo reorder threshold.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Marketing OS demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 47,
+   "marker": "demo",
+   "snippet": "rinpoExample: \"Lead response is slowing while one channel is consuming most of the demo spend.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Logistics OS demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 56,
+   "marker": "demo",
+   "snippet": "rinpoExample: \"Three demo shipments need exception review before the next carrier handoff.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 61,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Creative OS experience demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 70,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Build OS experience demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 79,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Academy OS experience demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-demo-config.ts",
+   "line": 88,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Automation OS demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 13,
+   "marker": "demo",
+   "snippet": "mode: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 14,
+   "marker": "demo",
+   "snippet": "organizationName: \"Demo organisation\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 16,
+   "marker": "demo",
+   "snippet": "roleLabel: \"Demo session\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 17,
+   "marker": "demo",
+   "snippet": "headline: \"DEMO WORKSPACE\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 25,
+   "marker": "demo",
+   "snippet": "id: \"demo-leads\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 31,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 34,
+   "marker": "demo",
+   "snippet": "id: \"demo-tasks\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 40,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "id: \"demo-invoices\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 49,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 52,
+   "marker": "demo",
+   "snippet": "id: \"demo-approvals\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 58,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 66,
+   "marker": "demo",
+   "snippet": "id: \"demo-revenue\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 70,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 75,
+   "marker": "demo",
+   "snippet": "id: \"demo-pipeline\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 79,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 83,
+   "marker": "demo",
+   "snippet": "id: \"demo-projects\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 87,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 91,
+   "marker": "demo",
+   "snippet": "id: \"demo-receivables\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 95,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 104,
+   "marker": "demo",
+   "snippet": "id: \"demo-bhima\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 110,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 113,
+   "marker": "demo",
+   "snippet": "id: \"demo-brd\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 119,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 122,
+   "marker": "demo",
+   "snippet": "id: \"demo-ambady\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 128,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 136,
+   "marker": "demo",
+   "snippet": "id: \"demo-core\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 144,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 147,
+   "marker": "demo",
+   "snippet": "id: \"demo-growth\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 154,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 157,
+   "marker": "demo",
+   "snippet": "id: \"demo-strategy\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 164,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 179,
+   "marker": "demo",
+   "snippet": "id: \"demo-rec-leads\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 183,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 186,
+   "marker": "demo",
+   "snippet": "id: \"demo-rec-tasks\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 190,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 193,
+   "marker": "demo",
+   "snippet": "id: \"demo-rec-invoice\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 197,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/demo/business-os-home.ts",
+   "line": 200,
+   "marker": "demo",
+   "snippet": "source: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/loaders/rooms.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "* Demo rooms come only from the demo adapter \u2014 never mix into live.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/select-home-data.ts",
+   "line": 2,
+   "marker": "demo",
+   "snippet": "import { getDemoOsHomeData } from \"@/lib/os-home/demo/business-os-home\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/select-home-data.ts",
+   "line": 36,
+   "marker": "demo",
+   "snippet": "* Demo auth \u2192 tagged demo adapter only.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/select-home-data.ts",
+   "line": 37,
+   "marker": "demo",
+   "snippet": "* Live Supabase \u2192 RLS loaders; empty sections stay empty (never fall back to demo metrics).",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/types.ts",
+   "line": 1,
+   "marker": "demo",
+   "snippet": "export type DataSource = \"live\" | \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-home/types.ts",
+   "line": 74,
+   "marker": "demo",
+   "snippet": "mode: \"live\" | \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-module-destinations.ts",
+   "line": 43,
+   "marker": "demo",
+   "snippet": "// Explicitly configured OR local defaults from getPortalUrls() \u2014 treat as configured for demo/dev.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "* Derived only from trusted organisation membership `roleKey` (or explicit demo role).",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 6,
+   "marker": "placeholder",
+   "snippet": "* Never infer from AuthContext Supabase placeholder `client`.",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 10,
+   "marker": "demo",
+   "snippet": "export type OsOrgRoleSource = \"membership\" | \"demo\" | \"unresolved\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 38,
+   "marker": "demo",
+   "snippet": "* Demo-only adapter: maps allowed demo login roles to tiers.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 39,
+   "marker": "demo",
+   "snippet": "* Must only be used when `user.demo === true`.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 60,
+   "marker": "demo",
+   "snippet": "/** Map demo login role onto a RoleKey for gates that check roleKey (e.g. Founder Tower). */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/os-org-role.ts",
+   "line": 72,
+   "marker": "demo",
+   "snippet": "source: tier ? \"demo\" : \"unresolved\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/product-ia.ts",
+   "line": 259,
+   "marker": "demo",
+   "snippet": "{ label: \"Product Demonstrations\", href: \"/customers#demonstrations\", description: \"Demo and sample experiences.\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/product-status.ts",
+   "line": 20,
+   "marker": "coming_soon",
+   "snippet": "| \"coming_soon\";",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/product-status.ts",
+   "line": 78,
+   "marker": "coming_soon",
+   "snippet": "case \"coming_soon\":",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/rinpo-live/knowledge.ts",
+   "line": 78,
+   "marker": "demo",
+   "snippet": "\"- Contact and demo page: /company/contact\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/rinpo-live/knowledge.ts",
+   "line": 255,
+   "marker": "demo",
+   "snippet": "\"If a visitor asks for references, say plainly that none are published yet, and offer a demo or a conversation with the team about what RINADS can stand behind for their industry.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/rinpo-live/personality.ts",
+   "line": 104,
+   "marker": "demo",
+   "snippet": "\"- When the visitor shows buying interest, wants a demo, or has a need you cannot answer, offer to connect them with the team and show the contact page.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/rinpo-live/tools.ts",
+   "line": 76,
+   "marker": "demo",
+   "snippet": "label: \"Contact & demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/rinpo-live/tools.ts",
+   "line": 78,
+   "marker": "demo",
+   "snippet": "when: \"the visitor wants a demo, consultation, quote or to talk to the team\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/rinpo-phone-modes.ts",
+   "line": 22,
+   "marker": "placeholder",
+   "snippet": "/** When true, public users see a demo placeholder instead of live data */",
+   "class": "A",
+   "note": "UI input placeholder or explicit public-safe placeholder",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 282,
+   "marker": "coming_soon",
+   "snippet": "description: \"Collections, appointments, CRM, and brand content \u2014 private preview / coming soon.\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 289,
+   "marker": "coming_soon",
+   "snippet": "description: \"Scheduling and practice workflows \u2014 coming soon on the shared platform core.\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 296,
+   "marker": "coming_soon",
+   "snippet": "description: \"Shipment operations and exception control \u2014 coming soon.\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 304,
+   "marker": "coming_soon",
+   "snippet": "\"Service operations, customers, parts, and follow-ups \u2014 coming soon on the shared RINADS core.\",",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 478,
+   "marker": "demo",
+   "snippet": "title: \"Contact | Book a Demo or Talk to RINADS\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/route-registry.ts",
+   "line": 479,
+   "marker": "demo",
+   "snippet": "description: \"Book a demo, talk to sales, or start an implementation conversation.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/solution-experience.ts",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Retail configuration demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/lib/solution-experience.ts",
+   "line": 42,
+   "marker": "demo",
+   "snippet": "demoLabel: \"Landscape & Nursery demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/middleware.ts",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "// with demo auth / demo data. See docs/deployment/POLICY.md. This must",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/next.config.ts",
+   "line": 5,
+   "marker": "demo",
+   "snippet": "// misconfigured with demo auth / demo data. Vercel injects the target",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/config.ts",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "env.NEXT_PUBLIC_AUTH_PROVIDER === \"supabase\" ? \"supabase\" : \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/config.ts",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "* (VERCEL_ENV=production), demo auth / demo data mode must never be active.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/config.ts",
+   "line": 32,
+   "marker": "demo",
+   "snippet": "* serving fabricated demo data to real users.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/config.ts",
+   "line": 53,
+   "marker": "demo",
+   "snippet": "'NEXT_PUBLIC_AUTH_PROVIDER must be \"supabase\" in production (VERCEL_ENV=production); demo auth is forbidden.'",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/env.ts",
+   "line": 44,
+   "marker": "demo",
+   "snippet": "* Platform (and portal) demo bypass is development-only and must be explicit.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/mappers.ts",
+   "line": 30,
+   "marker": "demo",
+   "snippet": "demo: false,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/types.ts",
+   "line": 3,
+   "marker": "demo",
+   "snippet": "* Demo provider remains for Public Experience until auth_supabase_enabled.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/types.ts",
+   "line": 6,
+   "marker": "demo",
+   "snippet": "export type AuthProvider = \"supabase\" | \"demo\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/types.ts",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "/** true when session is non-production / local demo */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/auth/src/types.ts",
+   "line": 19,
+   "marker": "demo",
+   "snippet": "demo?: boolean;",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/cms/src/defaults.ts",
+   "line": 399,
+   "marker": "demo",
+   "snippet": "\"Contact | Book a Demo or Talk to RINADS\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/cms/src/defaults.ts",
+   "line": 400,
+   "marker": "demo",
+   "snippet": "\"Book a platform demo, talk to sales, or start an implementation conversation.\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/commerce-server/src/index.ts",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "* Standalone commerce-server remains a demo/compatibility surface.",
+   "class": "A",
+   "note": "Demo store constants.",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/index.ts",
+   "line": 41,
+   "marker": "hardcoded_org",
+   "snippet": "userId: \"user_demo_001\",",
+   "class": "A",
+   "note": "Demo store constants.",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/legacy-inventory.ts",
+   "line": 11,
+   "marker": "demo",
+   "snippet": "* Compatibility adapter for demo / legacy commerce-server flows only.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/commerce-server/src/seed.ts",
+   "line": 3,
+   "marker": "hardcoded_org",
+   "snippet": "export const AMBADY_ORG_ID = \"org_ambady_demo\";",
+   "class": "A",
+   "note": "intentional demo path (verify it is unreachable in Supabase mode)",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/seed.ts",
+   "line": 4,
+   "marker": "synthetic_id",
+   "snippet": "export const DEMO_CUSTOMER_ID = \"cust_demo_001\";",
+   "class": "A",
+   "note": "intentional demo path (verify it is unreachable in Supabase mode)",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/seed.ts",
+   "line": 139,
+   "marker": "hardcoded_org",
+   "snippet": "userId: \"user_demo_001\",",
+   "class": "A",
+   "note": "intentional demo path (verify it is unreachable in Supabase mode)",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/seed.ts",
+   "line": 140,
+   "marker": "hardcoded_org",
+   "snippet": "email: \"demo@ambady.local\",",
+   "class": "A",
+   "note": "intentional demo path (verify it is unreachable in Supabase mode)",
+   "needs_review": true
+  },
+  {
+   "file": "packages/commerce-server/src/seed.ts",
+   "line": 151,
+   "marker": "demo",
+   "snippet": "name: \"Demo Customer\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/commerce/src/services/checkout.ts",
+   "line": 78,
+   "marker": "demo",
+   "snippet": "* @rinads/operations StockLedgerService; legacy/demo scalar stock must be",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/commerce/src/services/payment.ts",
+   "line": 20,
+   "marker": "demo",
+   "snippet": "// Demo provider: references starting with \"fail_\" simulate failure.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/company-os/src/demo-store.ts",
+   "line": 15,
+   "marker": "demo",
+   "snippet": "* Honest demo/sample store for Company OS when Supabase is not enforced.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/company-os/src/demo-store.ts",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "const DEMO_ORG = \"demo-operator-org\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/company-os/src/demo-store.ts",
+   "line": 195,
+   "marker": "demo",
+   "snippet": "sourceId: \"demo-proposal-1\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/company-os/src/growth-engine.ts",
+   "line": 2,
+   "marker": "demo",
+   "snippet": "export type GrowthLeadStage = \"received\" | \"qualified\" | \"contacted\" | \"demo\" | \"proposal\" | \"won\" | \"lost\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/company-os/src/index.ts",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "export * from \"./demo-store\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/domains/src/vercel.ts",
+   "line": 22,
+   "marker": "mock",
+   "snippet": "/** Server-only Vercel Domains API client. Returns mock id when credentials absent. */",
+   "class": "C",
+   "note": "Returns ok:true with a mock domain id when Vercel credentials are absent \u2014 fail-open; must fail closed (P1).",
+   "needs_review": false
+  },
+  {
+   "file": "packages/intelligence/src/salon-tools.ts",
+   "line": 8,
+   "marker": "demo",
+   "snippet": "* synchronously, unlike the commerce/ops demo services).",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations-server/src/factory.ts",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "mode: \"demo\" | \"supabase\" | \"org-scoped\";",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations-server/src/factory.ts",
+   "line": 29,
+   "marker": "demo",
+   "snippet": "/** Default demo bundle \u2014 single Ambady in-memory store (Phase 10 compat). */",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations-server/src/factory.ts",
+   "line": 35,
+   "marker": "demo",
+   "snippet": "mode: \"demo\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations-server/src/index.ts",
+   "line": 46,
+   "marker": "hardcoded_org",
+   "snippet": "export const AMBADY_ORG_ID = \"org_ambady_demo\";",
+   "class": "A",
+   "note": "Demo store constants.",
+   "needs_review": true
+  },
+  {
+   "file": "packages/operations-server/src/index.ts",
+   "line": 47,
+   "marker": "synthetic_id",
+   "snippet": "export const DEMO_CUSTOMER_ID = \"cust_demo_001\";",
+   "class": "A",
+   "note": "Demo store constants.",
+   "needs_review": true
+  },
+  {
+   "file": "packages/operations-server/src/index.ts",
+   "line": 207,
+   "marker": "hardcoded_org",
+   "snippet": "userId: \"user_demo_001\",",
+   "class": "A",
+   "note": "Demo store constants.",
+   "needs_review": true
+  },
+  {
+   "file": "packages/operations-server/src/runtime-wiring.ts",
+   "line": 105,
+   "marker": "demo",
+   "snippet": "recipient: String(input.recipient ?? \"customer@demo.local\"),",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations/src/shipping/shipment-service.ts",
+   "line": 90,
+   "marker": "demo",
+   "snippet": "const awb = `DEMO${Date.now()}`;",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/operations/src/shipping/shipment-service.ts",
+   "line": 94,
+   "marker": "demo",
+   "snippet": "trackingUrl: `https://track.demo.local/${awb}`,",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/platform/src/ambady-migrate.ts",
+   "line": 18,
+   "marker": "demo",
+   "snippet": "* Re-seed Ambady demo catalog + ops ledger under a real org row (Tenant #1).",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/runtime/src/runtime-service.ts",
+   "line": 242,
+   "marker": "demo",
+   "snippet": "payload: { orderId: input.orderId, lines: input.lines, templateKey: \"order_confirmation\", channel: \"email\", recipient: \"customer@demo.local\" },",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "packages/salon-server/src/notification-delivery.ts",
+   "line": 7,
+   "marker": "stub",
+   "snippet": "* it never fabricates a \"sent\" status the way the old stub did.",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "packages/salon-server/src/notifications.ts",
+   "line": 2,
+   "marker": "fake",
+   "snippet": "* SalonNotificationService (Part D) \u2014 provider-neutral, no fake delivery.",
+   "class": "A",
+   "note": "comment asserting no stub/mock \u2014 informational",
+   "needs_review": false
+  },
+  {
+   "file": "packages/tenancy/src/load.ts",
+   "line": 163,
+   "marker": "hardcoded_org",
+   "snippet": "const orgId = overrides?.organizationId ?? \"org_ambady_demo\";",
+   "class": "A",
+   "note": "buildDemoTenancyContext \u2014 demo only; production env contract returns 503 if demo auth leaks (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "packages/tenancy/src/load.ts",
+   "line": 166,
+   "marker": "hardcoded_org",
+   "snippet": "userId: overrides?.userId ?? \"user_demo_001\",",
+   "class": "A",
+   "note": "buildDemoTenancyContext \u2014 demo only; production env contract returns 503 if demo auth leaks (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "packages/tenancy/src/load.ts",
+   "line": 167,
+   "marker": "hardcoded_org",
+   "snippet": "email: overrides?.email ?? \"demo@ambady.in\",",
+   "class": "A",
+   "note": "buildDemoTenancyContext \u2014 demo only; production env contract returns 503 if demo auth leaks (verified).",
+   "needs_review": false
+  },
+  {
+   "file": "packages/world-contract/src/index.ts",
+   "line": 54,
+   "marker": "coming_soon",
+   "snippet": "/** Whether RINADS WORLD is live (false = Coming Soon) */",
+   "class": "B",
+   "note": "preview/status label in UI",
+   "needs_review": true
+  },
+  {
+   "file": "scripts/cron/provisioning-worker.ts",
+   "line": 9,
+   "marker": "demo",
+   "snippet": "console.log(JSON.stringify({ ok: true, mode: \"demo\", processed: 0, failed: 0 }));",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "scripts/cron/runtime-worker.ts",
+   "line": 42,
+   "marker": "demo",
+   "snippet": "console.log(JSON.stringify({ ok: true, mode: \"demo\", ...result }));",
+   "class": "C",
+   "note": "RUNTIME_ORG_ID defaults to org_ambady_demo even in Supabase mode \u2014 require explicit org list or process all claimable jobs (P2).",
+   "needs_review": false
+  },
+  {
+   "file": "scripts/cron/runtime-worker.ts",
+   "line": 46,
+   "marker": "hardcoded_org",
+   "snippet": "const orgId = process.env.RUNTIME_ORG_ID ?? \"org_ambady_demo\";",
+   "class": "C",
+   "note": "RUNTIME_ORG_ID defaults to org_ambady_demo even in Supabase mode \u2014 require explicit org list or process all claimable jobs (P2).",
+   "needs_review": false
+  },
+  {
+   "file": "scripts/staging/ambady-cutover.ts",
+   "line": 8,
+   "marker": "demo",
+   "snippet": "* Demo mode (no Supabase):",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "scripts/staging/ambady-cutover.ts",
+   "line": 29,
+   "marker": "hardcoded_org",
+   "snippet": "const resolvedOrgId = orgId ?? (isDemo ? \"org_ambady_demo\" : undefined);",
+   "class": "A",
+   "note": "intentional demo path (verify it is unreachable in Supabase mode)",
+   "needs_review": true
+  },
+  {
+   "file": "scripts/staging/ambady-cutover.ts",
+   "line": 56,
+   "marker": "demo",
+   "snippet": "mode: isDemo ? \"demo\" : \"supabase-app-seed\",",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "supabase/functions/notify-whatsapp/index.ts",
+   "line": 21,
+   "marker": "fake",
+   "snippet": "* message, never swallowed into a fake success.",
+   "class": "A",
+   "note": "Honesty statement / comment asserting no fabricated data",
+   "needs_review": false
+  },
+  {
+   "file": "supabase/migrations/20260814100001_core_identity.sql",
+   "line": 395,
+   "marker": "demo",
+   "snippet": "('auth_supabase_enabled', 'Use Supabase Auth instead of demo auth on Public Experience', false),",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "supabase/migrations/20260825100000_seed_services_catalog.sql",
+   "line": 108,
+   "marker": "demo",
+   "snippet": "-- Staging demo org + paid order for assign_service_order() verification",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "supabase/migrations/20260825100000_seed_services_catalog.sql",
+   "line": 110,
+   "marker": "demo",
+   "snippet": "VALUES ('b0000001-0000-4000-8000-000000000001'::uuid, 'Staging Demo', 'staging-demo', 'active')",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "supabase/migrations/20261019140000_salon_inventory.sql",
+   "line": 3,
+   "marker": "demo",
+   "snippet": "-- tables or demo adapters. organization_id remains the tenant boundary.",
+   "class": "A",
+   "note": "Intentional demo mode or 'book a demo' marketing CTA",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/terms/page.tsx",
+   "line": 1,
+   "marker": "placeholder",
+   "snippet": "Uses AwaitingCounselNotice / LegalPage structural placeholder",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker for paid/trial signup.",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/privacy/page.tsx",
+   "line": 1,
+   "marker": "placeholder",
+   "snippet": "Uses AwaitingCounselNotice / LegalPage structural placeholder",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker for paid/trial signup.",
+   "needs_review": false
+  },
+  {
+   "file": "apps/website/app/company/cookies/page.tsx",
+   "line": 1,
+   "marker": "placeholder",
+   "snippet": "Uses AwaitingCounselNotice / LegalPage structural placeholder",
+   "class": "C",
+   "note": "Legal copy awaiting counsel \u2014 launch blocker for paid/trial signup.",
+   "needs_review": false
+  }
+ ]
+}
