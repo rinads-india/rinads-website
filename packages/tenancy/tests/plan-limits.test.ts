@@ -24,7 +24,7 @@ describe("requirePlanModule", () => {
   });
 
   it("blocks module access when no active plan or explicit entitlement exists", () => {
-    const tenancy = buildDemoTenancyContext({ planKey: undefined });
+    const tenancy = { ...buildDemoTenancyContext({ planKey: "starter" }), planKey: undefined };
     const result = requirePlanModule(tenancy, "commerce");
     assert.equal(result.allowed, false);
     if (!result.allowed) assert.match(result.reason, /No active plan or trial entitlement/);
