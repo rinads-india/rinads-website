@@ -27,6 +27,8 @@ export function buildTenancyContext(input: TenancyLoadInput): TenancyContext | n
     requestId: input.requestId,
     planKey: input.planKey,
     verticalKey: input.verticalKey,
+    entitlementState: input.entitlementState,
+    entitlementEndsAt: input.entitlementEndsAt,
     featureFlags: input.featureFlags ?? {},
   };
 }
