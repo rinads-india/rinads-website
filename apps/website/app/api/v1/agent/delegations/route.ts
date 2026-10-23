@@ -23,6 +23,16 @@ const REQUIRED_PERMISSION: Record<RinadsExternalAgentReadScope, string> = {
 };
 
 type JsonObject = Record<string, unknown>;
+type PersistenceError = { message: string } | null;
+type DelegationPersistenceClient = {
+  from: (table: "external_agent_delegations" | "audit_logs") => {
+    insert: (row: Record<string, unknown>) => Promise<{ error: PersistenceError }>;
+  };
+  rpc: (
+    fn: "revoke_external_agent_delegation",
+    args: { p_token_id: string }
+  ) => Promise<{ error: PersistenceError }>;
+};
 
 function asRecord(value: unknown): JsonObject | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -108,8 +118,9 @@ export async function POST(request: Request): Promise<Response> {
   const issuedAt = new Date(issued.claims.iat * 1000).toISOString();
   const expiresAt = new Date(issued.claims.exp * 1000).toISOString();
   const userAgent = request.headers.get("user-agent")?.slice(0, 500) ?? null;
+  const persistence = supabase as unknown as DelegationPersistenceClient;
 
-  const { error: ledgerError } = await supabase
+  const { error: ledgerError } = await persistence
     .from("external_agent_delegations")
     .insert({
       token_id: issued.claims.jti,
@@ -129,7 +140,7 @@ export async function POST(request: Request): Promise<Response> {
     return invalid("Unable to persist delegation evidence.", 503);
   }
 
-  const { error: auditError } = await supabase.from("audit_logs").insert({
+  const { error: auditError } = await persistence.from("audit_logs").insert({
     organization_id: organizationId,
     actor_type: "user",
     actor_id: userData.user.id,
@@ -146,7 +157,7 @@ export async function POST(request: Request): Promise<Response> {
   });
 
   if (auditError) {
-    await supabase.rpc("revoke_external_agent_delegation", {
+    await persistence.rpc("revoke_external_agent_delegation", {
       p_token_id: issued.claims.jti,
     });
     return invalid("Delegation audit could not be recorded.", 503);
