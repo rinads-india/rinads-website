@@ -6,6 +6,8 @@ export const DEFAULT_PLANS = [
 
 export function planIncludesModule(planLimits: Record<string, unknown>, module: string): boolean {
   const modules = planLimits.modules;
-  if (!Array.isArray(modules)) return true;
+  // Missing or empty entitlement manifests must fail closed. A malformed plan
+  // should never become an implicit all-access plan.
+  if (!Array.isArray(modules) || modules.length === 0) return false;
   return modules.includes(module);
 }
