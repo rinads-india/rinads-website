@@ -6,14 +6,18 @@ export const RINADS_AGENT_DELEGATION_DEFAULT_TTL_SECONDS = 15 * 60;
 export const RINADS_AGENT_DELEGATION_MAX_TTL_SECONDS = 60 * 60;
 export const RINADS_AGENT_DELEGATION_CLOCK_SKEW_SECONDS = 60;
 
+export const RINADS_EXTERNAL_AGENT_CLIENTS = [
+  "chatgpt",
+  "codex",
+  "claude",
+  "claude_code",
+  "gemini",
+  "grok",
+  "internal",
+] as const;
+
 export type RinadsExternalAgentClient =
-  | "chatgpt"
-  | "codex"
-  | "claude"
-  | "claude_code"
-  | "gemini"
-  | "grok"
-  | "internal";
+  (typeof RINADS_EXTERNAL_AGENT_CLIENTS)[number];
 
 export const RINADS_EXTERNAL_AGENT_READ_SCOPES = [
   "intelligence.business_summary.read",
@@ -99,23 +103,21 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function isClient(value: unknown): value is RinadsExternalAgentClient {
+export function isRinadsExternalAgentClient(
+  value: unknown
+): value is RinadsExternalAgentClient {
   return (
-    value === "chatgpt" ||
-    value === "codex" ||
-    value === "claude" ||
-    value === "claude_code" ||
-    value === "gemini" ||
-    value === "grok" ||
-    value === "internal"
+    typeof value === "string" &&
+    (RINADS_EXTERNAL_AGENT_CLIENTS as readonly string[]).includes(value)
   );
 }
 
-function isReadScope(value: unknown): value is RinadsExternalAgentReadScope {
+export function isRinadsExternalAgentReadScope(
+  value: unknown
+): value is RinadsExternalAgentReadScope {
   return (
-    value === "intelligence.business_summary.read" ||
-    value === "commerce.catalog.read" ||
-    value === "commerce.order.read"
+    typeof value === "string" &&
+    (RINADS_EXTERNAL_AGENT_READ_SCOPES as readonly string[]).includes(value)
   );
 }
 
@@ -134,8 +136,12 @@ function parseClaims(value: unknown): RinadsAgentDelegationClaims | null {
   if (!isNonEmptyString(jti)) return null;
   if (!isNonEmptyString(sub)) return null;
   if (!isNonEmptyString(org)) return null;
-  if (!isClient(client)) return null;
-  if (!Array.isArray(scopes) || scopes.length === 0 || !scopes.every(isReadScope)) {
+  if (!isRinadsExternalAgentClient(client)) return null;
+  if (
+    !Array.isArray(scopes) ||
+    scopes.length === 0 ||
+    !scopes.every(isRinadsExternalAgentReadScope)
+  ) {
     return null;
   }
   if (typeof iat !== "number" || !Number.isInteger(iat)) return null;
@@ -172,10 +178,12 @@ export function issueRinadsAgentDelegation(
   if (!isNonEmptyString(input.organizationId)) {
     throw new Error("organizationId is required.");
   }
-  if (!isClient(input.client)) throw new Error("Unsupported external agent client.");
+  if (!isRinadsExternalAgentClient(input.client)) {
+    throw new Error("Unsupported external agent client.");
+  }
 
   const scopes = normalizeScopes(input.scopes);
-  if (scopes.length === 0 || !scopes.every(isReadScope)) {
+  if (scopes.length === 0 || !scopes.every(isRinadsExternalAgentReadScope)) {
     throw new Error("At least one allowed external-agent READ scope is required.");
   }
 
