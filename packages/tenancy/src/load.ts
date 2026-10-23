@@ -3,7 +3,7 @@ import { buildTenancyContext } from "./context";
 import { readActiveOrgIdFromCookie } from "./org-switch";
 import { planFeatureFlags, evaluateFeatureFlags } from "./feature-flags";
 import type { FeatureFlagDefinition, FeatureFlagOverrides } from "./feature-flags-types";
-import type { OrgMembership, TenancyContext } from "./types";
+import type { EntitlementState, OrgMembership, TenancyContext } from "./types";
 
 export type TenancySupabaseClient = {
   auth: {
@@ -93,13 +93,29 @@ async function loadRolePermissions(
     .filter((k: PermissionKey | undefined): k is PermissionKey => Boolean(k));
 }
 
+function resolveTrialState(expiresAt: string | undefined, revokedAt: string | undefined): EntitlementState {
+  if (!expiresAt || revokedAt) return "none";
+  const expiresMs = Date.parse(expiresAt);
+  if (!Number.isFinite(expiresMs)) return "none";
+  const remainingMs = expiresMs - Date.now();
+  if (remainingMs <= 0) return "expired_read_only";
+  if (remainingMs <= 24 * 60 * 60 * 1000) return "expiring";
+  return "trialing";
+}
+
 export async function loadOrgPlanAndSettings(
   client: TenancySupabaseClient,
   organizationId: string
-): Promise<{ planKey?: string; subscriptionStatus?: string; verticalKey?: string }> {
+): Promise<{
+  planKey?: string;
+  subscriptionStatus?: string;
+  verticalKey?: string;
+  entitlementState: EntitlementState;
+  entitlementEndsAt?: string;
+}> {
   const { data: sub } = await client
     .from("organization_subscriptions")
-    .select("plan_key, status")
+    .select("plan_key, status, ends_at")
     .eq("organization_id", organizationId)
     .single();
 
@@ -109,13 +125,34 @@ export async function loadOrgPlanAndSettings(
     .eq("organization_id", organizationId)
     .single();
 
+  const { data: trial } = await client
+    .from("trial_grants")
+    .select("plan_key, expires_at, revoked_at")
+    .eq("organization_id", organizationId)
+    .single();
+
   const subscriptionStatus = sub?.status ? String(sub.status) : undefined;
-  const planKey = subscriptionStatus === "active" && sub?.plan_key ? String(sub.plan_key) : undefined;
+  if (subscriptionStatus === "active" && sub?.plan_key) {
+    return {
+      planKey: String(sub.plan_key),
+      subscriptionStatus,
+      verticalKey: settings?.vertical_key ? String(settings.vertical_key) : undefined,
+      entitlementState: "paid_active",
+      entitlementEndsAt: sub?.ends_at ? String(sub.ends_at) : undefined,
+    };
+  }
+
+  const trialExpiresAt = trial?.expires_at ? String(trial.expires_at) : undefined;
+  const trialRevokedAt = trial?.revoked_at ? String(trial.revoked_at) : undefined;
+  const entitlementState = resolveTrialState(trialExpiresAt, trialRevokedAt);
+  const trialActive = entitlementState === "trialing" || entitlementState === "expiring";
 
   return {
-    planKey,
+    planKey: trialActive && trial?.plan_key ? String(trial.plan_key) : undefined,
     subscriptionStatus,
     verticalKey: settings?.vertical_key ? String(settings.vertical_key) : undefined,
+    entitlementState,
+    entitlementEndsAt: trialExpiresAt,
   };
 }
 
@@ -137,7 +174,10 @@ export async function resolveTenancyFromSupabase(
     memberships.find((m) => m.organizationStatus === "active") ??
     memberships[0];
 
-  const { planKey, verticalKey } = await loadOrgPlanAndSettings(client, active.organizationId);
+  const { planKey, verticalKey, entitlementState, entitlementEndsAt } = await loadOrgPlanAndSettings(
+    client,
+    active.organizationId
+  );
   const overrides = await loadFeatureFlagOverridesForOrg(client, active.organizationId);
   const planDefaults = planFeatureFlags({ planKey, verticalKey });
   const definitions = defaultFlagDefinitions(planDefaults);
@@ -154,6 +194,8 @@ export async function resolveTenancyFromSupabase(
     memberships,
     planKey,
     verticalKey,
+    entitlementState,
+    entitlementEndsAt,
     featureFlags,
     requestId: `req_${Date.now()}`,
   });
@@ -200,6 +242,8 @@ export function buildDemoTenancyContext(overrides?: Partial<TenancyContext>): Te
     requestId: overrides?.requestId ?? `req_${Date.now()}`,
     planKey: overrides?.planKey ?? "growth",
     verticalKey: overrides?.verticalKey ?? "ambady-nursery",
+    entitlementState: overrides?.entitlementState ?? "paid_active",
+    entitlementEndsAt: overrides?.entitlementEndsAt,
     featureFlags: overrides?.featureFlags ?? planFeatureFlags({ planKey: "growth" }),
   };
 }
