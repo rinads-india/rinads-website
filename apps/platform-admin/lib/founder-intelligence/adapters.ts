@@ -52,6 +52,8 @@ export class SupabaseStatusSource implements StatusSource {
   async check(): Promise<SourceCheck> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     if (!url || !anonKey) {
       return {
         id: this.id,
@@ -63,22 +65,32 @@ export class SupabaseStatusSource implements StatusSource {
     }
 
     try {
-      const headers = { apikey: anonKey, Authorization: `Bearer ${anonKey}` };
-      const [auth, database] = await Promise.all([
-        fetchWithTimeout(`${url}/auth/v1/health`, { headers }),
-        fetchWithTimeout(`${url}/rest/v1/`, { headers }),
-      ]);
+      const authHeaders = { apikey: anonKey, Authorization: `Bearer ${anonKey}` };
+      const authPromise = fetchWithTimeout(`${url}/auth/v1/health`, { headers: authHeaders });
+      const databasePromise = serviceRoleKey
+        ? fetchWithTimeout(`${url}/rest/v1/workspaces?select=id&limit=1`, {
+            headers: {
+              apikey: serviceRoleKey,
+              Authorization: `Bearer ${serviceRoleKey}`,
+            },
+          })
+        : Promise.resolve<Response | null>(null);
+
+      const [auth, database] = await Promise.all([authPromise, databasePromise]);
       const authOk = auth.ok;
-      const databaseOk = database.ok;
+      const databaseOk = database?.ok ?? false;
       const projectRef = new URL(url).hostname.split(".")[0];
+      const databaseDetail = database
+        ? databaseOk
+          ? "reachable"
+          : `HTTP ${database.status}`
+        : "probe credentials not configured";
 
       return {
         id: this.id,
         label: this.label,
         state: authOk && databaseOk ? "operational" : "degraded",
-        detail: `Auth ${authOk ? "reachable" : `HTTP ${auth.status}`}; database API ${
-          databaseOk ? "reachable" : `HTTP ${database.status}`
-        }.`,
+        detail: `Auth ${authOk ? "reachable" : `HTTP ${auth.status}`}; database API ${databaseDetail}.`,
         checkedAt: now(),
         href: projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : undefined,
       };
@@ -88,38 +100,50 @@ export class SupabaseStatusSource implements StatusSource {
   }
 }
 
-type VercelProject = { id?: string; name: string; envKey: string; href: string };
+type VercelProject = {
+  id?: string;
+  name: string;
+  envKey: string;
+  href: string;
+  requiredForMvp: boolean;
+};
 
 const VERCEL_PROJECTS: VercelProject[] = [
   {
     name: "www.rinads.com",
     envKey: "VERCEL_WEBSITE_PROJECT_ID",
     href: "https://www.rinads.com",
+    requiredForMvp: true,
   },
   {
     name: "Platform admin",
     envKey: "VERCEL_PLATFORM_ADMIN_PROJECT_ID",
     href: "https://admin.rinads.com",
+    requiredForMvp: true,
   },
   {
     name: "Owner portal",
     envKey: "VERCEL_OWNER_PORTAL_PROJECT_ID",
     href: "https://app.rinads.com",
+    requiredForMvp: true,
   },
   {
     name: "Customer portal",
     envKey: "VERCEL_CUSTOMER_PORTAL_PROJECT_ID",
     href: "https://customers.rinads.com",
+    requiredForMvp: false,
   },
   {
     name: "R GLOW",
     envKey: "VERCEL_RINAGLOW_PROJECT_ID",
     href: "https://glow.rinads.com",
+    requiredForMvp: false,
   },
   {
     name: "Storefront",
     envKey: "VERCEL_STOREFRONT_PROJECT_ID",
     href: "https://store.rinads.com",
+    requiredForMvp: false,
   },
 ];
 
@@ -163,6 +187,43 @@ function deploymentDetail(deployment: VercelDeployment | undefined, state: strin
   return parts.join(" ");
 }
 
+async function publicReachability(project: VercelProject): Promise<SourceCheckItem> {
+  try {
+    const response = await fetchWithTimeout(project.href, {
+      method: "GET",
+      redirect: "follow",
+      headers: { "User-Agent": "RINADS-Founder-Intelligence/1.0" },
+    });
+    const reachable = response.status >= 200 && response.status < 400;
+    return {
+      id: project.envKey,
+      label: project.name,
+      state: reachable ? "operational" : "degraded",
+      detail: reachable
+        ? `Public production endpoint responded HTTP ${response.status}. Deployment metadata is not connected.`
+        : `Public production endpoint returned HTTP ${response.status}.`,
+      href: project.href,
+      metadata: {
+        observationMode: "public_reachability",
+        httpStatus: response.status,
+        requiredForMvp: project.requiredForMvp,
+      },
+    };
+  } catch (error) {
+    return {
+      id: project.envKey,
+      label: project.name,
+      state: "unavailable",
+      detail: error instanceof Error ? error.message : "Public endpoint did not respond.",
+      href: project.href,
+      metadata: {
+        observationMode: "public_reachability",
+        requiredForMvp: project.requiredForMvp,
+      },
+    };
+  }
+}
+
 export class VercelStatusSource implements StatusSource {
   readonly id = "vercel";
   readonly label = "Frontend deployments";
@@ -170,25 +231,29 @@ export class VercelStatusSource implements StatusSource {
   async check(): Promise<SourceCheck> {
     const token = process.env.FOUNDER_INTELLIGENCE_VERCEL_TOKEN;
     const teamId = process.env.VERCEL_TEAM_ID;
-    const projects = VERCEL_PROJECTS.map((project) => ({
+    const configuredProjects = VERCEL_PROJECTS.map((project) => ({
       ...project,
       id: process.env[project.envKey],
     })).filter((project) => project.id);
 
-    if (!token || projects.length === 0) {
+    if (!token || configuredProjects.length === 0) {
+      const requiredProjects = VERCEL_PROJECTS.filter((project) => project.requiredForMvp);
+      const items = await Promise.all(requiredProjects.map(publicReachability));
+      const reachable = items.filter((item) => item.state === "operational").length;
       return {
         id: this.id,
         label: this.label,
-        state: "not_connected",
-        detail:
-          "Vercel read token and project IDs are required to read production deployments.",
-        checkedAt: null,
+        state: "degraded",
+        detail: `${reachable}/${items.length} MVP production endpoints are publicly reachable. Connect a Vercel read token and project IDs for deployment, commit, and parity telemetry.`,
+        checkedAt: now(),
+        href: "https://vercel.com/dashboard",
+        items,
       };
     }
 
     try {
       const items: SourceCheckItem[] = await Promise.all(
-        projects.map(async (project) => {
+        configuredProjects.map(async (project) => {
           const query = new URLSearchParams({
             projectId: project.id!,
             target: "production",
@@ -219,6 +284,7 @@ export class VercelStatusSource implements StatusSource {
             detail: deploymentDetail(deployment, deploymentState),
             href: deployment?.url ? `https://${deployment.url}` : project.href,
             metadata: {
+              observationMode: "vercel_api",
               deploymentState,
               deploymentId: deployment?.id ?? null,
               createdAt: deployment?.created ? new Date(deployment.created).toISOString() : null,
@@ -227,21 +293,25 @@ export class VercelStatusSource implements StatusSource {
               commitMessage: deployment?.meta?.githubCommitMessage ?? null,
               githubRepo: deployment?.meta?.githubRepo ?? null,
               githubOrg: deployment?.meta?.githubOrg ?? null,
+              requiredForMvp: project.requiredForMvp,
             },
           } satisfies SourceCheckItem;
         })
       );
 
-      const ready = items.filter((item) => item.state === "operational").length;
-      const exceptions = items.filter((item) => item.state !== "operational").map((item) => item.label);
+      const requiredItems = items.filter((item) => item.metadata?.requiredForMvp !== false);
+      const ready = requiredItems.filter((item) => item.state === "operational").length;
+      const exceptions = requiredItems
+        .filter((item) => item.state !== "operational")
+        .map((item) => item.label);
       return {
         id: this.id,
         label: this.label,
-        state: ready === items.length ? "operational" : "degraded",
+        state: ready === requiredItems.length ? "operational" : "degraded",
         detail:
           exceptions.length === 0
-            ? `${ready}/${items.length} configured production projects report READY.`
-            : `${ready}/${items.length} configured production projects report READY. Attention: ${exceptions.join(", ")}.`,
+            ? `${ready}/${requiredItems.length} required production projects report READY.`
+            : `${ready}/${requiredItems.length} required production projects report READY. Attention: ${exceptions.join(", ")}.`,
         checkedAt: now(),
         href: "https://vercel.com/dashboard",
         items,
@@ -409,7 +479,9 @@ const emptyWorkCounts = {
   unacknowledgedAlerts: 0,
 } as const;
 
-function relationName(value: WorkTaskRow["organizations"] | OperationalAlertRow["organizations"]): string {
+function relationName(
+  value: WorkTaskRow["organizations"] | OperationalAlertRow["organizations"]
+): string {
   const organization = Array.isArray(value) ? value[0] : value;
   return String(organization?.name ?? "Unknown organization");
 }
@@ -573,6 +645,69 @@ export async function loadFounderWork(): Promise<WorkResult> {
   }
 }
 
+function buildReleaseGate(
+  sources: SourceCheck[],
+  workspaceResult: WorkspaceResult,
+  workResult: WorkResult
+): SourceCheck {
+  const items: SourceCheckItem[] = sources.map((source) => ({
+    id: source.id,
+    label: source.label,
+    state: source.state,
+    detail: source.detail,
+    href: source.href,
+  }));
+
+  items.push({
+    id: "workspace-registry",
+    label: "Workspace registry",
+    state: workspaceResult.state,
+    detail:
+      workspaceResult.state === "operational"
+        ? `${workspaceResult.workspaces.length} workspace${workspaceResult.workspaces.length === 1 ? "" : "s"} loaded from the system of record.`
+        : workspaceResult.detail,
+  });
+
+  items.push({
+    id: "operational-work",
+    label: "Operational work",
+    state: workResult.state,
+    detail:
+      workResult.state === "operational"
+        ? "Operational task and alert sources are live."
+        : workResult.detail,
+  });
+
+  const connectedLocations =
+    workspaceResult.state === "operational"
+      ? workspaceResult.workspaces.reduce((sum, workspace) => sum + workspace.locationCount, 0)
+      : 0;
+  items.push({
+    id: "live-tenant-location",
+    label: "Live tenant location",
+    state: connectedLocations > 0 ? "operational" : "degraded",
+    detail:
+      connectedLocations > 0
+        ? `${connectedLocations} connected business location${connectedLocations === 1 ? "" : "s"} detected.`
+        : "No connected business location is registered yet. Provision one real MVP tenant before release.",
+  });
+
+  const blockers = items.filter((item) => item.state !== "operational");
+  return {
+    id: "release-gate",
+    label: "MVP production release gate",
+    state: blockers.length === 0 ? "operational" : "degraded",
+    detail:
+      blockers.length === 0
+        ? "Core production infrastructure, runtime, workspace, work, and tenant-location gates are green."
+        : `${blockers.length} release gate${blockers.length === 1 ? "" : "s"} remain open: ${blockers
+            .map((item) => item.label)
+            .join(", ")}.`,
+    checkedAt: now(),
+    items,
+  };
+}
+
 export async function loadFounderIntelligenceSnapshot(): Promise<FounderIntelligenceSnapshot> {
   const sources: StatusSource[] = [
     new SupabaseStatusSource(),
@@ -584,8 +719,14 @@ export async function loadFounderIntelligenceSnapshot(): Promise<FounderIntellig
     loadFounderWorkspaces(),
     loadFounderWork(),
   ]);
+  const releaseGate = buildReleaseGate(checks, workspaceResult, workResult);
 
-  return { checkedAt: now(), sources: checks, workspaceResult, workResult };
+  return {
+    checkedAt: now(),
+    sources: [...checks, releaseGate],
+    workspaceResult,
+    workResult,
+  };
 }
 
 export { VERCEL_PROJECTS };
