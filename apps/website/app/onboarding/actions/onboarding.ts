@@ -105,9 +105,6 @@ export async function provisionOrganizationAction(input: {
       };
     };
 
-    // Persist the fields that predate Industry Registry first. A delayed additive
-    // registry migration must not turn a successfully created tenant into a false
-    // onboarding failure or discard the user's module/business-type choices.
     const { error: coreSettingsError } = await typedClient
       .from("organization_settings")
       .update({
@@ -161,9 +158,6 @@ export async function provisionOrganizationAction(input: {
       console.warn("Industry mapping persistence deferred until the production migration ledger is reconciled.");
     }
 
-    // Select the newly created organization before sending the user into billing.
-    // This cookie is shared across *.rinads.com in production and only affects
-    // organization context; it does not grant plan entitlements.
     const activeOrgResult = await setActiveOrganizationAction(result.organizationId);
     if (!activeOrgResult.ok) {
       console.warn("Workspace created but active organization selection was deferred.");
@@ -172,6 +166,50 @@ export async function provisionOrganizationAction(input: {
     return { ok: true, organizationId: result.organizationId };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
+  }
+}
+
+export async function grantTrialAction(
+  organizationId: string
+): Promise<{ ok: true; expiresAt: string } | { ok: false; error: string }> {
+  // Server-side launch gate. NEXT_PUBLIC_* only controls presentation; this
+  // server-only flag is authoritative so a client cannot turn trials on.
+  if (process.env.TRIAL_SIGNUP_ENABLED !== "1") {
+    return { ok: false, error: "Self-serve trial activation is not enabled for this release." };
+  }
+  if (!isSupabaseMode()) {
+    return { ok: false, error: "Trial activation requires the production tenancy backend." };
+  }
+
+  try {
+    const supabase = await createWebsiteServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { ok: false, error: "Not authenticated" };
+
+    const result = await (
+      supabase as unknown as {
+        rpc: (
+          fn: string,
+          args: Record<string, string>
+        ) => Promise<{
+          data: { expires_at?: string } | null;
+          error: { message: string } | null;
+        }>;
+      }
+    ).rpc("grant_trial", { p_org_id: organizationId });
+
+    if (result.error) return { ok: false, error: result.error.message };
+    if (!result.data?.expires_at) return { ok: false, error: "Trial grant did not return an expiry." };
+
+    const activeOrgResult = await setActiveOrganizationAction(organizationId);
+    if (!activeOrgResult.ok) return { ok: false, error: activeOrgResult.error };
+
+    return { ok: true, expiresAt: String(result.data.expires_at) };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Unexpected error" };
   }
 }
 
