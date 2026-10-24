@@ -22,11 +22,13 @@ export type CapabilityKey =
   | "service_assignment";
 
 export const PLATFORM_AVAILABILITY: Record<CapabilityKey, AvailabilityStatus> = {
+  // Compatibility registry, not an execution gate. Until production evidence
+  // is recorded, existing routes and provider adapters remain previews.
   // Core products
-  business_os: "AVAILABLE",
+  business_os: "PREVIEW",
   rinpo_intelligence: "PREVIEW",
-  rinads_cloud: "AVAILABLE",
-  rinads_services: "AVAILABLE",
+  rinads_cloud: "PREVIEW",
+  rinads_services: "PREVIEW",
 
   // Discovery & workspace
   ri_search: "PREVIEW",      // Supabase-backed but not production-tested
@@ -35,16 +37,16 @@ export const PLATFORM_AVAILABILITY: Record<CapabilityKey, AvailabilityStatus> = 
 
   // Commerce
   ri_marketplace: "PREVIEW", // Built Phase 3, not production-tested
-  payment_checkout: "AVAILABLE",
+  payment_checkout: "PREVIEW",
 
   // Intelligence & automation
   ri_entity: "PREVIEW",      // /entity/[slug] built Phase 2
   morning_digest: "PREVIEW",
 
   // Operations
-  whatsapp_notify: "AVAILABLE",
-  order_tracker: "AVAILABLE",
-  service_assignment: "AVAILABLE",
+  whatsapp_notify: "PREVIEW",
+  order_tracker: "PREVIEW",
+  service_assignment: "PREVIEW",
 };
 
 export function getCapabilityStatus(key: CapabilityKey): AvailabilityStatus {
@@ -56,8 +58,7 @@ export function isAvailable(key: CapabilityKey): boolean {
 }
 
 export function isLive(key: CapabilityKey): boolean {
-  const s = PLATFORM_AVAILABILITY[key];
-  return s === "AVAILABLE" || s === "PREVIEW" || s === "PRIVATE_PREVIEW";
+  return isAvailable(key);
 }
 
 export const STATUS_LABEL: Record<AvailabilityStatus, string> = {

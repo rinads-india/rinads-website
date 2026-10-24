@@ -1,7 +1,7 @@
 import {
   PRODUCT_STATUS_META,
   type ProductStatusValue,
-  fromLegacyAvailability,
+  migrateLegacyStatus,
   statusTokenFor,
 } from "@/lib/product-status";
 
@@ -22,7 +22,9 @@ export function ProductStatus({
   showDescription = false,
   className = "",
 }: ProductStatusProps) {
-  const value = fromLegacyAvailability(status);
+  // Canonical "available" means Available. Legacy vertical flags are converted
+  // at their boundary (VerticalCard), never again in the shared badge.
+  const value = migrateLegacyStatus(status);
   const meta = PRODUCT_STATUS_META[value];
   const token = statusTokenFor(value);
   const sizeClass = size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-sm";

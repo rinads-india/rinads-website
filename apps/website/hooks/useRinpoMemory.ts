@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { rinpoGreeting, rinpoGuidance } from "@/lib/rinpo-welcome";
 
 export type ChatMessage = {
   id: string;
@@ -243,46 +244,15 @@ export function RinpoMemoryProvider({ children }: { children: ReactNode }) {
     }));
   }, [updateMemory]);
 
-  const getPersonalizedGreeting = useCallback(() => {
-    const isGuest = memory.username === "Guest" || !isAuthenticated;
-    const name = isGuest ? "" : memory.username;
-    const count = memory.interactionCount;
+  const getPersonalizedGreeting = useCallback(
+    () => rinpoGreeting(isAuthenticated, memory.username),
+    [isAuthenticated, memory.username],
+  );
 
-    if (count <= 1) {
-      return isGuest
-        ? "Welcome to RINADS! Tap an app — or just chat with me."
-        : `Welcome, ${name}! Your personalized RINADS workspace is ready.`;
-    }
-
-    if (count < 5) {
-      return isGuest
-        ? "Welcome back! What business goal can RINPO help you achieve today?"
-        : `Welcome back, ${name}! Your active projects & insights are loaded.`;
-    }
-
-    return isGuest
-      ? "Great to see you again! Explore digital solutions or chat with RINPO."
-      : `Hello ${name}! Ready to automate & accelerate your growth today?`;
-  }, [memory.username, memory.interactionCount, isAuthenticated]);
-
-  const getPersonalizedInsight = useCallback(() => {
-    const role = memory.role;
-    const favs = memory.favoriteServices;
-
-    if (role === "client") {
-      return "Client Dashboard: 2 active software deliverables in review. All milestones on track.";
-    }
-    if (role === "staff") {
-      return "Staff Portal: 5 customer inquiries received today. AI lead routing is active.";
-    }
-    if (favs.includes("AI Automation")) {
-      return "RINADS helps teams prepare follow-up work faster when workflows and permissions are configured — results vary by organisation.";
-    }
-    if (favs.includes("Digital Marketing")) {
-      return "Pro tip: Combining custom SEO architecture with high-conversion ad funnels maximizes ROI.";
-    }
-    return "Did you know? Rinads helps businesses automate, grow & scale with digital intelligence.";
-  }, [memory.role, memory.favoriteServices]);
+  const getPersonalizedInsight = useCallback(
+    () => rinpoGuidance(memory.role, memory.favoriteServices),
+    [memory.role, memory.favoriteServices],
+  );
 
   const value = useMemo<RinpoMemoryContextValue>(() => ({
     memory,

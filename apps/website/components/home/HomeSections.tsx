@@ -24,14 +24,13 @@ export function HomeSections() {
 
       <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="outcomes-heading">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-          Outcome architecture
+          Run your business
         </p>
         <h2 id="outcomes-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          Four primary business outcomes
+          One workspace. Four ways forward.
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Replace the wall of operating systems with how work actually moves: RUN · SELL · GROW ·
-          AUTOMATE.
+          Keep daily operations, selling, growth and automation connected as your business develops.
         </p>
         <div className="mt-8">
           <OutcomeGrid />
@@ -144,26 +143,25 @@ export function HomeSections() {
           Customer evidence
         </p>
         <h2 id="evidence-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          Verified proof only
+          See the workflow before you commit
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          We do not invent testimonials, ROI percentages or deployment claims. Browse evidence classes
-          when approved material exists.
+          Explore product demonstrations, compare industry editions, or book a walkthrough around your own business needs.
         </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { id: "stories", label: "Customer Stories" },
-            { id: "deployments", label: "Deployments" },
-            { id: "demonstrations", label: "Product Demonstrations" },
-            { id: "labs", label: "RINADS Labs" },
+            { id: "demonstrations", label: "Product demonstrations", href: "/customers#demonstrations", detail: "Explore sample workflows" },
+            { id: "solutions", label: "Industry editions", href: "/solutions", detail: "Find a fit for your business" },
+            { id: "availability", label: "What is available", href: "/trust/availability", detail: "Understand pilot and preview access" },
+            { id: "walkthrough", label: "Your business walkthrough", href: CTAS.bookDemo.href, detail: "Discuss your operating needs" },
           ].map((item) => (
             <Link
               key={item.id}
-              href={`/customers#${item.id}`}
+              href={item.href}
               className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-sm font-semibold transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
               {item.label}
-              <span className="mt-2 block text-xs font-normal text-white/50">No unverified claims</span>
+              <span className="mt-2 block text-xs font-normal text-white/50">{item.detail}</span>
             </Link>
           ))}
         </div>

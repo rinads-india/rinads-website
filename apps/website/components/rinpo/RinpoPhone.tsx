@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRinpo } from "./RinpoProvider";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, Wifi, Signal, Battery } from "lucide-react";
 import {
   RinpoChat,
@@ -21,6 +21,7 @@ import { useRinpoMemory } from "@/hooks/useRinpoMemory";
 import { RINPO_STATE_LABELS } from "@/lib/rinpo-experience";
 import {
   getPhoneModesForAudience,
+  RINPO_PHONE_MODES,
   normalizePhoneScreen,
   type RinpoPhoneAudience,
 } from "@/lib/rinpo-phone-modes";
@@ -36,6 +37,7 @@ function resolveAudience(user: ReturnType<typeof useAuth>["user"]): RinpoPhoneAu
 export function RinpoPhone() {
   const {
     phoneOpen,
+    loginModalOpen,
     closeRinpo,
     setLoginModalOpen,
     setLoginModalMode,
@@ -49,7 +51,44 @@ export function RinpoPhone() {
   const audience = resolveAudience(user);
   const bottomModes = useMemo(() => getPhoneModesForAudience(audience), [audience]);
   const screen = normalizePhoneScreen(rawScreen);
-  const activeMode = bottomModes.find((m) => m.id === screen);
+  const activeMode = RINPO_PHONE_MODES.find((m) => m.id === screen);
+  const reducedMotion = useReducedMotion();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // A nested sign-in dialog owns focus while it is open.
+    if (!phoneOpen || loginModalOpen) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const panel = panelRef.current;
+    panel?.focus();
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeRinpo();
+      }
+      if (event.key !== "Tab" || !panel) return;
+      const controls = Array.from(panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex="0"]',
+      )).filter((el) => el.getClientRects().length > 0 && !el.closest('[hidden], [inert]'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first) {
+        event.preventDefault();
+        panel.focus();
+      } else if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [phoneOpen, loginModalOpen, closeRinpo]);
 
   const [currentTime, setCurrentTime] = useState("9:41");
   const [currentDateStr, setCurrentDateStr] = useState("TUESDAY, 21 JULY");
@@ -193,10 +232,10 @@ export function RinpoPhone() {
       <motion.div
         key="rinpo-phone-panel"
         className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 md:right-12 z-50 flex items-center justify-center pointer-events-none"
-        initial={{ scale: 0.9, opacity: 0, y: 40, rotate: -1.5 }}
+        initial={reducedMotion ? false : { scale: 0.9, opacity: 0, y: 40, rotate: -1.5 }}
         animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 40, rotate: -1.5 }}
-        transition={{ type: "spring", damping: 24, stiffness: 220 }}
+        transition={reducedMotion ? { duration: 0 } : { type: "spring", damping: 24, stiffness: 220 }}
       >
         <motion.div
           aria-hidden
@@ -206,27 +245,32 @@ export function RinpoPhone() {
               "conic-gradient(from 0deg, rgba(159,75,199,0.55), transparent 30%, rgba(192,107,232,0.35) 55%, transparent 80%, rgba(159,75,199,0.55))",
             filter: "blur(28px)",
           }}
-          animate={{ rotate: 360 }}
+          animate={reducedMotion ? { rotate: 0 } : { rotate: 360 }}
           transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
         />
         <motion.div
           aria-hidden
           className="pointer-events-none absolute -inset-2 hidden sm:block sm:rounded-[48px]"
           style={{ background: "var(--rinads-glow)", filter: "blur(20px)" }}
-          animate={{ opacity: [0.25, 0.5, 0.25] }}
+          animate={reducedMotion ? { opacity: 0.25 } : { opacity: [0.25, 0.5, 0.25] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
 
         <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="RINPO Phone"
+          tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
-          className="pointer-events-auto relative w-full h-full sm:h-[680px] sm:w-[360px] md:w-[380px] bg-[#0c0514] text-white flex flex-col sm:rounded-[44px] overflow-hidden border-0 sm:border-[5px] sm:border-[#2b1942] sm:ring-1 sm:ring-purple-500/30 sm:shadow-[0_0_60px_rgba(159,75,199,0.35),0_25px_50px_-12px_rgba(0,0,0,0.9)]"
+          className="pointer-events-auto relative w-full h-[100dvh] sm:h-[min(680px,calc(100dvh-48px))] sm:w-[360px] md:w-[380px] bg-[#0c0514] text-white flex flex-col sm:rounded-[44px] overflow-hidden border-0 sm:border-[5px] sm:border-[#2b1942] sm:ring-1 sm:ring-purple-500/30 sm:shadow-[0_0_60px_rgba(159,75,199,0.35),0_25px_50px_-12px_rgba(0,0,0,0.9)]"
         >
           <div className="pointer-events-none absolute inset-0 sm:rounded-[39px] border border-white/10 z-30" />
 
           <div className="relative shrink-0 pt-3 px-6 flex items-center justify-between text-xs font-semibold text-white/90 z-20">
             <span>{currentTime}</span>
             <div className="absolute left-1/2 -translate-x-1/2 top-2.5 h-6 w-24 bg-black rounded-full flex items-center justify-center px-2 gap-1.5 shadow-inner">
-              <span className="h-2 w-2 rounded-full bg-purple-500/80 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-purple-500/80 motion-safe:animate-pulse" />
               <span className="text-[9px] font-mono tracking-widest text-purple-300">RINADS</span>
             </div>
             <div className="flex items-center gap-1.5 text-white/80">
@@ -240,7 +284,7 @@ export function RinpoPhone() {
             <div className="flex items-center gap-2.5 min-w-0">
               <motion.div
                 className="relative h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr from-purple-600 to-purple-400 p-0.5 shadow-md shadow-purple-900/50"
-                animate={{ rotate: [0, -6, 6, -3, 0] }}
+                animate={reducedMotion ? { rotate: 0 } : { rotate: [0, -6, 6, -3, 0] }}
                 transition={{ duration: 5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
               >
                 <div className="relative h-full w-full rounded-full bg-[#12071f] overflow-hidden flex items-center justify-center">
@@ -270,21 +314,27 @@ export function RinpoPhone() {
             <button
               type="button"
               onClick={closeRinpo}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors ml-2"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors ml-2 focus-visible:outline-2 focus-visible:outline-purple-300"
               aria-label="Close handset"
             >
               <X size={16} />
             </button>
           </div>
 
+          {activeMode?.demoPlaceholder ? (
+            <p className="shrink-0 border-b border-purple-500/20 bg-purple-950/40 px-4 py-2 text-xs leading-5 text-purple-100" role="status">
+              {activeMode.label} · Preview. This phone view is not connected to live business data.
+            </p>
+          ) : null}
+
           <div className="flex-1 min-h-0 overflow-hidden relative bg-gradient-to-b from-[#0c0514] via-[#12071f] to-[#0a0312]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={screen}
-                initial={{ opacity: 0, y: 6 }}
+                initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18 }}
+                transition={{ duration: reducedMotion ? 0 : 0.18 }}
                 className="h-full"
               >
                 {renderScreen()}
@@ -303,8 +353,10 @@ export function RinpoPhone() {
                 <button
                   key={item.id}
                   type="button"
+                  aria-current={isActive ? "page" : undefined}
+                  aria-label={`${item.label}${item.demoPlaceholder ? " (Preview)" : ""}`}
                   onClick={() => openPhoneScreen(item.id)}
-                  className={`relative flex min-w-[4.25rem] flex-col items-center justify-center py-1 px-2 rounded-xl transition-all shrink-0 ${
+                  className={`relative flex min-h-11 min-w-[4.25rem] flex-col items-center justify-center py-1 px-2 rounded-xl transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-purple-300 ${
                     isActive
                       ? "text-purple-300 font-bold"
                       : "text-white/50 hover:text-white/80 font-medium"
@@ -316,7 +368,7 @@ export function RinpoPhone() {
                     <motion.div
                       layoutId="phone-active-tab-glow"
                       className="absolute inset-0 rounded-xl bg-purple-600/15 border border-purple-500/30 -z-10"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 30 }}
                     />
                   ) : null}
                 </button>

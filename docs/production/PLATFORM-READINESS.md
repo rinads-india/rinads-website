@@ -4,6 +4,8 @@
 **Method:** static code and migration inspection, local lint/typecheck/test/build. **No production database, Vercel project or provider account was connected.** Every production fact below is either from code or from `docs/production/MVP-CUTOVER-2026-10-22.md`, and is labelled as such.
 **Status vocabulary (spec §12):** LIVE · READY · BETA · PREVIEW · BLOCKED · PLANNED. Nothing is marked LIVE: this audit had no end-to-end production evidence for any component.
 
+> **24 October follow-up:** This is a historical baseline. See [the current refactor evidence](RINPO-READINESS-UX-2026-10-24.md) for fixes now present in main and remaining deployment verification gates.
+
 Machine-readable copy: `docs/production/readiness.json`. Marker inventory: `docs/production/demo-stub-inventory.json`. Static RLS scan: `docs/production/rls-static-audit.json`.
 
 ---
