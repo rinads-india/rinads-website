@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Public env secret-scope guard
+        run: node scripts/ops/check-public-secret-scope.mjs
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
