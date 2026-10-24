@@ -1,5 +1,5 @@
 export type RinpoPageContext = {
-  area: string;
+  area?: string;
   defaultBranchId?: string;
   selectedAppointmentId?: string;
   selectedSaleId?: string;
