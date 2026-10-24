@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
       ];
       intent = "contact";
     }
-    // Rinads Cloud / ERP
+    // RINADS Platform / ERP
     else if (
       lower.includes("cloud") ||
       lower.includes("erp") ||
@@ -507,8 +507,8 @@ export async function POST(request: NextRequest) {
         },
         cloud: {
           reply:
-            "**Rinads Cloud** ഞങ്ങളുടെ ബിസിനസ്സ് ക്ലൗഡ് പ്ലാറ്റ്ഫോമാണ്. RINADS Intelligence, പൂർണ്ണ ERP ഫീച്ചറുകൾ ലഭ്യം. ഇൻവോയ്സുകൾക്ക് ഈ ഫോണിലെ പോർട്ടൽ ടാബ് തുറക്കുക.",
-          links: [{ label: "Rinads Cloud", href: "/rinads-cloud" }],
+            "**RINADS Platform** ഞങ്ങളുടെ ബിസിനസ്സ് ക്ലൗഡ് പ്ലാറ്റ്ഫോമാണ്. RINADS INTELLIGENCE, പൂർണ്ണ ERP ഫീച്ചറുകൾ ലഭ്യം. ഇൻവോയ്സുകൾക്ക് ഈ ഫോണിലെ പോർട്ടൽ ടാബ് തുറക്കുക.",
+          links: [{ label: "RINADS Platform", href: "/platform/cloud" }],
         },
         home: {
           reply:
@@ -554,7 +554,7 @@ export async function POST(request: NextRequest) {
         },
         default: {
           reply:
-            "**സേവനങ്ങൾ**, **സമ്പർക്ക വിവരങ്ങൾ**, **ക്ലയന്റ് പോർട്ടൽ**, അല്ലെങ്കിൽ **Rinads Cloud** എന്നിവയിൽ സഹായിക്കാൻ ഞാൻ ഇവിടെയുണ്ട്. എന്ത് പര്യവേക്ഷണം ചെയ്യാൻ ആഗ്രഹിക്കുന്നു?",
+            "**സേവനങ്ങൾ**, **സമ്പർക്ക വിവരങ്ങൾ**, **ക്ലയന്റ് പോർട്ടൽ**, അല്ലെങ്കിൽ **RINADS Platform** എന്നിവയിൽ സഹായിക്കാൻ ഞാൻ ഇവിടെയുണ്ട്. എന്ത് പര്യവേക്ഷണം ചെയ്യാൻ ആഗ്രഹിക്കുന്നു?",
           links: [
             { label: "സേവനങ്ങൾ", href: "/services" },
             { label: "ബന്ധപ്പെടുക", href: "/contact" },

@@ -82,7 +82,7 @@ export function HomeSections() {
             href="/platform/intelligence"
             className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           >
-            <h3 className="text-xl font-bold">RINADS Intelligence</h3>
+            <h3 className="text-xl font-bold">RINADS INTELLIGENCE</h3>
             <p className="mt-2 text-sm leading-6 text-white/65">
               Observe · Understand · Recommend · Orchestrate. Model providers are routed behind
               RINADS INTELLIGENCE and remain replaceable.
@@ -95,7 +95,7 @@ export function HomeSections() {
             href="/platform/rinpo-runtime"
             className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-rinads-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           >
-            <h3 className="text-xl font-bold">RINPO Runtime</h3>
+            <h3 className="text-xl font-bold">RINPO RUNTIME</h3>
             <p className="mt-2 text-sm leading-6 text-white/65">
               Agents, tools, workflows, triggers, permissions, approvals, execution and audit. AI
               must not receive unrestricted control over the business.

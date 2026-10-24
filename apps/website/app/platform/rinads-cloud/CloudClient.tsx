@@ -222,7 +222,7 @@ export function CloudClient() {
             <div className="space-y-3">
               {[
                 ["RINPO / product request", "User intent and current product context"],
-                ["RINADS Intelligence", "Policy, tool selection, context, recommendations"],
+                ["RINADS INTELLIGENCE", "Policy, tool selection, context, recommendations"],
                 ["Model / inference adapter", "Replaceable compute provider"],
                 ["Registered tool / runtime", "Governed business-side execution path"],
               ].map(([title, description], index) => (
