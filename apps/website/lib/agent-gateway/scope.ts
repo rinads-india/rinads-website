@@ -1,6 +1,6 @@
 import type { OrgMembership } from "@rinads/tenancy";
 
-export type RinadsAgentAuthMethod = "session" | "bearer";
+export type RinadsAgentAuthMethod = "session" | "bearer" | "delegation";
 
 export type RinadsAgentScopeResolution =
   | { status: "resolved"; membership: OrgMembership }
@@ -12,9 +12,11 @@ export type RinadsAgentScopeResolution =
  * supplied by an external agent.
  *
  * Session requests may use the existing signed first-party active-org cookie.
- * Bearer requests are intentionally stricter: until RINADS issues an
- * organization-bound delegation token, a bearer identity must have exactly one
- * active organization membership or the request remains fail-closed.
+ * Ordinary Supabase bearer requests are intentionally strict and require a
+ * single active organization unless a separate organization-bound delegation
+ * has already been verified. Delegation requests are resolved directly against
+ * their signed organization claim plus current membership state in principal.ts
+ * and therefore do not call this helper.
  */
 export function resolveRinadsAgentScope(input: {
   memberships: readonly OrgMembership[];
