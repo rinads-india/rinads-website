@@ -1,7 +1,12 @@
 import { seedTenantBundle, type VerticalTemplateKey } from "./templates/index";
 import {
+  MAX_PROVISIONING_ATTEMPTS,
   completeProvisioningJob,
+  deadLetterProvisioningJob,
+  isProvisioningJobRunnable,
+  markProvisioningJobBlocked,
   markProvisioningJobRunning,
+  scheduleProvisioningRetry,
   type ProvisioningJobClient,
   type ProvisioningJobRow,
 } from "./runtime-jobs";
@@ -23,10 +28,6 @@ export type ProvisioningWorkerClient = ProvisioningJobClient &
     from: (table: string) => {
       select: (cols?: string) => {
         eq: (col: string, val: string) => Promise<{ data: ProvisioningJobRow[] | null; error: { message: string } | null }>;
-        in?: (
-          col: string,
-          vals: string[]
-        ) => Promise<{ data: ProvisioningJobRow[] | null; error: { message: string } | null }>;
       };
       update: (row: Partial<ProvisioningJobRow>) => {
         eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
@@ -36,7 +37,13 @@ export type ProvisioningWorkerClient = ProvisioningJobClient &
 
 export type ProvisioningJobResult =
   | { ok: true }
-  | { ok: false; error: string; blocked?: boolean };
+  | {
+      ok: false;
+      error: string;
+      blocked?: boolean;
+      retrying?: boolean;
+      deadLettered?: boolean;
+    };
 
 type EntitlementLookupClient = {
   from: (table: string) => {
@@ -49,6 +56,12 @@ type EntitlementLookupClient = {
   };
 };
 
+type AuditInsertClient = {
+  from: (table: string) => {
+    insert?: (row: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+  };
+};
+
 export function isUnexpiredTrialGrant(
   row: Record<string, unknown>,
   nowMs: number = Date.now(),
@@ -56,6 +69,20 @@ export function isUnexpiredTrialGrant(
   if (row.revoked_at) return false;
   const expiresAt = Date.parse(String(row.expires_at ?? ""));
   return Number.isFinite(expiresAt) && expiresAt > nowMs;
+}
+
+export function classifyProvisioningError(message: string): "permanent" | "transient" {
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("unknown template") ||
+    normalized.includes("invalid template") ||
+    normalized.includes("permission denied") ||
+    normalized.includes("row-level security") ||
+    normalized.includes("foreign key")
+  ) {
+    return "permanent";
+  }
+  return "transient";
 }
 
 async function requireProvisioningEntitlement(
@@ -96,26 +123,71 @@ async function requireProvisioningEntitlement(
   return { active: false, error: "No active paid or trial entitlement" };
 }
 
-export async function listAllPendingJobs(client: ProvisioningWorkerClient): Promise<ProvisioningJobRow[]> {
-  const { data, error } = await client.from("tenant_provisioning_jobs").select("*").eq("status", "pending");
-  if (error || !data) return [];
-  return data;
+async function auditProvisioningTransition(
+  client: ProvisioningWorkerClient,
+  job: ProvisioningJobRow,
+  action: string,
+  after: Record<string, unknown>
+): Promise<void> {
+  try {
+    const auditClient = client as unknown as AuditInsertClient;
+    const table = auditClient.from("audit_logs");
+    if (typeof table.insert !== "function") return;
+    const { error } = await table.insert({
+      organization_id: job.organization_id,
+      actor_type: "system",
+      actor_id: "provisioning-worker",
+      action: `tenant.provisioning.${action}`,
+      entity: "tenant_provisioning_job",
+      entity_id: job.id,
+      after,
+    });
+    if (error) console.error("provisioning audit insert failed", error.message);
+  } catch (error) {
+    console.error("provisioning audit insert failed", error);
+  }
+}
+
+export async function listAllRunnableJobs(
+  client: ProvisioningWorkerClient,
+  nowMs: number = Date.now()
+): Promise<ProvisioningJobRow[]> {
+  const [pendingResult, retryingResult] = await Promise.all([
+    client.from("tenant_provisioning_jobs").select("*").eq("status", "pending"),
+    client.from("tenant_provisioning_jobs").select("*").eq("status", "retrying"),
+  ]);
+  const jobs = [
+    ...(pendingResult.error ? [] : pendingResult.data ?? []),
+    ...(retryingResult.error ? [] : retryingResult.data ?? []),
+  ];
+  const unique = new Map(jobs.map((job) => [job.id, job]));
+  return [...unique.values()].filter((job) => isProvisioningJobRunnable(job, nowMs));
 }
 
 export async function processProvisioningJob(
   client: ProvisioningWorkerClient,
   job: ProvisioningJobRow
 ): Promise<ProvisioningJobResult> {
-  // Defense in depth: even if a stale/legacy pending job exists, no tenant data
-  // may be seeded until a webhook-authoritative paid entitlement OR an unexpired,
-  // governed trial grant is active.
+  // Defense in depth: no tenant data is seeded until a webhook-authoritative
+  // paid entitlement OR an unexpired governed trial grant is active.
   const entitlement = await requireProvisioningEntitlement(client, job.organization_id);
   if (!entitlement.active) {
+    await markProvisioningJobBlocked(client, job.id, entitlement.error);
+    await auditProvisioningTransition(client, job, "blocked", {
+      status: "blocked",
+      reason: entitlement.error,
+    });
     return { ok: false, error: entitlement.error, blocked: true };
   }
 
-  const running = await markProvisioningJobRunning(client, job.id);
+  const attempts = (job.attempts ?? 0) + 1;
+  const running = await markProvisioningJobRunning(client, job.id, attempts);
   if (!running) return { ok: false, error: "Could not mark job running" };
+  await auditProvisioningTransition(client, job, "running", {
+    status: "running",
+    attempts,
+    entitlement_source: entitlement.source,
+  });
 
   try {
     const orgId = job.organization_id;
@@ -149,28 +221,64 @@ export async function processProvisioningJob(
     }
 
     await completeProvisioningJob(client, job.id);
+    await auditProvisioningTransition(client, job, "completed", {
+      status: "completed",
+      attempts,
+      entitlement_source: entitlement.source,
+    });
     return { ok: true };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Provisioning failed";
-    await completeProvisioningJob(client, job.id, message);
-    return { ok: false, error: message };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Provisioning failed";
+    const errorClass = classifyProvisioningError(message);
+    const shouldDeadLetter =
+      errorClass === "permanent" || attempts >= MAX_PROVISIONING_ATTEMPTS;
+
+    if (shouldDeadLetter) {
+      await deadLetterProvisioningJob(client, job.id, attempts, message, errorClass);
+      await auditProvisioningTransition(client, job, "dead_letter", {
+        status: "dead_letter",
+        attempts,
+        error_class: errorClass,
+        error_message: message,
+      });
+      return { ok: false, error: message, deadLettered: true };
+    }
+
+    await scheduleProvisioningRetry(client, job.id, attempts, message, errorClass);
+    await auditProvisioningTransition(client, job, "retrying", {
+      status: "retrying",
+      attempts,
+      error_class: errorClass,
+      error_message: message,
+    });
+    return { ok: false, error: message, retrying: true };
   }
 }
 
 export async function runPendingProvisioningJobs(
   client: ProvisioningWorkerClient
-): Promise<{ processed: number; failed: number; blocked: number }> {
-  const jobs = await listAllPendingJobs(client);
+): Promise<{
+  processed: number;
+  failed: number;
+  blocked: number;
+  retrying: number;
+  deadLettered: number;
+}> {
+  const jobs = await listAllRunnableJobs(client);
   let processed = 0;
   let failed = 0;
   let blocked = 0;
+  let retrying = 0;
+  let deadLettered = 0;
 
   for (const job of jobs) {
     const result = await processProvisioningJob(client, job);
     if (result.ok) processed++;
     else if (result.blocked) blocked++;
+    else if (result.retrying) retrying++;
+    else if (result.deadLettered) deadLettered++;
     else failed++;
   }
 
-  return { processed, failed, blocked };
+  return { processed, failed, blocked, retrying, deadLettered };
 }
