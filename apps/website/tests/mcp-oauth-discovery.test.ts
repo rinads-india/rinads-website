@@ -6,6 +6,7 @@ import {
   rinadsMcpAuthorizationServer,
   rinadsMcpProtectedResourceMetadata,
   rinadsMcpResourceMetadataUrl,
+  rinadsMcpResourceUrl,
   rinadsMcpSecuritySchemes,
 } from "../lib/agent-gateway/oauth";
 
@@ -33,8 +34,9 @@ describe("RINADS MCP OAuth discovery", () => {
         supabaseUrl: "https://project.supabase.co",
       }),
       {
-        resource: "https://www.rinads.com",
+        resource: "https://www.rinads.com/api/mcp",
         authorization_servers: ["https://project.supabase.co/auth/v1"],
+        bearer_methods_supported: ["header"],
         scopes_supported: ["email", "profile"],
         resource_documentation: "https://www.rinads.com/developers",
         resource_policy_uri: "https://www.rinads.com/privacy",
@@ -62,10 +64,14 @@ describe("RINADS MCP OAuth discovery", () => {
     assert.match(mcpRoute, /"mcp\/www_authenticate"/);
   });
 
-  it("keeps OAuth discovery server-resolved and free of caller supplied tenant identifiers", () => {
+  it("keeps OAuth discovery server-resolved and bound to the canonical MCP resource", () => {
     assert.equal(
       rinadsMcpResourceMetadataUrl("https://www.rinads.com/api/mcp"),
       "https://www.rinads.com/.well-known/oauth-protected-resource"
+    );
+    assert.equal(
+      rinadsMcpResourceUrl("https://www.rinads.com/.well-known/oauth-protected-resource"),
+      "https://www.rinads.com/api/mcp"
     );
     assert.doesNotMatch(resourceMetadataRoute, /organization_id/);
     assert.match(resourceMetadataRoute, /getSupabasePublicConfig/);
