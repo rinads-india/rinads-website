@@ -1,0 +1,98 @@
+name: Production health
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-health
+  cancel-in-progress: true
+
+jobs:
+  health:
+    name: Health — ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: website
+            url: https://www.rinads.com/api/health
+          - name: platform-admin
+            url: https://admin.rinads.com/api/health
+          - name: owner-portal
+            url: https://app.rinads.com/api/health
+          - name: customer-portal
+            url: https://customers.rinads.com/api/health
+          - name: rinaglow
+            url: https://glow.rinads.com/api/health
+
+    steps:
+      - name: Verify live health contract
+        env:
+          HEALTH_URL: ${{ matrix.url }}
+          HEALTH_NAME: ${{ matrix.name }}
+        run: |
+          node <<'NODE'
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+          async function main() {
+            const url = process.env.HEALTH_URL;
+            const name = process.env.HEALTH_NAME;
+            let lastError = "unknown error";
+
+            for (let attempt = 1; attempt <= 5; attempt += 1) {
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 15000);
+
+              try {
+                const response = await fetch(url, {
+                  headers: { "user-agent": "RINADS-Production-Health/1.0" },
+                  redirect: "follow",
+                  signal: controller.signal,
+                });
+                const text = await response.text();
+                let payload;
+
+                try {
+                  payload = JSON.parse(text);
+                } catch {
+                  throw new Error(`non-JSON response (HTTP ${response.status})`);
+                }
+
+                const healthy =
+                  response.status === 200 &&
+                  payload?.status === "ok" &&
+                  payload?.checks?.productionEnvContract === "ok";
+
+                if (healthy) {
+                  console.log(`${name}: healthy (attempt ${attempt})`);
+                  return;
+                }
+
+                lastError = `HTTP ${response.status}, status=${payload?.status ?? "missing"}, productionEnvContract=${payload?.checks?.productionEnvContract ?? "missing"}`;
+              } catch (error) {
+                lastError = error instanceof Error ? error.message : String(error);
+              } finally {
+                clearTimeout(timeout);
+              }
+
+              console.error(`${name}: attempt ${attempt} failed — ${lastError}`);
+              if (attempt < 5) await sleep(10000);
+            }
+
+            throw new Error(`${name}: production health failed after retries — ${lastError}`);
+          }
+
+          main().catch((error) => {
+            console.error(error instanceof Error ? error.message : error);
+            process.exit(1);
+          });
+          NODE
