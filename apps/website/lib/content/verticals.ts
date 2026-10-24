@@ -4,7 +4,7 @@ export const VERTICALS: VerticalContent[] = [
   {
     slug: "retail",
     name: "Retail",
-    type: "Retail OS",
+    type: "Industry configuration",
     headline: "Retail operations on the RINADS core.",
     summary:
       "Catalogue, inventory, storefront, orders, and customer growth — configured for retail, not rebuilt as a separate platform.",
@@ -13,31 +13,31 @@ export const VERTICALS: VerticalContent[] = [
   },
   {
     slug: "jewellery",
-    name: "Jewellery",
-    type: "Jewellery OS",
+    name: "RI JEWELLERY RINASPACE",
+    type: "Industry RINASPACE",
     headline: "Jewellery commerce with precision operations.",
     summary:
-      "High-trust retail workflows — products, collections, appointments, and brand storytelling on Business OS + Commerce OS.",
+      "High-trust retail workflows — products, collections, appointments, customer journeys, commerce, storytelling, and fulfilment on the shared RINADS core.",
     capabilities: ["Collections", "Product studio", "Appointments", "CRM", "Brand content"],
     status: "coming",
   },
   {
     slug: "nursery",
-    name: "Landscape & Nursery",
-    type: "Landscape OS",
+    name: "RI LANDSCAPE RINASPACE",
+    type: "Industry RINASPACE",
     headline: "Landscape and nursery operations on the RINADS core.",
     summary:
-      "Nursery inventory, projects, and customer work configured on Business OS — currently shown as a demo / configuration path.",
+      "Nursery inventory, projects, field operations, customer work, orders, and delivery configured on the shared RINADS core — currently shown as a preview path.",
     capabilities: ["Inventory", "Quotes & project work", "Customer CRM", "Field operations", "Orders & delivery", "Growth"],
     status: "coming",
   },
   {
     slug: "salon",
-    name: "R GLOW",
-    type: "Salon OS",
-    headline: "Run salon operations with R GLOW.",
+    name: "RI SALON RINASPACE",
+    type: "Industry RINASPACE",
+    headline: "Run salon operations through RI SALON RINASPACE.",
     summary:
-      "Appointments, clients, services, POS, loyalty, campaigns, communications, and reviews — a salon vertical on the shared RINADS core, with RINPO as the assisted interface.",
+      "Appointments, clients, services, POS, loyalty, campaigns, communications, and reviews on the shared RINADS core, with RINPO as the Business Intelligence Character and RINPO Runtime behind supported execution.",
     capabilities: [
       "Appointments & calendar",
       "Clients & notes",
@@ -54,30 +54,30 @@ export const VERTICALS: VerticalContent[] = [
   {
     slug: "healthcare",
     name: "Healthcare",
-    type: "Clinic OS",
+    type: "Industry configuration",
     headline: "Practice operations with intelligent flow.",
     summary:
-      "Patient scheduling, follow-ups, and practice work — configured carefully on the shared platform core.",
+      "Non-clinical scheduling, follow-ups, and practice work — configured carefully on the shared platform core.",
     capabilities: ["Scheduling", "Patient flow", "Follow-ups", "Team work", "Analytics"],
     status: "coming",
   },
   {
     slug: "logistics",
-    name: "Logistics",
-    type: "Logistics OS",
+    name: "RI LOGISTICS",
+    type: "Industry configuration",
     headline: "Provider-neutral logistics control.",
     summary:
-      "Orders, shipments, couriers, 3PL, tracking, and exceptions — one control tower architecture.",
+      "Orders, shipments, couriers, 3PL, tracking, returns, and exceptions — connected through a provider-neutral logistics control architecture.",
     capabilities: ["Control tower", "Courier & 3PL", "Tracking", "Returns", "Exceptions"],
     status: "coming",
   },
   {
     slug: "automotive",
-    name: "Automotive",
-    type: "Automotive OS",
-    headline: "Service operations on the shared RINADS core.",
+    name: "RI AUTOMOTIVE RINASPACE",
+    type: "Industry RINASPACE",
+    headline: "Automotive operations on the shared RINADS core.",
     summary:
-      "Customers, service jobs, parts, and follow-ups — a planned industry configuration, not a separate technology stack.",
+      "Customers, vehicles, enquiries, service work, parts, delivery, and follow-ups — a planned Industry RINASPACE, not a separate technology stack.",
     capabilities: ["Service scheduling", "Customers & vehicles", "Parts & inventory", "Jobs & invoices", "Follow-ups"],
     status: "coming",
   },
@@ -85,14 +85,14 @@ export const VERTICALS: VerticalContent[] = [
 
 export const VERTICAL_EXAMPLES = [
   "Retail",
-  "Jewellery",
-  "Landscape & Nursery",
-  "R GLOW",
+  "RI JEWELLERY RINASPACE",
+  "RI LANDSCAPE RINASPACE",
+  "RI SALON RINASPACE",
   "Healthcare",
   "Restaurant",
   "Real Estate",
   "Agency",
-  "Logistics",
+  "RI LOGISTICS",
   "Custom",
 ] as const;
 
