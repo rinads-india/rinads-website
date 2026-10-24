@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { CommercialJsonLd } from "@/components/system/CommercialJsonLd";
-import { getPageMetadata } from "@/lib/cms";
 import { SolutionsClient } from "./SolutionsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/solutions");
+  return {
+    title: "Industry RINASPACES | RINADS",
+    description:
+      "Explore Industry RINASPACES configured on the shared RINADS platform core, including salon, jewellery, automotive, landscape, retail, logistics, and custom industry workflows.",
+  };
 }
 
 export default function SolutionsPage() {
@@ -14,7 +17,7 @@ export default function SolutionsPage() {
         path="/solutions"
         breadcrumbs={[
           { name: "Home", path: "/" },
-          { name: "Solutions", path: "/solutions" },
+          { name: "Industry RINASPACES", path: "/solutions" },
         ]}
       />
       <SolutionsClient />
