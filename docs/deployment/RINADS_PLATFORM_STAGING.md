@@ -26,128 +26,163 @@ pnpm dlx supabase link --project-ref zznigagovilnffyzcrlj
 pnpm dlx supabase db push
 ```
 
-This applies **12 migrations** in order (core identity → commerce → operations → SaaS → CMS → onboarding V2).
+Do not push migrations merely because the MCP connection succeeds. First inspect the remote migration history and schema, compare it with the canonical repo migration ledger, and only then apply reviewed pending migrations.
 
 ### Verify in Table Editor
 
-After push, confirm these exist:
+After the canonical migrations are confirmed/applied, verify the expected platform tables, including:
 
 - **Auth / tenancy:** `profiles`, `organizations`, `organization_members`, `roles`, `permissions`
 - **SaaS:** `organization_settings`, `tenant_provisioning_jobs`, `plans`
-- **CMS (PR #38):** `site_pages`, `site_page_sections`, `site_seo`, `site_redirects`, `site_media`
-- **Onboarding V2 (PR #39):** `organization_settings.enabled_modules`, `organization_settings.business_type`
+- **CMS:** `site_pages`, `site_page_sections`, `site_seo`, `site_redirects`, `site_media`
+- **Onboarding:** `organization_settings.enabled_modules`, `organization_settings.business_type`
 
-Dashboard **Database → Migrations** should list applied versions (no longer “No migrations”).
+Dashboard **Database → Migrations** must agree with the repository migration ledger before any production activation.
 
-## 2. Cursor Supabase MCP (inspect & debug)
+## 2. Supabase MCP — canonical project inspection
 
-Repo config: [`.cursor/mcp.json`](../../.cursor/mcp.json) — hosted MCP scoped to this project (no secrets in git):
+The repository carries two MCP configs pointing to the same project:
+
+- [`.mcp.json`](../../.mcp.json) — shared project config for compatible coding agents
+- [`.cursor/mcp.json`](../../.cursor/mcp.json) — Cursor-specific config
+
+Both are intentionally **project-scoped and read-only** for the initial production audit:
 
 ```json
 {
   "mcpServers": {
     "supabase": {
-      "url": "https://mcp.supabase.com/mcp?project_ref=zznigagovilnffyzcrlj&features=docs,account,database,debugging,development,functions,branching"
+      "url": "https://mcp.supabase.com/mcp?project_ref=zznigagovilnffyzcrlj&read_only=true&features=database,docs,debugging"
     }
   }
 }
 ```
 
-**Before trusting the config**, confirm **Project Settings → General → Reference ID** matches `zznigagovilnffyzcrlj` (URL: `https://zznigagovilnffyzcrlj.supabase.co`). A typo in `project_ref` connects to the wrong project or fails auth.
+This is the required default for production/staging inspection. Do not remove `read_only=true` until the project identity, migration ledger, RLS posture, advisors and activation plan have been reviewed.
 
-### Authenticate (manual)
+**Before trusting the config**, confirm **Project Settings → General → Reference ID** equals `zznigagovilnffyzcrlj` and the project URL is exactly `https://zznigagovilnffyzcrlj.supabase.co`.
 
-1. **Cursor → Settings → Tools & MCP** (or Features → MCP Servers)
+### Authenticate MCP
+
+The hosted Supabase MCP server uses OAuth. Authentication is per client/device.
+
+For ChatGPT:
+
+1. Add the Supabase MCP/connector from the Supabase project Connect flow.
+2. Complete Supabase OAuth using the account that owns or has access to `zznigagovilnffyzcrlj`.
+3. Verify the connected project reference before allowing any action.
+4. Keep the first audit read-only.
+
+For Cursor:
+
+1. **Cursor → Settings → Tools & MCP**
 2. Confirm **supabase** appears from `.cursor/mcp.json`
 3. Click **Connect / Sign in** and complete Supabase OAuth in the browser
 4. Status should show **connected**
 
-For **Cloud Agents**: ensure team/environment egress allows `mcp.supabase.com`. If MCP shows `needsAuth` in agent runs, complete OAuth on the machine where the agent runs, or add Supabase to the environment MCP allowlist in Cursor Portal.
+For Cloud Agents: ensure team/environment egress allows `mcp.supabase.com`. If MCP shows `needsAuth`, complete OAuth on the machine where the agent runs or add Supabase to the environment MCP allowlist.
 
-### Verify MCP
+### First verification queries
 
-In Cursor chat, ask the agent to:
+Before changing schema, use MCP to verify:
 
-- List tables in the `public` schema
-- Confirm migrations ran (`profiles`, `site_pages`, `site_seo`, `organization_settings`)
+- project URL / project ref
+- tables in `public`
+- migration history
+- RLS enabled on exposed tables
+- policies for `organizations`, `organization_members`, commerce and runtime tables
+- installed extensions relevant to the platform
+- Auth/JWT signing-key posture
+- Security Advisor findings
+- Performance Advisor findings
 
-Expected: Supabase MCP tools respond; no `needsAuth` errors.
+Expected result: the remote project matches the canonical RINADS platform schema. If it does not, stop and reconcile instead of pushing migrations blindly.
 
 ### MCP vs CLI
 
 | Tool | Purpose |
 |------|---------|
-| **Supabase MCP** | Inspect schema, run ad-hoc queries, debug — read-only unless you add `&read_only=false` to the URL |
-| **`supabase db push`** | Apply canonical schema from [`supabase/migrations/`](../../supabase/migrations/) |
+| **Supabase MCP (`read_only=true`)** | Inspect schema, migration history, logs/advisors and debug safely |
+| **Supabase CLI / reviewed SQL** | Apply canonical schema only after the audit and migration review |
 
-MCP does **not** replace migration push. Use [`scripts/supabase/link-and-push.sh`](../../scripts/supabase/link-and-push.sh) for schema changes committed in the repo.
+MCP does **not** replace migration governance. Schema changes must originate from the canonical repository migration chain and pass review/advisors before production application.
 
 ### Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
-| `needsAuth` / tools unavailable | Re-run OAuth in Cursor Settings → Tools & MCP |
-| Wrong tables or empty project | Verify `project_ref` in `.cursor/mcp.json` matches dashboard Reference ID |
-| Expected tables missing | Run section 1 (`db push`); MCP only reflects what is already applied |
+| `needsAuth` / tools unavailable | Re-run OAuth in the MCP client |
+| Project not visible after OAuth | Reconnect using the Supabase account/org that owns `zznigagovilnffyzcrlj` |
+| Wrong tables or empty project | Verify the exact project ref and stop before writes |
+| Expected tables missing | Compare migration history first; do not blindly `db push` |
 | Cloud agent blocked | Allow `mcp.supabase.com` in environment egress / MCP settings |
 
-### Optional: Supabase agent skills
+### Supabase Agent Skills
 
-Install locally (user-level; do not commit skill binaries):
+Install in the repository/workspace used by the coding agent:
 
 ```bash
 npx skills add supabase/agent-skills
 ```
 
-Adds Supabase-specific agent instructions for database and API work. Optional; does not block MCP.
+To install for every detected supported agent:
+
+```bash
+npx skills add supabase/agent-skills --all
+```
+
+These skills improve Supabase-specific implementation guidance but do not grant project access. OAuth/MCP authentication is still required.
 
 ## 3. Website environment variables
 
-Set in **Vercel** (Preview + Production when ready) and local `.env.local`:
+Set in **Vercel** (Preview + Production only after the project audit passes) and local `.env.local`:
 
 ```env
 NEXT_PUBLIC_SITE_URL=https://www.rinads.com
 
 NEXT_PUBLIC_AUTH_PROVIDER=supabase
 NEXT_PUBLIC_SUPABASE_URL=https://zznigagovilnffyzcrlj.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-or-compatible-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<server-only-service-role-key>
 
 # Services checkout (Vercel — server secret never NEXT_PUBLIC_)
 NEXT_PUBLIC_RAZORPAY_KEY_ID=<rzp_test_...>
 RAZORPAY_KEY_SECRET=<secret>
-# Supabase Edge Function secret (payment-webhook):
 RAZORPAY_WEBHOOK_SECRET=<webhook-secret>
 
-# CMS cache revalidation (after platform-admin CMS is used)
+# CMS cache revalidation
 CMS_REVALIDATE_SECRET=<random-string>
 WEBSITE_REVALIDATE_URL=https://<your-domain>/api/revalidate
 ```
 
-Keys: **Project Settings → API** in Supabase dashboard.
+Prefer Supabase publishable keys for new frontend configuration where supported. Never expose service-role/secret keys in browser variables.
 
-Keep `NEXT_PUBLIC_AUTH_PROVIDER=demo` until migrations succeed and signup is tested.
+Keep any production auth/provider switch fail-closed until migrations, signup, tenant provisioning and RLS are verified against this exact project.
 
 ## 4. Smoke test
 
-1. Website signup → profile row in `profiles`
-2. Onboarding → org created → `tenant_provisioning_jobs` row → `rinads_active_org` cookie set on completion
-3. `/os?welcome=1` loads Business OS
-4. platform-admin (port 3004) → Website CMS pages load (uses same Supabase project)
+After the audit and approved activation:
 
-### Services checkout E2E (staging)
+1. Website signup → profile row in `profiles`
+2. Onboarding → org created → `tenant_provisioning_jobs` row → active-org context set
+3. `/os?welcome=1` loads Business OS only for the authorised tenant
+4. platform-admin → Website CMS pages load from the same verified Supabase project
+5. Cross-tenant negative test proves another organisation cannot read the first tenant's records
+
+### Services checkout E2E
+
+Run only after the database and payment environment are explicitly approved:
 
 1. Sign in → complete onboarding if no org
 2. Open `/services` → pick a catalog service → **Continue to checkout**
-3. Razorpay test mode payment completes → redirect to `/track/[orderId]`
-4. Razorpay dashboard webhook: `https://zznigagovilnffyzcrlj.supabase.co/functions/v1/payment-webhook` (event: `payment.captured`)
-5. Verify in Supabase:
-   - `service_orders.status` → `paid` or `assigned`
-   - `service_tasks` row when partner available
-   - `payment_webhook_events` idempotency row
-6. Track page shows progress beyond `pending` (polls while webhook processes)
+3. Razorpay test-mode payment completes → redirect to `/track/[orderId]`
+4. Razorpay webhook target: `https://zznigagovilnffyzcrlj.supabase.co/functions/v1/payment-webhook`
+5. Verify `service_orders`, `service_tasks` and `payment_webhook_events`
+6. Confirm duplicate webhook delivery is idempotent
 
 ## 5. Optional: regenerate TypeScript types
+
+After schema verification:
 
 ```bash
 pnpm dlx supabase gen types typescript --linked > packages/database/src/generated.ts
@@ -155,10 +190,11 @@ pnpm dlx supabase gen types typescript --linked > packages/database/src/generate
 
 ## 6. GitHub integration note
 
-Supabase ↔ GitHub connection helps branch previews later. **Migrations still must be applied** via `supabase db push` or the Supabase CLI in CI — linking the repo alone does not run SQL from `supabase/migrations/`.
+Supabase ↔ GitHub connection helps branch previews. It does not make repository migrations automatically safe to apply. Production schema changes still require migration-ledger reconciliation, RLS review, advisors and an explicit activation gate.
 
 ## Related
 
-- [`.cursor/mcp.json`](../../.cursor/mcp.json) — Cursor Supabase MCP (OAuth, no tokens)
-- [SUPABASE_MIGRATIONS.md](./SUPABASE_MIGRATIONS.md) — phase-by-phase migration notes
+- [`.mcp.json`](../../.mcp.json) — shared Supabase MCP config
+- [`.cursor/mcp.json`](../../.cursor/mcp.json) — Cursor Supabase MCP config
+- [SUPABASE_MIGRATIONS.md](./SUPABASE_MIGRATIONS.md) — migration notes
 - [CMS_FOLLOWUP_BACKLOG.md](../CMS_FOLLOWUP_BACKLOG.md) — CMS env + admin follow-ups
