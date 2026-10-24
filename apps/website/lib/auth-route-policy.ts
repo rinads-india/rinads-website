@@ -4,7 +4,12 @@ export const WEBSITE_PROTECTED_PREFIXES = ["/os", "/onboarding", "/space"] as co
 
 function normalizePathname(pathname: string): string {
   const raw = pathname.split("?")[0]?.trim() || "/";
-  if (!raw.startsWith("/")) return "/";
+  // Only accept an ordinary same-origin absolute pathname. Protocol-relative
+  // (`//host`) and backslash-based inputs are rejected before they can become
+  // a login `next` destination.
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) {
+    return "/";
+  }
   if (raw.length > 1 && raw.endsWith("/")) return raw.slice(0, -1);
   return raw;
 }
