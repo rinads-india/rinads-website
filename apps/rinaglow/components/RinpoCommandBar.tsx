@@ -42,6 +42,26 @@ const QUICK_COMMANDS = [
   "Show pending reviews",
 ] as const;
 
+function salonAreaFromPathname(pathname: string): string {
+  const firstSegment = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
+  const labels: Record<string, string> = {
+    dashboard: "Today",
+    "front-desk": "Front Desk",
+    calendar: "Calendar",
+    pos: "POS",
+    inventory: "Inventory",
+    services: "Services",
+    staff: "Staff",
+    clients: "Clients",
+    growth: "Growth",
+    loyalty: "Loyalty",
+    campaigns: "Campaigns",
+    communications: "Communications",
+    settings: "Settings",
+  };
+  return labels[firstSegment] ?? firstSegment.replace(/-/g, " ");
+}
+
 function isPendingApproval(data: unknown): data is { actionId: string; status: "pending_approval" } {
   return Boolean(data) && typeof data === "object" && (data as { status?: string }).status === "pending_approval";
 }
@@ -119,6 +139,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   const [isListening, setIsListening] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pageContext = getRinpoPageContext(pathname, searchParams);
+  const salonArea = salonAreaFromPathname(pathname);
 
   function runCommand(command: string, speakReply = false) {
     const normalized = command.trim();
@@ -239,7 +260,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px]">
               <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
-                Context: {pageContext.area}
+                Context: {salonArea}
               </span>
               <button
                 type="button"
