@@ -38,7 +38,7 @@ export function VerticalSolutionPage({
         primaryHref={primaryHref}
         primaryLabel={primaryLabel}
         secondaryHref="/solutions"
-        secondaryLabel="All solutions"
+        secondaryLabel="All Industry RINASPACES"
         compactTop={Boolean(breadcrumbs?.length)}
       />
 
@@ -51,7 +51,7 @@ export function VerticalSolutionPage({
       <VerticalSolutionExperience vertical={vertical} />
 
       <ModuleGrid
-        title={"Configured capabilities"}
+        title="Configured capabilities"
         modules={vertical.capabilities.map((capability) => ({ name: capability }))}
       />
 
@@ -59,16 +59,16 @@ export function VerticalSolutionPage({
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/platform/business-os"
+              href="/platform/business"
               className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-rinads-primary/45"
             >
-              Business OS →
+              Business capabilities →
             </Link>
             <Link
               href="/platform"
               className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-rinads-primary/45"
             >
-              Platform →
+              RINADS Platform →
             </Link>
           </div>
         </div>
@@ -83,7 +83,7 @@ export function VerticalSolutionPage({
         summary={
           configurable
             ? "Start with the shared RINADS core and configure the workflows this industry needs."
-            : "This vertical is not generally available yet. Use a project conversation to define requirements without assuming production availability."
+            : "This industry configuration is not generally available yet. Use a project conversation to define requirements without assuming production availability."
         }
       />
     </MarketingPageShell>
