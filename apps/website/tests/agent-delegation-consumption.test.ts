@@ -25,7 +25,11 @@ describe("external-agent delegation consumption", () => {
   it("matches signed claims to the revocation ledger before resolving a principal", () => {
     assert.match(principal, /external_agent_delegations/);
     assert.match(principal, /token_id,user_id,organization_id,client,scopes,expires_at,revoked_at/);
-    assert.match(principal, /ledger\.revoked_at == null/);
+    assert.match(principal, /const ledgerNotRevoked/);
+    assert.match(
+      principal,
+      /ledger\.revoked_at === null \|\| ledger\.revoked_at === undefined/
+    );
     assert.match(principal, /sameScopes\(ledgerScopes, verified\.claims\.scopes\)/);
     assert.match(principal, /ledgerExpirySeconds === verified\.claims\.exp/);
   });
