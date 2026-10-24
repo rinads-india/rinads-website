@@ -22,4 +22,17 @@ describe("requirePlanModule", () => {
     const result = requirePlanModule(tenancy, "commerce");
     assert.equal(result.allowed, false);
   });
+
+  it("blocks module access when no active plan or explicit entitlement exists", () => {
+    const tenancy = { ...buildDemoTenancyContext({ planKey: "starter" }), planKey: undefined };
+    const result = requirePlanModule(tenancy, "commerce");
+    assert.equal(result.allowed, false);
+    if (!result.allowed) assert.match(result.reason, /No active plan or trial entitlement/);
+  });
+
+  it("blocks malformed or empty explicit entitlement manifests", () => {
+    const tenancy = buildDemoTenancyContext({ planKey: "starter" });
+    assert.equal(requirePlanModule(tenancy, "commerce", {}).allowed, false);
+    assert.equal(requirePlanModule(tenancy, "commerce", { modules: [] }).allowed, false);
+  });
 });

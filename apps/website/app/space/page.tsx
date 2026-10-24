@@ -51,12 +51,15 @@ export default async function RINASPACEPage() {
 
   return (
     <RINASPACEClient
+      riIdentity={tenancy.email ?? user.email ?? "Authenticated RI ID"}
       role={tenancy.roleKey}
       orgName={orgName}
       activeOrganizationId={tenancy.organizationId}
       memberships={memberships}
       planKey={tenancy.planKey}
       verticalKey={tenancy.verticalKey}
+      entitlementState={tenancy.entitlementState ?? "none"}
+      entitlementEndsAt={tenancy.entitlementEndsAt}
       featureFlags={tenancy.featureFlags}
     />
   );

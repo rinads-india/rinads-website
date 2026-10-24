@@ -1,6 +1,13 @@
 "use server";
 
-import { provisionTenantViaRpc, buildAuditInsert, seedTenantBundle, parseVerticalTemplateKey } from "@rinads/platform";
+import { revalidatePath } from "next/cache";
+import {
+  provisionTenantViaRpc,
+  buildAuditInsert,
+  seedTenantBundle,
+  parseVerticalTemplateKey,
+  resetDeadLetteredProvisioningJob,
+} from "@rinads/platform";
 import { createPlatformServerClient, createPlatformServiceClient } from "@/lib/supabase/server";
 import { requirePlatformTenancy } from "@/lib/tenancy";
 import { isDemoMode } from "@/lib/supabase/env";
@@ -136,6 +143,117 @@ export async function listTenantsAction(): Promise<
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
   }
+}
+
+export type ProvisioningJobSummary = {
+  id: string;
+  organizationId: string;
+  templateKey: string;
+  status: string;
+  attempts: number;
+  nextAttemptAt?: string;
+  errorMessage?: string;
+  lastErrorClass?: string;
+  deadLetteredAt?: string;
+};
+
+export async function listProvisioningJobsAction(): Promise<
+  { ok: true; jobs: ProvisioningJobSummary[] } | { ok: false; error: string }
+> {
+  try {
+    await requirePlatformTenancy();
+    if (isDemoMode()) return { ok: true, jobs: [] };
+
+    const service = createPlatformServiceClient();
+    const { data, error } = await (
+      service as unknown as {
+        from: (table: string) => {
+          select: (cols: string) => Promise<{
+            data: Record<string, unknown>[] | null;
+            error: { message: string } | null;
+          }>;
+        };
+      }
+    )
+      .from("tenant_provisioning_jobs")
+      .select(
+        "id, organization_id, template_key, status, attempts, next_attempt_at, error_message, last_error_class, dead_lettered_at"
+      );
+
+    if (error) return { ok: false, error: error.message };
+    return {
+      ok: true,
+      jobs: (data ?? []).map((row) => ({
+        id: String(row.id),
+        organizationId: String(row.organization_id),
+        templateKey: String(row.template_key),
+        status: String(row.status),
+        attempts: Number(row.attempts ?? 0),
+        nextAttemptAt: row.next_attempt_at ? String(row.next_attempt_at) : undefined,
+        errorMessage: row.error_message ? String(row.error_message) : undefined,
+        lastErrorClass: row.last_error_class ? String(row.last_error_class) : undefined,
+        deadLetteredAt: row.dead_lettered_at ? String(row.dead_lettered_at) : undefined,
+      })),
+    };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Unexpected error" };
+  }
+}
+
+export async function retryDeadLetteredProvisioningJobAction(
+  jobId: string,
+  _formData: FormData
+): Promise<void> {
+  const tenancy = await requirePlatformTenancy();
+  if (isDemoMode()) return;
+
+  const service = createPlatformServiceClient();
+  const { data: job, error } = await (
+    service as unknown as {
+      from: (table: string) => {
+        select: (cols: string) => {
+          eq: (col: string, val: string) => {
+            single: () => Promise<{
+              data: Record<string, unknown> | null;
+              error: { message: string } | null;
+            }>;
+          };
+        };
+      };
+    }
+  )
+    .from("tenant_provisioning_jobs")
+    .select("id, organization_id, status")
+    .eq("id", jobId)
+    .single();
+
+  if (error || !job) throw new Error(error?.message ?? "Provisioning job not found");
+  if (String(job.status) !== "dead_letter") {
+    throw new Error("Only dead-lettered provisioning jobs can be manually retried");
+  }
+
+  const reset = await resetDeadLetteredProvisioningJob(service as never, jobId);
+  if (!reset) throw new Error("Could not reset provisioning job");
+
+  const organizationId = String(job.organization_id);
+  await (
+    service.from("audit_logs") as unknown as {
+      insert: (row: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+    }
+  ).insert(
+    buildAuditInsert({
+      organizationId,
+      actorType: "user",
+      actorId: tenancy.userId,
+      action: "tenant.provisioning.manual_retry",
+      entity: "tenant_provisioning_job",
+      entityId: jobId,
+      after: { status: "pending", attempts: 0 },
+      source: "platform-admin",
+    })
+  );
+
+  revalidatePath("/tenants");
 }
 
 export async function listPlansAction(): Promise<

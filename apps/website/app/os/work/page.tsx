@@ -1,14 +1,13 @@
-import { OsModuleBridge } from "@/components/os/OsModuleBridge";
-import { getWorkModuleDestinations } from "@/lib/os-module-destinations";
 import { CompanyOsRouteSwitch } from "@/components/os/company/CompanyOsRouteSwitch";
 import { CompanyWorkHub } from "@/components/os/company/CompanyWorkHub";
+import { BusinessTasksLive } from "@/components/os/business/BusinessTasksLive";
 
 export default function OsWorkPage() {
   return (
     <main id="main">
       <CompanyOsRouteSwitch
         company={<CompanyWorkHub />}
-        business={<OsModuleBridge config={getWorkModuleDestinations()} />}
+        business={<BusinessTasksLive />}
       />
     </main>
   );

@@ -13,7 +13,9 @@ export type PlanModuleCheckResult =
 
 function planIncludesModule(planLimits: PlanLimits, module: string): boolean {
   const modules = planLimits.modules;
-  if (!modules?.length) return true;
+  // Entitlements are security-sensitive. Missing, malformed or empty module
+  // manifests must never grant access implicitly.
+  if (!Array.isArray(modules) || modules.length === 0) return false;
   return modules.includes(module);
 }
 
@@ -29,11 +31,19 @@ export function requirePlanModule(
     return { allowed: false, reason: "Organization is archived." };
   }
 
+  if (!tenancy.planKey && !planLimits) {
+    return {
+      allowed: false,
+      reason: "No active plan or trial entitlement is available for this organization.",
+      upgradeRequired: true,
+    };
+  }
+
   const limits = planLimits ?? defaultLimitsForPlan(tenancy.planKey);
   if (!planIncludesModule(limits, moduleKey)) {
     return {
       allowed: false,
-      reason: `Module "${moduleKey}" is not included in your ${tenancy.planKey ?? "current"} plan.`,
+      reason: `Module "${moduleKey}" is not included in your ${tenancy.planKey ?? "current"} entitlement.`,
       upgradeRequired: true,
     };
   }
@@ -53,6 +63,8 @@ function defaultLimitsForPlan(planKey?: string): PlanLimits {
   switch (planKey) {
     case "starter":
       return { modules: ["commerce", "inventory"], seats: 5, ordersPerMonth: 100 };
+    case "trial-starter":
+      return { modules: ["commerce", "inventory", "crm", "tasks"], seats: 3, ordersPerMonth: 100 };
     case "growth":
       return {
         modules: ["commerce", "inventory", "procurement", "fulfilment"],
@@ -66,7 +78,7 @@ function defaultLimitsForPlan(planKey?: string): PlanLimits {
         ordersPerMonth: 10000,
       };
     default:
-      return { modules: ["commerce", "inventory"], seats: 5, ordersPerMonth: 100 };
+      return { modules: [] };
   }
 }
 

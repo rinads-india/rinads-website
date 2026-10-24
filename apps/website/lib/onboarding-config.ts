@@ -80,7 +80,11 @@ const INDUSTRY_REGISTRY_SCHEMA_IDENTIFIERS = [
 ] as const;
 
 export function resolveTemplateForBusinessType(businessType: string): string {
-  return resolveIndustryTemplate(LEGACY_BUSINESS_TYPE_ALIASES[businessType] ?? businessType);
+  const resolved = resolveIndustryTemplate(LEGACY_BUSINESS_TYPE_ALIASES[businessType] ?? businessType);
+  // The generic retail seed was historically used as a catch-all. New RI ID
+  // tenants now start from the neutral Starter Business base; only specialized,
+  // production-ready vertical templates are selected directly.
+  return resolved === "generic-retail" ? "starter-business" : resolved;
 }
 
 /**

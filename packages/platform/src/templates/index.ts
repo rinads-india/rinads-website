@@ -3,10 +3,10 @@ import type { OperationsStore } from "@rinads/operations";
 import { createAmbadySeedStore, createGenericRetailSeedStore } from "@rinads/commerce-server";
 import { createAmbadyOperationsSeed, createGenericRetailOperationsSeed } from "@rinads/operations-server";
 
-export type VerticalTemplateKey = "ambady-nursery" | "generic-retail" | "salon-os";
+export type VerticalTemplateKey = "starter-business" | "ambady-nursery" | "generic-retail" | "salon-os";
 
 export function isVerticalTemplateKey(value: string): value is VerticalTemplateKey {
-  return value === "ambady-nursery" || value === "generic-retail" || value === "salon-os";
+  return value === "starter-business" || value === "ambady-nursery" || value === "generic-retail" || value === "salon-os";
 }
 
 export function parseVerticalTemplateKey(value: string): VerticalTemplateKey {
@@ -30,6 +30,12 @@ export type VerticalTemplateMeta = {
 };
 
 export const VERTICAL_TEMPLATES: Record<VerticalTemplateKey, Omit<VerticalTemplateMeta, "key">> = {
+  "starter-business": {
+    name: "Starter Business",
+    description: "Neutral RINADS Business OS workspace for new companies, freelancers and trial tenants.",
+    category: "business",
+    isPublished: true,
+  },
   "ambady-nursery": {
     name: "Ambady Nursery & Garden",
     description: "Pebbles, landscaping products, full ERP starter catalog and inventory.",
@@ -152,12 +158,9 @@ function remapOperationsStore(store: OperationsStore, organizationId: string): O
 }
 
 function seedForTemplate(templateKey: VerticalTemplateKey, organizationId: string): TenantSeedBundle {
-  // Salon OS is a service business, not a product catalog: its operational
-  // data (branches, services, staff, appointments) lives in the dedicated
-  // salon_* tables (see supabase/migrations/20260827100000_salon_os.sql),
-  // set up interactively by the owner in apps/rinaglow. The commerce/
-  // operations bundle here only needs to be a safe, empty starting point.
-  if (templateKey === "generic-retail" || templateKey === "salon-os") {
+  // Starter Business and Salon OS intentionally avoid any client-specific seed
+  // catalog. Industry data is added after the tenant selects an industry pack.
+  if (templateKey === "starter-business" || templateKey === "generic-retail" || templateKey === "salon-os") {
     return {
       commerce: remapCommerceStore(createGenericRetailSeedStore(organizationId), organizationId),
       operations: remapOperationsStore(createGenericRetailOperationsSeed(organizationId), organizationId),
@@ -171,7 +174,7 @@ function seedForTemplate(templateKey: VerticalTemplateKey, organizationId: strin
 
 export function seedTenantBundle(
   organizationId: string,
-  templateKey: VerticalTemplateKey = "ambady-nursery"
+  templateKey: VerticalTemplateKey = "starter-business"
 ): TenantSeedBundle {
   if (!(templateKey in VERTICAL_TEMPLATES)) {
     throw new Error(`Unknown template: ${templateKey}`);

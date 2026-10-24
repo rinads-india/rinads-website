@@ -36,11 +36,11 @@ serve(async (req) => {
     }
 
     const payload = JSON.parse(body);
-    const eventId =
-      payload?.payload?.payment?.entity?.id ??
-      payload?.payload?.order?.entity?.id ??
+    const providerEventId = req.headers.get("x-razorpay-event-id")?.trim();
+    const fallbackEventId =
       payload?.event_id ??
-      `${payload?.event}-${payload?.created_at}`;
+      `${payload?.event ?? "unknown"}:${payload?.payload?.payment?.entity?.id ?? payload?.payload?.order?.entity?.id ?? payload?.created_at ?? "unknown"}`;
+    const eventId = providerEventId || fallbackEventId;
     const eventType = payload?.event ?? "unknown";
 
     const { error: idemError } = await supabase.from("payment_webhook_events").insert({
