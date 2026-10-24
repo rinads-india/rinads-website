@@ -25,9 +25,9 @@ import {
 } from "@/lib/rinpo-experience";
 import { trackMarketing } from "@/lib/analytics";
 
-/** Defer heavy RINPO client islands until after hydration / interaction. */
-const RinpoPresence = dynamic(
-  () => import("./RinpoPresence").then((m) => m.RinpoPresence),
+/** Replaces the legacy RinpoPresence scroll-emergence with a stable global launcher. */
+const RinpoCornerLauncher = dynamic(
+  () => import("./RinpoCornerLauncher").then((m) => m.RinpoCornerLauncher),
   { ssr: false },
 );
 const RinpoPhone = dynamic(() => import("./RinpoPhone").then((m) => m.RinpoPhone), {
@@ -178,7 +178,7 @@ export function RinpoProvider({ children }: { children: ReactNode }) {
     >
       <RinpoMemoryProvider key={user?.username ?? "Guest"}>
         {children}
-        {!isOsRoute && <RinpoPresence />}
+        {!isOsRoute && !navMenuOpen && <RinpoCornerLauncher />}
         {!isOsRoute && phoneOpen && <RinpoPhone />}
         <LoginModal
           isOpen={loginModalOpen}

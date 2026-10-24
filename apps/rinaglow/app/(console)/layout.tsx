@@ -19,7 +19,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   return (
     <>
       <RinaglowNav organizationName={membership?.organizationName} roleKey={tenancy.roleKey} branches={branches} />
-      <main className="rg-page-enter mx-auto max-w-7xl px-4 py-6 pb-44 sm:px-6 sm:py-8 lg:pb-32">
+      <main className="rg-page-enter mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 sm:py-7 lg:pb-10">
         <Suspense fallback={<ConsolePageFallback />}>{children}</Suspense>
       </main>
       <Suspense fallback={null}>
