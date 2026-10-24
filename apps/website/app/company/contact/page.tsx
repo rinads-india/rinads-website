@@ -33,7 +33,7 @@ export default async function CompanyContactPage({ searchParams }: ContactPagePr
   const summary =
     params.plan != null
       ? `You selected the ${params.plan} plan interest. Tell us about your organisation and we will follow up.`
-      : "Share what you want to achieve — running the business, replacing tools, launching commerce, or implementing AI with control.";
+      : "Share what you want to achieve — running the business, replacing tools, launching commerce, or implementing intelligence and automation with control.";
 
   return (
     <>
@@ -53,7 +53,7 @@ export default async function CompanyContactPage({ searchParams }: ContactPagePr
               <h2 className="text-xl font-bold text-foreground md:text-2xl">How conversations typically go</h2>
               <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
                 <li>We learn your operating context and which outcomes matter first.</li>
-                <li>We map those outcomes to platform pillars, editions, or implementation services.</li>
+                <li>We map those outcomes to RINADS capabilities, Industry RINASPACES, connectors, or implementation services.</li>
                 <li>We agree on pilot scope, availability labels, and realistic next steps.</li>
               </ul>
             </div>
