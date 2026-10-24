@@ -178,13 +178,15 @@ async function resolveDelegationPrincipal(
   const ledgerExpirySeconds = ledgerExpiry
     ? Math.floor(Date.parse(ledgerExpiry) / 1000)
     : Number.NaN;
+  const ledgerNotRevoked =
+    ledger.revoked_at === null || ledger.revoked_at === undefined;
 
   const ledgerMatches =
     text(ledger.token_id) === verified.claims.jti &&
     text(ledger.user_id) === verified.claims.sub &&
     text(ledger.organization_id) === verified.claims.org &&
     text(ledger.client) === verified.claims.client &&
-    ledger.revoked_at == null &&
+    ledgerNotRevoked &&
     ledgerScopes !== null &&
     sameScopes(ledgerScopes, verified.claims.scopes) &&
     ledgerExpirySeconds === verified.claims.exp;
