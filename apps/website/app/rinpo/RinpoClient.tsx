@@ -11,28 +11,28 @@ import Link from "next/link";
 
 const OPERATING_SEQUENCE = [
   {
-    step: "Ask",
-    description: "Start with a question, outcome, or business problem.",
+    step: "Observe",
+    description: "Start from the current request, page, signal, or permitted business context.",
   },
   {
     step: "Understand",
-    description: "RINPO uses the current page and permitted business context.",
+    description: "RINPO and RINADS Intelligence interpret the context and what matters.",
   },
   {
     step: "Recommend",
-    description: "RINPO explains what matters and proposes the next action.",
+    description: "RINPO explains the situation and proposes the next supported action.",
   },
   {
-    step: "Approve",
-    description: "Meaningful actions remain behind permissions and human approval.",
+    step: "Authorize",
+    description: "Meaningful actions remain inside permissions, policy, confirmation, and approval boundaries.",
   },
   {
     step: "Act",
-    description: "Approved work is handed to the relevant RINADS operating system.",
+    description: "Supported work executes through RINPO Runtime, registered tools, connectors, and business capabilities.",
   },
   {
     step: "Audit",
-    description: "Platform actions can be recorded as part of the operating history.",
+    description: "Governed actions can be recorded with business, workflow, and approval context.",
   },
 ] as const;
 
@@ -41,11 +41,11 @@ export function RinpoClient() {
     <MarketingPageShell>
       <PageHero
         eyebrow="RINPO"
-        headline="The AI interface for RINADS."
-        summary="Talk to your business. Ask questions. Understand what matters. Review recommendations. Approve actions. Get work done through the RINADS platform."
+        headline="The Business Intelligence Character for RINADS."
+        summary="Talk to your business through one persistent interface. RINPO helps you understand what matters, review recommendations, authorize supported actions, and move governed work through RINPO Runtime."
         primaryHref="/contact?intent=demo"
         primaryLabel="Book a demo"
-        secondaryHref="/platform/rinads-intelligence"
+        secondaryHref="/platform/intelligence"
         secondaryLabel="RINADS Intelligence"
       />
 
@@ -61,7 +61,7 @@ export function RinpoClient() {
             How RINPO operates
           </p>
           <h2 className="mt-3 max-w-3xl text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
-            One interaction layer from question to governed action.
+            One interaction layer from observation to governed execution.
           </h2>
 
           <div className="mt-10 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -109,7 +109,8 @@ export function RinpoClient() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-4 text-sm font-semibold text-rinads-primary">
-            <Link href="/rinpo/intelligence">Intelligence →</Link>
+            <Link href="/platform/intelligence">Intelligence →</Link>
+            <Link href="/platform/rinpo-runtime">Runtime →</Link>
             <Link href="/rinpo/story">Story →</Link>
             <Link href="/rinpo/voice">Voice →</Link>
             <Link href="/rinpo/phone">Phone →</Link>
@@ -122,7 +123,7 @@ export function RinpoClient() {
 
       <CTASection
         headline="Talk to RINPO."
-        summary="RINPO is the interface. RINADS Intelligence is the brain. RINADS is the operating platform."
+        summary="RINPO is the Business Intelligence Character. RINADS Intelligence understands. RINPO Runtime executes supported work inside governed boundaries."
       />
     </MarketingPageShell>
   );
