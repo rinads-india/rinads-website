@@ -30,31 +30,31 @@ const PLATFORM_LAYERS = [
   {
     label: "Experience",
     title: "RINADS Experience",
-    description: "The public site, operating interfaces, portals, and product surfaces people use.",
+    description: "The public site, business interfaces, portals, and product surfaces people use.",
     icon: Layers3,
   },
   {
     label: "Interface",
     title: "RINPO",
-    description: "The persistent conversational interface that helps people understand and navigate RINADS.",
+    description: "The persistent Business Intelligence Character that helps people understand and navigate RINADS.",
     icon: Bot,
   },
   {
     label: "Intelligence",
     title: "RINADS Intelligence",
-    description: "Context, recommendations, tools, permission-aware guidance, and controlled action flows.",
+    description: "Context, recommendations, orchestration, permission-aware guidance, and controlled action flows.",
     icon: BrainCircuit,
   },
   {
-    label: "Systems",
-    title: "Operating System Suite",
-    description: "Eight connected operating systems for business, commerce, growth, logistics, creation, building, learning, and automation.",
+    label: "Execution",
+    title: "RINPO Runtime",
+    description: "Governed execution across agents, tools, workflows, permissions, approvals, actions, and audit.",
     icon: Workflow,
   },
   {
-    label: "Foundation",
-    title: "RINADS Cloud",
-    description: "Identity, tenancy, data, APIs, events, storage, integrations, runtime, and infrastructure.",
+    label: "Identity + workspace",
+    title: "RI ID + RI SPACE",
+    description: "One identity and one persistent workspace carrying organisation context, permissions, data, and connected business state.",
     icon: Cloud,
   },
 ] as const;
@@ -78,11 +78,11 @@ const GOVERNANCE = [
   },
   {
     title: "Permissions",
-    description: "Sensitive operations remain subject to authorization rules instead of relying on AI intent alone.",
+    description: "Sensitive operations remain subject to authorization rules instead of relying on intelligence intent alone.",
   },
   {
     title: "Approvals",
-    description: "Runtime workflows can pause at approval gates before higher-risk steps continue.",
+    description: "RINPO Runtime workflows can pause at approval gates before higher-risk steps continue.",
   },
   {
     title: "Audit and events",
@@ -99,7 +99,7 @@ export function PlatformClient() {
       <PageHero
         eyebrow={PLATFORM_OVERVIEW.eyebrow}
         headline={PLATFORM_OVERVIEW.headline}
-        summary="One connected operating platform for business — with RINPO as the interface, RINADS Intelligence as the intelligence layer, eight Operating Systems, and RINADS Cloud as the shared foundation."
+        summary="One connected Business Intelligence Platform — RINPO as the interface, RINADS Intelligence as the intelligence layer, RINPO Runtime as governed execution, with RI ID and RI SPACE carrying identity and persistent business context."
         primaryHref="/contact?intent=demo"
         primaryLabel="Book a demo"
         secondaryHref="/rinpo"
@@ -137,7 +137,7 @@ export function PlatformClient() {
           <div className="mt-4 rounded-2xl border border-dashed border-rinads-primary/35 bg-rinads-primary/[0.04] p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">RINADS Services</p>
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-              Services surround the platform as implementation and delivery capability. They are not a technical runtime layer between the Operating Systems and RINADS Cloud.
+              Services surround the platform as implementation and delivery capability. They are not a technical runtime layer between business capabilities and the RINADS platform core.
             </p>
           </div>
         </div>
@@ -148,10 +148,10 @@ export function PlatformClient() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Connected business lifecycle</p>
             <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-              One business state across connected systems.
+              One business state across connected capabilities.
             </h2>
             <p className="mt-5 max-w-xl text-[var(--text-muted)]">
-              RINADS is designed so the customer, work, commerce, logistics, automation, and intelligence layers can operate around shared organization context rather than isolated app silos.
+              RINADS is designed so customer, work, commerce, logistics, automation, and intelligence capabilities can operate around shared organisation context rather than isolated app silos.
             </p>
             <button
               type="button"
@@ -194,7 +194,7 @@ export function PlatformClient() {
                 One persistent interface across the platform.
               </h2>
               <p className="mt-5 text-[var(--text-muted)]">
-                RINPO gives the public experience and connected products a consistent way to ask, understand, recommend, and—where supported—move into governed action.
+                RINPO gives the public experience and connected products a consistent way to ask, understand, recommend, authorize, and—where supported—move into governed action through RINPO Runtime.
               </p>
               <Link href="/rinpo" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline">
                 Explore RINPO
@@ -202,10 +202,10 @@ export function PlatformClient() {
               </Link>
             </div>
 
-            <div className="rounded-3xl border border-[var(--border)] bg-black p-6 text-white">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Interaction model</p>
+            <div className="rounded-3xl border border-white/10 bg-black p-6 text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Governed execution model</p>
               <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                {["Ask", "Understand", "Recommend", "Approve", "Act", "Audit"].map((step, index) => (
+                {["Observe", "Understand", "Recommend", "Authorize", "Act", "Audit"].map((step, index) => (
                   <div key={step} className="rounded-xl border border-white/10 bg-white/[0.05] p-3">
                     <p className="text-[10px] font-semibold text-white/35">{String(index + 1).padStart(2, "0")}</p>
                     <p className="mt-2 text-sm font-semibold">{step}</p>
@@ -213,7 +213,7 @@ export function PlatformClient() {
                 ))}
               </div>
               <p className="mt-5 text-xs leading-5 text-white/50">
-                The public website demonstrates this lifecycle. Execution is only enabled in product contexts where the required tool, permission, confirmation, or runtime path actually exists.
+                The public website demonstrates this lifecycle. Execution is only enabled in product contexts where the required tool, permission, confirmation, connector, or runtime path actually exists.
               </p>
             </div>
           </div>
@@ -222,9 +222,9 @@ export function PlatformClient() {
 
       <section className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-6 py-20 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Operating System suite</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Business capabilities</p>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-            Eight systems on one platform core.
+            Connected capabilities on one platform core.
           </h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {operatingSystems.map((os) => {
@@ -251,9 +251,9 @@ export function PlatformClient() {
           <div className="flex items-start gap-3">
             <Building2 size={24} className="mt-1 text-rinads-primary" aria-hidden />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Vertical configuration</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Industry RINASPACES</p>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-                Industry experiences without rebuilding the platform.
+                Built for your industry without rebuilding the platform.
               </h2>
             </div>
           </div>
@@ -274,7 +274,15 @@ export function PlatformClient() {
                   <ProductStatus status={availability.status} />
                 </div>
                 <h3 className="mt-4 text-lg font-bold text-[var(--text-primary)]">
-                  {vertical.slug === "nursery" ? "Landscape & Nursery" : vertical.name}
+                  {vertical.slug === "salon"
+                    ? "RI SALON RINASPACE"
+                    : vertical.slug === "jewellery"
+                      ? "RI JEWELLERY RINASPACE"
+                      : vertical.slug === "automotive"
+                        ? "RI AUTOMOTIVE RINASPACE"
+                        : vertical.slug === "nursery" || vertical.slug === "landscape"
+                          ? "RI LANDSCAPE RINASPACE"
+                          : vertical.name}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{vertical.summary}</p>
               </Link>
@@ -289,25 +297,25 @@ export function PlatformClient() {
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
               <Cloud size={28} className="text-rinads-primary" aria-hidden />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">RINADS Cloud</p>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI ID + RI SPACE</p>
               <h2 className="mt-4 text-3xl font-black tracking-tight md:text-5xl">
-                Shared foundation beneath every operating surface.
+                One identity. One persistent business workspace.
               </h2>
               <p className="mt-5 text-white/60">
-                RINADS keeps identity, organisation context, permissions and business workflows on a shared foundation so different operating systems can work from the same source of truth.
+                RI ID identifies the business and its people. RI SPACE carries organisation context, permissions, connected business state, and the workspace through which RINADS capabilities operate together.
               </p>
               <Link href="/platform/cloud" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline">
-                Explore RINADS Cloud
+                Explore the platform core
                 <ArrowRight size={15} aria-hidden />
               </Link>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                ["Identity + tenancy", "Authentication, organization context, and isolation foundations."],
-                ["Domain services", "Commerce, operations, salon, billing, and shared platform packages."],
-                ["Runtime", "Events, workflows, outbox, workers, retries, and approval-aware execution."],
-                ["Data + infrastructure", "PostgreSQL, storage, APIs, integrations, and deployment foundations."],
+                ["RI ID", "Identity, authentication, organisation membership, roles, and permissions."],
+                ["RI SPACE", "Persistent business workspace and shared organisation context."],
+                ["RINPO Runtime", "Events, workflows, connectors, workers, retries, approvals, and governed execution."],
+                ["Platform data", "PostgreSQL, storage, APIs, integrations, audit, and deployment foundations."],
               ].map(([title, description]) => (
                 <article key={title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
                   <h3 className="font-semibold">{title}</h3>
@@ -352,7 +360,7 @@ export function PlatformClient() {
 
       <CTASection
         headline="One intelligent platform."
-        summary="Start with the outcome. RINPO helps you find the right operating system, solution, or implementation path."
+        summary="Start with the outcome. RINPO helps you find the right capability, Industry RINASPACE, or implementation path."
       />
     </MarketingPageShell>
   );
