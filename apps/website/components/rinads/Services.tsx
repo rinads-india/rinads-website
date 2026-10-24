@@ -8,29 +8,31 @@ import type { ServiceCardContent } from "@rinads/cms";
 
 const CARDS: Array<ServiceCardContent & { bg: string; accent: string; icon: LucideIcon }> = [
   {
-    title: "Digital Marketing",
-    description: "SEO, Social Media, and Performance Ads that turn attention into growth.",
-    details: ["SEO", "Social Media", "Performance Ads"],
+    title: "Software",
+    description: "Build web apps, mobile apps, and business systems through Build OS.",
+    details: ["Web Apps", "Mobile Apps", "Business Systems"],
     bg: "bg-[#1a1224]",
     accent: "from-rinads-primary/40",
-    icon: Megaphone,
-    href: "/platform/marketing-os",
+    icon: Code2,
+    href: "/services/software",
   },
   {
-    title: "Custom Software Development",
-    description: "Web Apps, Mobile Apps, and ERP systems built to run your business.",
-    details: ["Web Apps", "Mobile Apps", "ERP Systems"],
+    title: "Marketing",
+    description: "Grow brands with SEO, paid media, social, and CRM programs.",
+    details: ["SEO", "Performance Ads", "Social"],
     bg: "bg-[#241433]",
     accent: "from-rinads-primary/50",
-    icon: Code2,
+    icon: Megaphone,
+    href: "/services/marketing",
   },
   {
-    title: "AI Automation",
-    description: "Chatbots, workflow automation, and AI tools that simplify operations.",
-    details: ["Chatbots", "Workflow Automation", "AI Tools"],
+    title: "AI & Automation",
+    description: "Assistants, agents, and workflows powered by RINPO.",
+    details: ["AI Assistants", "Workflows", "Voice Agents"],
     bg: "bg-rinads-primary",
     accent: "from-white/20",
     icon: Bot,
+    href: "/services/ai",
   },
 ];
 
@@ -142,8 +144,7 @@ export function Services({ cards }: { cards?: ServiceCardContent[] }) {
             Built to run businesses.
           </h2>
           <p className="mt-6 max-w-md text-lg text-muted-foreground">
-            Marketing, software, and AI automation — unified under the RINADS®
-            Business Cloud.
+            Software, growth, and AI automation — connected through RINADS Intelligence and RINPO Runtime.
           </p>
         </div>
 
