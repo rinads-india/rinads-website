@@ -16,6 +16,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "security:env-scope": "node scripts/ops/check-public-secret-scope.mjs",
     "ops:verify": "pnpm exec tsx scripts/ops/verify-production.ts",
     "ops:preflight": "pnpm exec tsx scripts/ops/preflight-config.ts",
     "test:e2e": "playwright test",
