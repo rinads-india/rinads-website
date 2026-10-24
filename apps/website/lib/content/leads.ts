@@ -43,7 +43,7 @@ export const PROJECT_OUTCOMES: OutcomeOption[] = [
   {
     id: "train",
     label: "Train my team",
-    description: "Academy programmes and enablement around real work.",
+    description: "RI LABS programmes and enablement around real work.",
   },
   {
     id: "other",

@@ -3,10 +3,10 @@ import Link from "next/link";
 import { PLATFORM_AVAILABILITY, type CapabilityKey } from "@/lib/availability";
 
 const SURFACES = [
-  { key: "business_os",        label: "Business OS",        href: "/business-os",        icon: "🏢", desc: "Run your company" },
-  { key: "rinpo_intelligence", label: "RINPO Intelligence", href: "/rinpo-intelligence", icon: "🧠", desc: "Understand & decide" },
+  { key: "business_os",        label: "Business",        href: "/platform/business",        icon: "🏢", desc: "Run your company" },
+  { key: "rinpo_intelligence", label: "RINADS INTELLIGENCE", href: "/platform/intelligence", icon: "🧠", desc: "Understand & decide" },
   { key: "ri_search",          label: "RI Search",          href: "/search",             icon: "🔍", desc: "Discover services" },
-  { key: "rinaspace",          label: "RINASPACE",          href: "/space",              icon: "🚀", desc: "Your workspace" },
+  { key: "rinaspace",          label: "Industry RINASPACES", href: "/rinaspace",          icon: "🚀", desc: "Industry environments" },
   { key: "rinads_world",       label: "RINADS WORLD",       href: "/world",              icon: "🌐", desc: "Immersive gateway" },
   { key: "ri_marketplace",     label: "RI Marketplace",     href: "/marketplace",        icon: "🛒", desc: "Order services" },
 ] satisfies ReadonlyArray<{

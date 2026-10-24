@@ -22,8 +22,8 @@ export type SolutionExperienceConfig = {
 export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperienceConfig> = {
   retail: {
     slug: "retail",
-    publicName: "Retail",
-    signature: "Retail Operations Workspace",
+    publicName: "Retail RINASPACE",
+    signature: "Retail RINASPACE",
     foundation: ["Business", "Commerce", "Growth", "Automation"],
     workflow: ["Catalogue", "Inventory", "Storefront", "Order", "Payment", "Customer", "Campaign"],
     demoLabel: "Retail configuration demo",
@@ -35,8 +35,8 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   nursery: {
     slug: "nursery",
-    publicName: "Landscape & Nursery",
-    signature: "Landscape & Nursery Operations",
+    publicName: "RI LANDSCAPE RINASPACE",
+    signature: "RI LANDSCAPE RINASPACE",
     foundation: ["Business", "Commerce", "Automation", "RINPO"],
     workflow: ["Inventory", "Quote", "Project", "Field work", "Order", "Delivery", "Customer follow-up"],
     demoLabel: "Landscape & Nursery demo",
@@ -48,21 +48,21 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   salon: {
     slug: "salon",
-    publicName: "R GLOW",
-    signature: "R GLOW · Salon Operating System",
-    foundation: ["Business", "Automation", "RINADS Intelligence", "RINADS Cloud"],
+    publicName: "RI SALON RINASPACE",
+    signature: "RI SALON RINASPACE",
+    foundation: ["Business", "Automation", "RINADS INTELLIGENCE", "RINADS Platform"],
     workflow: ["Booking", "Calendar", "Client", "Service", "POS", "Loyalty", "Campaign", "Review"],
-    demoLabel: "R GLOW product experience",
+    demoLabel: "RI SALON RINASPACE pilot experience",
     demoSummary:
-      "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
+      "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows. R GLOW is the current pilot implementation name.",
     rinpoPrompt:
-      "Show me how R GLOW handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
+      "Show me how RI SALON RINASPACE handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
     statusNote: "Pilot",
   },
   jewellery: {
     slug: "jewellery",
-    publicName: "Jewellery",
-    signature: "High-Trust Jewellery Experience",
+    publicName: "RI JEWELLERY RINASPACE",
+    signature: "RI JEWELLERY RINASPACE",
     foundation: ["Commerce", "Business", "Growth", "RINPO"],
     workflow: ["Collection", "Product", "Appointment", "Customer", "Order", "High-value fulfilment", "Follow-up"],
     demoLabel: "Jewellery configuration concept",
@@ -74,9 +74,9 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   logistics: {
     slug: "logistics",
-    publicName: "Logistics",
-    signature: "Logistics Operations Configuration",
-    foundation: ["Automation", "Business", "RINADS Intelligence", "RINPO"],
+    publicName: "Logistics RINASPACE",
+    signature: "Logistics RINASPACE",
+    foundation: ["Automation", "Business", "RINADS INTELLIGENCE", "RINPO"],
     workflow: ["Order", "Shipment", "Carrier", "Tracking", "Exception", "Delivery", "Return"],
     demoLabel: "Logistics configuration concept",
     demoSummary:
@@ -87,9 +87,9 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   healthcare: {
     slug: "healthcare",
-    publicName: "Healthcare",
-    signature: "Practice Operations Configuration",
-    foundation: ["Business", "Automation", "RINADS Intelligence", "RINADS Cloud"],
+    publicName: "Healthcare RINASPACE",
+    signature: "Healthcare RINASPACE",
+    foundation: ["Business", "Automation", "RINADS INTELLIGENCE", "RINADS Platform"],
     workflow: ["Schedule", "Visit flow", "Team task", "Follow-up", "Communication", "Operations review"],
     demoLabel: "Healthcare operations concept",
     demoSummary:
@@ -101,7 +101,7 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   automotive: {
     slug: "automotive",
     publicName: "Automotive",
-    signature: "Automotive Service Configuration",
+    signature: "Not in the November launch set",
     foundation: ["Business", "Commerce", "Automation", "RINPO"],
     workflow: ["Booking", "Vehicle", "Job", "Parts", "Invoice", "Follow-up"],
     demoLabel: "Automotive configuration concept",

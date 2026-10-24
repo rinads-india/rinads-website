@@ -30,14 +30,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "RINADS | AI Operating Platform for Growing Businesses",
+  title: "RINADS | Business Intelligence Infrastructure",
   description:
-    "Run customers, work, commerce, marketing and automation on one connected platform. RINPO helps teams understand what needs attention and move approved work forward.",
+    "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: siteBrand.name },
   openGraph: {
-    title: "RINADS | AI Operating Platform for Growing Businesses",
+    title: "RINADS | Business Intelligence Infrastructure",
     description:
-      "Connect customers, work, commerce, marketing and automation on one shared business foundation — with RINPO and human control where it matters.",
+      "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
     url: siteUrl,
     siteName: siteBrand.name,
     locale: "en_US",
@@ -45,9 +45,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "RINADS | AI Operating Platform for Growing Businesses",
+    title: "RINADS | Business Intelligence Infrastructure",
     description:
-      "Run customers, work, commerce, marketing and automation on one AI operating platform.",
+      "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
   },
 };
 

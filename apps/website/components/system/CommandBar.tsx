@@ -43,7 +43,7 @@ export function CommandBar({
           <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">RINPO</span>
         </div>
         <label className="sr-only" htmlFor="rinpo-command">
-          Talk to RINPO
+          Meet RINPO
         </label>
         <input
           id="rinpo-command"

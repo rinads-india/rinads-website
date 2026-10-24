@@ -111,7 +111,7 @@ export function buildSoftwareApplicationJsonLd(input?: {
     operatingSystem: "Web",
     description:
       input?.description ??
-      "AI operating platform for growing businesses — run customers, work, commerce, marketing and automation with RINPO.",
+      "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
     offers: {
       "@type": "Offer",
       url: input?.offerUrl ?? `${root}/contact?intent=demo`,

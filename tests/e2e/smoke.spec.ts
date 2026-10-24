@@ -9,7 +9,7 @@ test("homepage renders the marketing hero", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/RINADS/i);
   await expect(
-    page.getByRole("heading", { name: /run your business through intelligence/i }),
+    page.getByRole("heading", { name: /business intelligence infrastructure/i }),
   ).toBeVisible();
 });
 

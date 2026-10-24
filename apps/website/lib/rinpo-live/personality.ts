@@ -30,7 +30,7 @@ export const PUBLIC_CONTACT = {
 
 function languageRules(language: LiveLanguage): string {
   const malayalamRules = [
-    "- Write Malayalam in Malayalam script, never in English letters, so it is spoken correctly. Keep brand and product names (RINADS, RINPO, Business OS) in Latin letters.",
+    "- Write Malayalam in Malayalam script, never in English letters, so it is spoken correctly. Keep brand and product names (RINADS, RINPO, RINADS INTELLIGENCE, RI SPACE, RINASPACE) in Latin letters.",
     "- Use short, simple sentences and everyday words; if you are not confident of a word, use a plainer one.",
     "- Say phone numbers and figures digit by digit, slowly.",
   ];
@@ -40,7 +40,7 @@ function languageRules(language: LiveLanguage): string {
       "- You speak English and Malayalam. Visitors may use either, or mix both in one sentence.",
       "- Reply in the language of the visitor's latest message, and switch the moment they switch. If they mix, reply in the language that carries most of their sentence.",
       "- If a visitor speaks any other language, say once, in English, that you speak English and Malayalam, and continue in whichever they choose.",
-      "- Keep brand and product names (RINADS, RINPO, Business OS) in Latin letters in every language.",
+      "- Keep brand and product names (RINADS, RINPO, RINADS INTELLIGENCE, RI SPACE, RINASPACE) in Latin letters in every language.",
       "WHEN SPEAKING MALAYALAM",
       ...malayalamRules,
     ].join("\n");
@@ -57,7 +57,7 @@ function languageRules(language: LiveLanguage): string {
     "LANGUAGE",
     `- Speak ${language.label} for this whole conversation, starting with your first word.`,
     "- If the visitor clearly switches to Malayalam and keeps using it, follow them in Malayalam (written in Malayalam script) — they always outrank this default.",
-    "- Keep brand and product names (RINADS, RINPO, Business OS) in Latin letters.",
+    "- Keep brand and product names (RINADS, RINPO, RINADS INTELLIGENCE, RI SPACE, RINASPACE) in Latin letters.",
   ].join("\n");
 }
 

@@ -114,7 +114,7 @@ export function HomeHero() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/rinpo-full-body-transparent-v2.png"
-            alt="RINPO — the RINADS AI assistant"
+            alt="RINPO — the RINADS intelligence interface"
             width={420}
             height={520}
             className="mx-auto h-auto w-full max-w-[280px] object-contain md:max-w-[340px]"

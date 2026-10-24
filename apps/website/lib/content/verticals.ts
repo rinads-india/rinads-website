@@ -3,41 +3,41 @@ import type { VerticalContent } from "./types";
 export const VERTICALS: VerticalContent[] = [
   {
     slug: "retail",
-    name: "Retail",
-    type: "Retail OS",
-    headline: "Retail operations on the RINADS core.",
+    name: "Retail RINASPACE",
+    type: "Industry RINASPACE",
+    headline: "Retail operations on the RINADS platform.",
     summary:
-      "Catalogue, inventory, storefront, orders, and customer growth — configured for retail, not rebuilt as a separate platform.",
+      "Catalogue, inventory, storefront, orders, and customer growth — configured as a Retail RINASPACE, not rebuilt as a separate platform.",
     capabilities: ["Catalogue & inventory", "Storefront", "Orders & payments", "CRM & loyalty", "Marketing automation"],
     status: "coming",
   },
   {
     slug: "jewellery",
-    name: "Jewellery",
-    type: "Jewellery OS",
+    name: "RI JEWELLERY RINASPACE",
+    type: "Industry RINASPACE",
     headline: "Jewellery commerce with precision operations.",
     summary:
-      "High-trust retail workflows — products, collections, appointments, and brand storytelling on Business OS + Commerce OS.",
+      "High-trust retail workflows — products, collections, appointments, and brand storytelling. Coming soon on the shared RINADS platform.",
     capabilities: ["Collections", "Product studio", "Appointments", "CRM", "Brand content"],
     status: "coming",
   },
   {
     slug: "nursery",
-    name: "Landscape & Nursery",
-    type: "Landscape OS",
-    headline: "Landscape and nursery operations on the RINADS core.",
+    name: "RI LANDSCAPE RINASPACE",
+    type: "Industry RINASPACE",
+    headline: "Landscape and nursery operations on the RINADS platform.",
     summary:
-      "Nursery inventory, projects, and customer work configured on Business OS — currently shown as a demo / configuration path.",
+      "Nursery inventory, projects, and customer work configured as RI LANDSCAPE RINASPACE — currently shown as a preview / configuration path.",
     capabilities: ["Inventory", "Quotes & project work", "Customer CRM", "Field operations", "Orders & delivery", "Growth"],
     status: "coming",
   },
   {
     slug: "salon",
-    name: "R GLOW",
-    type: "Salon OS",
-    headline: "Run salon operations with R GLOW.",
+    name: "RI SALON RINASPACE",
+    type: "Industry RINASPACE",
+    headline: "Run salon operations in RI SALON RINASPACE.",
     summary:
-      "Appointments, clients, services, POS, loyalty, campaigns, communications, and reviews — a salon vertical on the shared RINADS core, with RINPO as the assisted interface.",
+      "Appointments, clients, services, POS, loyalty, campaigns, communications, and reviews — a salon Industry RINASPACE on the shared RINADS platform. R GLOW is the current pilot implementation name, not the public brand.",
     capabilities: [
       "Appointments & calendar",
       "Clients & notes",
@@ -53,32 +53,32 @@ export const VERTICALS: VerticalContent[] = [
   },
   {
     slug: "healthcare",
-    name: "Healthcare",
-    type: "Clinic OS",
+    name: "Healthcare RINASPACE",
+    type: "Industry RINASPACE",
     headline: "Practice operations with intelligent flow.",
     summary:
-      "Patient scheduling, follow-ups, and practice work — configured carefully on the shared platform core.",
+      "Patient scheduling, follow-ups, and practice work — a planned Industry RINASPACE on the shared platform core. Not a clinical decision system.",
     capabilities: ["Scheduling", "Patient flow", "Follow-ups", "Team work", "Analytics"],
     status: "coming",
   },
   {
     slug: "logistics",
-    name: "Logistics",
-    type: "Logistics OS",
+    name: "Logistics RINASPACE",
+    type: "Industry RINASPACE",
     headline: "Provider-neutral logistics control.",
     summary:
-      "Orders, shipments, couriers, 3PL, tracking, and exceptions — one control tower architecture.",
+      "Orders, shipments, couriers, 3PL, tracking, and exceptions — a coming-soon Industry RINASPACE, not a live logistics product.",
     capabilities: ["Control tower", "Courier & 3PL", "Tracking", "Returns", "Exceptions"],
     status: "coming",
   },
   {
     slug: "automotive",
     name: "Automotive",
-    type: "Automotive OS",
-    headline: "Service operations on the shared RINADS core.",
+    type: "Industry RINASPACE",
+    headline: "Not in the November launch set.",
     summary:
-      "Customers, service jobs, parts, and follow-ups — a planned industry configuration, not a separate technology stack.",
-    capabilities: ["Service scheduling", "Customers & vehicles", "Parts & inventory", "Jobs & invoices", "Follow-ups"],
+      "This industry path is not part of the public launch story. The page redirects to Industry RINASPACES.",
+    capabilities: ["Service scheduling", "Customers", "Parts & inventory", "Jobs & invoices", "Follow-ups"],
     status: "coming",
   },
 ];
@@ -87,7 +87,7 @@ export const VERTICAL_EXAMPLES = [
   "Retail",
   "Jewellery",
   "Landscape & Nursery",
-  "R GLOW",
+  "Salon",
   "Healthcare",
   "Restaurant",
   "Real Estate",
@@ -95,6 +95,9 @@ export const VERTICAL_EXAMPLES = [
   "Logistics",
   "Custom",
 ] as const;
+
+/** Public listings omit automotive — not part of the launch story. */
+export const PUBLIC_VERTICALS = VERTICALS.filter((vertical) => vertical.slug !== "automotive");
 
 export function getVertical(slug: string): VerticalContent | null {
   return VERTICALS.find((v) => v.slug === slug) ?? null;

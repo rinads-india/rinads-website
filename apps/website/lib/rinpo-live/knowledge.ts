@@ -104,7 +104,7 @@ function productsAndAvailability(): KnowledgeDocument {
     "## RINADS Intelligence",
     bullets(INTELLIGENCE_CAPABILITIES.map((c) => `${c.name}: ${c.description}`)),
     "",
-    "## RINADS Cloud",
+    "## RINADS Platform",
     bullets(CLOUD_CAPABILITIES.map((c) => `${c.name}: ${c.description}`)),
   ];
   return { key: "products", name: "RINADS — products and availability", content: lines.join("\n") };
@@ -124,7 +124,7 @@ function services(): KnowledgeDocument {
   const lines = [
     "# RINADS services",
     "",
-    "RINADS Services help businesses Build, Grow, Automate, Create, Transform and Train on top of the AI Operating Platform. Page: /services",
+    "RINADS Services help businesses Build, Grow, Automate, Create, Transform and Train on the Business Intelligence Platform. Page: /services",
     "",
     ...lineBlocks.flatMap((block) => [block, ""]),
     "## Implementation service groups",

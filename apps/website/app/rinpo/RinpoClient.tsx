@@ -11,8 +11,8 @@ import Link from "next/link";
 
 const OPERATING_SEQUENCE = [
   {
-    step: "Ask",
-    description: "Start with a question, outcome, or business problem.",
+    step: "Observe",
+    description: "Start with a question, outcome, or business signal.",
   },
   {
     step: "Understand",
@@ -23,12 +23,12 @@ const OPERATING_SEQUENCE = [
     description: "RINPO explains what matters and proposes the next action.",
   },
   {
-    step: "Approve",
+    step: "Authorize",
     description: "Meaningful actions remain behind permissions and human approval.",
   },
   {
     step: "Act",
-    description: "Approved work is handed to the relevant RINADS operating system.",
+    description: "Approved work is handed to RINPO RUNTIME and the relevant RINADS surface.",
   },
   {
     step: "Audit",
@@ -41,12 +41,12 @@ export function RinpoClient() {
     <MarketingPageShell>
       <PageHero
         eyebrow="RINPO"
-        headline="The AI interface for RINADS."
-        summary="Talk to your business. Ask questions. Understand what matters. Review recommendations. Approve actions. Get work done through the RINADS platform."
-        primaryHref="/contact?intent=demo"
+        headline="Your business intelligence, always available."
+        summary="Observe. Understand. Recommend. Authorize. Act. Audit. RINPO is the interface. RINADS INTELLIGENCE is the brain. RINPO RUNTIME executes."
+        primaryHref="/company/contact?intent=demo"
         primaryLabel="Book a demo"
-        secondaryHref="/platform/rinads-intelligence"
-        secondaryLabel="RINADS Intelligence"
+        secondaryHref="/platform/intelligence"
+        secondaryLabel="See how it works"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -121,8 +121,8 @@ export function RinpoClient() {
       </section>
 
       <CTASection
-        headline="Talk to RINPO."
-        summary="RINPO is the interface. RINADS Intelligence is the brain. RINADS is the operating platform."
+        headline="Meet RINPO."
+        summary="RINPO is the interface. RINADS INTELLIGENCE is the brain. RINPO RUNTIME executes. RINADS is the Business Intelligence Infrastructure."
       />
     </MarketingPageShell>
   );

@@ -6,7 +6,7 @@ import { metadataFromRegistry } from "@/lib/route-registry";
 const PATH = "/platform/cloud";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "RINADS Cloud | RINADS" };
+  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "RINADS Platform | RINADS" };
 }
 
 export default function CloudPillarPage() {
@@ -17,7 +17,7 @@ export default function CloudPillarPage() {
         breadcrumbs={[
           { name: "Home", path: "/" },
           { name: "Platform", path: "/platform" },
-          { name: "RINADS Cloud", path: PATH },
+          { name: "RINADS Platform", path: PATH },
         ]}
       />
       <CloudRouteClient />

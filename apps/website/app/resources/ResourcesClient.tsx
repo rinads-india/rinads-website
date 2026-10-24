@@ -13,8 +13,8 @@ const BASE_SECTIONS = [
   {
     title: "Guides",
     items: [
-      { label: "CRM + projects + invoicing", href: "/platform/business-os", description: "Run customers, work, and money on one foundation." },
-      { label: "Lead follow-up automation", href: "/platform/automation-os", description: "Governed workflows for follow-up with approvals." },
+      { label: "CRM + projects + invoicing", href: "/platform/business", description: "Run customers, work, and money on one foundation." },
+      { label: "Lead follow-up automation", href: "/platform/automation", description: "Governed workflows for follow-up with approvals." },
       { label: "WhatsApp business workflows", href: "/integrations/whatsapp", description: "Messaging integrations with explicit availability." },
       { label: "Replacing spreadsheets", href: "/docs", description: "Move operational work onto shared business context." },
     ],
@@ -43,14 +43,14 @@ const BASE_SECTIONS = [
     title: "Industry playbooks",
     items: [
       { label: "Retail operations", href: "/solutions/retail", description: "Catalogue, inventory, storefront, and orders." },
-      { label: "Salon operations", href: "/solutions/salon", description: "Appointments, clients, loyalty, and campaigns." },
+      { label: "RI SALON RINASPACE", href: "/solutions/salon", description: "Appointments, clients, loyalty, and campaigns." },
       { label: "Landscape / nursery", href: "/solutions/nursery", description: "Inventory, projects, and field operations." },
     ],
   },
   {
     title: "Platform & trust",
     items: [
-      { label: "Platform architecture", href: "/platform", description: "How operating systems share one business foundation." },
+      { label: "Platform architecture", href: "/platform", description: "How RINADS INTELLIGENCE, RINPO RUNTIME and Industry RINASPACES share one foundation." },
       { label: "Security & governance", href: "/security", description: "Permissions, approvals, and auditability." },
       { label: "Changelog", href: "/changelog", description: "Product updates as they are published." },
     ],

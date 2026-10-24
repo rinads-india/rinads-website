@@ -63,7 +63,7 @@ export default function WorldPage() {
 
       {/* CTA */}
       <section className="border-t border-white/10 py-16 text-center px-4">
-        <p className="text-white/40 text-sm mb-4">Built on RINADS Cloud · Powered by RINPO Intelligence</p>
+        <p className="text-white/40 text-sm mb-4">Built on RINADS Platform · Powered by RINADS INTELLIGENCE</p>
         <Link href="/search" className="text-white/60 hover:text-white text-sm underline underline-offset-4">
           Discover services →
         </Link>

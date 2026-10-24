@@ -5,7 +5,7 @@ import { ArrowRight, Cloud, Database, Plug, Globe } from "lucide-react";
 import { ProductPageShell } from "@/components/product/ProductPageShell";
 
 const PILLARS = [
-  { icon: Cloud, title: "Platform", description: "The foundation that powers Business OS and your workspace." },
+  { icon: Cloud, title: "Platform", description: "The foundation that powers the business intelligence platform and your workspace." },
   { icon: Database, title: "Data", description: "Connected business data across customers, work, finance, and growth." },
   { icon: Plug, title: "Integrations", description: "Webhooks, email, WhatsApp, and third-party tools in one ecosystem." },
   { icon: Globe, title: "Ecosystem", description: "Services, marketplace, and vertical solutions working together." },
@@ -17,13 +17,13 @@ export function CloudClient() {
       <section className="bg-rinads-primary-darkest px-6 pb-24 pt-32 text-white md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-rinads-primary">
-            RINADS Cloud
+            RINADS Platform
           </p>
           <h1 className="max-w-3xl text-4xl font-black leading-tight md:text-6xl">
             The platform behind RINADS.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/70">
-            RINADS Cloud connects your business applications, data, integrations and services into
+            RINADS Platform connects your business applications, data, integrations and services into
             one ecosystem — without asking you to understand the infrastructure.
           </p>
         </div>
@@ -42,10 +42,10 @@ export function CloudClient() {
           </div>
           <div className="mt-16 flex flex-wrap gap-4">
             <Link
-              href="/business-os"
+              href="/platform"
               className="inline-flex items-center gap-2 rounded-full bg-rinads-primary px-6 py-3 text-sm font-semibold text-white"
             >
-              Explore Business OS
+              Explore RINADS
               <ArrowRight size={16} aria-hidden />
             </Link>
             <Link

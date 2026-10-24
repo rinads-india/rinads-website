@@ -70,7 +70,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     slug: "rinpo",
     name: "RINPO",
     href: "/rinpo",
-    description: "The persistent AI Business Intelligence Character.",
+    description: "Business intelligence character and user-facing intelligence interface.",
     status: "pilot",
     commercialPriority: "foundation",
     availabilityGroup: "now",
@@ -78,7 +78,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
   {
     id: "intelligence",
     slug: "intelligence",
-    name: "RINADS Intelligence",
+    name: "RINADS INTELLIGENCE",
     href: "/platform/intelligence",
     description: "Understand, reason, recommend, and orchestrate — providers remain replaceable.",
     status: "pilot",
@@ -88,7 +88,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
   {
     id: "rinpo-runtime",
     slug: "rinpo-runtime",
-    name: "RINPO Runtime",
+    name: "RINPO RUNTIME",
     href: "/platform/rinpo-runtime",
     description: "Governed execution: agents, tools, workflows, permissions, approvals, audit.",
     status: "pilot",
@@ -98,7 +98,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
   {
     id: "cloud",
     slug: "cloud",
-    name: "RINADS Cloud",
+    name: "RINADS Platform",
     href: "/platform/cloud",
     description: "Identity, tenant data, storage, APIs, events and infrastructure.",
     status: "pilot",

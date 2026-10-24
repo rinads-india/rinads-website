@@ -43,7 +43,7 @@ export const EVIDENCE_EMPTY_STATES: Record<CustomerEvidenceClass, EvidenceEmptyS
     body:
       "Published narratives appear here only after the customer approves wording, metrics, and attribution. We do not invent logos, ROI figures, or testimonials.",
     ctaHref: "/contact?intent=sales",
-    ctaLabel: "Talk to sales",
+    ctaLabel: "Book a demo",
   },
   deployments: {
     title: "No verified deployment evidence yet",
