@@ -22,18 +22,18 @@ export const POSITIONING = {
     "One platform for customers, work, commerce, growth and automation—with RINPO helping your team understand what matters and move approved work forward.",
   closing: "Clarity → experience → proof → conversion → governed intelligence.",
   equation: "RUN · SELL · GROW · AUTOMATE",
-  category: "AI Operating Platform for Business",
+  category: "Business Intelligence Platform",
 } as const;
 
 /**
  * Canonical public architecture relationship.
- * RINPO communicates → Intelligence understands → Runtime executes → Operating Core operates → Cloud foundations.
+ * RINPO communicates → RINADS Intelligence understands → RINPO Runtime executes → RI ID + RI SPACE carry identity and persistent business context.
  */
 export const ARCHITECTURE_LAYERS = [
   {
     id: "rinpo",
     label: "RINPO",
-    description: "Persistent AI Business Intelligence Character — the primary human interface.",
+    description: "Persistent Business Intelligence Character — the primary human interface.",
   },
   {
     id: "intelligence",
@@ -43,17 +43,17 @@ export const ARCHITECTURE_LAYERS = [
   {
     id: "runtime",
     label: "RINPO Runtime",
-    description: "Governed execution: agents, tools, workflows, triggers, permissions, approvals, audit.",
+    description: "Governed execution: agents, tools, workflows, triggers, permissions, approvals, and audit.",
   },
   {
     id: "core",
-    label: "RINADS Operating Core",
-    description: "Business systems for customers, work, commerce, growth, and automation.",
+    label: "RINADS Platform Core",
+    description: "Connected business capabilities for customers, work, commerce, growth, automation, and industry workflows.",
   },
   {
     id: "cloud",
-    label: "RINADS Cloud",
-    description: "Identity, tenant data, storage, APIs, events, integrations, and infrastructure.",
+    label: "RI ID + RI SPACE",
+    description: "One identity and one persistent workspace carrying organisation context, permissions, data, and connected business state.",
   },
 ] as const;
 
@@ -61,7 +61,7 @@ export const PRODUCT_HIERARCHY = {
   platform: {
     label: "Platform",
     href: "/platform",
-    description: "The AI operating platform for growing businesses.",
+    description: "The business intelligence platform for software-defined businesses.",
   },
   business: {
     label: "Business",
@@ -72,12 +72,12 @@ export const PRODUCT_HIERARCHY = {
   rinpo: {
     label: "RINPO",
     href: "/rinpo",
-    description: "The persistent AI interface for business.",
+    description: "The persistent Business Intelligence Character for RINADS.",
   },
   intelligence: {
     label: "RINADS Intelligence",
     href: "/platform/intelligence",
-    description: "Context, recommendations, and governed AI behaviour.",
+    description: "Context, recommendations, orchestration, and governed intelligence.",
   },
   runtime: {
     label: "RINPO Runtime",
@@ -85,14 +85,14 @@ export const PRODUCT_HIERARCHY = {
     description: "The governed execution layer behind RINPO.",
   },
   cloud: {
-    label: "RINADS Cloud",
+    label: "RI ID + RI SPACE",
     href: "/platform/cloud",
-    description: "The connected platform behind RINADS.",
+    description: "Identity and the persistent business workspace behind RINADS.",
   },
   academy: {
-    label: "Academy",
+    label: "RI LABS",
     href: "/resources/academy",
-    description: "Learn to operate with RINADS.",
+    description: "Learn, build, test, and gain operating experience with RINADS.",
   },
   services: {
     label: "RINADS Implementation Services",
@@ -102,7 +102,7 @@ export const PRODUCT_HIERARCHY = {
 } as const;
 
 /** @deprecated Prefer PRODUCT_HIERARCHY.business */
-export const PLATFORM_OS_LEGACY_NOTE = "OS modules redirect to platform pillars.";
+export const PLATFORM_OS_LEGACY_NOTE = "Legacy OS routes remain for backward compatibility while public taxonomy migrates to the RINADS platform architecture.";
 
 export const PLATFORM_NAV_ITEMS: NavLink[] = [
   {
@@ -154,9 +154,9 @@ export const PLATFORM_NAV_ITEMS: NavLink[] = [
     status: "Pilot",
   },
   {
-    label: "RINADS Cloud",
+    label: "RI ID + RI SPACE",
     href: "/platform/cloud",
-    description: "Identity, data, APIs, events, and infrastructure.",
+    description: "Identity, persistent workspace, data, APIs, events, and integrations.",
     section: "Core",
     status: "Pilot",
   },
@@ -179,7 +179,7 @@ export const NAV_RINPO: NavGroup = {
   label: "RINPO",
   href: "/rinpo",
   items: [
-    { label: "Overview", href: "/rinpo", description: "Meet the AI Business Intelligence Character." },
+    { label: "Overview", href: "/rinpo", description: "Meet the Business Intelligence Character." },
     { label: "Phone", href: "/rinpo/phone", description: "The RINPO Phone experience." },
     { label: "Voice", href: "/rinpo/voice", description: "Voice interface (lazy-loaded)." },
     { label: "Live", href: "/rinpo/live", description: "Talk to RINPO on live video, in your language." },
@@ -194,9 +194,9 @@ export const NAV_SOLUTIONS: NavGroup = {
   variant: "mega",
   items: [
     {
-      label: "By Industry",
+      label: "Industry RINASPACES",
       href: "/solutions",
-      description: "RINADS Editions for specific industries.",
+      description: "Industry configurations built on the shared RINADS platform core.",
       section: "Explore",
     },
     {
@@ -206,45 +206,45 @@ export const NAV_SOLUTIONS: NavGroup = {
       section: "Explore",
     },
     {
-      label: "Salons — R GLOW",
+      label: "RI SALON RINASPACE",
       href: "/solutions/salon",
-      description: "Appointments, clients, services, loyalty, and campaigns.",
-      section: "Editions",
+      description: "Appointments, clients, services, loyalty, campaigns, and salon operations.",
+      section: "Industry RINASPACE",
       status: "Pilot",
     },
     {
-      label: "Jewellery",
+      label: "RI JEWELLERY RINASPACE",
       href: "/solutions/jewellery",
-      description: "Collections, inventory, orders, and campaigns.",
-      section: "Editions",
+      description: "Collections, inventory, orders, customer journeys, and campaigns.",
+      section: "Industry RINASPACE",
       status: "Roadmap",
     },
     {
-      label: "Automotive",
+      label: "RI AUTOMOTIVE RINASPACE",
       href: "/solutions/automotive",
-      description: "Service jobs, customers, parts, and follow-ups.",
-      section: "Editions",
+      description: "Customer journeys, enquiries, service operations, inventory, and follow-ups.",
+      section: "Industry RINASPACE",
       status: "Roadmap",
     },
     {
-      label: "Landscape & Nursery",
+      label: "RI LANDSCAPE RINASPACE",
       href: "/solutions/landscape",
-      description: "Inventory, project work, field operations, and customers.",
-      section: "Editions",
+      description: "Inventory, project work, field operations, logistics, and customers.",
+      section: "Industry RINASPACE",
       status: "Preview",
     },
     {
       label: "Retail",
       href: "/solutions/retail",
       description: "Catalogue, inventory, storefront, and orders.",
-      section: "Editions",
+      section: "Industry RINASPACE",
       status: "Preview",
     },
     {
-      label: "Logistics",
+      label: "RI LOGISTICS",
       href: "/solutions/logistics",
-      description: "Shipment operations and exception control.",
-      section: "Editions",
+      description: "Shipment operations, delivery orchestration, and exception control.",
+      section: "Industry RINASPACE",
       status: "Roadmap",
     },
   ],
@@ -257,7 +257,7 @@ export const NAV_CUSTOMERS: NavGroup = {
     { label: "Customer Stories", href: "/customers#stories", description: "Verified customer narratives only." },
     { label: "Deployments", href: "/customers#deployments", description: "Verified deployment evidence." },
     { label: "Product Demonstrations", href: "/customers#demonstrations", description: "Demo and sample experiences." },
-    { label: "RINADS Labs", href: "/customers#labs", description: "Internal labs and experiments." },
+    { label: "RI LABS", href: "/customers#labs", description: "Internal labs, experiments, and learning experiences." },
   ],
 };
 
@@ -286,10 +286,10 @@ export const NAV_SERVICES: NavGroup = {
 };
 
 export const NAV_ACADEMY: NavGroup = {
-  label: "Academy",
+  label: "RI LABS",
   href: "/resources/academy",
   items: [
-    { label: "Academy overview", href: "/resources/academy" },
+    { label: "RI LABS overview", href: "/resources/academy" },
     { label: "Programs", href: "/academy/programs" },
   ],
 };
@@ -298,7 +298,7 @@ export const NAV_RESOURCES: NavGroup = {
   label: "Resources",
   href: "/resources",
   items: [
-    { label: "Academy", href: "/resources/academy", description: "Learn to operate with RINADS." },
+    { label: "RI LABS", href: "/resources/academy", description: "Learn, build, test, and gain operating experience with RINADS." },
     { label: "Docs", href: "/resources/docs", description: "Platform documentation." },
     { label: "Developers", href: "/resources/developers", description: "APIs, auth, webhooks, and events." },
     { label: "Guides", href: "/resources/guides", description: "Practical operating guides." },
@@ -342,16 +342,16 @@ export const FOOTER_PLATFORM: NavLink[] = [
   { label: "Commerce", href: "/platform/commerce" },
   { label: "RINADS Intelligence", href: "/platform/intelligence" },
   { label: "RINPO Runtime", href: "/platform/rinpo-runtime" },
-  { label: "RINADS Cloud", href: "/platform/cloud" },
+  { label: "RI ID + RI SPACE", href: "/platform/cloud" },
   { label: "RINPO", href: "/rinpo" },
   { label: "Pricing", href: "/pricing" },
 ];
 
 export const FOOTER_SOLUTIONS: NavLink[] = [
-  { label: "Salon / R GLOW", href: "/solutions/salon" },
+  { label: "RI SALON RINASPACE", href: "/solutions/salon" },
   { label: "Retail", href: "/solutions/retail" },
-  { label: "Landscape & Nursery", href: "/solutions/landscape" },
-  { label: "All editions", href: "/solutions" },
+  { label: "RI LANDSCAPE RINASPACE", href: "/solutions/landscape" },
+  { label: "All Industry RINASPACES", href: "/solutions" },
 ];
 
 export const FOOTER_COMPANY: NavLink[] = [
@@ -371,7 +371,7 @@ export const FOOTER_TRUST: NavLink[] = [
 
 export const FOOTER_RESOURCES: NavLink[] = [
   { label: "Resources Hub", href: "/resources" },
-  { label: "Academy", href: "/resources/academy" },
+  { label: "RI LABS", href: "/resources/academy" },
   { label: "Business Readiness", href: "/business-readiness" },
   { label: "Documentation", href: "/resources/docs" },
   { label: "Services", href: "/services" },
@@ -402,7 +402,7 @@ export const HERO_COMMANDS = [
   "Show overdue payments.",
   "What should my team focus on?",
   "Help me automate a workflow.",
-  "Which RINADS edition fits my business?",
+  "Which Industry RINASPACE fits my business?",
 ] as const;
 
 /** Re-export navbar-shaped CTAs from the single taxonomy in lib/ctas.ts */
