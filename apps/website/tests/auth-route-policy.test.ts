@@ -73,11 +73,13 @@ describe("website protected-route policy", () => {
   });
 
   it("never creates an external login next target", () => {
-    const redirect = buildWebsiteLoginRedirect("//evil.example");
-    const params = new URLSearchParams(redirect.split("?")[1]);
-    const next = params.get("next");
-    assert.ok(next?.startsWith("/"));
-    assert.equal(next?.startsWith("//"), false);
-    assert.equal(next?.includes("evil.example"), false);
+    for (const malicious of ["//evil.example", "/\\evil.example", "\\\\evil.example"]) {
+      const redirect = buildWebsiteLoginRedirect(malicious);
+      const params = new URLSearchParams(redirect.split("?")[1]);
+      const next = params.get("next");
+      assert.ok(next?.startsWith("/"), malicious);
+      assert.equal(next?.startsWith("//"), false, malicious);
+      assert.equal(next?.includes("evil.example"), false, malicious);
+    }
   });
 });
