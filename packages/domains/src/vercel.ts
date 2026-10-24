@@ -19,13 +19,16 @@ export type VercelDomainResult =
   | { ok: true; domainId: string }
   | { ok: false; error: string };
 
-/** Server-only Vercel Domains API client. Returns mock id when credentials absent. */
+/** Server-only Vercel Domains API client. Production paths fail closed when unconfigured. */
 export async function addDomainToVercelProject(
   hostname: string,
   config?: VercelDomainConfig | null
 ): Promise<VercelDomainResult> {
   if (!config) {
-    return { ok: true, domainId: `mock_${hostname.replace(/\./g, "_")}` };
+    return {
+      ok: false,
+      error: "Vercel domain integration is not configured. Set VERCEL_TOKEN and VERCEL_STOREFRONT_PROJECT_ID.",
+    };
   }
 
   const url = config.teamId
@@ -56,7 +59,12 @@ export async function removeDomainFromVercelProject(
   hostname: string,
   config?: VercelDomainConfig | null
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!config) return { ok: true };
+  if (!config) {
+    return {
+      ok: false,
+      error: "Vercel domain integration is not configured. Set VERCEL_TOKEN and VERCEL_STOREFRONT_PROJECT_ID.",
+    };
+  }
   const url = config.teamId
     ? `https://api.vercel.com/v9/projects/${config.projectId}/domains/${hostname}?teamId=${config.teamId}`
     : `https://api.vercel.com/v9/projects/${config.projectId}/domains/${hostname}`;
