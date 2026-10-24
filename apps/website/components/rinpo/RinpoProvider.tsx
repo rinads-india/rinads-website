@@ -25,7 +25,7 @@ import {
 } from "@/lib/rinpo-experience";
 import { trackMarketing } from "@/lib/analytics";
 
-/** Keep the global launcher compact and stable across public pages. */
+/** Replaces the legacy RinpoPresence scroll-emergence with a stable global launcher. */
 const RinpoCornerLauncher = dynamic(
   () => import("./RinpoCornerLauncher").then((m) => m.RinpoCornerLauncher),
   { ssr: false },
