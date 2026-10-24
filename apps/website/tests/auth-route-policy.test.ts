@@ -7,7 +7,7 @@ import {
 } from "../lib/auth-route-policy";
 
 describe("website protected-route policy", () => {
-  it("protects Business OS and onboarding route trees", () => {
+  it("protects Business OS, onboarding and RINASPACE route trees", () => {
     for (const pathname of [
       "/os",
       "/os/",
@@ -15,6 +15,8 @@ describe("website protected-route policy", () => {
       "/onboarding",
       "/onboarding/create-organization",
       "/onboarding/provisioning",
+      "/space",
+      "/space/",
     ]) {
       assert.equal(isWebsiteProtectedPath(pathname), true, pathname);
     }
@@ -28,6 +30,7 @@ describe("website protected-route policy", () => {
       "/business-os",
       "/oscar",
       "/onboard",
+      "/spaces",
       "/services",
     ]) {
       assert.equal(isWebsiteProtectedPath(pathname), false, pathname);
