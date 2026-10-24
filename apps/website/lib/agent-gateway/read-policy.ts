@@ -47,7 +47,10 @@ export async function authorizeRinadsAgentRead(input: {
     };
   }
 
-  const client = await createRinadsAgentDataClient(input.request);
+  const client = await createRinadsAgentDataClient(
+    input.request,
+    input.principal
+  );
   if (!client) {
     return {
       ok: false,

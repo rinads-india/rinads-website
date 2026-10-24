@@ -14,6 +14,14 @@ const dataClient = readFileSync(
   new URL("../lib/agent-gateway/data-client.ts", import.meta.url),
   "utf8"
 );
+const catalogRead = readFileSync(
+  new URL("../lib/agent-gateway/catalog-read.ts", import.meta.url),
+  "utf8"
+);
+const orderRead = readFileSync(
+  new URL("../lib/agent-gateway/order-read.ts", import.meta.url),
+  "utf8"
+);
 
 describe("external-agent delegation consumption", () => {
   it("recognizes and cryptographically verifies only the RINADS delegation bearer format", () => {
@@ -40,6 +48,7 @@ describe("external-agent delegation consumption", () => {
     assert.match(principal, /candidate\.organizationStatus === "active"/);
     assert.match(principal, /DELEGATION_SCOPE_PERMISSION/);
     assert.match(principal, /permissionRevoked/);
+    assert.match(principal, /delegationExpiresAt: verified\.claims\.exp/);
   });
 
   it("uses service role only for authorization metadata, never as the business-data client", () => {
@@ -50,21 +59,40 @@ describe("external-agent delegation consumption", () => {
   });
 
   it("enforces delegated scope before any enabled MCP read executor can run", () => {
-    assert.match(mcpRoute, /delegatedScopes\.includes\(input\.capabilityKey\)/);
+    assert.match(mcpRoute, /delegationAllowsCapability/);
+    assert.match(mcpRoute, /delegatedScopes\?\.includes\(capabilityKey\)/);
     assert.match(mcpRoute, /DELEGATION_SCOPE_DENIED/);
-    assert.match(mcpRoute, /DELEGATION_RLS_TOKEN_NOT_ENABLED/);
-    assert.match(mcpRoute, /resolution\.principal\.authMethod === "delegation"/);
-  });
 
-  it("keeps delegated business-data reads fail-closed until an RLS-valid token path exists", () => {
-    assert.match(mcpRoute, /RINADS will not substitute a service-role data path/);
-    const delegationGate = mcpRoute.indexOf(
-      'resolution.principal.authMethod === "delegation"'
+    const catalogScopeGate = mcpRoute.indexOf(
+      'delegationAllowsCapability(resolution, "commerce.catalog.read")'
     );
     const catalogExecutor = mcpRoute.indexOf("executeRinadsCatalogRead({");
+    const orderScopeGate = mcpRoute.indexOf(
+      'delegationAllowsCapability(resolution, "commerce.order.read")'
+    );
     const orderExecutor = mcpRoute.indexOf("executeRinadsOrderRead({");
-    assert.ok(delegationGate >= 0);
-    assert.ok(catalogExecutor > delegationGate);
-    assert.ok(orderExecutor > delegationGate);
+
+    assert.ok(catalogScopeGate >= 0 && catalogExecutor > catalogScopeGate);
+    assert.ok(orderScopeGate >= 0 && orderExecutor > orderScopeGate);
+  });
+
+  it("uses an internal short-lived delegated JWT through the ordinary RLS data client", () => {
+    assert.match(dataClient, /mintRinadsDelegatedRlsJwt/);
+    assert.match(dataClient, /RINADS_AGENT_RLS_JWT_PRIVATE_JWK/);
+    assert.match(dataClient, /RINADS_AGENT_RLS_JWT_KID/);
+    assert.match(dataClient, /accessToken: async \(\) => token/);
+    assert.match(dataClient, /principal\.authMethod === "delegation"/);
+    assert.doesNotMatch(mcpRoute, /DELEGATION_RLS_TOKEN_NOT_ENABLED/);
+  });
+
+  it("keeps both enabled commerce reads explicitly bound to the resolved organization", () => {
+    assert.match(
+      catalogRead,
+      /\.eq\("organization_id", input\.principal\.organizationId\)/
+    );
+    assert.match(
+      orderRead,
+      /\.eq\("organization_id", input\.principal\.organizationId\)/
+    );
   });
 });
