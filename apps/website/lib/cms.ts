@@ -5,6 +5,9 @@ import {
   findRedirectForPath,
   getAboutFromPage,
   getBlogPostBySlug,
+  getDefaultAbout,
+  getDefaultSeoForPath,
+  getDefaultServiceCards,
   getPageBySlug,
   getSeoByPath,
   getServiceCardsFromPage,
@@ -22,9 +25,37 @@ import { buildOrganizationJsonLd, buildWebPageJsonLd } from "@/lib/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
 
+const LEGACY_HOME_SERVICE_TITLES = [
+  "Digital Marketing",
+  "Custom Software Development",
+  "AI Automation",
+];
+
+function isLegacyHomeServices(cards: ServiceCardContent[]): boolean {
+  return (
+    cards.length === LEGACY_HOME_SERVICE_TITLES.length &&
+    LEGACY_HOME_SERVICE_TITLES.every((title, index) => cards[index]?.title === title)
+  );
+}
+
+function isLegacyHomeAbout(about: ReturnType<typeof getAboutFromPage>): boolean {
+  return typeof about.body === "string" && about.body.includes("software and growth company");
+}
+
+function isLegacyRootSeo(seo: SiteSeo | null): boolean {
+  return Boolean(
+    seo &&
+      seo.path === "/" &&
+      (seo.title === "RINADS | Business Simplified" ||
+        seo.description.includes("Software, digital marketing, and AI-powered automation"))
+  );
+}
+
 async function loadSeo(path: string): Promise<SiteSeo | null> {
   const client = await getWebsiteCmsClient();
-  return getSeoByPath(client, path);
+  const seo = await getSeoByPath(client, path);
+  if (path === "/" && isLegacyRootSeo(seo)) return getDefaultSeoForPath("/");
+  return seo;
 }
 
 async function loadHomePage() {
@@ -61,9 +92,11 @@ export const getCachedSeoByPath = unstable_cache(
 export const getCachedHomeContent = unstable_cache(
   async () => {
     const page = await loadHomePage();
+    const serviceCards = getServiceCardsFromPage(page);
+    const about = getAboutFromPage(page);
     return {
-      serviceCards: getServiceCardsFromPage(page),
-      about: getAboutFromPage(page),
+      serviceCards: isLegacyHomeServices(serviceCards) ? getDefaultServiceCards() : serviceCards,
+      about: isLegacyHomeAbout(about) ? getDefaultAbout() : about,
     };
   },
   ["cms-home"],
