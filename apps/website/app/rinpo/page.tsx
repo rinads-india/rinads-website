@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { CommercialJsonLd } from "@/components/system/CommercialJsonLd";
-import { getPageMetadata } from "@/lib/cms";
 import { RinpoClient } from "./RinpoClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/rinpo");
+  return {
+    title: "RINPO | Business Intelligence Character by RINADS",
+    description:
+      "Meet RINPO, the persistent Business Intelligence Character for RINADS, with governed execution through RINPO Runtime where supported by tools, permissions, approvals, and audit controls.",
+  };
 }
 
 export default function RinpoPage() {
