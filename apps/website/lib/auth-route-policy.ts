@@ -1,6 +1,6 @@
 import { sanitizeRelativeNext } from "@rinads/auth";
 
-export const WEBSITE_PROTECTED_PREFIXES = ["/os", "/onboarding"] as const;
+export const WEBSITE_PROTECTED_PREFIXES = ["/os", "/onboarding", "/space"] as const;
 
 function normalizePathname(pathname: string): string {
   const raw = pathname.split("?")[0]?.trim() || "/";
