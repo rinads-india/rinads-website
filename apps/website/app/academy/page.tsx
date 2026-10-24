@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { getPageMetadata } from "@/lib/cms";
 import { AcademyClient } from "./AcademyClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/academy");
+  return {
+    title: "RI LABS | RINADS",
+    description:
+      "Learn, practice, build, ship, and prove capability through RI LABS with RINPO Tutor and practical project work.",
+  };
 }
 
 export default function AcademyPage() {
