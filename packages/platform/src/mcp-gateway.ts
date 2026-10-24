@@ -8,9 +8,9 @@ export const RINADS_MCP_MODERN_PROTOCOL_VERSION = "2026-07-28" as const;
 export const RINADS_MCP_LEGACY_PROTOCOL_VERSION = "2025-11-25" as const;
 
 const RINADS_MCP_SERVER_INFO = {
-  name: "rinads-business-intelligence",
-  title: "RINADS Business Intelligence",
-  version: "0.1.0",
+  name: "rinads-intelligence",
+  title: "RINADS Intelligence",
+  version: "0.2.0",
   description:
     "Governed business capabilities exposed through RINADS Intelligence and RINPO Runtime.",
   websiteUrl: "https://www.rinads.com",
