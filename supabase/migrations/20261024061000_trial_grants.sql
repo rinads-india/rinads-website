@@ -2,11 +2,25 @@
 -- Browser clients cannot write this table directly. The SECURITY DEFINER RPC
 -- validates ownership, confirmed email, prior-grant history and paid status.
 
+INSERT INTO public.plans (key, name, description, limits, is_active)
+VALUES (
+  'trial-starter',
+  'Trial Starter',
+  'Seven-day RINADS Business OS evaluation entitlement.',
+  '{"modules":["commerce","inventory","crm","tasks"],"seats":3,"orders_per_month":100}'::jsonb,
+  true
+)
+ON CONFLICT (key) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  limits = EXCLUDED.limits,
+  is_active = EXCLUDED.is_active;
+
 CREATE TABLE IF NOT EXISTS public.trial_grants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  plan_key TEXT NOT NULL DEFAULT 'starter' REFERENCES public.plans(key),
+  plan_key TEXT NOT NULL DEFAULT 'trial-starter' REFERENCES public.plans(key),
   manifest JSONB NOT NULL DEFAULT '{"modules":["commerce","inventory","crm","tasks"]}'::jsonb,
   granted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at TIMESTAMPTZ NOT NULL,
@@ -118,7 +132,7 @@ BEGIN
   VALUES (
     p_org_id,
     v_uid,
-    'starter',
+    'trial-starter',
     '{"modules":["commerce","inventory","crm","tasks"]}'::jsonb,
     now() + interval '7 days'
   )
