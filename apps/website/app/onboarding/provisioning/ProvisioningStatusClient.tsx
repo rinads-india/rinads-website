@@ -19,6 +19,7 @@ const POLLING_STATUSES = new Set([
   "activation_pending",
   "pending",
   "running",
+  "retrying",
 ]);
 
 function statusCopy(status: string): { title: string; detail: string } {
@@ -47,6 +48,24 @@ function statusCopy(status: string): { title: string; detail: string } {
         detail:
           "RINADS is configuring your operating pack, tenant-scoped data and runtime context.",
       };
+    case "retrying":
+      return {
+        title: "Provisioning will retry safely",
+        detail:
+          "A temporary dependency failed. The same idempotent tenant job is scheduled for bounded retry; no duplicate workspace will be created.",
+      };
+    case "blocked":
+      return {
+        title: "Activation is blocked",
+        detail:
+          "RINADS could not verify an active paid or trial entitlement. Tenant data has not been provisioned.",
+      };
+    case "dead_letter":
+      return {
+        title: "Provisioning needs operator review",
+        detail:
+          "Automatic retries are exhausted or the failure is permanent. The same tenant job is preserved for controlled founder/support recovery.",
+      };
     case "completed":
       return {
         title: "RINASPACE ready",
@@ -57,7 +76,7 @@ function statusCopy(status: string): { title: string; detail: string } {
       return {
         title: "Provisioning needs attention",
         detail:
-          "Your entitlement remains recorded, but workspace setup did not complete. No duplicate tenant will be created automatically.",
+          "A legacy provisioning failure was recorded. No duplicate tenant will be created automatically.",
       };
     default:
       return {
@@ -100,7 +119,10 @@ export function ProvisioningStatusClient() {
       setStatus(result.status);
       setErrorMessage(result.errorMessage);
       if (POLLING_STATUSES.has(result.status)) {
-        const delay = result.status === "awaiting_payment" ? 5000 : 2000;
+        const delay =
+          result.status === "awaiting_payment" || result.status === "retrying"
+            ? 5000
+            : 2000;
         timer = setTimeout(poll, delay);
       }
     }
@@ -194,10 +216,19 @@ export function ProvisioningStatusClient() {
           </div>
         )}
 
-        {status === "activation_pending" && (
+        {(status === "activation_pending" || status === "pending" || status === "running" || status === "retrying") && (
           <p className="mt-4 text-muted-foreground">
-            Entitlement is active. The provisioning handoff is being reconciled; this page will advance automatically when the job is queued.
+            Keep this RI ID. The same tenant job is being progressed idempotently and this page will advance automatically when the workspace is ready.
           </p>
+        )}
+
+        {(status === "blocked" || status === "dead_letter" || status === "failed") && (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
+            <p className="font-medium">Do not create another organization.</p>
+            <p className="mt-1 text-xs leading-5">
+              Your RI ID, organization and provisioning record are preserved. RINADS support can recover the same idempotent job after the entitlement or dependency issue is corrected.
+            </p>
+          </div>
         )}
 
         {status === "completed" && (
@@ -212,12 +243,6 @@ export function ProvisioningStatusClient() {
               {opensRinaglow ? "Open R GLOW" : "Open RINASPACE"}
             </Link>
           </>
-        )}
-
-        {status === "failed" && (
-          <p className="mt-4 text-muted-foreground">
-            The failed job remains auditable for controlled retry. Contact RINADS support rather than creating another organization.
-          </p>
         )}
       </div>
 
