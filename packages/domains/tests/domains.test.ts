@@ -7,6 +7,7 @@ import {
   canTransitionDomainStatus,
 } from "../src/index";
 import { resolveStorefrontTenantFromHost } from "../src/resolver";
+import { addDomainToVercelProject, removeDomainFromVercelProject } from "../src/vercel";
 
 describe("Domain verification", () => {
   it("generates verification token", () => {
@@ -30,6 +31,20 @@ describe("Domain verification", () => {
 
   it("blocks invalid transitions", () => {
     assert.ok(!canTransitionDomainStatus("active", "pending"));
+  });
+});
+
+describe("Vercel domain integration", () => {
+  it("fails closed when add-domain credentials are absent", async () => {
+    const result = await addDomainToVercelProject("shop.example.com", null);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error, /not configured/i);
+  });
+
+  it("fails closed when remove-domain credentials are absent", async () => {
+    const result = await removeDomainFromVercelProject("shop.example.com", null);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error, /not configured/i);
   });
 });
 
