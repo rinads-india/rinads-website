@@ -9,6 +9,7 @@ import {
 import type { RoleKey } from "@rinads/permissions";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
+import { getVerifiedSupabaseIdentity } from "@/lib/supabase/verified-auth";
 import { ensureActiveOrganizationCookieAction } from "@/lib/org-context";
 import { resolveDestinationForMemberships } from "@/lib/tenant-destination-server";
 import {
@@ -77,14 +78,14 @@ export async function requireOsShellAccess(
   const loginNext = sanitizeOsLoginNext(pathname);
 
   const supabase = await createWebsiteServerClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) {
+  const identity = await getVerifiedSupabaseIdentity(supabase);
+  if (!identity) {
     redirect(`/signup?mode=login&next=${encodeURIComponent(loginNext)}`);
   }
 
   const memberships = await loadMemberships(
     supabase as unknown as TenancySupabaseClient,
-    data.user.id
+    identity.userId
   );
 
   await ensureActiveOrganizationCookieAction();

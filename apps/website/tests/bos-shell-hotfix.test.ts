@@ -196,12 +196,12 @@ describe("tenant routing scenarios for OS access", () => {
 });
 
 describe("os shell access + mobile a11y source contracts", () => {
-  it("wires layout to requireOsShellAccess and middleware pathname header", () => {
+  it("wires layout to requireOsShellAccess and proxy pathname header", () => {
     const layout = readFileSync(join(process.cwd(), "app/os/layout.tsx"), "utf8");
-    const middleware = readFileSync(join(process.cwd(), "middleware.ts"), "utf8");
+    const proxy = readFileSync(join(process.cwd(), "proxy.ts"), "utf8");
     const access = readFileSync(join(process.cwd(), "lib/os-shell-access.ts"), "utf8");
     assert.match(layout, /requireOsShellAccess/);
-    assert.match(middleware, /x-rinads-pathname/);
+    assert.match(proxy, /x-rinads-pathname/);
     assert.match(access, /loadMemberships/);
     assert.match(access, /ensureActiveOrganizationCookieAction/);
   });
