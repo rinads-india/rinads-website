@@ -36,7 +36,7 @@ export const SERVICE_IMPLEMENTATION_GROUPS: ServiceImplementationGroup[] = [
   {
     id: "ai-automation",
     title: "AI & Automation",
-    summary: "RINPO-assisted workflows, agents, and automation with permissions and approvals.",
+    summary: "RINPO-assisted workflows, agents, and automation with permissions and approvals through RINPO Runtime.",
     serviceSlugs: ["ai", "automation"],
   },
   {
@@ -48,25 +48,25 @@ export const SERVICE_IMPLEMENTATION_GROUPS: ServiceImplementationGroup[] = [
   {
     id: "business-transformation",
     title: "Business Transformation",
-    summary: "Operating model redesign, vertical configuration, and change programs on RINADS.",
+    summary: "Operating model redesign, Industry RINASPACE configuration, and change programs on RINADS.",
     serviceSlugs: ["transformation"],
   },
   {
     id: "growth-systems",
     title: "Growth Systems",
-    summary: "SEO, paid media, CRM programs, and follow-up connected to Business OS.",
+    summary: "SEO, paid media, CRM programs, and follow-up connected to shared business and growth capabilities.",
     serviceSlugs: ["marketing"],
   },
   {
     id: "creative-systems",
     title: "Creative Systems",
-    summary: "Brand, AI media, and campaign production pipelines on Creative OS.",
+    summary: "Brand, AI media, and campaign production pipelines connected to RINADS workflows.",
     serviceSlugs: ["creative"],
   },
   {
     id: "training",
     title: "Training",
-    summary: "Academy programmes, certification, and team enablement with RINPO tutoring.",
+    summary: "RI LABS programs, practical experience, and team enablement with RINPO tutoring.",
     serviceSlugs: ["training"],
   },
 ];
@@ -78,7 +78,7 @@ export const SERVICE_LINES: ServiceLine[] = [
     verb: "Build",
     headline: "Build software with RINADS.",
     summary:
-      "Web apps, mobile apps, commerce, and business systems — delivered through Build OS discipline and RINADS Services.",
+      "Web apps, mobile apps, commerce, and business systems — designed and delivered through RINADS Implementation Services.",
     offerings: ["Web & mobile apps", "Business systems", "Commerce platforms", "Integrations", "Ongoing product teams"],
   },
   {
@@ -87,7 +87,7 @@ export const SERVICE_LINES: ServiceLine[] = [
     verb: "Grow",
     headline: "Grow your brand with intelligence.",
     summary:
-      "SEO, paid media, social, WhatsApp, and CRM programs — launched as services and managed inside Marketing OS.",
+      "SEO, paid media, social, WhatsApp, and CRM programs connected to RINADS growth and customer workflows.",
     offerings: ["SEO", "Performance ads", "Social growth", "WhatsApp & email", "Analytics"],
   },
   {
@@ -103,8 +103,8 @@ export const SERVICE_LINES: ServiceLine[] = [
     slug: "creative",
     name: "Creative",
     verb: "Create",
-    headline: "Create brand and media with Creative OS.",
-    summary: "AI image, video, film, brand systems, and story production — from brief to shipped assets.",
+    headline: "Create brand and media with RINADS.",
+    summary: "AI image, video, film, brand systems, and story production — from brief to shipped assets and connected campaigns.",
     offerings: ["Brand systems", "AI image & video", "AI film", "Product studio", "Campaign creative"],
   },
   {
@@ -112,7 +112,7 @@ export const SERVICE_LINES: ServiceLine[] = [
     name: "Automation",
     verb: "Automate",
     headline: "Automate operations end to end.",
-    summary: "Workflow design, integrations, and agentic automation that reduce manual load across the OS suite.",
+    summary: "Workflow design, integrations, and governed automation that reduce manual load across connected business capabilities.",
     offerings: ["Workflow design", "Integrations", "Notifications", "Approvals", "Audit trails"],
   },
   {
@@ -122,16 +122,16 @@ export const SERVICE_LINES: ServiceLine[] = [
     headline: "Transform how the business runs.",
     summary:
       "Operating model redesign on RINADS — migrate from scattered tools to one intelligent platform.",
-    offerings: ["Operating model", "Migration", "Vertical configuration", "Change programs", "Enablement"],
+    offerings: ["Operating model", "Migration", "Industry configuration", "Change programs", "Enablement"],
   },
   {
     slug: "training",
     name: "Training",
     verb: "Train",
-    headline: "Train teams through Real Experience Academy.",
+    headline: "Learn, practice, and build through RI LABS.",
     summary:
-      "Corporate and founder training programs — learn, practice, ship, and certify with RINPO tutoring.",
-    offerings: ["Team academies", "Founder programs", "Live classes", "Certification", "On-the-job projects"],
+      "Founder, team, and learner programs — learn, practice, ship, and build evidence with RINPO tutoring and real project work.",
+    offerings: ["Team programs", "Founder programs", "Live classes", "Project evidence", "On-the-job projects"],
   },
 ];
 
@@ -140,10 +140,10 @@ export function getServiceLine(slug: string): ServiceLine | null {
 }
 
 export const RINPO_ROLES = [
-  { name: "AI Business Intelligence Character", description: "The face of RINADS intelligence." },
+  { name: "Business Intelligence Character", description: "The face of RINADS Intelligence." },
   { name: "AI assistant", description: "Ask, explore, and get direction." },
-  { name: "AI tutor", description: "Guide learning inside Academy." },
-  { name: "AI operator", description: "Help run day-to-day work." },
+  { name: "AI tutor", description: "Guide learning and practical work inside RI LABS." },
+  { name: "AI operator", description: "Help run supported day-to-day work within permissions." },
   { name: "Voice interface", description: "Use speech as an input and output channel where the client supports it." },
   { name: "Phone experience", description: "Product direction for connecting telephony to RINADS context and workflows." },
   { name: "AI commerce assistant", description: "Support selling and buying flows." },
@@ -162,7 +162,7 @@ export const INTELLIGENCE_CAPABILITIES = [
   { name: "Understands your business", description: "Connects customers, work, money, and activity in one place." },
   { name: "Remembers what matters", description: "Keeps context for people, orders, and ongoing work." },
   { name: "Recommends the next best action", description: "Turns signals into clear, useful suggestions." },
-  { name: "Connects insight to action", description: "Moves from understanding to workflow, automatically." },
+  { name: "Connects insight to action", description: "Moves from understanding to workflow within configured controls." },
   { name: "Respects who can see and do what", description: "Every action honors your organization's permissions." },
   { name: "Keeps a full audit trail", description: "Every AI-assisted action is traceable." },
 ] as const;
