@@ -69,6 +69,16 @@ describe("Supabase commerce sync", () => {
       grandTotal: 342,
       currency: "INR",
       shippingMethodCode: "standard",
+      shippingAddress: {
+        sourceAddressId: "addr_1",
+        name: "Test Customer",
+        phone: "9999999999",
+        line1: "Mannuthy road",
+        city: "Thrissur",
+        state: "Kerala",
+        pincode: "680651",
+        country: "IN",
+      },
       lines: [
         {
           id: "ol_1",
@@ -94,6 +104,16 @@ describe("Supabase commerce sync", () => {
     assert.ok((client.tables.get("shipping_methods") ?? []).length >= 1);
     assert.equal((client.tables.get("orders") ?? []).length, 1);
     assert.equal((client.tables.get("order_lines") ?? []).length, 1);
+    assert.deepEqual(client.tables.get("orders")?.[0]?.shipping_address_snapshot, {
+      sourceAddressId: "addr_1",
+      name: "Test Customer",
+      phone: "9999999999",
+      line1: "Mannuthy road",
+      city: "Thrissur",
+      state: "Kerala",
+      pincode: "680651",
+      country: "IN",
+    });
   });
 
   it("loads commerce store from Supabase tables", async () => {
@@ -125,10 +145,40 @@ describe("Supabase commerce sync", () => {
         status: "active",
       },
     ]);
+    client.tables.set("orders", [
+      {
+        id: "ord_1",
+        organization_id: orgId,
+        order_number: "ORD-001",
+        status: "confirmed",
+        payment_status: "paid",
+        fulfilment_status: "unfulfilled",
+        subtotal: 100,
+        discount_total: 0,
+        shipping_total: 0,
+        tax_total: 5,
+        grand_total: 105,
+        currency: "INR",
+        shipping_address_snapshot: {
+          sourceAddressId: "addr_1",
+          name: "Stored Customer",
+          phone: "9999999999",
+          line1: "Stored road",
+          city: "Thrissur",
+          state: "Kerala",
+          pincode: "680651",
+          country: "IN",
+        },
+        created_at: "2026-10-22T00:00:00.000Z",
+      },
+    ]);
 
     const loaded = await loadCommerceStoreFromSupabase(client, orgId);
     assert.ok(loaded);
     assert.equal(loaded!.products.length, 1);
     assert.equal(loaded!.variants.length, 1);
+    assert.equal(loaded!.orders.length, 1);
+    assert.equal(loaded!.orders[0]?.shippingAddress?.line1, "Stored road");
+    assert.equal(loaded!.orders[0]?.shippingAddress?.country, "IN");
   });
 });
