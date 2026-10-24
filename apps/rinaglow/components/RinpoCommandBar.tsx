@@ -35,12 +35,76 @@ type SpeechWindow = Window & {
   webkitSpeechRecognition?: SpeechRecognitionCtor;
 };
 
-const QUICK_COMMANDS = [
+const DEFAULT_QUICK_COMMANDS = [
   "What needs attention?",
   "Show today's appointments",
-  "Show open sales",
-  "Show pending reviews",
+  "Show pending payments",
+  "Show growth opportunities",
 ] as const;
+
+const QUICK_COMMANDS_BY_AREA: Record<string, readonly string[]> = {
+  Today: DEFAULT_QUICK_COMMANDS,
+  "Front Desk": [
+    "Show today's appointments",
+    "Show empty slots today",
+    "Show pending payments",
+    "What needs attention?",
+  ],
+  Calendar: [
+    "Show today's appointments",
+    "Show empty slots today",
+    "Show staff utilization",
+    "What needs attention?",
+  ],
+  POS: [
+    "Show pending payments",
+    "Show revenue for the last 30 days",
+    "Show service performance",
+    "What needs attention?",
+  ],
+  Clients: [
+    "Show customers inactive for 45 days",
+    "Show loyalty summary",
+    "Show growth opportunities",
+    "What needs attention?",
+  ],
+  Growth: [
+    "Show growth opportunities",
+    "Show campaign performance",
+    "Show failed messages",
+    "Show customers inactive for 45 days",
+  ],
+  Loyalty: [
+    "Show loyalty summary",
+    "Show review workflow summary",
+    "Show recovery summary",
+    "Show customers inactive for 45 days",
+  ],
+  Campaigns: [
+    "Show campaign performance",
+    "Show failed messages",
+    "Show growth opportunities",
+    "What needs attention?",
+  ],
+  Communications: [
+    "Show failed messages",
+    "Show campaign performance",
+    "Show review workflow summary",
+    "What needs attention?",
+  ],
+  Services: [
+    "Show service performance",
+    "Show revenue for the last 30 days",
+    "Show growth opportunities",
+    "What needs attention?",
+  ],
+  Staff: [
+    "Show staff utilization",
+    "Show today's appointments",
+    "Show empty slots today",
+    "What needs attention?",
+  ],
+};
 
 function salonAreaFromPathname(pathname: string): string {
   const firstSegment = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
@@ -140,6 +204,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   const [isPending, startTransition] = useTransition();
   const pageContext = getRinpoPageContext(pathname, searchParams);
   const salonArea = salonAreaFromPathname(pathname);
+  const quickCommands = QUICK_COMMANDS_BY_AREA[salonArea] ?? DEFAULT_QUICK_COMMANDS;
 
   function runCommand(command: string, speakReply = false) {
     const normalized = command.trim();
@@ -228,7 +293,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
 
       {open ? (
         <section
-          className="fixed bottom-24 right-3 z-[70] flex max-h-[calc(100dvh-8rem)] w-[calc(100vw-1.5rem)] max-w-[430px] flex-col overflow-hidden rounded-[1.75rem] border border-rinads-primary/20 bg-surface shadow-[0_28px_80px_rgba(42,15,66,0.28)] lg:bottom-6 lg:right-6 lg:max-h-[min(720px,calc(100dvh-3rem))]"
+          className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[70] flex max-h-[calc(100dvh-8rem)] w-[calc(100vw-1.5rem)] max-w-[430px] flex-col overflow-hidden rounded-[1.75rem] border border-rinads-primary/20 bg-surface shadow-[0_28px_80px_rgba(42,15,66,0.28)] lg:bottom-6 lg:right-6 lg:max-h-[min(720px,calc(100dvh-3rem))]"
           role="dialog"
           aria-modal="false"
           aria-label="RI SALON RINASPACE RINPO Phone"
@@ -236,13 +301,15 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
           <header className="shrink-0 border-b border-rinads-primary/10 bg-gradient-to-br from-rinads-primary/10 via-surface to-surface px-4 pb-3 pt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <Image
-                  src="/assets/rinpo-face.png"
-                  alt="RINPO"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-rinads-primary/25"
-                />
+                <div className="relative h-14 w-11 shrink-0">
+                  <Image
+                    src="/assets/rinpo-full3.png"
+                    alt="RINPO"
+                    fill
+                    sizes="44px"
+                    className="object-contain object-bottom drop-shadow-[0_0_14px_rgba(159,75,199,0.3)]"
+                  />
+                </div>
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI SALON RINASPACE</p>
                   <h2 className="truncate text-base font-semibold text-foreground">RINPO Phone</h2>
@@ -260,7 +327,10 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px]">
               <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
-                Context: {salonArea}
+                Screen: {salonArea}
+              </span>
+              <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
+                {pageContext.defaultBranchId ? "Store context active" : "All stores"}
               </span>
               <button
                 type="button"
@@ -278,13 +348,13 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
             {history.length === 0 ? (
               <div className="space-y-3">
                 <div className="rounded-2xl border border-rinads-primary/10 bg-surface-muted p-4">
-                  <p className="text-sm font-semibold text-foreground">Operate the salon by chat or voice.</p>
+                  <p className="text-sm font-semibold text-foreground">Operate {salonArea.toLowerCase()} by chat or voice.</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Ask for queue status, appointments, clients, sales, campaigns, follow-ups or permitted actions. Sensitive actions still respect role permissions and approvals.
+                    RINPO uses the current screen and store context. Reads can run immediately; sensitive mutations still pass through role permissions, approval and audit.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {QUICK_COMMANDS.map((command) => (
+                  {quickCommands.map((command) => (
                     <button
                       key={command}
                       type="button"
@@ -346,7 +416,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={isListening ? "Listening…" : "Ask RINPO…"}
+                placeholder={isListening ? "Listening…" : `Ask RINPO about ${salonArea.toLowerCase()}…`}
                 className="h-11 min-w-0 flex-1 rounded-xl border border-rinads-primary/15 bg-surface-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
               />
               <button
@@ -364,28 +434,28 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
           </footer>
         </section>
       ) : (
-        <div className="fixed bottom-24 right-3 z-[58] lg:bottom-6 lg:right-6">
+        <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[58] lg:bottom-6 lg:right-6">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="group relative grid h-[76px] w-[64px] place-items-end rounded-[1.4rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 sm:h-[86px] sm:w-[72px]"
+            className="group relative grid h-[104px] w-[74px] place-items-end overflow-visible rounded-[1.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 sm:h-[118px] sm:w-[84px]"
             aria-label="Open RI SALON RINASPACE RINPO Phone"
           >
-            <span className="pointer-events-none absolute inset-x-2 bottom-0 h-4 rounded-[50%] bg-rinads-primary/30 blur-md" aria-hidden />
+            <span className="pointer-events-none absolute inset-x-2 bottom-0 h-4 rounded-[50%] bg-rinads-primary/35 blur-md" aria-hidden />
             <Image
-              src="/assets/rinpo-face.png"
+              src="/assets/rinpo-full3.png"
               alt="RINPO"
-              width={72}
-              height={72}
-              className="relative z-[1] h-16 w-16 rounded-full object-cover ring-2 ring-rinads-primary/25 shadow-[0_0_24px_rgba(159,75,199,0.28)] transition-transform group-hover:-translate-y-1 sm:h-[72px] sm:w-[72px]"
+              width={160}
+              height={220}
+              className="relative z-[1] h-full w-full object-contain object-bottom drop-shadow-[0_0_22px_rgba(159,75,199,0.45)] transition-transform group-hover:-translate-y-1"
             />
-            <span className="absolute -left-1 top-0 z-[2] rounded-full bg-rinads-primary px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white shadow-lg">
+            <span className="absolute -left-2 top-2 z-[2] rounded-full bg-rinads-primary px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white shadow-lg">
               RINPO
             </span>
-            <span className="absolute bottom-1 right-0 z-[2] h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-surface" aria-hidden />
+            <span className="absolute bottom-2 right-0 z-[2] h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-surface" aria-hidden />
           </button>
           <p className="mt-1 hidden rounded-full border border-rinads-primary/10 bg-surface/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-rinads-primary shadow-sm backdrop-blur sm:block">
-            Chat · Voice · Actions
+            {salonArea} · Chat · Voice
           </p>
         </div>
       )}
