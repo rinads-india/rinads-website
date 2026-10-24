@@ -22,7 +22,7 @@ export default function TermsOfServicePage() {
         {
           heading: "Use of the platform",
           body: [
-            "RINADS provides Business OS, Commerce OS, Marketing OS, Logistics OS, Creative OS, Build OS, Academy OS, Automation OS, RINADS Intelligence, and RINADS Cloud as an integrated operating platform, accessed through RINPO and the web application.",
+            "RINADS provides a Business Intelligence Platform — RINADS INTELLIGENCE, RINPO RUNTIME, capability areas (Business, Commerce, Growth, Automation), Industry RINASPACES, and RI LABS — accessed through RINPO and the web application.",
           ],
         },
         {

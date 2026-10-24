@@ -22,7 +22,7 @@ export function provisionTenantInMemory(
 
   try {
     const templateKey = parseVerticalTemplateKey(
-      input.templateKey ?? "ambady-nursery"
+      input.templateKey ?? "starter-business"
     );
     seedTenantBundle(input.organizationId, templateKey);
     registry.register(input.organizationId, templateKey);
@@ -44,7 +44,7 @@ export async function provisionTenantViaRpc(
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
   let templateKey: VerticalTemplateKey;
   try {
-    templateKey = parseVerticalTemplateKey(input.templateKey ?? "ambady-nursery");
+    templateKey = parseVerticalTemplateKey(input.templateKey ?? "starter-business");
   } catch (error) {
     return {
       ok: false,

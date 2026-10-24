@@ -28,7 +28,7 @@ const INTELLIGENCE_CAPABILITIES = [
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "RINADS Intelligence | RINADS" };
+  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "RINADS INTELLIGENCE | RINADS" };
 }
 
 export default function IntelligencePillarPage() {
@@ -39,7 +39,7 @@ export default function IntelligencePillarPage() {
   return (
     <PlatformPillarPage
       path={PATH}
-      eyebrow="RINADS Intelligence"
+      eyebrow="RINADS INTELLIGENCE"
       title={product.name}
       headline={os.headline}
       summary={product.description}
@@ -51,8 +51,8 @@ export default function IntelligencePillarPage() {
       secondaryCta={CTAS.explorePlatform}
       related={[
         { label: "RINPO", href: "/rinpo" },
-        { label: "RINPO Runtime", href: "/platform/rinpo-runtime" },
-        { label: "RINADS Cloud", href: "/platform/cloud" },
+        { label: "RINPO RUNTIME", href: "/platform/rinpo-runtime" },
+        { label: "RINADS Platform", href: "/platform/cloud" },
       ]}
     >
       <section className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-6 py-16 md:px-12 lg:px-20">

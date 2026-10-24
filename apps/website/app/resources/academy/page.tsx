@@ -6,7 +6,7 @@ import { metadataFromRegistry } from "@/lib/route-registry";
 const PATH = "/resources/academy";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "Academy | RINADS" };
+  return (metadataFromRegistry(PATH) as Metadata) ?? { title: "RI LABS | RINADS" };
 }
 
 export default function ResourcesAcademyPage() {

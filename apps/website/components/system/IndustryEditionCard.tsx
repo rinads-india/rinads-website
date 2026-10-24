@@ -24,7 +24,7 @@ export function IndustryEditionCard({ edition }: IndustryEditionCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            RINADS Edition
+            Industry RINASPACE
           </p>
           <h3 className="mt-1 text-lg font-bold text-foreground group-hover:text-rinads-primary">
             {edition.editionName}

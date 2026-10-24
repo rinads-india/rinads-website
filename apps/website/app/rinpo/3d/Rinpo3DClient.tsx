@@ -85,7 +85,7 @@ export function Rinpo3DClient() {
                     onClick={() => openPhoneScreen("chat")}
                     className="rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-white"
                   >
-                    Talk to RINPO now
+                    Try RINPO
                   </button>
                 </div>
               </div>
@@ -93,8 +93,8 @@ export function Rinpo3DClient() {
           </div>
           <nav aria-label="RINPO experience alternatives" className="mt-6 flex flex-wrap gap-5 text-sm font-semibold text-rinads-primary">
             <Link href="/rinpo">RINPO overview →</Link>
-            <Link href="/platform/business-os">Business OS →</Link>
-            <Link href="/contact?intent=demo">Book a demonstration →</Link>
+            <Link href="/platform">Explore RINADS →</Link>
+            <Link href="/company/contact?intent=demo">Book a demo →</Link>
           </nav>
         </div>
       </section>

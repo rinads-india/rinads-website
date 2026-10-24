@@ -12,7 +12,7 @@ export function LiveClient() {
     <MarketingPageShell>
       <PageHero
         eyebrow="RINPO Live"
-        headline="Talk to RINPO, face to face."
+        headline="Meet RINPO, face to face."
         summary="A live, two-way video conversation with the RINPO character in English or Malayalam. Speak and RINPO talks back, answering from RINADS's public platform information and telling you plainly what is available today and what is still planned."
         primaryHref="/rinpo"
         primaryLabel="RINPO overview"

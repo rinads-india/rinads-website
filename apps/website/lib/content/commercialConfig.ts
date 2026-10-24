@@ -39,12 +39,12 @@ export const COMMERCIAL_CONFIG = {
   currency: "INR" as const,
   configuredPricingLabel: "Configured pricing",
   configuredPricingExplanation:
-    "Pricing depends on team size, operating systems, integrations and implementation requirements.",
+    "Pricing depends on team size, platform coverage, integrations and implementation requirements.",
   estimateCta: {
-    label: "Get my pricing estimate",
+    label: "Book a demo",
     href: "/contact?intent=sales&flow=pricing-estimate",
   },
-  homepageTeaser: "Choose the operating coverage your business needs.",
+  homepageTeaser: "Choose the platform coverage your business needs.",
 } as const;
 
 export const PRICE_APPROVED = COMMERCIAL_CONFIG.priceApproved;
@@ -61,7 +61,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     includedUsers: "Configured per workspace",
     includedAiAllowance: "Starter AI / RINPO allowance",
     includedAutomationAllowance: "Core automation allowance",
-    includedOperatingSystems: ["Business OS"],
+    includedOperatingSystems: ["Business"],
     integrations: "Selected standard integrations",
     supportLevel: "Standard support",
     multiLocation: "Single location",
@@ -87,7 +87,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     includedUsers: "Expanded seat pack",
     includedAiAllowance: "Expanded AI / RINPO allowance",
     includedAutomationAllowance: "Expanded automation allowance",
-    includedOperatingSystems: ["Business OS", "Commerce OS", "Marketing OS"],
+    includedOperatingSystems: ["Business", "Commerce", "Growth"],
     integrations: "Standard + priority integrations",
     supportLevel: "Priority support",
     multiLocation: "Multi-location ready",
@@ -115,11 +115,11 @@ export const PRICING_PLANS: PricingPlan[] = [
     includedAiAllowance: "Scale AI / RINPO allowance",
     includedAutomationAllowance: "Scale automation allowance",
     includedOperatingSystems: [
-      "Business OS",
-      "Commerce OS",
-      "Marketing OS",
-      "Automation OS",
-      "Logistics OS",
+      "Business",
+      "Commerce",
+      "Growth",
+      "Automation",
+      "Logistics",
     ],
     integrations: "Advanced integrations",
     supportLevel: "Named success contact",
@@ -131,7 +131,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     marketing: "Included",
     automation: "Included",
     cta: {
-      label: "Talk to sales",
+      label: "Book a demo",
       href: "/contact?intent=sales&plan=scale",
     },
   },
@@ -146,7 +146,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     includedUsers: "Custom",
     includedAiAllowance: "Custom AI / RINPO allowance",
     includedAutomationAllowance: "Custom automation allowance",
-    includedOperatingSystems: ["Configured operating systems"],
+    includedOperatingSystems: ["Configured platform coverage"],
     integrations: "Custom and private integrations",
     supportLevel: "Enterprise success & implementation",
     multiLocation: "Custom multi-location / multi-brand",
@@ -157,7 +157,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     marketing: "Configured",
     automation: "Configured",
     cta: {
-      label: "Talk to sales",
+      label: "Book a demo",
       href: "/contact?intent=sales&plan=enterprise",
     },
   },
@@ -177,7 +177,7 @@ export const PRICING_COMPARISON_ROWS: {
 }[] = [
   { key: "idealSize", label: "Ideal business size", get: (p) => p.targetCustomer },
   { key: "includedUsers", label: "Users / seats", get: (p) => p.includedUsers },
-  { key: "businessOs", label: "Business OS", get: (p) => p.businessOs },
+  { key: "businessOs", label: "Business", get: (p) => p.businessOs },
   { key: "commerce", label: "Commerce", get: (p) => p.commerce },
   { key: "marketing", label: "Marketing", get: (p) => p.marketing },
   { key: "automation", label: "Automation", get: (p) => p.automation },
@@ -193,7 +193,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "How is RINADS pricing calculated?",
     answer:
-      "Pricing depends on team size, which operating systems you need, integrations, and whether implementation or custom workflows are required. We configure a package around your operating coverage rather than a one-size public rate.",
+      "Pricing depends on team size, which platform coverage you need, integrations, and whether implementation or custom workflows are required. We configure a package around your coverage rather than a one-size public rate.",
   },
   {
     question: "Can I try RINADS before buying?",
@@ -201,9 +201,9 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
       "Yes. You can try RINPO on the website with a demo workspace, and you can book a demo to walk through workflows that match your business.",
   },
   {
-    question: "What is a RINADS Operating System?",
+    question: "What is an Industry RINASPACE?",
     answer:
-      "An Operating System is a connected product suite on the shared RINADS core — for example Business OS for customers, work and money, or Commerce OS for products, orders and fulfilment. Industry solutions layer configuration and RINPO context on top.",
+      "An Industry RINASPACE is an industry environment on the shared RINADS platform — for example RI SALON RINASPACE for appointments and clients, or RI JEWELLERY RINASPACE for collections and high-trust fulfilment. Capability areas such as Business, Commerce and Growth sit underneath.",
   },
   {
     question: "Is implementation included?",
@@ -216,9 +216,9 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
       "Many teams consolidate CRM, spreadsheets, commerce and project tools onto RINADS. Replacement scope depends on your workflows — we map that during discovery and implementation planning.",
   },
   {
-    question: "Can I start with only Business OS?",
+    question: "Can I start with only Business coverage?",
     answer:
-      "Yes. Start is designed around Business OS. You can add Commerce, Marketing, Automation and other systems as your operating coverage grows.",
+      "Yes. Start is designed around customers, work and money. You can add Commerce, Growth, Automation and Industry RINASPACES as coverage grows.",
   },
   {
     question: "Can RINADS support multiple branches?",
@@ -228,7 +228,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "What does RINPO do?",
     answer:
-      "RINPO is the AI interface across RINADS. It can understand permitted business context, explain what matters, prepare next steps and route supported actions through the right permissions and approval paths.",
+      "RINPO is the business intelligence character and user-facing interface across RINADS. It can understand permitted business context, explain what matters, prepare next steps and route supported actions through RINPO RUNTIME with the right permissions and approval paths.",
   },
   {
     question: "Can RINPO perform actions automatically?",

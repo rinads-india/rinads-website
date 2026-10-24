@@ -22,13 +22,13 @@ export function BusinessOsClient() {
       <section className="bg-rinads-primary-darkest px-6 pb-24 pt-32 text-white md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-rinads-primary">
-            Business OS
+            Business Intelligence Platform
           </p>
           <h1 className="max-w-3xl text-4xl font-black leading-tight md:text-6xl">
             Your business, connected.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/70">
-            One operating system for customers, work, money, growth and automation.
+            One platform for customers, work, money, growth and automation.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
@@ -42,7 +42,7 @@ export function BusinessOsClient() {
               href={isAuthenticated ? "/os" : "/signup?mode=login"}
               className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold"
             >
-              {isAuthenticated ? "Open Business OS" : "Sign in"}
+              {isAuthenticated ? "Open workspace" : "Sign in"}
             </Link>
           </div>
         </div>
@@ -50,7 +50,7 @@ export function BusinessOsClient() {
 
       <section className="px-6 py-24 md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-black text-foreground md:text-4xl">Modules inside Business OS</h2>
+          <h2 className="text-3xl font-black text-foreground md:text-4xl">Modules on the platform</h2>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Functional modules — not separate &quot;OS&quot; products. One platform, connected data.
           </p>

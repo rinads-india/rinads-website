@@ -27,7 +27,7 @@ function BookingShell({ children }: { children: React.ReactNode }) {
             priority
           />
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rinads-primary">R GLOW</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rinads-primary">RI SALON RINASPACE</p>
             <h1 className="mt-1 text-3xl font-black">Book an appointment</h1>
           </div>
         </div>
@@ -48,7 +48,7 @@ export default async function SalonBookingPage({ searchParams }: Props) {
           <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm">/solutions/salon/book?org=your-salon</code>).
         </p>
         <Link href="/solutions/salon" className="mt-8 inline-block text-sm text-rinads-primary underline">
-          Learn about R GLOW Salon OS
+          Learn about RI SALON RINASPACE
         </Link>
       </BookingShell>
     );
@@ -62,7 +62,7 @@ export default async function SalonBookingPage({ searchParams }: Props) {
       <BookingShell>
         <p className="mt-6 text-white/70">We couldn&rsquo;t find a salon at this link. Double-check the URL with them.</p>
         <Link href="/solutions/salon" className="mt-8 inline-block text-sm text-rinads-primary underline">
-          Learn about R GLOW Salon OS
+          Learn about RI SALON RINASPACE
         </Link>
       </BookingShell>
     );

@@ -54,19 +54,19 @@ export const SERVICE_IMPLEMENTATION_GROUPS: ServiceImplementationGroup[] = [
   {
     id: "growth-systems",
     title: "Growth Systems",
-    summary: "SEO, paid media, CRM programs, and follow-up connected to Business OS.",
+    summary: "SEO, paid media, CRM programs, and follow-up connected to Business coverage.",
     serviceSlugs: ["marketing"],
   },
   {
     id: "creative-systems",
     title: "Creative Systems",
-    summary: "Brand, AI media, and campaign production pipelines on Creative OS.",
+    summary: "Brand, media, and campaign production pipelines on the RINADS platform.",
     serviceSlugs: ["creative"],
   },
   {
     id: "training",
     title: "Training",
-    summary: "Academy programmes, certification, and team enablement with RINPO tutoring.",
+    summary: "RI LABS programmes, certification, and team enablement with RINPO tutoring.",
     serviceSlugs: ["training"],
   },
 ];
@@ -128,7 +128,7 @@ export const SERVICE_LINES: ServiceLine[] = [
     slug: "training",
     name: "Training",
     verb: "Train",
-    headline: "Train teams through Real Experience Academy.",
+    headline: "Train teams through RI LABS.",
     summary:
       "Corporate and founder training programs — learn, practice, ship, and certify with RINPO tutoring.",
     offerings: ["Team academies", "Founder programs", "Live classes", "Certification", "On-the-job projects"],
@@ -140,14 +140,14 @@ export function getServiceLine(slug: string): ServiceLine | null {
 }
 
 export const RINPO_ROLES = [
-  { name: "AI Business Intelligence Character", description: "The face of RINADS intelligence." },
-  { name: "AI assistant", description: "Ask, explore, and get direction." },
-  { name: "AI tutor", description: "Guide learning inside Academy." },
-  { name: "AI operator", description: "Help run day-to-day work." },
+  { name: "Business intelligence character", description: "The face of RINADS INTELLIGENCE." },
+  { name: "Intelligence interface", description: "Ask, understand, recommend, and prepare the next step." },
+  { name: "Tutor", description: "Guide learning inside RI LABS." },
+  { name: "Operator", description: "Help run day-to-day work." },
   { name: "Voice interface", description: "Use speech as an input and output channel where the client supports it." },
   { name: "Phone experience", description: "Product direction for connecting telephony to RINADS context and workflows." },
-  { name: "AI commerce assistant", description: "Support selling and buying flows." },
-  { name: "AI business interface", description: "The persistent front door to the platform." },
+  { name: "Commerce interface", description: "Support selling and buying flows." },
+  { name: "Business interface", description: "The persistent front door to the platform." },
 ] as const;
 
 export const RINPO_CHANNELS = ["Web", "Mobile", "Chat", "Voice", "WhatsApp", "Phone", "3D"] as const;

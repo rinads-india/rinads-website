@@ -63,8 +63,8 @@ export async function middleware(request: NextRequest) {
         },
       },
     });
-    const { data } = await supabase.auth.getUser();
-    isAuthenticated = Boolean(data.user);
+    const { data } = await supabase.auth.getClaims();
+    isAuthenticated = Boolean(data?.claims?.sub);
   }
 
   const decision = resolvePortalMiddlewareDecision({

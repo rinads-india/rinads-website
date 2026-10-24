@@ -28,7 +28,7 @@ export const ACADEMY_PROGRAMS: AcademyProgram[] = [
   {
     slug: "university",
     name: "RINADS University",
-    headline: "The Real Experience Academy.",
+    headline: "Learning, practice and shipped evidence — RI LABS.",
     summary:
       "A full learning system inside RINADS — not content libraries, but practice, work, shipping, and certification.",
     outcomes: ["Skill graph progress", "Portfolio projects", "Certification paths", "RINPO tutoring"],
@@ -61,7 +61,7 @@ export const ACADEMY_PROGRAMS: AcademyProgram[] = [
   {
     slug: "filmmaking",
     name: "AI Filmmaking",
-    headline: "Create films with Creative OS.",
+    headline: "Create films with RINADS creative tools.",
     summary: "Story, script, voice, music, and AI film production — learn by shipping real creative work.",
     outcomes: ["Story craft", "AI film pipeline", "Portfolio reels"],
     format: ["Online", "Offline", "Live"],
@@ -70,22 +70,22 @@ export const ACADEMY_PROGRAMS: AcademyProgram[] = [
     slug: "founder",
     name: "Founder School",
     headline: "Build and run companies on RINADS.",
-    summary: "Operating systems for founders — customers, money, growth, product, and people.",
+    summary: "Operating cadence for founders — customers, money, growth, product, and people.",
     outcomes: ["Operating cadence", "Growth systems", "Team training"],
     format: ["Hybrid", "Live", "Offline"],
   },
   {
     slug: "software",
     name: "Software School",
-    headline: "Ship products through Build OS.",
-    summary: "Discovery to deployment — learn software the RINADS way: PRD, architecture, AI, and shipping.",
-    outcomes: ["Full-stack fundamentals", "Build OS fluency", "Shipped apps"],
+    headline: "Ship products through RI LABS software paths.",
+    summary: "Discovery to deployment — learn software the RINADS way: PRD, architecture, intelligence, and shipping.",
+    outcomes: ["Full-stack fundamentals", "Build fluency", "Shipped apps"],
     format: ["Online", "Hybrid", "Live"],
   },
   {
     slug: "marketing",
     name: "Marketing School",
-    headline: "Grow brands with Marketing OS.",
+    headline: "Grow brands with RINADS growth tools.",
     summary: "Content, campaigns, SEO, paid media, and analytics — practiced on real growth work.",
     outcomes: ["Campaign skills", "Channel fluency", "Measurement"],
     format: ["Online", "Live"],
@@ -93,9 +93,9 @@ export const ACADEMY_PROGRAMS: AcademyProgram[] = [
   {
     slug: "creator",
     name: "Creator School",
-    headline: "Build a creator practice on Creative OS.",
-    summary: "Brand, story, content systems, and AI creative tools for modern creators.",
-    outcomes: ["Creator OS fluency", "Content systems", "Portfolio"],
+    headline: "Build a creator practice on RINADS.",
+    summary: "Brand, story, content systems, and creative tools for modern creators.",
+    outcomes: ["Creator fluency", "Content systems", "Portfolio"],
     format: ["Online", "Hybrid", "Live"],
   },
 ];

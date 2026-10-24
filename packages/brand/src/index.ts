@@ -16,5 +16,5 @@ export {
 
 export const brand = {
   name: "RINADS",
-  tagline: "The AI Operating Platform for Business.",
+  tagline: "Business Intelligence Infrastructure for Software-Defined Business.",
 } as const;

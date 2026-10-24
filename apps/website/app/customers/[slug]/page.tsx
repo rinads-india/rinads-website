@@ -103,7 +103,7 @@ export default async function CustomerStoryPage({ params }: PageProps) {
           <p className="text-sm text-muted-foreground">
             Want a similar conversation for your organisation?{" "}
             <Link href="/contact?intent=sales" className="font-semibold text-rinads-primary hover:underline">
-              Talk to sales
+              Book a demo
             </Link>
             .
           </p>

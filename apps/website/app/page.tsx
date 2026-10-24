@@ -20,10 +20,10 @@ export default async function HomePage() {
     buildWebSiteJsonLd(),
     buildWebPageJsonLd({
       path: "/",
-      title: seo?.title ?? "RINADS | AI Operating Platform for Growing Businesses",
+      title: seo?.title ?? "RINADS | Business Intelligence Infrastructure",
       description:
         seo?.description ??
-        "Run customers, work, commerce, marketing and automation on one connected platform.",
+        "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
     }),
     buildSoftwareApplicationJsonLd(),
   ];

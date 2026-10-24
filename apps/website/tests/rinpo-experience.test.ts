@@ -7,15 +7,16 @@ import {
 } from "../lib/rinpo-experience";
 
 describe("RINPO public experience context", () => {
-  it("returns Business OS prompts on the Business OS route", () => {
-    const context = getRinpoPageContext("/platform/business-os");
-    assert.equal(context.area, "Business OS");
+  it("returns Business prompts on the Business route", () => {
+    const context = getRinpoPageContext("/platform/business");
+    assert.equal(context.area, "Business");
     assert.ok(context.suggestions.some((item) => item.toLowerCase().includes("lead")));
   });
 
-  it("returns Academy context for Academy routes", () => {
-    const context = getRinpoPageContext("/academy/ai");
-    assert.equal(context.area, "Academy");
+  it("returns RI LABS context for RI LABS and legacy Academy routes", () => {
+    const context = getRinpoPageContext("/labs");
+    assert.equal(context.area, "RI LABS");
+    assert.equal(getRinpoPageContext("/academy/ai").area, "RI LABS");
     assert.ok(context.suggestions.length >= 3);
   });
 

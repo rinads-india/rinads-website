@@ -140,7 +140,7 @@ export function Hero() {
               className="anim-stagger flex flex-col items-center gap-8 md:gap-24"
               style={{ animationDelay: "0.85s" }}
             >
-              <span className="text-2xl font-medium text-white md:text-3xl">RINADS Cloud</span>
+              <span className="text-2xl font-medium text-white md:text-3xl">RINADS Platform</span>
               <a
                 href="#services"
                 className="btn-cut group flex w-full max-w-[280px] items-center justify-center gap-2 bg-white py-3.5 text-black transition-colors hover:bg-white/90"

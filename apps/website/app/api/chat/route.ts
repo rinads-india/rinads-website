@@ -23,17 +23,21 @@ async function getLLMReply(
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
 
-    const systemPrompt = `You are RINPO, the intelligence layer of the RINADS Business Technology Platform. Your role is to help business owners understand their operations, make decisions, and take action through the RINADS platform.
+    const systemPrompt = `You are RINPO, the business intelligence character and interface for RINADS. Help people understand operations, decide, and take governed action. Do not present yourself as a generic chatbot or as "RINADS AI".
 
-RINADS platform surfaces:
-- /business-os — Business OS (CRM, projects, finance, tasks)
-- /services — RINADS Services catalog
-- /marketplace — RI Marketplace (browse and order services)
-- /space — RINASPACE (authenticated workspace)
-- /world — RINADS WORLD (immersive 3D experience)
-- /search — RI Search
-- /rinpo-intelligence — RINPO Intelligence dashboard
-- /cloud — RINADS Cloud
+RINADS is Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.
+
+Public surfaces:
+- /platform — RINADS Platform architecture
+- /rinpo — Meet RINPO
+- /rinaspace — Industry RINASPACES
+- /solutions/salon — RI SALON RINASPACE (pilot; R GLOW is the implementation name)
+- /labs — RI LABS
+- /services — Implementation services
+- /company/contact — Book a demo
+- /space — authenticated workspace (not a public product claim)
+- /world — preview immersive experience
+Do not claim RI ID, RI SPACE, or RINASPACE infrastructure is generally live.
 
 Keep responses concise (2-4 sentences for simple questions, up to 8 for complex). Be helpful, direct, and business-focused. Respond in the same language the user writes in. Never make up specific business data. Suggest contacting the team when uncertain.${context ? `\n\nUser context: ${JSON.stringify(context)}` : ""}`;
 
@@ -176,38 +180,38 @@ export async function POST(request: NextRequest) {
       lower.includes("happening today")
     ) {
       reply =
-        "Across RINADS I can surface today's attention across **Business OS** — customers, work, money, growth, and automation. " +
+        "Across RINADS I can surface today's attention across customers, work, money, growth, and automation. " +
         "Book a demo to connect your workspace, or explore the platform architecture.";
       links = [
-        { label: "Book a demo", href: "/contact?intent=demo" },
-        { label: "Business OS", href: "/platform/business-os" },
-        { label: "See how RINPO works", href: "/rinpo" },
+        { label: "Book a demo", href: "/company/contact?intent=demo" },
+        { label: "Explore RINADS", href: "/platform" },
+        { label: "Meet RINPO", href: "/rinpo" },
       ];
       intent = "heroToday";
     } else if (lower.includes("build my website") || lower.includes("build a software") || lower.includes("software product")) {
       reply =
-        "Use **Build OS** for discovery → PRD → architecture → ship, or engage **RINADS Software Services**. " +
+        "Use **RI LABS** software paths for discovery → PRD → architecture → ship, or engage **RINADS Software Services**. " +
         "I can help you start a project brief.";
       links = [
-        { label: "Build OS", href: "/platform/build-os" },
+        { label: "RI LABS", href: "/labs" },
         { label: "Software Services", href: "/services/software" },
         { label: "Start a project", href: "/projects" },
       ];
       intent = "heroBuild";
     } else if (lower.includes("launch my campaign") || lower.includes("find my best leads")) {
       reply =
-        "**Marketing OS** orchestrates content, campaigns, Meta, Google, SEO, WhatsApp, email, analytics, and CRM. " +
+        "**Growth** orchestrates content, campaigns, Meta, Google, SEO, WhatsApp, email, analytics, and CRM. " +
         "Growth services can launch packages you manage inside the platform.";
       links = [
-        { label: "Marketing OS", href: "/platform/marketing-os" },
+        { label: "Growth", href: "/platform/growth" },
         { label: "Marketing Services", href: "/services/marketing" },
       ];
       intent = "heroMarketing";
     } else if (lower.includes("track my orders") || lower.includes("logistics manager")) {
       reply =
-        "**Logistics OS** is the provider-neutral control tower for orders, shipments, couriers, 3PL, tracking, returns, and exceptions.";
+        "**Logistics RINASPACE** is a coming-soon, provider-neutral control tower for orders, shipments, couriers, 3PL, tracking, returns, and exceptions.";
       links = [
-        { label: "Logistics OS", href: "/platform/logistics-os" },
+        { label: "Logistics RINASPACE", href: "/solutions/logistics" },
         { label: "Commerce OS", href: "/platform/commerce-os" },
       ];
       intent = "heroLogistics";
@@ -250,9 +254,9 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "Our **Digital Marketing** services include SEO, Social Media, and Performance Ads. " +
-        "Explore **Marketing OS** to run growth as an operating system.";
+        "Explore **Growth** on the RINADS platform.";
       links = [
-        { label: "Marketing OS", href: "/platform/marketing-os" },
+        { label: "Growth", href: "/platform/growth" },
         { label: "Contact Us", href: "/contact" },
       ];
       intent = "digitalMarketing";
@@ -269,7 +273,7 @@ export async function POST(request: NextRequest) {
         "Less paperwork, more clarity. We help you automate operations so you can focus on growth.";
       links = [
         { label: "Explore Services", href: "/services" },
-        { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
+        { label: "RINADS Platform", href: "/platform/cloud" },
       ];
       intent = "aiAutomation";
     }
@@ -283,7 +287,7 @@ export async function POST(request: NextRequest) {
     ) {
       reply =
         "RINADS Services help you **Build, Grow, Automate, Create, Transform, and Train** — " +
-        "on top of the AI Operating Platform. What would you like to know more about?";
+        "on the RINADS Business Intelligence Platform. What would you like to know more about?";
       links = [
         { label: "Full Services", href: "/services" },
         { label: "Home", href: "/" },
@@ -319,7 +323,7 @@ export async function POST(request: NextRequest) {
       ];
       intent = "contact";
     }
-    // Rinads Cloud / ERP
+    // RINADS Platform / ERP
     else if (
       lower.includes("cloud") ||
       lower.includes("erp") ||
@@ -331,11 +335,11 @@ export async function POST(request: NextRequest) {
       lower.includes("ഇൻവോയ്സ്")
     ) {
       reply =
-        "**RINADS Cloud** connects your business applications, data, integrations and services. " +
-        "Business OS runs on top — open your workspace to get started.";
+        "**RINADS Platform** connects your business applications, data, integrations and services. " +
+        "Business coverage runs on top — explore the platform to get started.";
       links = [
-        { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
-        { label: "Business OS", href: "/platform/business-os" },
+        { label: "RINADS Platform", href: "/platform/cloud" },
+        { label: "Business", href: "/platform/business" },
       ];
       intent = "cloud";
     }
@@ -351,9 +355,9 @@ export async function POST(request: NextRequest) {
       lower.includes("റിനാഡ്സ്")
     ) {
       reply =
-        "RINADS is a **Business Technology Platform**. **Business OS** runs your business — CRM, projects, finance, marketing and automation. **RINPO Intelligence** helps you understand what to do next.";
+        "RINADS is **Business Intelligence Infrastructure for Software-Defined Business**. **RINADS INTELLIGENCE** understands. **RINPO RUNTIME** executes. **RINPO** is the interface.";
       links = [
-        { label: "Business OS", href: "/platform/business-os" },
+        { label: "Explore RINADS", href: "/platform" },
         { label: "Home", href: "/" },
       ];
       intent = "home";
@@ -401,10 +405,10 @@ export async function POST(request: NextRequest) {
       lower.includes("വണക്കം")
     ) {
       reply =
-        "Hi! I'm RINPO — the persistent AI interface for RINADS, the AI Operating Platform for Business. Ask me to run, build, grow, automate, or train.";
+        "Hi. I'm RINPO — the business intelligence interface for RINADS. Ask me to run, grow, automate, or learn.";
       links = [
-        { label: "Platform", href: "/platform" },
-        { label: "Business OS", href: "/platform/business-os" },
+        { label: "Explore RINADS", href: "/platform" },
+        { label: "Meet RINPO", href: "/rinpo" },
         { label: "Services", href: "/services" },
       ];
       intent = "greetings";
@@ -453,9 +457,9 @@ export async function POST(request: NextRequest) {
     // Default
     else {
       reply =
-        "I can help with **Business OS**, **RINPO Intelligence**, **Services**, or **RINADS Cloud**. What would you like to explore?";
+        "I can help with **RINADS**, **RINPO**, **Industry RINASPACES**, **Services**, or **RI LABS**. What would you like to explore?";
       links = [
-        { label: "Business OS", href: "/platform/business-os" },
+        { label: "Explore RINADS", href: "/platform" },
         { label: "Services", href: "/services" },
         { label: "Home", href: "/" },
       ];
@@ -485,7 +489,7 @@ export async function POST(request: NextRequest) {
             "RINADS-ൽ **AI ഓട്ടോമേഷൻ** ചാറ്റ്ബോട്ടുകൾ, വർക്ക്ഫ്ലോ ഓട്ടോമേഷൻ, AI ടൂളുകൾ ഉൾപ്പെടുന്നു. കുറഞ്ഞ പേപ്പർവർക്ക്, കൂടുതൽ വ്യക്തത.",
           links: [
             { label: "സേവനങ്ങൾ", href: "/services" },
-            { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
+            { label: "RINADS Platform", href: "/platform/cloud" },
           ],
         },
         services: {
@@ -503,8 +507,8 @@ export async function POST(request: NextRequest) {
         },
         cloud: {
           reply:
-            "**Rinads Cloud** ഞങ്ങളുടെ ബിസിനസ്സ് ക്ലൗഡ് പ്ലാറ്റ്ഫോമാണ്. RINADS Intelligence, പൂർണ്ണ ERP ഫീച്ചറുകൾ ലഭ്യം. ഇൻവോയ്സുകൾക്ക് ഈ ഫോണിലെ പോർട്ടൽ ടാബ് തുറക്കുക.",
-          links: [{ label: "Rinads Cloud", href: "/rinads-cloud" }],
+            "**RINADS Platform** ഞങ്ങളുടെ ബിസിനസ്സ് ക്ലൗഡ് പ്ലാറ്റ്ഫോമാണ്. RINADS INTELLIGENCE, പൂർണ്ണ ERP ഫീച്ചറുകൾ ലഭ്യം. ഇൻവോയ്സുകൾക്ക് ഈ ഫോണിലെ പോർട്ടൽ ടാബ് തുറക്കുക.",
+          links: [{ label: "RINADS Platform", href: "/platform/cloud" }],
         },
         home: {
           reply:
@@ -550,7 +554,7 @@ export async function POST(request: NextRequest) {
         },
         default: {
           reply:
-            "**സേവനങ്ങൾ**, **സമ്പർക്ക വിവരങ്ങൾ**, **ക്ലയന്റ് പോർട്ടൽ**, അല്ലെങ്കിൽ **Rinads Cloud** എന്നിവയിൽ സഹായിക്കാൻ ഞാൻ ഇവിടെയുണ്ട്. എന്ത് പര്യവേക്ഷണം ചെയ്യാൻ ആഗ്രഹിക്കുന്നു?",
+            "**സേവനങ്ങൾ**, **സമ്പർക്ക വിവരങ്ങൾ**, **ക്ലയന്റ് പോർട്ടൽ**, അല്ലെങ്കിൽ **RINADS Platform** എന്നിവയിൽ സഹായിക്കാൻ ഞാൻ ഇവിടെയുണ്ട്. എന്ത് പര്യവേക്ഷണം ചെയ്യാൻ ആഗ്രഹിക്കുന്നു?",
           links: [
             { label: "സേവനങ്ങൾ", href: "/services" },
             { label: "ബന്ധപ്പെടുക", href: "/contact" },

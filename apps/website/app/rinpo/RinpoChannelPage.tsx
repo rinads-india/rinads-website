@@ -39,7 +39,7 @@ export function RinpoChannelPage({ eyebrow, headline, summary, channel }: Props)
           </div>
         </div>
       </section>
-      <CTASection headline={`Talk to RINPO on ${channel.toLowerCase()}.`} />
+      <CTASection headline={`Meet RINPO on ${channel.toLowerCase()}.`} />
     </MarketingPageShell>
   );
 }

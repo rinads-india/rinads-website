@@ -34,10 +34,10 @@ describe("Solutions UX V2 contracts", () => {
     ]);
   });
 
-  it("uses the R GLOW public identity for the salon solution", () => {
+  it("uses RI SALON RINASPACE as the public salon identity", () => {
     const salon = VERTICALS.find((vertical) => vertical.slug === "salon");
     assert.ok(salon);
-    assert.equal(salon.name, "R GLOW");
+    assert.equal(salon.name, "RI SALON RINASPACE");
     assert.ok(salon.capabilities.includes("POS & refunds"));
     assert.ok(salon.capabilities.includes("Reviews & recovery"));
     assert.ok(salon.capabilities.includes("RINPO-assisted workflows"));

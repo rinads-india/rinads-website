@@ -45,7 +45,7 @@ export function StartClient({ whatsappUrl }: StartClientProps) {
 
   const actions: ActionCard[] = [
     {
-      title: "Book a 30-minute demo",
+      title: "Book a demo",
       description: "See the RINADS platform around the way your business actually operates.",
       href: appendAttribution("/contact?intent=demo", attribution),
       event: "demo_booking_started",
@@ -61,23 +61,23 @@ export function StartClient({ whatsappUrl }: StartClientProps) {
       primary: true,
     },
     {
-      title: "Talk to RINPO",
-      description: "Explore the intelligent interface to RINADS in English or Malayalam.",
+      title: "Meet RINPO",
+      description: "Explore the RINADS intelligence interface in English or Malayalam.",
       href: appendAttribution("/rinpo/live", attribution),
       event: "rinpo_opened",
       icon: Bot,
     },
     {
-      title: "Explore industry solutions",
-      description: "Salon, jewellery, retail, landscape and other industry configurations on the shared core.",
-      href: appendAttribution("/solutions", attribution),
+      title: "Activate your RINASPACE",
+      description: "RI SALON RINASPACE, jewellery, retail, landscape and other industry environments on the shared platform.",
+      href: appendAttribution("/rinaspace", attribution),
       event: "industry_solution_clicked",
       icon: Sparkles,
     },
     {
-      title: "Learn with RINADS Academy",
-      description: "Business, AI, digital and technology learning connected to real work.",
-      href: appendAttribution("/resources/academy", attribution),
+      title: "See how it works",
+      description: "RI LABS — learning, practice and shipped evidence connected to real work.",
+      href: appendAttribution("/labs", attribution),
       event: "nav_clicked",
       icon: GraduationCap,
     },

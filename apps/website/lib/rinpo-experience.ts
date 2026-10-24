@@ -77,22 +77,24 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
     context: DEFAULT_CONTEXT,
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/business-os"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/business-os") || pathname.startsWith("/platform/business"),
     context: {
-      area: "Business OS",
+      area: "Business",
       prompt: "Want me to show what needs attention in a business?",
       suggestions: [
         "What needs attention today?",
         "Show leads that need follow-up",
         "Review overdue work",
-        "Explain Business OS",
+        "Explain the Business Intelligence Platform",
       ],
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/commerce-os"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/commerce-os") || pathname.startsWith("/platform/commerce"),
     context: {
-      area: "Commerce OS",
+      area: "Commerce",
       prompt: "Want to see how an order moves from product to fulfilment?",
       suggestions: [
         "Show the order flow",
@@ -103,9 +105,10 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/marketing-os"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/marketing-os") || pathname.startsWith("/platform/growth"),
     context: {
-      area: "Marketing OS",
+      area: "Growth",
       prompt: "Want me to diagnose a campaign or map a growth workflow?",
       suggestions: [
         "Diagnose a campaign",
@@ -116,9 +119,10 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/logistics-os"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/logistics-os") || pathname.startsWith("/solutions/logistics"),
     context: {
-      area: "Logistics OS",
+      area: "Logistics RINASPACE",
       prompt: "Want to see how RINADS handles shipments and exceptions?",
       suggestions: [
         "Show shipment exceptions",
@@ -131,59 +135,65 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
   {
     test: (pathname) => pathname.startsWith("/platform/creative-os"),
     context: {
-      area: "Creative OS",
+      area: "Creative",
       prompt: "What would you like to create?",
       suggestions: [
         "Build an AI content workflow",
         "Plan an AI film",
         "Create a product-content pipeline",
-        "Explain Creative OS",
+        "Explain creative systems",
       ],
     },
   },
   {
     test: (pathname) => pathname.startsWith("/platform/build-os"),
     context: {
-      area: "Build OS",
+      area: "Build",
       prompt: "What software or system do you want to build?",
       suggestions: [
         "Turn an idea into a PRD",
         "Review an architecture",
         "Plan a software build",
-        "Explain Build OS",
+        "Explain build capability",
       ],
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/academy-os") || pathname.startsWith("/academy"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/academy-os") ||
+      pathname.startsWith("/academy") ||
+      pathname.startsWith("/labs"),
     context: {
-      area: "Academy",
+      area: "RI LABS",
       prompt: "What would you like to learn or train your team on?",
       suggestions: [
         "Help me choose a program",
         "Explain the learning path",
-        "Train my team on AI",
+        "Train my team on RINADS INTELLIGENCE",
         "Show how RINPO tutors",
       ],
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/automation-os"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/automation-os") || pathname.startsWith("/platform/automation"),
     context: {
-      area: "Automation OS",
+      area: "Automation",
       prompt: "What repetitive work do you want to automate?",
       suggestions: [
         "Map an approval workflow",
         "Automate lead follow-up",
         "Connect two business systems",
-        "Explain Automation OS",
+        "Explain governed automation",
       ],
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/rinads-intelligence"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/rinads-intelligence") ||
+      pathname.startsWith("/platform/intelligence"),
     context: {
-      area: "RINADS Intelligence",
+      area: "RINADS INTELLIGENCE",
       prompt: "Want to see how RINADS turns signals into recommendations?",
       suggestions: [
         "Explain business context",
@@ -194,22 +204,23 @@ const CONTEXT_RULES: Array<{ test: (pathname: string) => boolean; context: Rinpo
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/platform/rinads-cloud"),
+    test: (pathname) =>
+      pathname.startsWith("/platform/rinads-cloud") || pathname.startsWith("/platform/cloud"),
     context: {
-      area: "RINADS Cloud",
+      area: "RINADS Platform",
       prompt: "What part of the platform foundation do you want to understand?",
       suggestions: [
         "Explain tenant isolation",
         "Show the API layer",
-        "How does the AI gateway fit?",
+        "How does the intelligence gateway fit?",
         "Explain events and audit",
       ],
     },
   },
   {
-    test: (pathname) => pathname.startsWith("/solutions"),
+    test: (pathname) => pathname.startsWith("/rinaspace") || pathname.startsWith("/solutions"),
     context: {
-      area: "Industry Solutions",
+      area: "Industry RINASPACES",
       prompt: "Tell me your industry and I can map it to RINADS.",
       suggestions: [
         "Map RINADS to my business",

@@ -61,7 +61,7 @@ export function RinpoIntelligenceClient() {
           <div>
             <h2 className="text-2xl font-black text-foreground">Ask RINPO in context</h2>
             <p className="mt-4 text-muted-foreground">
-              RINPO is not merely a chatbot — it&apos;s an interface to your Business OS.
+              RINPO is not a generic chatbot — it is the interface to RINADS INTELLIGENCE.
             </p>
             <div className="mt-8 space-y-4">
               {CONTEXT_PROMPTS.map(({ module, prompt }) => (

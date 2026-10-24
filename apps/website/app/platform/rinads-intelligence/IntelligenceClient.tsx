@@ -83,13 +83,13 @@ export function IntelligenceClient() {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="RINADS Intelligence"
-        headline="The intelligence layer behind the operating platform."
-        summary="RINADS Intelligence connects business context, recommendations, RINPO tools, permissions, confirmations, and runtime controls so AI assistance can remain useful without bypassing business authority."
+        eyebrow="RINADS INTELLIGENCE"
+        headline="The intelligence, orchestration and decision layer."
+        summary="RINADS INTELLIGENCE connects business context, recommendations, RINPO tools, permissions, confirmations, and RINPO RUNTIME so intelligence can remain useful without bypassing business authority. Observe → Understand → Recommend → Authorize → Act → Audit."
         primaryHref="/rinpo"
-        primaryLabel="Talk to RINPO"
+        primaryLabel="Meet RINPO"
         secondaryHref="/platform"
-        secondaryLabel="Platform overview"
+        secondaryLabel="Explore RINADS"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
