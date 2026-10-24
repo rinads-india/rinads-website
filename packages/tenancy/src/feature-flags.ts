@@ -39,18 +39,22 @@ export function planFeatureFlags(input: {
   const modules =
     input.planKey === "starter"
       ? ["commerce", "inventory"]
-      : input.planKey === "growth"
-        ? ["commerce", "inventory", "procurement", "fulfilment"]
-        : input.planKey === "platform"
-          ? ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"]
-          : [];
+      : input.planKey === "trial-starter"
+        ? ["commerce", "inventory", "crm", "tasks"]
+        : input.planKey === "growth"
+          ? ["commerce", "inventory", "procurement", "fulfilment"]
+          : input.planKey === "platform"
+            ? ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"]
+            : [];
 
   return {
     "commerce.enabled": modules.includes("commerce"),
     "erp.inventory": modules.includes("inventory"),
     "erp.procurement": modules.includes("procurement"),
     "erp.fulfilment": modules.includes("fulfilment"),
-    "rinpo.ops": input.planKey === "platform",
+    "erp.crm": modules.includes("crm"),
+    "erp.tasks": modules.includes("tasks"),
+    "rinpo.ops": input.planKey === "trial-starter" || input.planKey === "platform",
     "salon.whatsapp.send_enabled": false,
   };
 }
