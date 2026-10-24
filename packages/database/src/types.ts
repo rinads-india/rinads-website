@@ -90,9 +90,20 @@ export type TenantProvisioningJob = {
   id: string;
   organization_id: string;
   template_key: string;
-  status: "pending" | "running" | "completed" | "failed";
+  status:
+    | "pending"
+    | "running"
+    | "retrying"
+    | "blocked"
+    | "dead_letter"
+    | "completed"
+    | "failed";
   idempotency_key: string | null;
   error_message: string | null;
+  attempts: number;
+  next_attempt_at: string | null;
+  last_error_class: string | null;
+  dead_lettered_at: string | null;
   created_at: string;
   completed_at: string | null;
 };
