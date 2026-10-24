@@ -147,26 +147,30 @@ function readMcpResponse(input: {
   );
 }
 
-function delegatedReadGateResponse(input: {
+function delegationAllowsCapability(
+  resolution: AuthenticatedResolution,
+  capabilityKey: RinadsExternalAgentReadScope
+): boolean {
+  if (resolution.principal.authMethod !== "delegation") return true;
+  return resolution.principal.delegatedScopes?.includes(capabilityKey) === true;
+}
+
+function delegatedScopeDeniedResponse(input: {
   payload: unknown;
   resolution: AuthenticatedResolution;
   capabilityKey: RinadsExternalAgentReadScope;
 }): Response {
-  const delegatedScopes = input.resolution.principal.delegatedScopes ?? [];
-  const allowed = delegatedScopes.includes(input.capabilityKey);
-  const reason = allowed
-    ? "DELEGATION_RLS_TOKEN_NOT_ENABLED"
-    : "DELEGATION_SCOPE_DENIED";
-  const text = allowed
-    ? "RINADS authenticated this organization-bound delegation and confirmed the requested scope, but delegated business-data execution remains fail-closed until the delegated credential is also accepted as an RLS-scoped Supabase user token. RINADS will not substitute a service-role data path."
-    : `This delegation does not grant the requested capability: ${input.capabilityKey}.`;
-
   return Response.json(
     {
       jsonrpc: "2.0",
       id: requestId(input.payload),
       result: {
-        content: [{ type: "text", text }],
+        content: [
+          {
+            type: "text",
+            text: `This delegation does not grant the requested capability: ${input.capabilityKey}.`,
+          },
+        ],
         isError: true,
         _meta: {
           "com.rinads/authenticated": true,
@@ -175,7 +179,7 @@ function delegatedReadGateResponse(input: {
             input.resolution.principal.delegationClient ?? null,
           "com.rinads/capabilityKey": input.capabilityKey,
           "com.rinads/executionEnabled": false,
-          "com.rinads/reason": reason,
+          "com.rinads/reason": "DELEGATION_SCOPE_DENIED",
         },
       },
     },
@@ -190,29 +194,15 @@ async function executeEnabledRead(
 ): Promise<Response | null> {
   const name = toolName(payload);
 
-  // Delegation authentication is now consumable for principal/scope resolution,
-  // but it is deliberately NOT converted into a service-role business-data
-  // client. Until RINADS mints/accepts an RLS-valid delegated user JWT, these
-  // otherwise-enabled READs stay fail-closed after scope validation.
-  if (resolution.principal.authMethod === "delegation") {
-    if (name === CATALOG_TOOL) {
-      return delegatedReadGateResponse({
+  if (name === CATALOG_TOOL) {
+    if (!delegationAllowsCapability(resolution, "commerce.catalog.read")) {
+      return delegatedScopeDeniedResponse({
         payload,
         resolution,
         capabilityKey: "commerce.catalog.read",
       });
     }
-    if (name === ORDER_TOOL) {
-      return delegatedReadGateResponse({
-        payload,
-        resolution,
-        capabilityKey: "commerce.order.read",
-      });
-    }
-    return null;
-  }
 
-  if (name === CATALOG_TOOL) {
     const result = await executeRinadsCatalogRead({
       request,
       principal: resolution.principal,
@@ -227,6 +217,14 @@ async function executeEnabledRead(
   }
 
   if (name === ORDER_TOOL) {
+    if (!delegationAllowsCapability(resolution, "commerce.order.read")) {
+      return delegatedScopeDeniedResponse({
+        payload,
+        resolution,
+        capabilityKey: "commerce.order.read",
+      });
+    }
+
     const result = await executeRinadsOrderRead({
       request,
       principal: resolution.principal,
@@ -292,7 +290,8 @@ export async function GET(): Promise<Response> {
       execution: {
         default: "disabled_until_capability_policy_binding",
         enabledReadCapabilities: ["commerce.catalog.read", "commerce.order.read"],
-        delegationConsumption: "principal_validation_enabled_data_execution_fail_closed",
+        delegationConsumption:
+          "internal_short_lived_es256_rls_bridge_when_signing_key_is_configured",
         entitlementRequired: true,
       },
       endpoint: "/api/mcp",
