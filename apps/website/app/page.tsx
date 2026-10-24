@@ -1,5 +1,4 @@
 import Script from "next/script";
-import { getCachedSeoByPath, getPageMetadata } from "@/lib/cms";
 import {
   buildOrganizationJsonLd,
   buildSoftwareApplicationJsonLd,
@@ -9,21 +8,25 @@ import {
 } from "@/lib/json-ld";
 import { HomeClient } from "./HomeClient";
 
+const HOME_TITLE = "RINADS | Business Intelligence Platform";
+const HOME_DESCRIPTION =
+  "Run customers, work, commerce, growth and automation through RINADS Intelligence, RINPO, RINPO Runtime, RI ID, RI SPACE, and connected Industry RINASPACES.";
+
 export async function generateMetadata() {
-  return getPageMetadata("/");
+  return {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+  };
 }
 
 export default async function HomePage() {
-  const seo = await getCachedSeoByPath("/");
   const jsonLd = [
     buildOrganizationJsonLd(),
     buildWebSiteJsonLd(),
     buildWebPageJsonLd({
       path: "/",
-      title: seo?.title ?? "RINADS | AI Operating Platform for Growing Businesses",
-      description:
-        seo?.description ??
-        "Run customers, work, commerce, marketing and automation on one connected platform.",
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
     }),
     buildSoftwareApplicationJsonLd(),
   ];
