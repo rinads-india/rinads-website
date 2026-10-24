@@ -114,7 +114,7 @@ export function HomeHero() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/rinpo-full-body-transparent-v2.png"
-            alt="RINPO — the RINADS AI assistant"
+            alt="RINPO — the RINADS Business Intelligence Character"
             width={420}
             height={520}
             className="mx-auto h-auto w-full max-w-[280px] object-contain md:max-w-[340px]"
@@ -122,7 +122,7 @@ export function HomeHero() {
             decoding="async"
           />
           <p className="mt-3 text-center text-xs font-medium text-white/50">
-            RINPO · Demo character asset · Talk to open the Phone experience
+            RINPO · Business Intelligence Character · Talk to open the RINPO Phone experience
           </p>
         </motion.div>
       </div>

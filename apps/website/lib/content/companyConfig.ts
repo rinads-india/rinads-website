@@ -36,8 +36,8 @@ if (facebook) socials.push({ name: "Facebook", href: facebook });
 export const COMPANY_CONFIG = {
   legalName: "RINADS Technologies",
   brandName: "RINADS",
-  category: "AI Operating Platform for Business",
-  tagline: "Not another business app. The intelligent operating platform.",
+  category: "Business Intelligence Platform",
+  tagline: "Business Intelligence Infrastructure for Software-Defined Business.",
   location: {
     city: "Thrissur",
     region: "Kerala",
@@ -50,7 +50,7 @@ export const COMPANY_CONFIG = {
     name: "Andrino T D",
     title: "Founder / Managing Director & CEO",
     story:
-      "Built in Thrissur with the goal of simplifying how businesses operate, RINADS connects software, intelligence, automation and business workflows into one platform.",
+      "Built in Thrissur to simplify how businesses operate, RINADS connects software, people, data, intelligence, automation, and business workflows through one governed platform.",
     ...(headshot ? { headshotSrc: headshot } : {}),
   } satisfies CompanyFounder,
   /** Only populated when env provides verified values */

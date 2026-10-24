@@ -20,50 +20,50 @@ import {
 
 const CLOUD_STACK = [
   {
-    layer: "Applications",
-    description: "Public Experience, R GLOW, Storefront, Customer Portal, Owner Portal, and Platform Admin.",
+    layer: "Applications + RINASPACES",
+    description: "Public Experience, Industry RINASPACES, storefronts, customer portals, owner surfaces, and platform administration.",
     icon: Boxes,
   },
   {
-    layer: "Identity + tenant context",
-    description: "Authentication, organization membership, active-org resolution, and tenant-aware access.",
+    layer: "RI ID",
+    description: "Authentication, organisation membership, active-organisation resolution, roles, permissions, and tenant-aware access.",
     icon: KeyRound,
   },
   {
-    layer: "Domain services",
-    description: "Commerce, operations, salon, platform, billing, domains, CMS, and intelligence packages.",
+    layer: "RI SPACE + platform services",
+    description: "Persistent business context across commerce, operations, industry capabilities, billing, domains, CMS, and intelligence services.",
     icon: Network,
   },
   {
-    layer: "Runtime",
-    description: "Business events, workflows, jobs, approvals, retries, workers, and notification outbox.",
+    layer: "RINPO Runtime",
+    description: "Business events, workflows, connectors, jobs, approvals, retries, workers, and notification outbox.",
     icon: Workflow,
   },
   {
     layer: "Data + storage",
-    description: "PostgreSQL/Supabase-backed schema, RLS foundations, files, and structured business data.",
+    description: "PostgreSQL/Supabase-backed schema, RLS foundations, files, audit context, and structured business data.",
     icon: Database,
   },
   {
     layer: "Infrastructure",
-    description: "Deployment, integrations, APIs, cron/worker execution, and provider adapters.",
+    description: "Deployment, APIs, scheduled execution, provider adapters, storage, networking, and infrastructure foundations.",
     icon: Cloud,
   },
 ] as const;
 
 const DATA_FLOW = [
   "User / product",
-  "Identity",
-  "Tenant context",
-  "Domain service",
-  "Event / workflow",
-  "Data",
+  "RI ID",
+  "RI SPACE context",
+  "Business capability",
+  "RINPO Runtime",
+  "Data / action",
 ] as const;
 
 const FOUNDATION_AREAS = [
   {
     title: "Tenant isolation",
-    description: "Commerce and operations have tenant-scoped RLS/security tests and organization-aware service patterns.",
+    description: "Tenant-scoped RLS/security tests and organisation-aware service patterns protect business boundaries.",
   },
   {
     title: "Runtime orchestration",
@@ -81,7 +81,7 @@ const FOUNDATION_AREAS = [
 
 const HONEST_LIMITS = [
   "Some external provider connections still need live credentials before production use.",
-  "Public RINPO demo chat is distinct from authenticated product-side intelligence and tool execution.",
+  "Public RINPO is distinct from authenticated product-side intelligence and governed tool execution.",
   "Some workflow definitions are still evolving toward fully configurable, organisation-managed runbooks.",
   "Availability statements on this site reflect implemented product posture — not roadmap aspirations alone.",
 ] as const;
@@ -90,9 +90,9 @@ export function CloudClient() {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="RINADS Cloud"
-        headline="The shared foundation behind the operating platform."
-        summary="RINADS Cloud connects identity, tenancy, domain services, runtime, data, APIs, integrations, and infrastructure so multiple business experiences can operate on one platform core."
+        eyebrow="RI ID + RI SPACE"
+        headline="One identity. One persistent business workspace."
+        summary="RI ID establishes who the business and its people are. RI SPACE carries organisation context and the persistent workspace while the RINADS platform core connects data, services, RINPO Runtime, APIs, connectors, and infrastructure underneath."
         primaryHref="/platform"
         primaryLabel="Explore platform"
         secondaryHref="/platform/intelligence"
@@ -123,12 +123,12 @@ export function CloudClient() {
 
       <section className="border-y border-[var(--border)] bg-black px-6 py-20 text-white md:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Request path</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Context + execution path</p>
           <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight md:text-5xl">
-            Business operations move through identity and tenant context before domain work.
+            Business operations move through identity, context, permissions, and governed execution.
           </h2>
           <p className="mt-5 max-w-2xl text-white/60">
-            The exact path varies by product, but the platform architecture separates user/session context from domain services and runtime side effects.
+            The exact path varies by product, but the platform keeps identity and organisation context separate from business capabilities, intelligence, and runtime side effects.
           </p>
 
           <div className="mt-10 overflow-x-auto pb-2">
@@ -153,9 +153,9 @@ export function CloudClient() {
           <div className="flex items-start gap-3">
             <GitBranch size={24} className="mt-1 text-rinads-primary" aria-hidden />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Runtime</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">RINPO Runtime</p>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-                Events and workflows connect domain state to reliable execution.
+                Events and workflows connect business state to reliable execution.
               </h2>
             </div>
           </div>
@@ -204,13 +204,13 @@ export function CloudClient() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Model-provider boundary</p>
             <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-              Keep model providers replaceable behind the RINADS intelligence boundary.
+              Keep model providers replaceable behind the RINADS Intelligence boundary.
             </h2>
             <p className="mt-5 text-[var(--text-muted)]">
-              The current platform already separates business tools and runtime controls from model choice. As LLM depth expands, model providers should remain replaceable implementation choices; permissions, tenant context, tools, approvals, and audit belong to RINADS rather than to an external model.
+              The platform separates business tools and runtime controls from model choice. Model providers remain replaceable implementation choices; permissions, tenant context, tools, approvals, policy, and audit belong to RINADS rather than to an external model.
             </p>
             <Link
-              href="/platform/rinads-intelligence"
+              href="/platform/intelligence"
               className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline"
             >
               Explore RINADS Intelligence
@@ -224,7 +224,7 @@ export function CloudClient() {
                 ["RINPO / product request", "User intent and current product context"],
                 ["RINADS Intelligence", "Policy, tool selection, context, recommendations"],
                 ["Model / inference adapter", "Replaceable compute provider"],
-                ["Registered tool / runtime", "Governed business-side execution path"],
+                ["Registered tool / RINPO Runtime", "Governed business-side execution path"],
               ].map(([title, description], index) => (
                 <div key={title}>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
@@ -262,8 +262,8 @@ export function CloudClient() {
       </section>
 
       <CTASection
-        headline="One shared platform foundation."
-        summary="RINADS Cloud supports the operating systems, RINADS Intelligence, and product experiences through shared identity, domain, runtime, data, and infrastructure layers."
+        headline="One identity. One space. One governed platform core."
+        summary="RI ID and RI SPACE provide the public identity-and-workspace layer while RINPO Runtime, RINADS Intelligence, data services, connectors, and infrastructure operate underneath within controlled boundaries."
       />
     </MarketingPageShell>
   );

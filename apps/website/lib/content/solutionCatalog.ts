@@ -1,5 +1,5 @@
 /**
- * Authoritative RINADS Editions (industry solution) catalog.
+ * Authoritative public industry-solution catalog.
  * Aligns status with product truth — never softer than production posture.
  */
 import type { ProductStatusValue } from "@/lib/product-status";
@@ -18,7 +18,7 @@ export type SolutionCatalogEntry = {
   status: ProductStatusValue;
   tier: SolutionTier;
   depthOrder: number;
-  /** When true, shown in primary Editions grid on homepage */
+  /** When true, shown in the primary Industry RINASPACE grid on homepage */
   publicEdition: boolean;
 };
 
@@ -26,12 +26,12 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "salon",
     industry: "Salon",
-    editionName: "RINADS for Salons",
+    editionName: "RI SALON RINASPACE",
     outcome:
       "Appointments, customers, staff, POS, follow-ups and growth from one connected workspace.",
-    poweredBy: ["R GLOW", "Business", "RINPO"],
+    poweredBy: ["RINADS Intelligence", "RINPO Runtime", "RI ID + RI SPACE"],
     href: "/solutions/salon",
-    ctaLabel: "Explore Salon edition",
+    ctaLabel: "Explore RI SALON RINASPACE",
     status: "pilot",
     tier: "commercial",
     depthOrder: 1,
@@ -40,11 +40,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "jewellery",
     industry: "Jewellery",
-    editionName: "RINADS for Jewellery",
+    editionName: "RI JEWELLERY RINASPACE",
     outcome: "Collections, appointments, CRM, brand content and high-trust fulfilment.",
     poweredBy: ["Commerce", "Business", "RINPO"],
     href: "/solutions/jewellery",
-    ctaLabel: "Explore Jewellery edition",
+    ctaLabel: "Explore RI JEWELLERY RINASPACE",
     status: "roadmap",
     tier: "future",
     depthOrder: 2,
@@ -53,11 +53,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "automotive",
     industry: "Automotive",
-    editionName: "RINADS for Automotive",
-    outcome: "Service operations, customers, parts and follow-ups on the shared RINADS core.",
+    editionName: "RI AUTOMOTIVE RINASPACE",
+    outcome: "Service operations, customers, vehicles, parts and follow-ups on the shared RINADS core.",
     poweredBy: ["Business", "Commerce", "RINPO"],
     href: "/solutions/automotive",
-    ctaLabel: "Explore Automotive edition",
+    ctaLabel: "Explore RI AUTOMOTIVE RINASPACE",
     status: "roadmap",
     tier: "future",
     depthOrder: 3,
@@ -66,11 +66,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "landscape",
     industry: "Landscape & Nursery",
-    editionName: "RINADS for Landscape & Nursery",
+    editionName: "RI LANDSCAPE RINASPACE",
     outcome: "Inventory, projects, field work, fulfilment and customer follow-up.",
     poweredBy: ["Business", "Commerce", "Automation", "RINPO"],
     href: "/solutions/landscape",
-    ctaLabel: "Explore Landscape edition",
+    ctaLabel: "Explore RI LANDSCAPE RINASPACE",
     status: "preview",
     tier: "commercial",
     depthOrder: 4,
@@ -79,11 +79,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "nursery",
     industry: "Landscape & Nursery",
-    editionName: "RINADS for Landscape & Nursery",
+    editionName: "RI LANDSCAPE RINASPACE",
     outcome: "Inventory, projects, field work, fulfilment and customer follow-up.",
     poweredBy: ["Business", "Commerce", "Automation", "RINPO"],
     href: "/solutions/landscape",
-    ctaLabel: "Explore Landscape edition",
+    ctaLabel: "Explore RI LANDSCAPE RINASPACE",
     status: "preview",
     tier: "commercial",
     depthOrder: 4,
@@ -92,11 +92,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "retail",
     industry: "Retail",
-    editionName: "RINADS for Retail",
+    editionName: "Retail",
     outcome: "Catalogue, inventory, storefront, orders, payments and customer growth.",
     poweredBy: ["Business", "Commerce", "RINPO"],
     href: "/solutions/retail",
-    ctaLabel: "Explore Retail edition",
+    ctaLabel: "Explore Retail",
     status: "preview",
     tier: "commercial",
     depthOrder: 5,
@@ -105,11 +105,11 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "logistics",
     industry: "Logistics",
-    editionName: "RINADS for Logistics",
-    outcome: "Shipments, exceptions, carriers and customer delivery follow-up.",
-    poweredBy: ["Automation", "Business", "RINPO"],
+    editionName: "RI LOGISTICS",
+    outcome: "Shipments, exceptions, carriers, returns and customer delivery follow-up.",
+    poweredBy: ["Automation", "RINPO Runtime", "RINADS Intelligence"],
     href: "/solutions/logistics",
-    ctaLabel: "Explore Logistics edition",
+    ctaLabel: "Explore RI LOGISTICS",
     status: "roadmap",
     tier: "future",
     depthOrder: 6,
@@ -118,7 +118,7 @@ export const SOLUTION_CATALOG: SolutionCatalogEntry[] = [
   {
     slug: "healthcare",
     industry: "Healthcare",
-    editionName: "RINADS for Healthcare",
+    editionName: "Healthcare",
     outcome:
       "Scheduling, team workflows and follow-ups for non-clinical practice operations.",
     poweredBy: ["Business", "Automation", "RINPO"],

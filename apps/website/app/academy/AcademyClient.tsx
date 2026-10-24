@@ -44,13 +44,13 @@ export function AcademyClient() {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="RINADS Academy · Real Experience"
+        eyebrow="RI LABS · Learn · Build · Prove"
         headline="Learn by doing work that can be shipped."
-        summary="RINADS Academy is designed around practice, real work, projects, evidence, and improvement — with RINPO as the persistent learning interface."
+        summary="RI LABS is designed around practice, real work, projects, evidence, and improvement — with RINPO Tutor as the persistent learning interface."
         primaryHref="/academy/programs"
         primaryLabel="Explore programs"
-        secondaryHref="/platform/academy-os"
-        secondaryLabel="Academy OS"
+        secondaryHref="/rinpo"
+        secondaryLabel="Meet RINPO"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -110,7 +110,7 @@ export function AcademyClient() {
               onClick={() =>
                 openPhoneScreen(
                   "chat",
-                  "Help me choose a RINADS Academy learning path based on what I want to learn, practice, and ship."
+                  "Help me choose an RI LABS learning path based on what I want to learn, practice, build, and ship."
                 )
               }
               className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -145,7 +145,7 @@ export function AcademyClient() {
               ))}
             </div>
             <p className="mt-5 text-xs leading-5 text-white/40">
-              This public experience describes the learning model. It does not imply that every tutoring, assessment, or certification workflow is fully automated today.
+              This public experience describes the learning model. It does not imply that every tutoring, assessment, or credential workflow is fully automated today.
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function AcademyClient() {
             <GraduationCap size={24} className="mt-1 text-rinads-primary" aria-hidden />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">
-                Schools & learning paths
+                Programs & learning paths
               </p>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
                 Choose the capability you want to build.
@@ -221,20 +221,20 @@ export function AcademyClient() {
           <div className="flex items-center gap-3">
             <Sparkles size={20} className="text-rinads-primary" aria-hidden />
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">
-              Academy + Platform
+              RI LABS + RINADS Platform
             </p>
           </div>
           <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-4xl">
             Learn inside the same ecosystem used to build and operate.
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-            Academy can connect learning to Build OS, Creative OS, Marketing OS, Business OS, Automation OS, and RINPO so the learner can move from explanation into practical application.
+            RI LABS can connect learning to real RINADS capabilities, Industry RINASPACES, connectors, automation, creative work, and RINPO so the learner can move from explanation into practical application.
           </p>
           <Link
-            href="/platform/academy-os"
+            href="/platform"
             className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline"
           >
-            Explore Academy OS
+            Explore the RINADS Platform
             <ArrowRight size={15} aria-hidden />
           </Link>
         </div>
@@ -242,7 +242,7 @@ export function AcademyClient() {
 
       <CTASection
         headline="Learn. Practice. Work. Ship."
-        summary="Choose a path, use RINPO as the learning interface, and build evidence through practical work."
+        summary="Choose a path, use RINPO Tutor as the learning interface, and build evidence through practical work."
       />
     </MarketingPageShell>
   );

@@ -104,10 +104,11 @@ function SalonDemo() {
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/rglow-logo.png" alt="" width={40} height={40} className="h-10 w-10 rounded-xl object-contain" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rinads-primary/10 text-rinads-primary">
+            <Sparkles size={20} aria-hidden />
+          </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">R GLOW · Salon OS</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">RI SALON RINASPACE</p>
             <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Owner & staff operating loop</p>
           </div>
         </div>
@@ -159,7 +160,7 @@ function SalonDemo() {
             className="absolute -right-2 -top-2 h-24 w-24 rounded-full object-cover opacity-40"
             aria-hidden
           />
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RINPO in R GLOW</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RINPO in RI SALON RINASPACE</p>
           <p className="mt-4 text-lg font-semibold">Salon attention and action context.</p>
           <p className="mt-3 text-sm leading-6 text-white/60">
             Product-side salon tools reuse salon data, permission checks, approvals, and audit paths instead of creating a
@@ -191,7 +192,7 @@ function JewelleryDemo() {
       <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-400/[0.05] p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-300">Concept boundary</p>
         <p className="mt-2 text-sm leading-6 text-white/60">
-          This is a coming-soon vertical configuration preview, not a claim that a production jewellery OS is currently available.
+          This is a coming-soon RI JEWELLERY RINASPACE preview, not a claim that a production jewellery experience is currently available.
         </p>
       </div>
     </div>
@@ -203,7 +204,7 @@ function LogisticsDemo() {
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
       <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">Vertical concept</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RI LOGISTICS concept</p>
           <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Provider-neutral logistics operations</p>
         </div>
         <Truck size={22} className="text-rinads-primary" aria-hidden />
@@ -224,7 +225,7 @@ function LogisticsDemo() {
           ))}
         </div>
         <p className="mt-4 text-xs leading-5 text-[var(--text-muted)]">
-          Logistics OS product primitives are shown elsewhere in the platform; this vertical page describes the planned business configuration around them.
+          Logistics capabilities are shown elsewhere in the platform; this page describes the planned business configuration around them.
         </p>
       </div>
     </div>
@@ -267,7 +268,7 @@ function AutomotiveDemo() {
   return (
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-        Automotive · synthetic concept
+        RI AUTOMOTIVE RINASPACE · synthetic concept
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {[
@@ -282,7 +283,7 @@ function AutomotiveDemo() {
         ))}
       </div>
       <p className="mt-5 text-sm leading-6 text-[var(--text-muted)]">
-        Coming-soon concept for service scheduling, customers, parts, and follow-ups. Demo numbers are synthetic — not
+        Coming-soon concept for service scheduling, customers, vehicles, parts, and follow-ups. Demo numbers are synthetic — not
         customer performance data.
       </p>
     </div>
@@ -321,7 +322,7 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Shared RINADS core</p>
               <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-                This vertical is configured from existing RINADS platform layers rather than becoming a separate technology stack.
+                This industry experience is configured from shared RINADS platform capabilities rather than becoming a separate technology stack.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -396,7 +397,7 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
               One RINPO. Context changes with the business.
             </h2>
             <p className="mt-5 text-white/60">
-              RINPO can explain this vertical, guide the workflow, and route toward supported platform actions without creating a separate intelligence architecture for the industry.
+              RINPO can explain this industry experience, guide the workflow, and route toward supported platform actions without creating a separate intelligence architecture for the industry.
             </p>
             <button
               type="button"
@@ -412,10 +413,10 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">Configuration model</p>
             <div className="mt-5 space-y-3">
               {[
-                ["Shared platform", "Identity, tenancy, permissions, data, runtime"],
-                ["Operating Systems", config.foundation.join(" · ")],
+                ["Shared platform", "RI ID · RI SPACE · permissions · data · RINPO Runtime"],
+                ["Business capabilities", config.foundation.join(" · ")],
                 ["Industry workflow", config.workflow.join(" → ")],
-                ["RINPO", "Same interface, vertical context"],
+                ["RINPO", "Same interface, industry context"],
               ].map(([title, detail]) => (
                 <div key={title} className="rounded-xl border border-white/10 bg-black/20 p-4">
                   <p className="text-sm font-semibold">{title}</p>
@@ -430,12 +431,12 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
       {isSalon ? (
         <section className="px-6 py-20 md:px-12 lg:px-20">
           <div className="mx-auto max-w-7xl rounded-3xl border border-rinads-primary/25 bg-rinads-primary/[0.05] p-6 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Try R GLOW</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Try RI SALON RINASPACE</p>
             <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-4xl">
               Explore the customer booking entry or start a salon workspace.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-              R GLOW product code is built, while production cutover still depends on deployment, credentials, and operational validation. Live booking links are organization-specific.
+              The salon pilot engine is built, while production cutover still depends on deployment, credentials, and operational validation. Live booking links are organisation-specific.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link

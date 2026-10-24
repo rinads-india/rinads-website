@@ -75,7 +75,7 @@ export default function CompanyFounderPage() {
             </div>
           </div>
         </section>
-        <CTASection headline="Talk with the team building the operating layer." />
+        <CTASection headline="Talk with the team building the RINADS Business Intelligence Platform." />
       </MarketingPageShell>
     </>
   );

@@ -23,18 +23,18 @@ import { useRinpo } from "@/components/rinpo/RinpoProvider";
 
 const CONFIGURATION_MODEL = [
   {
-    title: "Shared platform",
-    description: "Identity, tenancy, permissions, data, runtime, and common platform services.",
+    title: "Shared platform core",
+    description: "RI ID, RI SPACE, organisation context, permissions, data, RINPO Runtime, and common platform services.",
     icon: Layers3,
   },
   {
-    title: "Operating Systems",
-    description: "Business, Commerce, Marketing, Logistics, Creative, Build, Academy, and Automation.",
+    title: "Business capabilities",
+    description: "Connected capabilities for customers, work, commerce, growth, logistics, automation, and industry operations.",
     icon: Boxes,
   },
   {
-    title: "Industry configuration",
-    description: "Workflows, terminology, screens, integrations, and operating patterns adapted to the business.",
+    title: "Industry RINASPACE",
+    description: "Workflows, terminology, screens, integrations, and operating patterns configured for the industry.",
     icon: Building2,
   },
 ] as const;
@@ -51,9 +51,9 @@ export function SolutionsClient() {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="Industry Solutions"
-        headline="One RINADS core. Configured for the business."
-        summary="RINADS does not need a separate technology platform for every industry. The shared core stays consistent while workflows, terminology, modules, and integrations are configured around how each business operates."
+        eyebrow="Industry RINASPACES"
+        headline="One RINADS core. Built for your industry."
+        summary="RINADS does not need a separate technology platform for every industry. The shared core stays consistent while workflows, terminology, capabilities, connectors, and experiences are configured into an Industry RINASPACE around how each business operates."
         primaryHref="/platform"
         primaryLabel="Explore the platform"
         secondaryHref="/contact?intent=demo"
@@ -62,7 +62,7 @@ export function SolutionsClient() {
 
       <OutcomeJourneySection
         eyebrow="Choose your path"
-        headline="From industry need to the right RINADS surface."
+        headline="From industry need to the right RINADS experience."
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -90,7 +90,7 @@ export function SolutionsClient() {
             <span className="text-rinads-primary" aria-hidden>+</span>
             <span>Industry configuration</span>
             <span className="text-rinads-primary" aria-hidden>=</span>
-            <span className="text-[var(--text-primary)]">Vertical solution</span>
+            <span className="text-[var(--text-primary)]">Industry RINASPACE</span>
           </div>
         </div>
       </section>
@@ -104,7 +104,7 @@ export function SolutionsClient() {
                 Commercial focus
               </div>
               <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-                Start from configurations teams can explore today.
+                Start with Industry RINASPACES teams can explore today.
               </h2>
             </div>
             <button
@@ -112,7 +112,7 @@ export function SolutionsClient() {
               onClick={() =>
                 openPhoneScreen(
                   "chat",
-                  "Help me identify which RINADS industry configuration best fits my business."
+                  "Help me identify which RINADS Industry RINASPACE best fits my business."
                 )
               }
               className="inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
@@ -148,7 +148,7 @@ export function SolutionsClient() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Future / private preview</p>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-5xl">
-                Planned vertical depth on the same platform.
+                Planned Industry RINASPACE depth on the same platform.
               </h2>
               <p className="mt-4 max-w-2xl text-[var(--text-muted)]">
                 Future and private-preview pages describe product direction. They do not imply production availability.
@@ -178,12 +178,12 @@ export function SolutionsClient() {
       <section className="border-y border-[var(--border)] bg-black px-6 py-20 text-white md:px-12 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Custom configuration</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Custom RINASPACE</p>
             <h2 className="mt-4 text-3xl font-black tracking-tight md:text-5xl">
               Your industry does not need to be on the list.
             </h2>
             <p className="mt-5 text-white/60">
-              RINADS can start from the shared Business OS and platform primitives, then map the workflows, permissions, integrations, and terminology that make your operation specific.
+              RINADS can start from the shared platform core and connected business capabilities, then map the workflows, permissions, connectors, data, and terminology that make your operation specific.
             </p>
             <Link
               href="/projects"
@@ -199,7 +199,7 @@ export function SolutionsClient() {
               ["Workflow map", "How work enters, moves, waits, and completes."],
               ["Roles + permissions", "Who can see, approve, change, and execute."],
               ["Data model", "The business entities and relationships that matter."],
-              ["Integrations", "Existing systems, providers, channels, and APIs."],
+              ["Connectors", "Existing systems, providers, channels, APIs, and execution boundaries."],
             ].map(([title, detail]) => (
               <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
                 <p className="font-semibold">{title}</p>
@@ -211,8 +211,8 @@ export function SolutionsClient() {
       </section>
 
       <CTASection
-        headline="Configure the platform around your operation."
-        summary="Choose an available vertical, explore a coming-soon direction, or start from the shared RINADS core and define a custom workflow."
+        headline="Configure RINADS around your operation."
+        summary="Choose an available Industry RINASPACE, explore a roadmap direction, or start from the shared RINADS core and define a custom operating experience."
       />
     </MarketingPageShell>
   );

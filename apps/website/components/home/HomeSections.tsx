@@ -30,8 +30,7 @@ export function HomeSections() {
           Four primary business outcomes
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Replace the wall of operating systems with how work actually moves: RUN · SELL · GROW ·
-          AUTOMATE.
+          Replace fragmented tools with how work actually moves: RUN · SELL · GROW · AUTOMATE.
         </p>
         <div className="mt-8">
           <OutcomeGrid />
@@ -41,7 +40,7 @@ export function HomeSections() {
       <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="rinpo-exp-heading">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">RINPO</p>
         <h2 id="rinpo-exp-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          The persistent AI Business Intelligence Character
+          The persistent Business Intelligence Character
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
           RINPO communicates. RINADS Intelligence understands. RINPO Runtime executes — with
@@ -97,8 +96,8 @@ export function HomeSections() {
           >
             <h3 className="text-xl font-bold">RINPO Runtime</h3>
             <p className="mt-2 text-sm leading-6 text-white/65">
-              Agents, tools, workflows, triggers, permissions, approvals, execution and audit. AI
-              must not receive unrestricted control over the business.
+              Agents, tools, workflows, triggers, permissions, approvals, execution and audit. Intelligence
+              does not receive unrestricted control over the business.
             </p>
             <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">
               Explore Runtime →
@@ -120,13 +119,13 @@ export function HomeSections() {
 
       <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="editions-heading">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-          Industry editions
+          Industry RINASPACES
         </p>
         <h2 id="editions-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          RINADS Editions
+          Built for your industry
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Industry depth on the shared operating core. Availability badges tell the truth — see{" "}
+          Industry depth on the shared RINADS platform core. Availability badges tell the truth — see{" "}
           <Link href="/trust/availability" className="text-rinads-primary underline-offset-4 hover:underline">
             /trust/availability
           </Link>
@@ -155,7 +154,7 @@ export function HomeSections() {
             { id: "stories", label: "Customer Stories" },
             { id: "deployments", label: "Deployments" },
             { id: "demonstrations", label: "Product Demonstrations" },
-            { id: "labs", label: "RINADS Labs" },
+            { id: "labs", label: "RI LABS" },
           ].map((item) => (
             <Link
               key={item.id}
@@ -177,7 +176,7 @@ export function HomeSections() {
           Identity, isolation, approvals and audit
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Every material AI action passes through RINPO Runtime policies. We do not claim
+          Every material intelligence-assisted action passes through RINPO Runtime policies. We do not claim
           certifications the company has not received.
         </p>
         <Link
