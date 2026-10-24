@@ -1,6 +1,5 @@
 import { ProductStatus } from "@/components/system/ProductStatus";
 import type { ProductStatusValue } from "@/lib/product-status";
-import { fromLegacyAvailability } from "@/lib/product-status";
 
 type AvailabilityBadgeProps = {
   status: ProductStatusValue | "available" | "coming";
@@ -21,7 +20,7 @@ export function AvailabilityBadge({
 }: AvailabilityBadgeProps) {
   return (
     <ProductStatus
-      status={fromLegacyAvailability(status)}
+      status={status}
       size={size}
       showDescription={showDescription}
       className={className}

@@ -62,8 +62,8 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run smoke E2E
-        run: pnpm exec playwright test tests/e2e/smoke.spec.ts
+      - name: Run smoke and readiness UX E2E
+        run: pnpm exec playwright test tests/e2e/smoke.spec.ts tests/e2e/readiness-ux.spec.ts
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

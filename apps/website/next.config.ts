@@ -9,6 +9,9 @@ import { assertProductionEnvContract } from "@rinads/auth";
 assertProductionEnvContract();
 
 const nextConfig: NextConfig = {
+  // The development indicator covers bottom navigation on small test viewports.
+  // Production has no indicator; keep real click checks representative in CI.
+  devIndicators: process.env.CI ? false : undefined,
   async redirects() {
     return [
       // Legacy → platform pillars
