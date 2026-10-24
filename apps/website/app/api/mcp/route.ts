@@ -7,6 +7,12 @@ import {
 import { executeRinadsCatalogRead } from "@/lib/agent-gateway/catalog-read";
 import { executeRinadsOrderRead } from "@/lib/agent-gateway/order-read";
 import {
+  rinadsMcpAuthChallenge,
+  rinadsMcpOAuthScopes,
+  rinadsMcpResourceMetadataUrl,
+  rinadsMcpSecuritySchemes,
+} from "@/lib/agent-gateway/oauth";
+import {
   resolveRinadsAgentPrincipal,
   type RinadsAgentPrincipalResolution,
 } from "@/lib/agent-gateway/principal";
@@ -84,6 +90,62 @@ function toolName(payload: unknown): string | undefined {
 function toolArguments(payload: unknown): unknown {
   const params = asRecord(asRecord(payload)?.params);
   return params?.arguments;
+}
+
+function withToolSecuritySchemes(body: unknown): unknown {
+  const root = asRecord(body);
+  const result = asRecord(root?.result);
+  if (!root || !result || !Array.isArray(result.tools)) return body;
+
+  return {
+    ...root,
+    result: {
+      ...result,
+      tools: result.tools.map((tool) => {
+        const record = asRecord(tool);
+        if (!record) return tool;
+        return {
+          ...record,
+          securitySchemes: rinadsMcpSecuritySchemes(),
+        };
+      }),
+    },
+  };
+}
+
+function withAuthenticationChallenge(input: {
+  body: unknown;
+  payload: unknown;
+  request: Request;
+  resolution: RinadsAgentPrincipalResolution;
+}): unknown {
+  if (input.resolution.status !== "unauthenticated" || !toolName(input.payload)) {
+    return input.body;
+  }
+
+  const root = asRecord(input.body);
+  const result = asRecord(root?.result);
+  const meta = asRecord(result?._meta);
+
+  if (
+    !root ||
+    !result ||
+    result.isError !== true ||
+    meta?.["com.rinads/reason"] !== "AGENT_AUTH_REQUIRED"
+  ) {
+    return input.body;
+  }
+
+  return {
+    ...root,
+    result: {
+      ...result,
+      _meta: {
+        ...meta,
+        "mcp/www_authenticate": [rinadsMcpAuthChallenge(input.request.url)],
+      },
+    },
+  };
 }
 
 function failureCode(status: ReadCapabilityFailure["status"]): string {
@@ -273,19 +335,31 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
-  return Response.json(handled.body, {
+  const withAuthentication = withAuthenticationChallenge({
+    body: handled.body,
+    payload,
+    request,
+    resolution,
+  });
+  const responseBody = withToolSecuritySchemes(withAuthentication);
+
+  return Response.json(responseBody, {
     status: handled.status,
     headers: JSON_HEADERS,
   });
 }
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   return Response.json(
     {
       name: "RINADS MCP Gateway",
       protocol: RINADS_MCP_MODERN_PROTOCOL_VERSION,
       transport: "streamable-http/stateless-json",
-      authentication: "rinads-session-or-supabase-bearer-or-ri-delegation",
+      authentication: "oauth2-supabase-or-rinads-session-or-ri-delegation",
+      oauth: {
+        protectedResourceMetadata: rinadsMcpResourceMetadataUrl(request.url),
+        scopes: rinadsMcpOAuthScopes(),
+      },
       organizationScope: "server-resolved",
       execution: {
         default: "disabled_until_capability_policy_binding",
