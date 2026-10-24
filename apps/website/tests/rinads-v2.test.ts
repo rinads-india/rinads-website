@@ -12,9 +12,11 @@ import {
 } from "../lib/os-rinpo-prompts";
 
 describe("onboarding-config", () => {
-  it("maps landscape business type to ambady-nursery template", () => {
+  it("routes specialized industries directly and generic industries through starter-business", () => {
     assert.equal(resolveTemplateForBusinessType("landscape"), "ambady-nursery");
-    assert.equal(resolveTemplateForBusinessType("retail"), "generic-retail");
+    assert.equal(resolveTemplateForBusinessType("salon"), "salon-os");
+    assert.equal(resolveTemplateForBusinessType("retail"), "starter-business");
+    assert.equal(resolveTemplateForBusinessType("consulting"), "starter-business");
   });
 
   it("defines six onboarding modules", () => {
