@@ -114,7 +114,7 @@ function HeaderTools({
         <BranchSwitcher branches={branches} />
       </div>
 
-      <nav aria-label="R GLOW console" className="hidden max-w-[62vw] items-center gap-1 overflow-x-auto lg:flex">
+      <nav aria-label="RI SALON RINASPACE console" className="hidden max-w-[62vw] items-center gap-1 overflow-x-auto lg:flex">
         {links.map(({ href, label }) => {
           const active = isActivePath(pathname, href);
           return (
@@ -143,7 +143,7 @@ function HeaderTools({
       </nav>
 
       <nav
-        aria-label="R GLOW mobile navigation"
+        aria-label="RI SALON RINASPACE mobile navigation"
         className="fixed inset-x-0 bottom-0 z-50 border-t border-rinads-primary/15 bg-surface/95 px-2 pt-1.5 shadow-[0_-12px_30px_rgba(42,15,66,0.08)] backdrop-blur-xl lg:hidden"
         style={{ paddingBottom: "max(0.4rem, env(safe-area-inset-bottom))" }}
       >
@@ -185,7 +185,7 @@ function HeaderTools({
       </nav>
 
       {mobileMoreOpen ? (
-        <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="More R GLOW tools">
+        <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="More RI SALON RINASPACE tools">
           <button
             type="button"
             className="absolute inset-0 bg-[#0a0612]/40 backdrop-blur-[2px]"
@@ -200,7 +200,7 @@ function HeaderTools({
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-rinads-primary/20" />
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">R GLOW workspace</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RI SALON RINASPACE</p>
                 <h2 className="mt-1 text-lg font-semibold text-foreground">{organizationName ?? "Owner & staff console"}</h2>
                 {roleKey ? <p className="mt-1 text-xs text-muted-foreground">Signed in as {roleKey}</p> : null}
               </div>
@@ -281,14 +281,14 @@ export function RinaglowNav({
           <div className="flex min-w-0 items-center gap-3">
             <Image
               src="/assets/rglow-logo.png"
-              alt="R GLOW"
+              alt="RI SALON RINASPACE"
               width={40}
               height={40}
               className="h-10 w-10 shrink-0 rounded-xl object-contain"
               priority
             />
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rinads-primary sm:text-xs">R GLOW · Salon OS</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rinads-primary sm:text-xs">RI SALON RINASPACE</p>
               <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">{organizationName ?? "Owner & staff console"}</h1>
             </div>
           </div>
