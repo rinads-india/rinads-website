@@ -2,8 +2,8 @@
 
 import type { AttentionItem } from "@rinads/salon";
 import Image from "next/image";
-import { useState, useTransition } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { resolveRinpoActionAction, runRinpoCommandAction, type RinpoCommandOutcome } from "@/app/(console)/rinpo-actions";
 import { getRinpoPageContext } from "@/lib/rinpo-page-context";
 
@@ -106,6 +106,18 @@ const QUICK_COMMANDS_BY_AREA: Record<string, readonly string[]> = {
   ],
 };
 
+const TOOL_LABELS: Record<string, string> = {
+  get_today_appointments: "Today's appointments",
+  get_salon_business_summary: "Salon summary",
+  get_pending_payments: "Pending payments",
+  get_empty_slots: "Available slots",
+  get_staff_utilization: "Staff utilization",
+  get_loyalty_summary: "Loyalty summary",
+  get_review_workflow_summary: "Review workflow",
+  get_campaign_performance: "Campaign performance",
+  get_failed_messages: "Failed messages",
+};
+
 function salonAreaFromPathname(pathname: string): string {
   const firstSegment = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
   const labels: Record<string, string> = {
@@ -124,6 +136,15 @@ function salonAreaFromPathname(pathname: string): string {
     settings: "Settings",
   };
   return labels[firstSegment] ?? firstSegment.replace(/-/g, " ");
+}
+
+function toolLabel(tool: string): string {
+  if (TOOL_LABELS[tool]) return TOOL_LABELS[tool];
+  const label = tool
+    .replace(/^(get|show|list|create|update)_/, "")
+    .replace(/_/g, " ")
+    .trim();
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : "RINPO action";
 }
 
 function isPendingApproval(data: unknown): data is { actionId: string; status: "pending_approval" } {
@@ -174,9 +195,23 @@ function ApprovalRow({ actionId, canApprove }: { actionId: string; canApprove: b
 function ResultCard({ result, canApprove }: { result: ToolResult; canApprove: boolean }) {
   const pending = isPendingApproval(result.data);
   return (
-    <div className={`rounded-xl border p-2.5 text-xs ${result.ok ? "border-rinads-primary/20 bg-surface-muted" : "border-danger/30 bg-danger/5"}`}>
-      <p className="font-medium text-foreground">{result.tool}</p>
-      <p className="mt-0.5 text-muted-foreground">{result.message}</p>
+    <div
+      className={`rounded-xl border p-3 ${
+        result.ok ? "border-rinads-primary/15 bg-surface" : "border-danger/30 bg-danger/5"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] font-semibold text-foreground">{toolLabel(result.tool)}</p>
+        <span
+          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${
+            result.ok ? "bg-emerald-50 text-emerald-700" : "bg-danger/10 text-danger"
+          }`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${result.ok ? "bg-emerald-500" : "bg-danger"}`} aria-hidden />
+          {result.ok ? "Live" : "Issue"}
+        </span>
+      </div>
+      <p className="mt-1 text-sm leading-5 text-muted-foreground">{result.message}</p>
       {pending ? <ApprovalRow actionId={(result.data as { actionId: string }).actionId} canApprove={canApprove} /> : null}
     </div>
   );
@@ -287,70 +322,68 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
           type="button"
           aria-label="Close RINPO Phone"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[60] bg-[#11091c]/30 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-[60] bg-[#11091c]/25 backdrop-blur-[2px] lg:hidden"
         />
       ) : null}
 
       {open ? (
         <section
-          className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[70] flex max-h-[calc(100dvh-8rem)] w-[calc(100vw-1.5rem)] max-w-[430px] flex-col overflow-hidden rounded-[1.75rem] border border-rinads-primary/20 bg-surface shadow-[0_28px_80px_rgba(42,15,66,0.28)] lg:bottom-6 lg:right-6 lg:max-h-[min(720px,calc(100dvh-3rem))]"
+          className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-[70] mx-auto flex max-h-[min(72dvh,680px)] max-w-[430px] flex-col overflow-hidden rounded-[1.5rem] border border-rinads-primary/15 bg-surface shadow-[0_24px_70px_rgba(42,15,66,0.24)] lg:bottom-6 lg:left-auto lg:right-6 lg:mx-0 lg:w-[430px] lg:max-h-[min(720px,calc(100dvh-3rem))]"
           role="dialog"
           aria-modal="false"
           aria-label="RI SALON RINASPACE RINPO Phone"
         >
-          <header className="shrink-0 border-b border-rinads-primary/10 bg-gradient-to-br from-rinads-primary/10 via-surface to-surface px-4 pb-3 pt-4">
-            <div className="flex items-start justify-between gap-3">
+          <header className="shrink-0 border-b border-rinads-primary/10 bg-gradient-to-br from-rinads-primary/10 via-surface to-surface px-4 pb-2.5 pt-3">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="relative h-14 w-11 shrink-0">
-                  <Image
-                    src="/assets/rinpo-full3.png"
-                    alt="RINPO"
-                    fill
-                    sizes="44px"
-                    className="object-contain object-bottom drop-shadow-[0_0_14px_rgba(159,75,199,0.3)]"
-                  />
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-rinads-primary/15 bg-surface shadow-sm">
+                  <Image src="/assets/rinpo-face.png" alt="RINPO" fill sizes="44px" className="object-contain p-0.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI SALON RINASPACE</p>
-                  <h2 className="truncate text-base font-semibold text-foreground">RINPO Phone</h2>
-                  <p className="text-[10px] text-muted-foreground">RINPO Runtime · powered by RINADS Intelligence</p>
+                  <p className="truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI SALON RINASPACE</p>
+                  <div className="flex items-baseline gap-2">
+                    <h2 className="truncate text-base font-semibold text-foreground">RINPO Phone</h2>
+                    <span className="hidden text-[9px] font-medium text-muted-foreground sm:inline">RINPO Runtime</span>
+                  </div>
+                  <p className="truncate text-[9px] text-muted-foreground">Powered by RINADS Intelligence</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface-muted text-xl text-foreground"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rinads-primary/10 bg-surface-muted text-lg leading-none text-foreground transition hover:bg-rinads-primary/10"
                 aria-label="Close RINPO Phone"
               >
                 ×
               </button>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px]">
-              <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
-                Screen: {salonArea}
+
+            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[10px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <span className="shrink-0 whitespace-nowrap rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
+                {salonArea}
               </span>
-              <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
-                {pageContext.defaultBranchId ? "Store context active" : "All stores"}
+              <span className="shrink-0 whitespace-nowrap rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
+                {pageContext.defaultBranchId ? "Store active" : "All stores"}
               </span>
               <button
                 type="button"
                 onClick={() => setVoiceLang((value) => (value === "en" ? "ml" : "en"))}
-                className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-semibold text-rinads-primary"
+                className="shrink-0 whitespace-nowrap rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-semibold text-rinads-primary"
                 aria-label="Change RINPO voice language"
               >
-                Voice: {voiceLang === "en" ? "EN" : "മലയാളം"}
+                {voiceLang === "en" ? "EN" : "മലയാളം"}
               </button>
-              <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">Governed actions</span>
+              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">Governed</span>
             </div>
           </header>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4">
             {history.length === 0 ? (
               <div className="space-y-3">
-                <div className="rounded-2xl border border-rinads-primary/10 bg-surface-muted p-4">
+                <div className="rounded-2xl border border-rinads-primary/10 bg-surface-muted p-3.5">
                   <p className="text-sm font-semibold text-foreground">Operate {salonArea.toLowerCase()} by chat or voice.</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    RINPO uses the current screen and store context. Reads can run immediately; sensitive mutations still pass through role permissions, approval and audit.
+                    RINPO uses this screen and store context. Reads run immediately; sensitive actions still follow permission, approval and audit rules.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -360,7 +393,7 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
                       type="button"
                       disabled={isPending}
                       onClick={() => runCommand(command)}
-                      className="min-h-12 rounded-2xl border border-rinads-primary/15 bg-surface px-3 py-2 text-left text-xs font-semibold text-foreground transition hover:bg-surface-muted disabled:opacity-50"
+                      className="min-h-11 rounded-xl border border-rinads-primary/15 bg-surface px-3 py-2 text-left text-[11px] font-semibold leading-4 text-foreground transition hover:bg-surface-muted disabled:opacity-50"
                     >
                       {command}
                     </button>
@@ -368,10 +401,10 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {history.map((entry, i) =>
                   entry.role === "user" ? (
-                    <p key={i} className="ml-auto max-w-[86%] rounded-2xl rounded-br-md bg-rinads-primary px-3 py-2 text-sm font-medium text-white">
+                    <p key={i} className="ml-auto max-w-[82%] rounded-2xl rounded-br-md bg-rinads-primary px-3 py-2 text-sm font-medium leading-5 text-white">
                       {entry.text}
                     </p>
                   ) : entry.kind === "clarify" ? (
@@ -422,40 +455,37 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
               <button
                 type="submit"
                 disabled={isPending || !text.trim()}
-                className="btn-primary h-11 shrink-0 rounded-xl px-4"
+                className="btn-primary h-11 shrink-0 rounded-xl px-3.5"
                 aria-label="Send to RINPO"
               >
                 {isPending ? "…" : "Ask"}
               </button>
             </form>
-            <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
+            <p className="mt-2 hidden text-[10px] leading-4 text-muted-foreground sm:block">
               Voice and chat use the same tenancy, permission, approval and audit path.
             </p>
           </footer>
         </section>
       ) : (
-        <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[58] lg:bottom-6 lg:right-6">
+        <div className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] right-3 z-[58] lg:bottom-6 lg:right-6">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="group relative grid h-[104px] w-[74px] place-items-end overflow-visible rounded-[1.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 sm:h-[118px] sm:w-[84px]"
+            className="group relative grid h-14 w-14 place-items-center overflow-hidden rounded-2xl border border-rinads-primary/20 bg-surface/95 shadow-[0_12px_32px_rgba(42,15,66,0.22)] backdrop-blur-xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 sm:h-16 sm:w-16"
             aria-label="Open RI SALON RINASPACE RINPO Phone"
           >
-            <span className="pointer-events-none absolute inset-x-2 bottom-0 h-4 rounded-[50%] bg-rinads-primary/35 blur-md" aria-hidden />
+            <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_85%,rgba(159,75,199,0.18),transparent_62%)]" aria-hidden />
             <Image
-              src="/assets/rinpo-full3.png"
+              src="/assets/rinpo-face.png"
               alt="RINPO"
-              width={160}
-              height={220}
-              className="relative z-[1] h-full w-full object-contain object-bottom drop-shadow-[0_0_22px_rgba(159,75,199,0.45)] transition-transform group-hover:-translate-y-1"
+              fill
+              sizes="64px"
+              className="relative z-[1] object-contain p-1 transition-transform group-hover:scale-[1.03]"
             />
-            <span className="absolute -left-2 top-2 z-[2] rounded-full bg-rinads-primary px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white shadow-lg">
-              RINPO
-            </span>
-            <span className="absolute bottom-2 right-0 z-[2] h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-surface" aria-hidden />
+            <span className="absolute bottom-1.5 right-1.5 z-[2] h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-surface" aria-hidden />
           </button>
-          <p className="mt-1 hidden rounded-full border border-rinads-primary/10 bg-surface/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-rinads-primary shadow-sm backdrop-blur sm:block">
-            {salonArea} · Chat · Voice
+          <p className="mt-1 hidden rounded-full border border-rinads-primary/10 bg-surface/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-rinads-primary shadow-sm backdrop-blur md:block">
+            RINPO · {salonArea}
           </p>
         </div>
       )}
