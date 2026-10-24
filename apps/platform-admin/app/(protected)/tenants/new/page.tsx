@@ -16,7 +16,7 @@ export default function ProvisionTenantPage() {
     const result = await provisionTenantAction({
       name: String(formData.get("name") ?? ""),
       slug: String(formData.get("slug") ?? ""),
-      templateKey: String(formData.get("templateKey") ?? "ambady-nursery"),
+      templateKey: String(formData.get("templateKey") ?? "starter-business"),
       planKey: String(formData.get("planKey") ?? "starter"),
     });
     setPending(false);

@@ -59,11 +59,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const isAuthenticated = Boolean(data?.claims?.sub);
 
-  if (!user && !isPublicPath) {
+  if (!isAuthenticated && !isPublicPath) {
     const loginUrl = new URL("/login", request.url);
     const next = sanitizeRelativeNext(`${pathname}${request.nextUrl.search}`) ?? "/calendar";
     loginUrl.searchParams.set("next", next);
@@ -74,7 +73,7 @@ export async function middleware(request: NextRequest) {
     return redirect;
   }
 
-  if (user && pathname === "/login") {
+  if (isAuthenticated && pathname === "/login") {
     const next =
       sanitizeRelativeNext(request.nextUrl.searchParams.get("next")) ?? "/calendar";
     const redirect = NextResponse.redirect(new URL(next, request.url));

@@ -7,6 +7,7 @@ import {
 } from "../src/templates/index";
 import { planIncludesModule } from "../src/subscriptions";
 import { isUnexpiredTrialGrant } from "../src/provisioning-worker";
+import { provisionTenantInMemory, provisionTenantViaRpc } from "../src/provisioning";
 
 describe("Vertical templates", () => {
   it("validates every supported onboarding template", () => {
@@ -44,6 +45,45 @@ describe("Vertical templates", () => {
 
   it("defines ambady slug constant", () => {
     assert.equal(AMBADY_TENANT_SLUG, "ambady");
+  });
+});
+
+describe("Provisioning defaults", () => {
+  it("uses starter-business when no explicit template is supplied", async () => {
+    const registrations = new Map<string, string>();
+    const memoryResult = provisionTenantInMemory(
+      {
+        register(orgId, templateKey) {
+          registrations.set(orgId, templateKey);
+        },
+        has(orgId) {
+          return registrations.has(orgId);
+        },
+      },
+      {
+        organizationId: "org_default",
+        name: "Default Business",
+        slug: "default-business",
+      },
+    );
+
+    assert.equal(memoryResult.ok, true);
+    assert.equal(registrations.get("org_default"), "starter-business");
+
+    let selectedTemplate = "";
+    const rpcResult = await provisionTenantViaRpc(
+      async (args) => {
+        selectedTemplate = args.p_template_key;
+        return {
+          data: { id: "org_rpc_default", slug: args.p_slug },
+          error: null,
+        };
+      },
+      { name: "RPC Default", slug: "rpc-default" },
+    );
+
+    assert.equal(rpcResult.ok, true);
+    assert.equal(selectedTemplate, "starter-business");
   });
 });
 
