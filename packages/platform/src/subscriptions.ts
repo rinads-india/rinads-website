@@ -1,5 +1,6 @@
 export const DEFAULT_PLANS = [
   { key: "starter", name: "Starter", limits: { modules: ["commerce", "inventory"], seats: 5 } },
+  { key: "trial-starter", name: "Trial Starter", limits: { modules: ["commerce", "inventory", "crm", "tasks"], seats: 3 } },
   { key: "growth", name: "Growth", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment"], seats: 25 } },
   { key: "platform", name: "Platform", limits: { modules: ["commerce", "inventory", "procurement", "fulfilment", "crm", "tasks"], seats: 100 } },
 ] as const;
