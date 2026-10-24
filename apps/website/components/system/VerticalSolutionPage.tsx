@@ -59,10 +59,10 @@ export function VerticalSolutionPage({
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/platform/business-os"
+              href="/platform/business"
               className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-rinads-primary/45"
             >
-              Business OS →
+              Business →
             </Link>
             <Link
               href="/platform"

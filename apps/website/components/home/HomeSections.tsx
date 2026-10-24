@@ -30,8 +30,8 @@ export function HomeSections() {
           Four primary business outcomes
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Replace the wall of operating systems with how work actually moves: RUN · SELL · GROW ·
-          AUTOMATE.
+          How work actually moves: RUN · SELL · GROW · AUTOMATE — observed, understood, recommended,
+          authorised, acted and audited.
         </p>
         <div className="mt-8">
           <OutcomeGrid />
@@ -41,10 +41,10 @@ export function HomeSections() {
       <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="rinpo-exp-heading">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">RINPO</p>
         <h2 id="rinpo-exp-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          The persistent AI Business Intelligence Character
+          Meet RINPO — your business intelligence, always available.
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          RINPO communicates. RINADS Intelligence understands. RINPO Runtime executes — with
+          RINPO is the interface. RINADS INTELLIGENCE understands. RINPO RUNTIME executes — with
           permissions, approvals and audit.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
@@ -62,7 +62,7 @@ export function HomeSections() {
             href="/rinpo"
             className="inline-flex min-h-12 items-center rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
           >
-            Explore RINPO
+            Meet RINPO
           </Link>
         </div>
       </section>
@@ -84,8 +84,8 @@ export function HomeSections() {
           >
             <h3 className="text-xl font-bold">RINADS Intelligence</h3>
             <p className="mt-2 text-sm leading-6 text-white/65">
-              Understand · Reason · Recommend · Orchestrate. Model providers are routed behind
-              Intelligence and remain replaceable.
+              Observe · Understand · Recommend · Orchestrate. Model providers are routed behind
+              RINADS INTELLIGENCE and remain replaceable.
             </p>
             <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">
               Explore Intelligence →
@@ -105,7 +105,7 @@ export function HomeSections() {
             </p>
           </Link>
         </div>
-        <ul className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {ARCHITECTURE_LAYERS.map((layer) => (
             <li
               key={layer.id}
@@ -120,13 +120,13 @@ export function HomeSections() {
 
       <section className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20" aria-labelledby="editions-heading">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-          Industry editions
+          Industry RINASPACES
         </p>
         <h2 id="editions-heading" className="mt-2 text-2xl font-bold md:text-3xl">
-          RINADS Editions
+          Built for your industry
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-white/65 md:text-base">
-          Industry depth on the shared operating core. Availability badges tell the truth — see{" "}
+          Industry RINASPACES on the shared platform. Availability badges tell the truth — see{" "}
           <Link href="/trust/availability" className="text-rinads-primary underline-offset-4 hover:underline">
             /trust/availability
           </Link>
@@ -155,7 +155,7 @@ export function HomeSections() {
             { id: "stories", label: "Customer Stories" },
             { id: "deployments", label: "Deployments" },
             { id: "demonstrations", label: "Product Demonstrations" },
-            { id: "labs", label: "RINADS Labs" },
+            { id: "labs", label: "RI LABS" },
           ].map((item) => (
             <Link
               key={item.id}
@@ -207,7 +207,7 @@ export function HomeSections() {
 
       <CTASection
         headline={POSITIONING.closing}
-        summary="Talk to RINPO, explore the platform, or book a demo with the team."
+        summary="Meet RINPO, explore RINADS, or book a demo with the team."
         primaryHref={CTAS.bookDemo.href}
         primaryLabel={CTAS.bookDemo.label}
         secondaryHref={CTAS.exploreRinads.href}

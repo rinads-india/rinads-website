@@ -90,13 +90,13 @@ export function CloudClient() {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="RINADS Cloud"
-        headline="The shared foundation behind the operating platform."
-        summary="RINADS Cloud connects identity, tenancy, domain services, runtime, data, APIs, integrations, and infrastructure so multiple business experiences can operate on one platform core."
+        eyebrow="RINADS Platform"
+        headline="The shared foundation behind the business intelligence infrastructure."
+        summary="RINADS Platform connects identity, tenancy, domain services, runtime, data, APIs, integrations, and infrastructure so Industry RINASPACES and capability areas can operate on one core. RI ID and RI SPACE are the intended identity and workspace layers — roadmap, not generally available."
         primaryHref="/platform"
-        primaryLabel="Explore platform"
+        primaryLabel="Explore RINADS"
         secondaryHref="/platform/intelligence"
-        secondaryLabel="RINADS Intelligence"
+        secondaryLabel="See how it works"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">
@@ -213,7 +213,7 @@ export function CloudClient() {
               href="/platform/rinads-intelligence"
               className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-rinads-primary hover:underline"
             >
-              Explore RINADS Intelligence
+              Explore RINADS INTELLIGENCE
               <ArrowRight size={15} aria-hidden />
             </Link>
           </div>
@@ -263,7 +263,7 @@ export function CloudClient() {
 
       <CTASection
         headline="One shared platform foundation."
-        summary="RINADS Cloud supports the operating systems, RINADS Intelligence, and product experiences through shared identity, domain, runtime, data, and infrastructure layers."
+        summary="RINADS Platform supports Industry RINASPACES, RINADS INTELLIGENCE, and product experiences through shared identity, domain, runtime, data, and infrastructure layers."
       />
     </MarketingPageShell>
   );

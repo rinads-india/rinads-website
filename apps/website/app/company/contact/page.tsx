@@ -23,9 +23,9 @@ export default async function CompanyContactPage({ searchParams }: ContactPagePr
     intent === "demo"
       ? "Book a demo with the RINADS team."
       : intent === "sales"
-        ? "Talk to sales about the right plan for your organisation."
+        ? "Connect your business — find the right plan for your organisation."
         : intent === "implementation"
-          ? "Talk through implementation with a specialist."
+          ? "Connect your business with an implementation conversation."
           : intent === "security"
             ? "Security or reliability enquiry."
             : "Book a demo or talk to the RINADS team.";

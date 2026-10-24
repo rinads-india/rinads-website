@@ -16,7 +16,7 @@ import {
   CTASection,
 } from "@/components/system";
 import { OutcomeJourneySection } from "@/components/system/OutcomeJourneySection";
-import { VERTICALS } from "@/lib/content/verticals";
+import { PUBLIC_VERTICALS } from "@/lib/content/verticals";
 import { getSolutionExperience } from "@/lib/solution-experience";
 import { getVerticalAvailability } from "@/lib/content/leads";
 import { useRinpo } from "@/components/rinpo/RinpoProvider";
@@ -28,8 +28,8 @@ const CONFIGURATION_MODEL = [
     icon: Layers3,
   },
   {
-    title: "Operating Systems",
-    description: "Business, Commerce, Marketing, Logistics, Creative, Build, Academy, and Automation.",
+    title: "Industry RINASPACES",
+    description: "RI SALON RINASPACE, RI JEWELLERY RINASPACE, RI LANDSCAPE RINASPACE, and other industry environments.",
     icon: Boxes,
   },
   {
@@ -41,22 +41,22 @@ const CONFIGURATION_MODEL = [
 
 export function SolutionsClient() {
   const { openPhoneScreen } = useRinpo();
-  const commercial = VERTICALS.filter(
+  const commercial = PUBLIC_VERTICALS.filter(
     (vertical) => getVerticalAvailability(vertical.slug).tier === "commercial",
   );
-  const future = VERTICALS.filter(
+  const future = PUBLIC_VERTICALS.filter(
     (vertical) => getVerticalAvailability(vertical.slug).tier === "future",
   );
 
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="Industry Solutions"
-        headline="One RINADS core. Configured for the business."
-        summary="RINADS does not need a separate technology platform for every industry. The shared core stays consistent while workflows, terminology, modules, and integrations are configured around how each business operates."
+        eyebrow="Industry RINASPACES"
+        headline="Built for your industry."
+        summary="RINADS does not need a separate technology platform for every industry. Industry RINASPACES configure workflows, terminology, modules, and integrations around how each business operates — on one intelligence-controlled environment."
         primaryHref="/platform"
-        primaryLabel="Explore the platform"
-        secondaryHref="/contact?intent=demo"
+        primaryLabel="Explore RINADS"
+        secondaryHref="/company/contact?intent=demo"
         secondaryLabel="Book a demo"
       />
 
@@ -90,7 +90,7 @@ export function SolutionsClient() {
             <span className="text-rinads-primary" aria-hidden>+</span>
             <span>Industry configuration</span>
             <span className="text-rinads-primary" aria-hidden>=</span>
-            <span className="text-[var(--text-primary)]">Vertical solution</span>
+            <span className="text-[var(--text-primary)]">Industry RINASPACE</span>
           </div>
         </div>
       </section>
@@ -183,13 +183,13 @@ export function SolutionsClient() {
               Your industry does not need to be on the list.
             </h2>
             <p className="mt-5 text-white/60">
-              RINADS can start from the shared Business OS and platform primitives, then map the workflows, permissions, integrations, and terminology that make your operation specific.
+              RINADS can start from the shared platform primitives, then map the workflows, permissions, integrations, and terminology that make your operation a dedicated Industry RINASPACE.
             </p>
             <Link
-              href="/projects"
+              href="/company/contact?intent=demo"
               className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full bg-rinads-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark"
             >
-              Start a project
+              Connect your business
               <ArrowRight size={15} aria-hidden />
             </Link>
           </div>

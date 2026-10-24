@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
         {
           heading: "Overview",
           body: [
-            "RINADS operates an AI operating platform for business, including the public website, RINPO, and the Business OS suite. This policy will describe what information we collect, why we collect it, and how organizations and their end users can control it.",
+            "RINADS operates a Business Intelligence Platform, including the public website, RINPO, and organisation workspaces. This policy will describe what information we collect, why we collect it, and how organizations and their end users can control it.",
           ],
         },
         {

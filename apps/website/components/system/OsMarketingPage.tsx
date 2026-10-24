@@ -99,7 +99,7 @@ export function OsMarketingPage({
                 The interface changes with the operating context.
               </h2>
               <p className="mt-5 max-w-xl text-white/60">
-                RINPO can explain the current workflow, surface relevant guidance, and route into supported product actions without creating a separate assistant for every Operating System.
+                RINPO can explain the current workflow, surface relevant guidance, and route into supported product actions without creating a separate assistant for every Industry RINASPACE.
               </p>
               <button
                 type="button"

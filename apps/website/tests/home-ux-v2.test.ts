@@ -26,7 +26,7 @@ describe("Homepage UX V2 contracts", () => {
     assert.equal(operatingSystems.length, 5);
     assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
     assert.ok(core.some((item) => item.label === "RINPO Runtime"));
-    assert.ok(core.some((item) => item.label === "RINADS Cloud"));
+    assert.ok(core.some((item) => item.label === "RINADS Platform"));
   });
 
   it("uses conversion navigation with RINPO and customer evidence anchors", () => {
@@ -39,7 +39,7 @@ describe("Homepage UX V2 contracts", () => {
       "Customers",
       "Resources",
     ]);
-    assert.equal(NAV_CTAS.primary.label, "Book a Demo");
+    assert.equal(NAV_CTAS.primary.label, "Book a demo");
     assert.equal(NAV_CTAS.secondary.label, "Explore RINADS");
     assert.match(NAV_CTAS.rinpo.label, /RINPO/i);
   });

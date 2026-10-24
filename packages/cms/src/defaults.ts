@@ -3,7 +3,7 @@ import type { CmsStore, ServiceCardContent, SiteBlogPost, SiteSeo } from "./type
 export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
   {
     title: "Software",
-    description: "Build web apps, mobile apps, and business systems through Build OS.",
+    description: "Build web apps, mobile apps, and business systems on the RINADS platform.",
     details: ["Web Apps", "Mobile Apps", "Business Systems"],
     href: "/services/software",
   },
@@ -14,18 +14,18 @@ export const DEFAULT_SERVICE_CARDS: ServiceCardContent[] = [
     href: "/services/marketing",
   },
   {
-    title: "AI & Automation",
-    description: "Assistants, agents, and workflows powered by RINPO.",
-    details: ["AI Assistants", "Workflows", "Voice Agents"],
+    title: "Intelligence & Automation",
+    description: "RINPO, agents, and workflows executed by RINPO RUNTIME.",
+    details: ["RINPO", "Workflows", "Voice"],
     href: "/services/ai",
   },
 ];
 
 export const DEFAULT_ABOUT = {
   eyebrow: "About RINADS",
-  headline: "The AI Operating Platform for Business.",
-  body: "RINADS® is an intelligent operating platform — run, build, grow, learn, and automate through one ecosystem powered by RINPO.",
-  subbody: "RINPO is the interface. RINADS Intelligence is the brain. RINADS is the operating platform.",
+  headline: "Business Intelligence Infrastructure for Software-Defined Business.",
+  body: "RINADS connects business software, people, data, intelligence, commerce, communication and operations into one intelligence-controlled environment.",
+  subbody: "Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME. Business, simplified.",
 };
 
 export const DEFAULT_BLOG_POSTS: SiteBlogPost[] = [
@@ -38,7 +38,7 @@ export const DEFAULT_BLOG_POSTS: SiteBlogPost[] = [
     body: [
       "Fragmented software is the default state of most growing businesses: a CRM here, a project tool there, a storefront somewhere else, and spreadsheets stitching it together.",
       "RINADS takes a different position. Instead of adding one more tool, it provides a single operating layer where customers, work, money, growth, and automation share one data model and one intelligence layer.",
-      "RINPO is the interface, RINADS Intelligence is the brain, and the platform is the operating system that keeps them connected.",
+      "RINPO is the interface, RINADS INTELLIGENCE is the brain, and RINPO RUNTIME executes — on one Business Intelligence Platform.",
     ].join("\n\n"),
     status: "published",
     tags: ["platform", "vision"],
@@ -86,14 +86,14 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_home",
     "/",
-    "RINADS | The AI Operating Platform for Business",
-    "Run your business. Build your software. Grow your brand. Automate your operations. Train your people. One intelligent platform powered by RINPO.",
+    "RINADS | Business Intelligence Infrastructure",
+    "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
   ),
   seo(
     "seo_platform",
     "/platform",
-    "RINADS Platform | AI Operating Systems for Business",
-    "Explore Business OS, Commerce OS, Marketing OS, Logistics OS, Creative OS, Build OS, Academy OS, Automation OS, Intelligence, and Cloud.",
+    "RINADS Platform | Business Intelligence Infrastructure",
+    "RINADS → RINADS INTELLIGENCE → RINPO RUNTIME → RI ID + RI SPACE → Industry RINASPACES → Connectors, Automations, Marketplace and RI LABS.",
   ),
   seo(
     "seo_business_os_new",
@@ -134,8 +134,8 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_academy_os",
     "/platform/academy-os",
-    "Academy OS | RINADS",
-    "Real Experience Academy — learn, practice, work, ship, measure, improve, certify.",
+    "RI LABS (legacy Academy OS path) | RINADS",
+    "Redirects to RI LABS — learn, practice, work, ship, measure, improve, certify.",
   ),
   seo(
     "seo_automation_os",
@@ -152,14 +152,14 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_rinads_cloud",
     "/platform/rinads-cloud",
-    "RINADS Cloud | Platform Foundation",
-    "Data, AI, APIs, integrations, events, storage, security, automation, and infrastructure.",
+    "RINADS Platform | Shared Foundation",
+    "Data, intelligence, APIs, integrations, events, storage, security, automation, and infrastructure.",
   ),
   seo(
     "seo_rinpo",
     "/rinpo",
-    "RINPO | AI Business Interface",
-    "RINPO is the persistent AI interface — assistant, tutor, operator, voice and phone agent.",
+    "RINPO | Business Intelligence Interface",
+    "RINPO is the business intelligence character and interface — tutor, operator, voice and RINPO PHONE.",
   ),
   seo(
     "seo_rinpo_intel",
@@ -188,110 +188,122 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_academy",
     "/academy",
-    "RINADS Academy | Real Experience Academy",
+    "RI LABS | Learning and experimentation",
     "Learn, practice, work, ship, measure, improve, and certify — with RINPO as tutor.",
+  ),
+  seo(
+    "seo_labs",
+    "/labs",
+    "RI LABS | Learning, training and experimentation",
+    "RI LABS is learning, certification, training and experimentation on RINADS — with RINPO as tutor.",
+  ),
+  seo(
+    "seo_rinaspace",
+    "/rinaspace",
+    "Industry RINASPACES | RINADS",
+    "Industry environments on the RINADS platform. RI SALON RINASPACE is in pilot; jewellery and logistics are coming soon.",
   ),
   seo(
     "seo_academy_university",
     "/academy/university",
-    "RINADS University | Academy",
-    "The full Real Experience Academy system inside RINADS.",
+    "RINADS University | RI LABS",
+    "The full RI LABS learning system inside RINADS.",
   ),
   seo(
     "seo_academy_programs",
     "/academy/programs",
-    "Academy Programs | RINADS",
+    "RI LABS Programs | RINADS",
     "Structured learning paths across founder, AI, software, marketing, and creator schools.",
   ),
   seo(
     "seo_academy_live",
     "/academy/live",
-    "Live Classes | RINADS Academy",
+    "Live Classes | RI LABS",
     "Instructor-led live classes with assignments and real business outcomes.",
   ),
   seo(
     "seo_academy_ai",
     "/academy/ai",
-    "AI School | RINADS Academy",
+    "AI School | RI LABS",
     "Train people to operate with RINPO and RINADS Intelligence.",
   ),
   seo(
     "seo_academy_film",
     "/academy/filmmaking",
-    "AI Filmmaking | RINADS Academy",
+    "AI Filmmaking | RI LABS",
     "Create films with Creative OS — story, script, voice, music, and AI production.",
   ),
   seo(
     "seo_academy_founder",
     "/academy/founder",
-    "Founder School | RINADS Academy",
+    "Founder School | RI LABS",
     "Build and run companies on the RINADS operating platform.",
   ),
   seo(
     "seo_academy_software",
     "/academy/software",
-    "Software School | RINADS Academy",
+    "Software School | RI LABS",
     "Ship products through Build OS — from discovery to deployment.",
   ),
   seo(
     "seo_academy_marketing",
     "/academy/marketing",
-    "Marketing School | RINADS Academy",
+    "Marketing School | RI LABS",
     "Grow brands with Marketing OS skills practiced on real work.",
   ),
   seo(
     "seo_academy_creator",
     "/academy/creator",
-    "Creator School | RINADS Academy",
+    "Creator School | RI LABS",
     "Build a creator practice on Creative OS with RINPO tutoring.",
   ),
   seo(
     "seo_solutions",
     "/solutions",
-    "Industry Solutions | RINADS Vertical OS",
-    "Business OS configured for retail, jewellery, nursery, salon, healthcare, logistics, and more.",
+    "Solutions | Industry RINASPACES",
+    "Industry RINASPACES for salon, jewellery, landscape, retail, logistics and more — each with published availability.",
   ),
   seo(
     "seo_solutions_retail",
     "/solutions/retail",
-    "Retail OS | RINADS Solutions",
-    "Retail operations on the RINADS core — catalogue, storefront, orders, and growth.",
+    "Retail RINASPACE | RINADS",
+    "Retail operations on the RINADS platform — catalogue, storefront, orders, and growth.",
   ),
   seo(
     "seo_solutions_jewellery",
     "/solutions/jewellery",
-    "Jewellery OS | RINADS Solutions",
-    "Jewellery commerce and brand operations on RINADS.",
+    "RI JEWELLERY RINASPACE | RINADS",
+    "Jewellery commerce and brand operations — coming soon.",
   ),
   seo(
     "seo_solutions_nursery",
     "/solutions/nursery",
-    "Nursery OS | RINADS Solutions",
-    "Nursery and landscaping operations — live vertical template.",
+    "RI LANDSCAPE RINASPACE | RINADS",
+    "Nursery and landscaping operations — preview configuration path.",
   ),
   seo(
     "seo_solutions_salon",
     "/solutions/salon",
-    "Salon OS | RINADS Solutions",
-    "Salon appointments, clients, and growth on RINADS.",
+    "RI SALON RINASPACE | RINADS",
+    "Salon appointments, clients, and growth. Pilot — R GLOW is the current implementation name.",
   ),
   seo(
     "seo_solutions_salon_book",
     "/solutions/salon/book",
-    "Book an Appointment | RINADS Salon OS",
+    "Book an Appointment | RI SALON RINASPACE",
     "Book a salon appointment online — pick a service, a time, and confirm in seconds.",
   ),
   seo(
     "seo_solutions_healthcare",
     "/solutions/healthcare",
-    "Healthcare OS | RINADS Solutions",
-    "Clinic and practice operations configured on the RINADS core.",
+    "Healthcare RINASPACE | RINADS",
+    "Clinic and practice operations — coming soon. Not a clinical decision system.",
   ),
   seo(
     "seo_solutions_logistics",
     "/solutions/logistics",
-    "Logistics Solutions | RINADS",
-    "Provider-neutral logistics control tower on Logistics OS.",
+    "Logistics RINASPACE | RINADS",
+    "Provider-neutral logistics control tower — coming soon.",
   ),
   seo(
     "seo_services",
@@ -529,8 +541,8 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_cloud",
     "/cloud",
-    "RINADS Cloud | Platform Foundation",
-    "Data, AI, APIs, and infrastructure behind RINADS.",
+    "RINADS Platform | Shared Foundation",
+    "Data, intelligence, APIs, and infrastructure behind RINADS.",
   ),
 ];
 

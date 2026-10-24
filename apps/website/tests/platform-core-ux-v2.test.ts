@@ -11,7 +11,7 @@ describe("Platform core UX V2 contracts", () => {
     assert.equal(operatingSystems.length, 5);
     assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
     assert.ok(core.some((item) => item.label === "RINPO Runtime"));
-    assert.ok(core.some((item) => item.label === "RINADS Cloud"));
+    assert.ok(core.some((item) => item.label === "RINADS Platform"));
   });
 
   it("uses dedicated Intelligence and Cloud experiences instead of the generic OS page template", () => {

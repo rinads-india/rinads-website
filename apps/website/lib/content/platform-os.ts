@@ -2,19 +2,19 @@ import type { OsPageContent } from "./types";
 
 export const PLATFORM_OVERVIEW = {
   eyebrow: "RINADS Platform",
-  headline: "The AI Operating Platform for Business.",
+  headline: "Business Intelligence Infrastructure for Software-Defined Business.",
   summary:
-    "One intelligent ecosystem to run, build, grow, learn, and automate — with RINPO as the interface and RINADS Intelligence as the brain.",
+    "Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME. RINADS connects business software, people, data, intelligence, commerce, communication and operations into one intelligence-controlled environment.",
 };
 
 export const OS_PAGES: Record<string, OsPageContent> = {
   "business-os": {
     slug: "business-os",
-    name: "Business OS",
-    eyebrow: "Business OS",
+    name: "Business",
+    eyebrow: "Business",
     headline: "Run your business from one intelligent workspace.",
     summary:
-      "Customers, work, money, growth, automation, and intelligence — connected as one operating system, not a pile of apps.",
+      "Customers, work, money, growth, automation, and intelligence — connected on the RINADS platform, not a pile of apps.",
     modules: [
       { name: "Customers", description: "Leads, clients, CRM, and follow-ups." },
       { name: "Work", description: "Projects, tasks, calendar, and team." },
@@ -24,15 +24,15 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "Intelligence", description: "RINPO insights, recommendations, and next actions." },
     ],
     related: [
-      { label: "Commerce OS", href: "/platform/commerce-os" },
-      { label: "Automation OS", href: "/platform/automation-os" },
-      { label: "Open Business OS", href: "/os" },
+      { label: "Commerce", href: "/platform/commerce-os" },
+      { label: "Automation", href: "/platform/automation-os" },
+      { label: "Sign in", href: "/os" },
     ],
   },
   "commerce-os": {
     slug: "commerce-os",
-    name: "Commerce OS",
-    eyebrow: "Commerce OS",
+    name: "Commerce",
+    eyebrow: "Commerce",
     headline: "Sell, fulfill, and grow commerce with AI.",
     summary:
       "Products, catalogue, inventory, storefront, orders, and payments — unified with AI commerce assistants.",
@@ -50,14 +50,14 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "AI Commerce" },
     ],
     related: [
-      { label: "Logistics OS", href: "/platform/logistics-os" },
-      { label: "Marketing OS", href: "/platform/marketing-os" },
+      { label: "Logistics", href: "/platform/logistics-os" },
+      { label: "Growth", href: "/platform/marketing-os" },
     ],
   },
   "marketing-os": {
     slug: "marketing-os",
-    name: "Marketing OS",
-    eyebrow: "Marketing OS",
+    name: "Growth",
+    eyebrow: "Growth",
     headline: "Grow your brand across every channel.",
     summary:
       "Content, campaigns, Meta, Google, SEO, WhatsApp, email, analytics, and CRM — orchestrated as one growth system.",
@@ -73,14 +73,14 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "CRM" },
     ],
     related: [
-      { label: "Creative OS", href: "/platform/creative-os" },
+      { label: "Growth", href: "/platform/creative-os" },
       { label: "Marketing Services", href: "/services/marketing" },
     ],
   },
   "logistics-os": {
     slug: "logistics-os",
-    name: "Logistics OS",
-    eyebrow: "Logistics OS",
+    name: "Logistics",
+    eyebrow: "Logistics",
     headline: "Control tower for movement and delivery.",
     summary:
       "Orders, shipments, couriers, 3PL, tracking, returns, and exceptions — provider-neutral architecture for real operations.",
@@ -98,14 +98,14 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "Control Tower" },
     ],
     related: [
-      { label: "Commerce OS", href: "/platform/commerce-os" },
+      { label: "Commerce", href: "/platform/commerce-os" },
       { label: "Logistics Solutions", href: "/solutions/logistics" },
     ],
   },
   "creative-os": {
     slug: "creative-os",
-    name: "Creative OS",
-    eyebrow: "Creative OS",
+    name: "Creative",
+    eyebrow: "Creative",
     headline: "Create with AI — image, video, film, and brand.",
     summary:
       "From product studio to story studio — generate, refine, and ship creative work inside the RINADS platform.",
@@ -114,8 +114,8 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "AI Video" },
       { name: "AI Film" },
       { name: "Product Studio" },
-      { name: "Creator OS" },
-      { name: "Brand OS" },
+      { name: "Creator" },
+      { name: "Brand" },
       { name: "Story Studio" },
       { name: "Script Studio" },
       { name: "Voice" },
@@ -124,13 +124,13 @@ export const OS_PAGES: Record<string, OsPageContent> = {
     ],
     related: [
       { label: "Creative Services", href: "/services/creative" },
-      { label: "AI Filmmaking Academy", href: "/academy/filmmaking" },
+      { label: "AI Filmmaking · RI LABS", href: "/academy/filmmaking" },
     ],
   },
   "build-os": {
     slug: "build-os",
-    name: "Build OS",
-    eyebrow: "Build OS",
+    name: "Build",
+    eyebrow: "Build",
     headline: "Software factory from discovery to monitoring.",
     summary:
       "PRD, UX, architecture, database, frontend, backend, AI, testing, GitHub, deployment, and monitoring — one build system.",
@@ -155,9 +155,9 @@ export const OS_PAGES: Record<string, OsPageContent> = {
   },
   "academy-os": {
     slug: "academy-os",
-    name: "Academy OS",
-    eyebrow: "Academy OS",
-    headline: "Real Experience Academy inside the platform.",
+    name: "RI LABS",
+    eyebrow: "RI LABS",
+    headline: "Learning, training and experimentation inside the platform.",
     summary:
       "Learn → Practice → Work → Ship → Measure → Improve → Certify — with RINPO as tutor across online, offline, and hybrid.",
     modules: [
@@ -173,14 +173,14 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "Logistics School" },
     ],
     related: [
-      { label: "Academy Hub", href: "/academy" },
+      { label: "RI LABS", href: "/labs" },
       { label: "Training Services", href: "/services/training" },
     ],
   },
   "automation-os": {
     slug: "automation-os",
-    name: "Automation OS",
-    eyebrow: "Automation OS",
+    name: "Automation",
+    eyebrow: "Automation",
     headline: "Automate operations with workflows and agents.",
     summary:
       "Workflows and triggers, carried out by RINPO — so routine work becomes reliable system behavior.",
@@ -194,15 +194,15 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "Audit", description: "Trace every automated action." },
     ],
     related: [
-      { label: "RINADS Intelligence", href: "/platform/rinads-intelligence" },
+      { label: "RINADS INTELLIGENCE", href: "/platform/rinads-intelligence" },
       { label: "Automation Services", href: "/services/automation" },
     ],
   },
   "rinads-intelligence": {
     slug: "rinads-intelligence",
-    name: "RINADS Intelligence",
-    eyebrow: "RINADS Intelligence",
-    headline: "The brain of the operating platform.",
+    name: "RINADS INTELLIGENCE",
+    eyebrow: "RINADS INTELLIGENCE",
+    headline: "The intelligence, orchestration and decision layer.",
     summary:
       "RINADS Intelligence understands your business, remembers what matters, and recommends what to do next — with every action audited and permission-checked.",
     modules: [
@@ -215,16 +215,16 @@ export const OS_PAGES: Record<string, OsPageContent> = {
     ],
     related: [
       { label: "RINPO", href: "/rinpo" },
-      { label: "RINADS Cloud", href: "/platform/rinads-cloud" },
+      { label: "RINADS Platform", href: "/platform/rinads-cloud" },
     ],
   },
   "rinads-cloud": {
     slug: "rinads-cloud",
-    name: "RINADS Cloud",
-    eyebrow: "RINADS Cloud",
-    headline: "The foundation behind every OS.",
+    name: "RINADS Platform",
+    eyebrow: "RINADS Platform",
+    headline: "The foundation behind every surface.",
     summary:
-      "Data, AI, APIs, integrations, events, storage, security, automation, and infrastructure — one cloud for the platform.",
+      "Data, intelligence, APIs, integrations, events, storage, security, automation, and infrastructure — one platform for the business.",
     modules: [
       { name: "Data" },
       { name: "AI" },
@@ -237,7 +237,7 @@ export const OS_PAGES: Record<string, OsPageContent> = {
       { name: "Infrastructure" },
     ],
     related: [
-      { label: "RINADS Intelligence", href: "/platform/rinads-intelligence" },
+      { label: "RINADS INTELLIGENCE", href: "/platform/rinads-intelligence" },
       { label: "Platform Overview", href: "/platform" },
     ],
   },

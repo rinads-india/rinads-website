@@ -28,15 +28,15 @@ const SCORE_LABELS = [
 ] as const;
 
 const CONFIG_RECOMMENDATIONS: Record<AreaId, string> = {
-  customer_management: "Start with Business OS customers and permissions before layering industry editions.",
-  lead_management: "Connect Marketing OS capture to Business OS follow-up and RINPO attention signals.",
-  work_management: "Use Business OS work items with Automation OS for handoffs and approvals.",
-  finance: "Align invoices and payments in Business OS before advanced commerce flows.",
+  customer_management: "Start with Business customers and permissions before layering Industry RINASPACES.",
+  lead_management: "Connect Growth capture to Business follow-up and RINPO attention signals.",
+  work_management: "Use Business work items with Automation for handoffs and approvals.",
+  finance: "Align invoices and payments in Business before advanced commerce flows.",
   follow_up: "Automate reminders with human approval gates via RINPO Runtime policies.",
-  marketing: "Route campaigns through Marketing OS with CRM context — avoid disconnected ad tools.",
-  commerce: "Add Commerce OS when catalogue, checkout, and fulfilment need one thread.",
-  inventory: "Pair Commerce OS inventory with Business OS operations for salons, retail, or nursery.",
-  automation: "Layer Automation OS once customer and work data live in one tenant.",
+  marketing: "Route campaigns through Growth with CRM context — avoid disconnected ad tools.",
+  commerce: "Add Commerce when catalogue, checkout, and fulfilment need one thread.",
+  inventory: "Pair Commerce inventory with Business operations for salons, retail, or nursery.",
+  automation: "Layer Automation once customer and work data live in one tenant.",
   tool_fragmentation: "Plan a migration path — consolidate into RINADS modules rather than another point tool.",
 };
 

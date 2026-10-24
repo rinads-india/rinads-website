@@ -24,9 +24,9 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       : intent === "audit"
         ? "Request your free Business Simplified Audit."
         : intent === "sales"
-          ? "Talk to sales about the right plan for your organisation."
+          ? "Connect your business — find the right plan for your organisation."
           : intent === "implementation"
-            ? "Talk through implementation with a specialist."
+            ? "Connect your business with an implementation conversation."
             : intent === "partner"
               ? "Explore a partnership with RINADS."
               : "Book a demo or talk to the RINADS team.";

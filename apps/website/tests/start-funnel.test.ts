@@ -9,11 +9,11 @@ async function read(relativePath: string) {
 test("/start exposes the founder-approved conversion paths", async () => {
   const startClient = await read("../app/start/StartClient.tsx");
 
-  assert.match(startClient, /Book a 30-minute demo/);
+  assert.match(startClient, /Book a demo/);
   assert.match(startClient, /Free Business Simplified Audit/);
-  assert.match(startClient, /Talk to RINPO/);
-  assert.match(startClient, /Explore industry solutions/);
-  assert.match(startClient, /Learn with RINADS Academy/);
+  assert.match(startClient, /Meet RINPO/);
+  assert.match(startClient, /Activate your RINASPACE/);
+  assert.match(startClient, /RI LABS/);
   assert.match(startClient, /Partner with RINADS/);
   assert.match(startClient, /intent=audit/);
   assert.match(startClient, /intent=demo/);

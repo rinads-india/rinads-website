@@ -107,7 +107,7 @@ function SalonDemo() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/rglow-logo.png" alt="" width={40} height={40} className="h-10 w-10 rounded-xl object-contain" />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">R GLOW · Salon OS</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">RI SALON RINASPACE</p>
             <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Owner & staff operating loop</p>
           </div>
         </div>
@@ -159,7 +159,7 @@ function SalonDemo() {
             className="absolute -right-2 -top-2 h-24 w-24 rounded-full object-cover opacity-40"
             aria-hidden
           />
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RINPO in R GLOW</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rinads-primary">RINPO in RI SALON RINASPACE</p>
           <p className="mt-4 text-lg font-semibold">Salon attention and action context.</p>
           <p className="mt-3 text-sm leading-6 text-white/60">
             Product-side salon tools reuse salon data, permission checks, approvals, and audit paths instead of creating a
@@ -413,7 +413,7 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
             <div className="mt-5 space-y-3">
               {[
                 ["Shared platform", "Identity, tenancy, permissions, data, runtime"],
-                ["Operating Systems", config.foundation.join(" · ")],
+                ["Platform foundation", config.foundation.join(" · ")],
                 ["Industry workflow", config.workflow.join(" → ")],
                 ["RINPO", "Same interface, vertical context"],
               ].map(([title, detail]) => (
@@ -430,12 +430,12 @@ export function VerticalSolutionExperience({ vertical }: { vertical: VerticalCon
       {isSalon ? (
         <section className="px-6 py-20 md:px-12 lg:px-20">
           <div className="mx-auto max-w-7xl rounded-3xl border border-rinads-primary/25 bg-rinads-primary/[0.05] p-6 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">Try R GLOW</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI SALON RINASPACE · Pilot</p>
             <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-[var(--text-primary)] md:text-4xl">
               Explore the customer booking entry or start a salon workspace.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-              R GLOW product code is built, while production cutover still depends on deployment, credentials, and operational validation. Live booking links are organization-specific.
+              RI SALON RINASPACE is in pilot. R GLOW is the current implementation name — not the public brand. Production cutover still depends on deployment, credentials, and operational validation. Live booking links are organization-specific.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link

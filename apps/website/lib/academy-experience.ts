@@ -33,7 +33,7 @@ export const ACADEMY_EXPERIENCES: Record<AcademyExperienceKey, AcademyExperience
     work: "Use assignments that resemble the work expected in the real environment.",
     ship: "Complete milestone projects instead of ending at lesson completion.",
     measure: "Review progress against program outcomes and shipped evidence.",
-    rinpoPrompt: "Help me choose the RINADS Academy program that fits the skill or role I want to build.",
+    rinpoPrompt: "Help me choose the RI LABS program that fits the skill or role I want to build.",
   },
   live: {
     slug: "live",
@@ -41,7 +41,7 @@ export const ACADEMY_EXPERIENCES: Record<AcademyExperienceKey, AcademyExperience
     work: "Bring active business or project problems into the learning loop where appropriate.",
     ship: "Turn live-session work into completed assignments or project outputs.",
     measure: "Use feedback and completed work to determine the next learning step.",
-    rinpoPrompt: "Explain how live learning works inside RINADS Academy.",
+    rinpoPrompt: "Explain how live learning works inside RI LABS.",
   },
   ai: {
     slug: "ai",

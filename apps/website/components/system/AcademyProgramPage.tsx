@@ -20,13 +20,13 @@ export function AcademyProgramPage({ program }: { program: AcademyProgram }) {
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow={"RINADS Academy · " + program.name}
+        eyebrow={"RI LABS · " + program.name}
         headline={program.headline}
         summary={program.summary}
         primaryHref="/contact?intent=demo"
         primaryLabel="Book a demo"
-        secondaryHref="/academy"
-        secondaryLabel="All programs"
+        secondaryHref="/labs"
+        secondaryLabel="See how it works"
       />
 
       <section className="px-6 pb-20 md:px-12 lg:px-20">

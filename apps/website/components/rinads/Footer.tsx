@@ -97,9 +97,9 @@ export function Footer() {
 
           <div className="footer-tagline-container">
             <p className="footer-tagline">
-              <span className="footer-tagline-primary">Not another business app.</span>
+              <span className="footer-tagline-primary">Business, simplified.</span>
               <br />
-              <span className="footer-tagline-secondary">The intelligent operating platform.</span>
+              <span className="footer-tagline-secondary">Business Intelligence Infrastructure.</span>
             </p>
           </div>
 
@@ -136,7 +136,7 @@ export function Footer() {
             <div className="lucky-cube">
               <Image
                 src="/assets/rinpo-full-body-transparent-v2.png"
-                alt="RINPO — the RINADS AI assistant"
+                alt="RINPO — the RINADS intelligence interface"
                 width={96}
                 height={96}
                 className="lucky-cube-image"

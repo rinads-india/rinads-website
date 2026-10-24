@@ -137,7 +137,7 @@ export function StoryNarrative() {
           The banyan tree is the story&apos;s symbol for connected intelligence: many branches, one living system.
           <br />
           <br />
-          RINADS uses the same metaphor in product form — multiple Operating Systems, one shared platform core.
+          RINADS uses the same metaphor in product form — Industry RINASPACES on one shared platform core.
         </p>
         <BanyanTreeSvg className="story-btree mx-auto mt-12 w-full max-w-[660px]" />
       </section>

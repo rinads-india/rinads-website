@@ -33,7 +33,7 @@ type Props = {
 const DELIVERY_MODEL = [
   {
     title: "Platform first",
-    description: "Use RINADS Operating Systems, Intelligence, RINPO, and Cloud as the delivery foundation wherever they fit.",
+    description: "Use RINADS Platform, RINADS INTELLIGENCE, RINPO, and Industry RINASPACES as the delivery foundation wherever they fit.",
     icon: Layers3,
   },
   {
