@@ -19,6 +19,7 @@
     "security:env-scope": "node scripts/ops/check-public-secret-scope.mjs",
     "ops:verify": "pnpm exec tsx scripts/ops/verify-production.ts",
     "ops:preflight": "pnpm exec tsx scripts/ops/preflight-config.ts",
+    "ops:activation-inspect": "pnpm exec tsx scripts/ops/inspect-activation.ts",
     "test:e2e": "playwright test",
     "staging:ambady-seed": "pnpm exec tsx scripts/staging/ambady-cutover.ts",
     "provisioning:worker": "pnpm exec tsx scripts/cron/provisioning-worker.ts",
@@ -26,7 +27,7 @@
     "communications:worker": "pnpm exec tsx scripts/cron/communications-worker.ts",
     "loyalty-expiry:worker": "pnpm exec tsx scripts/cron/loyalty-expiry-worker.ts",
     "deploy:emergency": "pnpm --filter @rinads/website deploy:emergency",
-    "push:github": "pnpm --filter @rinads/website push:github",
+    "push:github": "pnpm --filter @rinads/website push-to-github.sh",
     "admin:bootstrap-founder": "pnpm exec tsx scripts/admin/bootstrap-founder.ts"
   },
   "devDependencies": {
