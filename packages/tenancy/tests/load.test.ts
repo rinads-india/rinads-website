@@ -24,6 +24,8 @@ function queryResult(rows: Record<string, unknown>[], singleRow?: Record<string,
 function tenancyClient(input?: {
   rinpoOverride?: boolean;
   subscriptionStatus?: "active" | "trialing" | "past_due" | "cancelled";
+  trialExpiresAt?: string;
+  trialRevokedAt?: string;
 }): TenancySupabaseClient {
   const subscriptionStatus = input?.subscriptionStatus ?? "active";
   return {
@@ -52,11 +54,20 @@ function tenancyClient(input?: {
           }
           if (table === "role_permissions") return queryResult([]);
           if (table === "organization_subscriptions") {
-            const row = { plan_key: "platform", status: subscriptionStatus };
+            const row = { plan_key: "platform", status: subscriptionStatus, ends_at: null };
             return queryResult([row], row);
           }
           if (table === "organization_settings") {
             return queryResult([{ vertical_key: "salon-os" }], { vertical_key: "salon-os" });
+          }
+          if (table === "trial_grants") {
+            if (!input?.trialExpiresAt) return queryResult([]);
+            const row = {
+              plan_key: "trial-starter",
+              expires_at: input.trialExpiresAt,
+              revoked_at: input.trialRevokedAt ?? null,
+            };
+            return queryResult([row], row);
           }
           if (table === "feature_flag_overrides") {
             return queryResult(
@@ -114,11 +125,17 @@ describe("tenancy load helpers", () => {
     assert.equal(activeOrgCookieOptions("org_local").domain, undefined);
   });
 
-  it("maps known plans to module flags and fails closed without a plan", () => {
+  it("maps paid and trial plans to module flags and fails closed without a plan", () => {
     const starter = planFeatureFlags({ planKey: "starter" });
     assert.equal(starter["erp.procurement"], false);
     assert.equal(starter["erp.inventory"], true);
     assert.equal(starter["salon.whatsapp.send_enabled"], false);
+
+    const trial = planFeatureFlags({ planKey: "trial-starter" });
+    assert.equal(trial["erp.crm"], true);
+    assert.equal(trial["erp.tasks"], true);
+    assert.equal(trial["erp.procurement"], false);
+    assert.equal(trial["rinpo.ops"], true);
 
     const noPlan = planFeatureFlags({});
     assert.equal(noPlan["commerce.enabled"], false);
@@ -169,16 +186,58 @@ describe("tenancy load helpers", () => {
     assert.ok(ctx);
     assert.equal(ctx?.planKey, "platform");
     assert.equal(ctx?.verticalKey, "salon-os");
+    assert.equal(ctx?.entitlementState, "paid_active");
     assert.equal(ctx?.featureFlags["erp.fulfilment"], true);
     assert.equal(ctx?.featureFlags["rinpo.ops"], true);
   });
 
-  it("removes paid plan entitlements when the subscription is not active", async () => {
+  it("uses an active governed trial when the paid subscription is not active", async () => {
+    const ctx = await resolveTenancyFromSupabase(
+      tenancyClient({
+        subscriptionStatus: "past_due",
+        trialExpiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+      }),
+    );
+    assert.ok(ctx);
+    assert.equal(ctx?.planKey, "trial-starter");
+    assert.equal(ctx?.entitlementState, "trialing");
+    assert.equal(ctx?.featureFlags["commerce.enabled"], true);
+    assert.equal(ctx?.featureFlags["erp.crm"], true);
+    assert.equal(ctx?.featureFlags["rinpo.ops"], true);
+  });
+
+  it("marks a trial expiring inside its final 24 hours", async () => {
+    const ctx = await resolveTenancyFromSupabase(
+      tenancyClient({
+        subscriptionStatus: "past_due",
+        trialExpiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+      }),
+    );
+    assert.equal(ctx?.planKey, "trial-starter");
+    assert.equal(ctx?.entitlementState, "expiring");
+  });
+
+  it("fails closed after trial expiry", async () => {
+    const ctx = await resolveTenancyFromSupabase(
+      tenancyClient({
+        subscriptionStatus: "past_due",
+        trialExpiresAt: new Date(Date.now() - 60 * 1000).toISOString(),
+      }),
+    );
+    assert.ok(ctx);
+    assert.equal(ctx?.planKey, undefined);
+    assert.equal(ctx?.entitlementState, "expired_read_only");
+    assert.equal(ctx?.featureFlags["commerce.enabled"], false);
+    assert.equal(ctx?.featureFlags["rinpo.ops"], false);
+  });
+
+  it("removes paid plan entitlements when neither paid nor trial access is active", async () => {
     const ctx = await resolveTenancyFromSupabase(
       tenancyClient({ subscriptionStatus: "past_due" }),
     );
     assert.ok(ctx);
     assert.equal(ctx?.planKey, undefined);
+    assert.equal(ctx?.entitlementState, "none");
     assert.equal(ctx?.featureFlags["commerce.enabled"], false);
     assert.equal(ctx?.featureFlags["erp.fulfilment"], false);
     assert.equal(ctx?.featureFlags["rinpo.ops"], false);
