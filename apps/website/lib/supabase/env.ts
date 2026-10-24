@@ -8,7 +8,7 @@ type WebsiteSupabaseEnv = {
 };
 
 export function resolveWebsiteSupabasePublicKey(
-  env: WebsiteSupabaseEnv = process.env
+  env: WebsiteSupabaseEnv = process.env as WebsiteSupabaseEnv
 ): string {
   return (
     env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
