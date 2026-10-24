@@ -14,6 +14,34 @@ type HistoryEntry =
   | { role: "rinpo"; kind: "clarify"; question: string }
   | { role: "rinpo"; kind: "results"; summary: string; results: ToolResult[] };
 
+type VoiceLang = "en" | "ml";
+
+type SpeechRecognitionResultLike = { 0?: { transcript?: string } };
+type SpeechRecognitionEventLike = { results?: ArrayLike<SpeechRecognitionResultLike> };
+type SpeechRecognitionLike = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+};
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionCtor;
+  webkitSpeechRecognition?: SpeechRecognitionCtor;
+};
+
+const QUICK_COMMANDS = [
+  "What needs attention?",
+  "Show today's appointments",
+  "Show open sales",
+  "Show pending reviews",
+] as const;
+
 function isPendingApproval(data: unknown): data is { actionId: string; status: "pending_approval" } {
   return Boolean(data) && typeof data === "object" && (data as { status?: string }).status === "pending_approval";
 }
@@ -70,6 +98,15 @@ function ResultCard({ result, canApprove }: { result: ToolResult; canApprove: bo
   );
 }
 
+function speakText(text: string, lang: VoiceLang) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window) || !text.trim()) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang === "ml" ? "ml-IN" : "en-IN";
+  utterance.rate = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
 export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -78,31 +115,41 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
   const [lastAttentionItems, setLastAttentionItems] = useState<AttentionItem[] | undefined>(undefined);
   const [lastCampaignDraftId, setLastCampaignDraftId] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const [voiceLang, setVoiceLang] = useState<VoiceLang>("en");
+  const [isListening, setIsListening] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pageContext = getRinpoPageContext(pathname, searchParams);
 
-  function handleSubmit() {
-    const command = text.trim();
-    if (!command) return;
+  function runCommand(command: string, speakReply = false) {
+    const normalized = command.trim();
+    if (!normalized || isPending) return;
+    setOpen(true);
     setText("");
-    setHistory((h) => [...h, { role: "user", text: command }]);
+    setHistory((h) => [...h, { role: "user", text: normalized }]);
+
     startTransition(async () => {
       const outcome: RinpoCommandOutcome = await runRinpoCommandAction(
-        command,
+        normalized,
         lastAttentionItems,
         lastCampaignDraftId,
         pageContext
       );
+
       if (outcome.kind === "clarify") {
         setHistory((h) => [...h, { role: "rinpo", kind: "clarify", question: outcome.question }]);
+        if (speakReply) speakText(outcome.question, voiceLang);
         return;
       }
+
       setHistory((h) => [...h, { role: "rinpo", kind: "results", summary: outcome.summary, results: outcome.results }]);
+      if (speakReply) speakText(outcome.summary, voiceLang);
+
       const summaryResult = outcome.results.find((r) => r.tool === "get_salon_business_summary");
       if (summaryResult?.ok && summaryResult.data && typeof summaryResult.data === "object") {
         const items = (summaryResult.data as { attentionItems?: AttentionItem[] }).attentionItems;
         if (items) setLastAttentionItems(items);
       }
+
       const draftResult = outcome.results.find(
         (r) => r.tool === "create_campaign_draft" || r.tool === "create_reactivation_draft"
       );
@@ -113,103 +160,214 @@ export function RinpoCommandBar({ canApprove }: { canApprove: boolean }) {
     });
   }
 
+  function startVoiceCommand() {
+    if (typeof window === "undefined" || isPending) return;
+    const speechWindow = window as SpeechWindow;
+    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      setOpen(true);
+      setHistory((h) => [
+        ...h,
+        {
+          role: "rinpo",
+          kind: "clarify",
+          question: "Voice input is not available in this browser. You can still type the same command here.",
+        },
+      ]);
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = voiceLang === "ml" ? "ml-IN" : "en-IN";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+      if (transcript) runCommand(transcript, true);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    setOpen(true);
+    setIsListening(true);
+    recognition.start();
+  }
+
   return (
-    <div className="rinpo-command-bar fixed inset-x-0 bottom-[5.2rem] z-[45] mx-auto max-w-5xl px-3 pb-2 lg:bottom-0 lg:px-4 lg:pb-4">
-      <div className="rounded-[1.25rem] border border-rinads-primary/20 bg-surface/95 shadow-[0_18px_45px_rgba(42,15,66,0.16)] backdrop-blur-xl">
-        {open ? (
-          <div className="rg-popover max-h-[42dvh] space-y-2 overflow-y-auto border-b border-rinads-primary/10 p-3 sm:max-h-80">
-            <div className="sticky top-0 z-10 -mx-1 -mt-1 flex items-center justify-between rounded-xl bg-surface/95 px-1 py-1 backdrop-blur">
-              <div className="flex items-center gap-2">
+    <>
+      {open ? (
+        <button
+          type="button"
+          aria-label="Close RINPO Phone"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-[60] bg-[#11091c]/30 backdrop-blur-[2px] lg:hidden"
+        />
+      ) : null}
+
+      {open ? (
+        <section
+          className="fixed bottom-24 right-3 z-[70] flex max-h-[calc(100dvh-8rem)] w-[calc(100vw-1.5rem)] max-w-[430px] flex-col overflow-hidden rounded-[1.75rem] border border-rinads-primary/20 bg-surface shadow-[0_28px_80px_rgba(42,15,66,0.28)] lg:bottom-6 lg:right-6 lg:max-h-[min(720px,calc(100dvh-3rem))]"
+          role="dialog"
+          aria-modal="false"
+          aria-label="RI SALON RINASPACE RINPO Phone"
+        >
+          <header className="shrink-0 border-b border-rinads-primary/10 bg-gradient-to-br from-rinads-primary/10 via-surface to-surface px-4 pb-3 pt-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <Image
                   src="/assets/rinpo-face.png"
                   alt="RINPO"
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 rounded-full object-cover ring-2 ring-rinads-primary/20"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-rinads-primary/25"
                 />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">RINPO</p>
-                  <p className="text-[10px] text-muted-foreground">Context-aware salon assistant</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rinads-primary">RI SALON RINASPACE</p>
+                  <h2 className="truncate text-base font-semibold text-foreground">RINPO Phone</h2>
+                  <p className="text-[10px] text-muted-foreground">RINPO Runtime · powered by RINADS Intelligence</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-surface-muted text-lg text-foreground"
-                aria-label="Collapse RINPO"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface-muted text-xl text-foreground"
+                aria-label="Close RINPO Phone"
               >
                 ×
               </button>
             </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px]">
+              <span className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-medium text-foreground/80">
+                Context: {pageContext.area}
+              </span>
+              <button
+                type="button"
+                onClick={() => setVoiceLang((value) => (value === "en" ? "ml" : "en"))}
+                className="rounded-full border border-rinads-primary/15 bg-surface px-2.5 py-1 font-semibold text-rinads-primary"
+                aria-label="Change RINPO voice language"
+              >
+                Voice: {voiceLang === "en" ? "EN" : "മലയാളം"}
+              </button>
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">Governed actions</span>
+            </div>
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4">
             {history.length === 0 ? (
-              <p className="rounded-xl bg-surface-muted p-3 text-xs text-muted-foreground">
-                Try &ldquo;What needs attention?&rdquo; then &ldquo;Do the first three.&rdquo;
-              </p>
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-rinads-primary/10 bg-surface-muted p-4">
+                  <p className="text-sm font-semibold text-foreground">Operate the salon by chat or voice.</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Ask for queue status, appointments, clients, sales, campaigns, follow-ups or permitted actions. Sensitive actions still respect role permissions and approvals.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {QUICK_COMMANDS.map((command) => (
+                    <button
+                      key={command}
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => runCommand(command)}
+                      className="min-h-12 rounded-2xl border border-rinads-primary/15 bg-surface px-3 py-2 text-left text-xs font-semibold text-foreground transition hover:bg-surface-muted disabled:opacity-50"
+                    >
+                      {command}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : (
-              history.map((entry, i) =>
-                entry.role === "user" ? (
-                  <p key={i} className="ml-auto max-w-[88%] rounded-xl bg-rinads-primary px-3 py-2 text-sm font-medium text-white">
-                    {entry.text}
-                  </p>
-                ) : entry.kind === "clarify" ? (
-                  <p key={i} className="max-w-[92%] rounded-xl bg-surface-muted px-3 py-2 text-sm text-foreground">
-                    {entry.question}
-                  </p>
-                ) : (
-                  <div key={i} className="space-y-1.5">
-                    <p className="text-sm text-muted-foreground">{entry.summary}</p>
-                    {entry.results.map((r, j) => (
-                      <ResultCard key={j} result={r} canApprove={canApprove} />
-                    ))}
-                  </div>
-                )
-              )
+              <div className="space-y-3">
+                {history.map((entry, i) =>
+                  entry.role === "user" ? (
+                    <p key={i} className="ml-auto max-w-[86%] rounded-2xl rounded-br-md bg-rinads-primary px-3 py-2 text-sm font-medium text-white">
+                      {entry.text}
+                    </p>
+                  ) : entry.kind === "clarify" ? (
+                    <p key={i} className="max-w-[92%] rounded-2xl rounded-bl-md bg-surface-muted px-3 py-2 text-sm leading-5 text-foreground">
+                      {entry.question}
+                    </p>
+                  ) : (
+                    <div key={i} className="max-w-[96%] space-y-2 rounded-2xl rounded-bl-md border border-rinads-primary/10 bg-surface-muted/70 p-3">
+                      <p className="text-sm leading-5 text-foreground">{entry.summary}</p>
+                      {entry.results.map((r, j) => (
+                        <ResultCard key={j} result={r} canApprove={canApprove} />
+                      ))}
+                    </div>
+                  )
+                )}
+                {isPending ? <p className="text-xs font-semibold text-rinads-primary">RINPO Runtime is working…</p> : null}
+              </div>
             )}
-            {isPending ? <p className="text-xs font-medium text-rinads-primary">RINPO is working…</p> : null}
           </div>
-        ) : null}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setOpen(true);
-            handleSubmit();
-          }}
-          className="flex items-center gap-2 p-2.5 sm:p-3"
-        >
+
+          <footer className="shrink-0 border-t border-rinads-primary/10 bg-surface/95 p-3 backdrop-blur-xl">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                runCommand(text);
+              }}
+              className="flex items-center gap-2"
+            >
+              <button
+                type="button"
+                onClick={startVoiceCommand}
+                disabled={isPending || isListening}
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border text-base font-semibold transition ${
+                  isListening
+                    ? "border-rinads-primary bg-rinads-primary text-white"
+                    : "border-rinads-primary/20 bg-surface-muted text-rinads-primary"
+                } disabled:opacity-50`}
+                aria-label={isListening ? "Listening" : "Speak to RINPO"}
+              >
+                {isListening ? "●" : "🎙"}
+              </button>
+              <input
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={isListening ? "Listening…" : "Ask RINPO…"}
+                className="h-11 min-w-0 flex-1 rounded-xl border border-rinads-primary/15 bg-surface-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+              />
+              <button
+                type="submit"
+                disabled={isPending || !text.trim()}
+                className="btn-primary h-11 shrink-0 rounded-xl px-4"
+                aria-label="Send to RINPO"
+              >
+                {isPending ? "…" : "Ask"}
+              </button>
+            </form>
+            <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
+              Voice and chat use the same tenancy, permission, approval and audit path.
+            </p>
+          </footer>
+        </section>
+      ) : (
+        <div className="fixed bottom-24 right-3 z-[58] lg:bottom-6 lg:right-6">
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
-            className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary/50"
-            aria-label={open ? "Collapse RINPO" : "Open RINPO"}
-            aria-expanded={open}
+            onClick={() => setOpen(true)}
+            className="group relative grid h-[76px] w-[64px] place-items-end rounded-[1.4rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 sm:h-[86px] sm:w-[72px]"
+            aria-label="Open RI SALON RINASPACE RINPO Phone"
           >
+            <span className="pointer-events-none absolute inset-x-2 bottom-0 h-4 rounded-[50%] bg-rinads-primary/30 blur-md" aria-hidden />
             <Image
               src="/assets/rinpo-face.png"
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-rinads-primary/25"
-              aria-hidden
+              alt="RINPO"
+              width={72}
+              height={72}
+              className="relative z-[1] h-16 w-16 rounded-full object-cover ring-2 ring-rinads-primary/25 shadow-[0_0_24px_rgba(159,75,199,0.28)] transition-transform group-hover:-translate-y-1 sm:h-[72px] sm:w-[72px]"
             />
+            <span className="absolute -left-1 top-0 z-[2] rounded-full bg-rinads-primary px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white shadow-lg">
+              RINPO
+            </span>
+            <span className="absolute bottom-1 right-0 z-[2] h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-surface" aria-hidden />
           </button>
-          <span className="hidden text-xs font-semibold uppercase tracking-wide text-rinads-primary sm:inline">RINPO</span>
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onFocus={() => setOpen(true)}
-            placeholder="Ask RINPO…"
-            className="h-11 min-w-0 flex-1 rounded-xl border border-rinads-primary/15 bg-surface-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
-          />
-          <button
-            type="submit"
-            disabled={isPending || !text.trim()}
-            className="btn-primary h-11 shrink-0 rounded-xl px-3 sm:px-4"
-            aria-label="Send to RINPO"
-          >
-            {isPending ? "…" : "Ask"}
-          </button>
-        </form>
-      </div>
-    </div>
+          <p className="mt-1 hidden rounded-full border border-rinads-primary/10 bg-surface/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-rinads-primary shadow-sm backdrop-blur sm:block">
+            Chat · Voice · Actions
+          </p>
+        </div>
+      )}
+    </>
   );
 }
