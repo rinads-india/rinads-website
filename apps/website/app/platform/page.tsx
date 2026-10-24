@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { CommercialJsonLd } from "@/components/system/CommercialJsonLd";
-import { getPageMetadata } from "@/lib/cms";
 import { PlatformClient } from "./PlatformClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/platform");
+  return {
+    title: "RINADS | Business Intelligence Platform",
+    description:
+      "Explore RINADS Intelligence, RINPO, RINPO Runtime, RI ID, RI SPACE, connected business capabilities, and Industry RINASPACES on one governed platform.",
+  };
 }
 
 export default function PlatformPage() {
