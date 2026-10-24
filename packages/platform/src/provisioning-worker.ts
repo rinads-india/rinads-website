@@ -38,7 +38,7 @@ export type ProvisioningJobResult =
   | { ok: true }
   | { ok: false; error: string; blocked?: boolean };
 
-type SubscriptionLookupClient = {
+type EntitlementLookupClient = {
   from: (table: string) => {
     select: (cols: string) => {
       eq: (
@@ -49,26 +49,51 @@ type SubscriptionLookupClient = {
   };
 };
 
-async function requireActiveSubscription(
+export function isUnexpiredTrialGrant(
+  row: Record<string, unknown>,
+  nowMs: number = Date.now(),
+): boolean {
+  if (row.revoked_at) return false;
+  const expiresAt = Date.parse(String(row.expires_at ?? ""));
+  return Number.isFinite(expiresAt) && expiresAt > nowMs;
+}
+
+async function requireProvisioningEntitlement(
   client: ProvisioningWorkerClient,
   organizationId: string
-): Promise<{ active: true } | { active: false; error: string }> {
-  const subscriptionClient = client as unknown as SubscriptionLookupClient;
-  const { data, error } = await subscriptionClient
+): Promise<{ active: true; source: "paid" | "trial" } | { active: false; error: string }> {
+  const entitlementClient = client as unknown as EntitlementLookupClient;
+  const subscriptionResult = await entitlementClient
     .from("organization_subscriptions")
     .select("status")
     .eq("organization_id", organizationId);
 
-  if (error) {
+  if (subscriptionResult.error) {
     return { active: false, error: "Could not verify subscription entitlement" };
   }
 
-  const active = (data ?? []).some((row) => String(row.status ?? "") === "active");
-  if (!active) {
-    return { active: false, error: "Subscription is not active" };
+  const paidActive = (subscriptionResult.data ?? []).some(
+    (row) => String(row.status ?? "") === "active"
+  );
+  if (paidActive) {
+    return { active: true, source: "paid" };
   }
 
-  return { active: true };
+  const trialResult = await entitlementClient
+    .from("trial_grants")
+    .select("expires_at, revoked_at")
+    .eq("organization_id", organizationId);
+
+  if (trialResult.error) {
+    return { active: false, error: "Could not verify trial entitlement" };
+  }
+
+  const trialActive = (trialResult.data ?? []).some((row) => isUnexpiredTrialGrant(row));
+  if (trialActive) {
+    return { active: true, source: "trial" };
+  }
+
+  return { active: false, error: "No active paid or trial entitlement" };
 }
 
 export async function listAllPendingJobs(client: ProvisioningWorkerClient): Promise<ProvisioningJobRow[]> {
@@ -82,8 +107,9 @@ export async function processProvisioningJob(
   job: ProvisioningJobRow
 ): Promise<ProvisioningJobResult> {
   // Defense in depth: even if a stale/legacy pending job exists, no tenant data
-  // may be seeded until the webhook-authoritative entitlement is active.
-  const entitlement = await requireActiveSubscription(client, job.organization_id);
+  // may be seeded until a webhook-authoritative paid entitlement OR an unexpired,
+  // governed trial grant is active.
+  const entitlement = await requireProvisioningEntitlement(client, job.organization_id);
   if (!entitlement.active) {
     return { ok: false, error: entitlement.error, blocked: true };
   }
