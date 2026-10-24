@@ -22,11 +22,11 @@ export type SolutionExperienceConfig = {
 export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperienceConfig> = {
   retail: {
     slug: "retail",
-    publicName: "Retail RINASPACE",
-    signature: "Retail Operations RINASPACE",
+    publicName: "Retail",
+    signature: "Retail Operations Workspace",
     foundation: ["Business", "Commerce", "Growth", "Automation"],
     workflow: ["Catalogue", "Inventory", "Storefront", "Order", "Payment", "Customer", "Campaign"],
-    demoLabel: "Retail RINASPACE demo",
+    demoLabel: "Retail configuration demo",
     demoSummary:
       "A retail configuration that connects products, stock, orders, customers, and growth on the shared RINADS core.",
     rinpoPrompt:
@@ -49,12 +49,12 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   salon: {
     slug: "salon",
     publicName: "RI SALON RINASPACE",
-    signature: "RI SALON RINASPACE · R GLOW pilot engine",
+    signature: "RI SALON RINASPACE",
     foundation: ["Business", "Automation", "RINADS Intelligence", "RINPO Runtime", "RI ID + RI SPACE"],
     workflow: ["Booking", "Calendar", "Client", "Service", "POS", "Loyalty", "Campaign", "Review"],
     demoLabel: "RI SALON RINASPACE product experience",
     demoSummary:
-      "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows. R GLOW remains the internal pilot implementation during migration.",
+      "Salon operations on RINADS — booking, clients, services, POS, loyalty, campaigns, communications, reviews, and RINPO-assisted workflows.",
     rinpoPrompt:
       "Show me how RI SALON RINASPACE handles appointments, clients, POS, loyalty, campaigns, and RINPO-assisted salon operations.",
     statusNote: "Pilot",
@@ -87,15 +87,15 @@ export const SOLUTION_EXPERIENCES: Record<SolutionExperienceKey, SolutionExperie
   },
   healthcare: {
     slug: "healthcare",
-    publicName: "Healthcare RINASPACE",
-    signature: "Healthcare Operations RINASPACE",
+    publicName: "Healthcare",
+    signature: "Practice Operations Configuration",
     foundation: ["Business", "Automation", "RINADS Intelligence", "RI ID + RI SPACE"],
     workflow: ["Schedule", "Visit flow", "Team task", "Follow-up", "Communication", "Operations review"],
     demoLabel: "Healthcare operations concept",
     demoSummary:
-      "A planned Industry RINASPACE for scheduling, team workflows, follow-ups, and practice administration. It is not presented as a clinical decision system.",
+      "A planned operational configuration for scheduling, team workflows, follow-ups, and practice administration. It is not presented as a clinical decision system.",
     rinpoPrompt:
-      "Show me how a Healthcare RINASPACE could support non-clinical operations such as scheduling, follow-ups, and team workflows.",
+      "Show me how RINADS could support non-clinical healthcare operations such as scheduling, follow-ups, and team workflows.",
     statusNote: "Roadmap · non-clinical operations scope",
   },
   automotive: {
