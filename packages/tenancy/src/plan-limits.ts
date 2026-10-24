@@ -63,6 +63,8 @@ function defaultLimitsForPlan(planKey?: string): PlanLimits {
   switch (planKey) {
     case "starter":
       return { modules: ["commerce", "inventory"], seats: 5, ordersPerMonth: 100 };
+    case "trial-starter":
+      return { modules: ["commerce", "inventory", "crm", "tasks"], seats: 3, ordersPerMonth: 100 };
     case "growth":
       return {
         modules: ["commerce", "inventory", "procurement", "fulfilment"],
