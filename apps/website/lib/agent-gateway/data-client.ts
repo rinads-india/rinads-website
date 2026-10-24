@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getSupabasePublicConfig, isSupabaseMode } from "@/lib/supabase/env";
 import { createWebsiteServerClient } from "@/lib/supabase/server";
+import { mintRinadsDelegatedRlsJwt } from "./delegated-rls-jwt";
+import type { RinadsAgentPrincipal } from "./principal";
 
 function bearerToken(request: Request): string | undefined {
   const authorization = request.headers.get("authorization")?.trim();
@@ -10,17 +12,71 @@ function bearerToken(request: Request): string | undefined {
   return token || undefined;
 }
 
+function createDelegatedRlsClient(
+  principal: RinadsAgentPrincipal
+): SupabaseClient | null {
+  const { url, anonKey } = getSupabasePublicConfig();
+  const privateJwk = process.env.RINADS_AGENT_RLS_JWT_PRIVATE_JWK?.trim();
+  const keyId = process.env.RINADS_AGENT_RLS_JWT_KID?.trim();
+
+  if (
+    !url ||
+    !anonKey ||
+    !privateJwk ||
+    !keyId ||
+    !principal.delegationTokenId ||
+    !principal.delegationClient ||
+    !principal.delegatedScopes ||
+    !principal.delegationExpiresAt
+  ) {
+    return null;
+  }
+
+  try {
+    const { token } = mintRinadsDelegatedRlsJwt({
+      actorId: principal.actorId,
+      delegationTokenId: principal.delegationTokenId,
+      delegationClient: principal.delegationClient,
+      delegatedScopes: principal.delegatedScopes,
+      delegationExpiresAt: principal.delegationExpiresAt,
+      supabaseUrl: url,
+      privateJwk,
+      keyId,
+    });
+
+    // Supabase accepts externally minted JWTs signed by an imported signing key
+    // through the accessToken callback. The normal publishable/anon key remains
+    // the API key; the delegated JWT supplies auth.uid() + role=authenticated.
+    // This client never receives the service-role key.
+    return createClient(url, anonKey, {
+      accessToken: async () => token,
+    });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Create a user-scoped Supabase client for an already-authenticated Agent
- * Gateway request. This deliberately uses the public/anon key plus the user's
- * session/bearer token so normal RLS remains authoritative.
+ * Gateway request. Business data always stays behind ordinary RLS.
+ *
+ * - Session requests reuse the website Supabase session.
+ * - Supabase bearer requests reuse the validated user access token.
+ * - RINADS delegation requests receive a server-minted, very short-lived ES256
+ *   user JWT whose `sub` is the already-authorized RI ID actor and whose role is
+ *   only `authenticated`.
  *
  * Never substitute a service-role client here.
  */
 export async function createRinadsAgentDataClient(
-  request: Request
+  request: Request,
+  principal: RinadsAgentPrincipal
 ): Promise<SupabaseClient | null> {
   if (!isSupabaseMode()) return null;
+
+  if (principal.authMethod === "delegation") {
+    return createDelegatedRlsClient(principal);
+  }
 
   const token = bearerToken(request);
   if (token) {
