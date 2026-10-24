@@ -46,6 +46,7 @@ export type RinadsAgentPrincipal = {
   delegationTokenId?: string;
   delegationClient?: RinadsExternalAgentClient;
   delegatedScopes?: RinadsExternalAgentReadScope[];
+  delegationExpiresAt?: number;
 };
 
 export type RinadsAgentPrincipalResolution =
@@ -227,6 +228,7 @@ async function resolveDelegationPrincipal(
       delegationTokenId: verified.claims.jti,
       delegationClient: verified.claims.client,
       delegatedScopes: verified.claims.scopes,
+      delegationExpiresAt: verified.claims.exp,
     },
   };
 }
