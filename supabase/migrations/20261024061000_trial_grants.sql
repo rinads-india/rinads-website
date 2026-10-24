@@ -1,6 +1,7 @@
 -- Release B2: governed seven-day trial entitlement.
 -- Browser clients cannot write this table directly. The SECURITY DEFINER RPC
--- validates ownership, confirmed email, prior-grant history and paid status.
+-- validates the database launch gate, ownership, confirmed email, prior-grant
+-- history and paid status.
 
 INSERT INTO public.plans (key, name, description, limits, is_active)
 VALUES (
@@ -15,6 +16,16 @@ ON CONFLICT (key) DO UPDATE SET
   description = EXCLUDED.description,
   limits = EXCLUDED.limits,
   is_active = EXCLUDED.is_active;
+
+-- Database-authoritative kill switch. There is intentionally no authenticated
+-- UPDATE policy on feature_flags, so a browser cannot enable public trials.
+INSERT INTO public.feature_flags (key, description, default_enabled)
+VALUES (
+  'trial.signup.enabled',
+  'Allow self-serve governed seven-day trial grants.',
+  false
+)
+ON CONFLICT (key) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS public.trial_grants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -64,6 +75,15 @@ DECLARE
 BEGIN
   IF v_uid IS NULL THEN
     RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.feature_flags
+    WHERE key = 'trial.signup.enabled'
+      AND default_enabled = true
+  ) THEN
+    RAISE EXCEPTION 'Self-serve trial activation is not enabled';
   END IF;
 
   SELECT created_by
