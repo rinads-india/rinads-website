@@ -10,6 +10,10 @@ export function rinadsMcpResourceMetadataUrl(requestUrl: string): string {
   return new URL("/.well-known/oauth-protected-resource", requestUrl).toString();
 }
 
+export function rinadsMcpResourceUrl(requestUrl: string): string {
+  return new URL("/api/mcp", requestUrl).toString();
+}
+
 export function rinadsMcpAuthorizationServer(supabaseUrl: string): string {
   return `${supabaseUrl.replace(/\/$/, "")}/auth/v1`;
 }
@@ -45,8 +49,9 @@ export function rinadsMcpProtectedResourceMetadata(input: {
   const origin = new URL(input.requestUrl).origin;
 
   return {
-    resource: origin,
+    resource: rinadsMcpResourceUrl(input.requestUrl),
     authorization_servers: [rinadsMcpAuthorizationServer(input.supabaseUrl)],
+    bearer_methods_supported: ["header"],
     scopes_supported: [...RINADS_MCP_OAUTH_SCOPES],
     resource_documentation: `${origin}/developers`,
     resource_policy_uri: `${origin}/privacy`,
