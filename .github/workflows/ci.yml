@@ -20,6 +20,9 @@ jobs:
       - name: Public env secret-scope guard
         run: node scripts/ops/check-public-secret-scope.mjs
 
+      - name: Migration version uniqueness guard
+        run: node scripts/ops/check-migration-version-collisions.mjs
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
