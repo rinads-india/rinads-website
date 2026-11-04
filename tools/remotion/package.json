@@ -1,0 +1,22 @@
+{
+  "name": "@rinads/motion-starter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone RINADS Remotion motion-brand proof of concept (not in production workspace)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:landscape": "remotion render src/index.ts RINADSBusinessSimplifiedLandscape out/rinads-business-simplified-16x9.mp4",
+    "render:vertical": "remotion render src/index.ts RINADSBusinessSimplifiedVertical out/rinads-business-simplified-9x16.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.540",
+    "remotion": "4.0.540",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19"
+  }
+}

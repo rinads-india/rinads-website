@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "@/components/rinads/Logo";
+import { RinpoHeroPreview } from "@/components/home/RinpoHeroPreview";
 import { POSITIONING } from "@/lib/product-ia";
 import { CTAS } from "@/lib/ctas";
 import { COMPANY_CONFIG } from "@/lib/content/companyConfig";
@@ -64,14 +65,14 @@ export function HomeHero() {
             {...enter(0.18)}
             className="mt-8 max-w-xl text-3xl font-semibold leading-[1.08] tracking-[-0.03em] text-white sm:text-4xl md:text-5xl"
           >
-            {POSITIONING.hero}
+            {POSITIONING.homeHeadline}
           </motion.h1>
 
           <motion.p
             {...enter(0.3)}
             className="mt-5 max-w-xl text-base leading-7 text-white/68 sm:text-lg"
           >
-            {POSITIONING.support}
+            {POSITIONING.homeSupport}
           </motion.p>
 
           <motion.div {...enter(0.42)} className="mt-8 flex flex-wrap items-center gap-3">
@@ -84,21 +85,21 @@ export function HomeHero() {
               }}
               className="min-h-12 rounded-xl bg-rinads-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
-              {CTAS.talkToRinpo.label}
+              {CTAS.tryRinpo.label}
             </button>
-            <Link
-              href={CTAS.exploreRinads.href}
-              onClick={() => trackMarketing("homepage_view", { cta: "explore_rinads" })}
-              className="inline-flex min-h-12 items-center rounded-xl border border-white/20 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
-            >
-              {CTAS.exploreRinads.label}
-            </Link>
             <Link
               href={CTAS.bookDemo.href}
               onClick={() => trackMarketing("hero_book_demo", { source: "home_hero" })}
-              className="inline-flex min-h-12 items-center rounded-xl px-4 py-3 text-sm font-semibold text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+              className="inline-flex min-h-12 items-center rounded-xl border border-white/20 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
               {CTAS.bookDemo.label}
+            </Link>
+            <Link
+              href={CTAS.exploreRinads.href}
+              onClick={() => trackMarketing("homepage_view", { cta: "explore_rinads" })}
+              className="inline-flex min-h-12 items-center rounded-xl px-4 py-3 text-sm font-semibold text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
+            >
+              {CTAS.exploreRinads.label}
             </Link>
           </motion.div>
 
@@ -110,20 +111,8 @@ export function HomeHero() {
           </motion.p>
         </div>
 
-        <motion.div {...enter(0.35)} className="relative mx-auto w-full max-w-md lg:mx-0" aria-label="RINPO">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/rinpo-full-body-transparent-v2.png"
-            alt="RINPO — the RINADS intelligence interface"
-            width={420}
-            height={520}
-            className="mx-auto h-auto w-full max-w-[280px] object-contain md:max-w-[340px]"
-            loading="eager"
-            decoding="async"
-          />
-          <p className="mt-3 text-center text-xs font-medium text-white/50">
-            RINPO · Demo character asset · Talk to open the Phone experience
-          </p>
+        <motion.div {...enter(0.35)} className="relative mx-auto w-full min-w-0 max-w-xl lg:mx-0" aria-label="RINPO">
+          <RinpoHeroPreview />
         </motion.div>
       </div>
     </section>
