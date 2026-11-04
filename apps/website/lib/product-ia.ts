@@ -17,8 +17,8 @@ export type NavGroup = {
 };
 
 export const POSITIONING = {
-  hero: "Business Intelligence Infrastructure for Software-Defined Business.",
-  support: "Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
+  hero: "Business, simplified.",
+  support: "Run, sell, grow and automate your business from one intelligent platform—with RINPO.",
   closing: "Business, simplified.",
   equation: "Observe → Understand → Recommend → Authorize → Act → Audit",
   category: "Business Intelligence Infrastructure",
