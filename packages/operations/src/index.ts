@@ -72,3 +72,4 @@ export {
   AuditService,
   BarcodeService,
 } from "./pricing/pricing-service";
+export * from "./shipping/driver-network";
