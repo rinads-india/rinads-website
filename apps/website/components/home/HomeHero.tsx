@@ -87,18 +87,18 @@ export function HomeHero() {
               {CTAS.talkToRinpo.label}
             </button>
             <Link
-              href={CTAS.exploreRinads.href}
-              onClick={() => trackMarketing("homepage_view", { cta: "explore_rinads" })}
+              href={CTAS.businessReadiness.href}
+              onClick={() => trackMarketing("business_readiness_started", { source: "home_hero" })}
               className="inline-flex min-h-12 items-center rounded-xl border border-white/20 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
-              {CTAS.exploreRinads.label}
+              {CTAS.businessReadiness.label}
             </Link>
             <Link
-              href={CTAS.bookDemo.href}
-              onClick={() => trackMarketing("hero_book_demo", { source: "home_hero" })}
+              href={CTAS.exploreRinads.href}
+              onClick={() => trackMarketing("homepage_view", { cta: "explore_rinads" })}
               className="inline-flex min-h-12 items-center rounded-xl px-4 py-3 text-sm font-semibold text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary"
             >
-              {CTAS.bookDemo.label}
+              {CTAS.exploreRinads.label}
             </Link>
           </motion.div>
 
