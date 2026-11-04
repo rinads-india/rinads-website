@@ -46,10 +46,11 @@ describe("production env contract: build-time gate (next.config.ts)", () => {
   }
 });
 
-describe("production env contract: runtime guard (middleware.ts)", () => {
+describe("production env contract: runtime request guard (middleware or Next.js 16 proxy)", () => {
   for (const app of APPS) {
-    it(`apps/${app}/middleware.ts uses the non-throwing checkProductionEnvContract, not the throwing assert`, () => {
-      const middleware = readAppFile(app, "middleware.ts");
+    const runtimeGuardPath = app === "website" ? "proxy.ts" : "middleware.ts";
+    it(`apps/${app}/${runtimeGuardPath} uses the non-throwing checkProductionEnvContract, not the throwing assert`, () => {
+      const middleware = readAppFile(app, runtimeGuardPath);
       assert.match(
         middleware,
         /import\s*\{[^}]*\bcheckProductionEnvContract\b[^}]*\}\s*from\s*["']@rinads\/auth["']/,
@@ -62,17 +63,23 @@ describe("production env contract: runtime guard (middleware.ts)", () => {
       );
     });
 
-    it(`apps/${app}/middleware.ts returns a controlled response when the env contract check fails`, () => {
-      const middleware = readAppFile(app, "middleware.ts");
-      assert.match(
-        middleware,
-        /if\s*\(\s*!envContract\.ok\s*\)\s*\{[\s\S]{0,400}?status:\s*503/,
-        `apps/${app}/middleware.ts must return a 503 when checkProductionEnvContract() reports ok:false, instead of letting the request fall through`
-      );
+    it(`apps/${app}/${runtimeGuardPath} returns a controlled response when the env contract check fails`, () => {
+      const middleware = readAppFile(app, runtimeGuardPath);
+      if (app === "website") {
+        // Next.js 16 proxy routes failures through a shared 503 response factory.
+        assert.match(middleware, /if\s*\(\s*!envContract\.ok\s*\)\s*\{[\s\S]{0,400}?return unavailable\(/);
+        assert.match(middleware, /function unavailable\([\s\S]{0,500}?status:\s*503/);
+      } else {
+        assert.match(
+          middleware,
+          /if\s*\(\s*!envContract\.ok\s*\)\s*\{[\s\S]{0,400}?status:\s*503/,
+          `apps/${app}/${runtimeGuardPath} must return a 503 when checkProductionEnvContract() reports ok:false`
+        );
+      }
     });
 
-    it(`apps/${app}/middleware.ts excludes api/health from its matcher`, () => {
-      const middleware = readAppFile(app, "middleware.ts");
+    it(`apps/${app}/${runtimeGuardPath} excludes api/health from its matcher`, () => {
+      const middleware = readAppFile(app, runtimeGuardPath);
       assert.match(
         middleware,
         /matcher:\s*\[[\s\S]*?api\/health[\s\S]*?\]/,
