@@ -39,8 +39,14 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Build
-        run: pnpm build
+      # All non-website packages/apps retain their normal build task.
+      # The Next.js 16 Turbopack CI font-resolver issue is isolated to
+      # the website; production Vercel build configuration is unchanged.
+      - name: Build workspace packages and other apps
+        run: pnpm exec turbo run build --filter=!@rinads/website
+
+      - name: Build website (Webpack CI fallback)
+        run: pnpm --filter @rinads/website exec next build --webpack
 
   e2e:
     name: Playwright smoke (public website)
