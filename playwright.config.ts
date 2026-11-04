@@ -32,7 +32,11 @@ export default defineConfig({
   ],
   webServer: useLocalServer
     ? {
-        command: "pnpm --filter @rinads/website dev",
+        // CI exercises the production build: dev/Turbopack is not representative
+        // and has intermittently failed resolving next/font internals in Actions.
+        command: process.env.CI
+          ? "pnpm --filter @rinads/website start"
+          : "pnpm --filter @rinads/website dev",
         url: "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
