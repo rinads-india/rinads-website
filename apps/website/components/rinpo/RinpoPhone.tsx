@@ -72,7 +72,13 @@ export function RinpoPhone() {
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
     document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("keydown", onKey); if (previous?.isConnected) previous.focus(); };
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      if (previous?.isConnected) previous.focus();
+      else requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>("[data-rinpo-corner-launcher] button")?.focus();
+      });
+    };
   }, [phoneOpen, loginModalOpen, closeRinpo]);
 
   const [currentTime, setCurrentTime] = useState("9:41");
