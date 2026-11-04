@@ -14,74 +14,15 @@ concurrency:
 
 jobs:
   health:
-    name: All production endpoints (single runner)
+    name: All production endpoints and public smoke (single runner)
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Verify fail-closed health contracts
-        run: |
-          node <<'NODE'
-          const { appendFileSync } = require("node:fs");
-
-          const endpoints = {
-            website: "https://www.rinads.com/api/health",
-            platformAdmin: "https://admin.rinads.com/api/health",
-            ownerPortal: "https://app.rinads.com/api/health",
-            customerPortal: "https://customers.rinads.com/api/health",
-            salonPilot: "https://glow.rinads.com/api/health",
-          };
-
-          const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-          async function check(name, url) {
-            let reason = "unknown error";
-            for (let attempt = 1; attempt <= 3; attempt++) {
-              try {
-                const response = await fetch(url, {
-                  headers: { "user-agent": "RINADS-Health-Check/1.0" },
-                  redirect: "follow",
-                  signal: AbortSignal.timeout(12000),
-                });
-                const payload = await response.json();
-                if (
-                  response.status === 200 &&
-                  payload?.status === "ok" &&
-                  payload?.checks?.productionEnvContract === "ok"
-                ) {
-                  return { name, healthy: true, attempt, reason: "200 / ok" };
-                }
-                reason = "HTTP " + response.status + "; status=" + (payload?.status ?? "missing") + "; env=" + (payload?.checks?.productionEnvContract ?? "missing");
-              } catch (error) {
-                reason = error instanceof Error ? error.message : String(error);
-              }
-              if (attempt < 3) await delay(3000);
-            }
-            return { name, healthy: false, attempt: 3, reason };
-          }
-
-          async function main() {
-            const results = await Promise.all(
-              Object.entries(endpoints).map(([name, url]) => check(name, url))
-            );
-            const report = [
-              "## RINADS Production Health",
-              "",
-              "| Endpoint | Result | Evidence |",
-              "| --- | --- | --- |",
-              ...results.map((r) =>
-                "| " + r.name + " | " + (r.healthy ? "PASS" : "FAIL") + " | " + r.reason.replaceAll("|", "/") + " (attempt " + r.attempt + ") |"
-              ),
-              "",
-            ].join("\n");
-            console.log(report);
-            if (process.env.GITHUB_STEP_SUMMARY) {
-              appendFileSync(process.env.GITHUB_STEP_SUMMARY, report);
-            }
-            if (results.some((r) => !r.healthy)) process.exitCode = 1;
-          }
-
-          main().catch((error) => {
-            console.error(error);
-            process.exitCode = 1;
-          });
-          NODE
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check monitor contract tests
+        run: node --test scripts/ops/production-public-smoke.test.mjs
+      - name: Run read-only live production smoke
+        run: node scripts/ops/production-public-smoke.mjs
