@@ -187,11 +187,11 @@ describe("salon vertical repair migration", () => {
 });
 
 describe("cross-app auth cookie wiring", () => {
-  it("wires shared cookie options into browser, server, and middleware clients", () => {
+  it("wires shared cookie options into browser, server, and request-boundary clients", () => {
     const files = [
       "lib/supabase/browser.ts",
       "lib/supabase/server.ts",
-      "middleware.ts",
+      "proxy.ts",
       "../rinaglow/lib/supabase/browser.ts",
       "../rinaglow/lib/supabase/server.ts",
       "../rinaglow/middleware.ts",
