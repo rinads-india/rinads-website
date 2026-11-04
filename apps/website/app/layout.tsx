@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Caveat, Figtree, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -8,24 +7,8 @@ import { ThemeScript } from "@/components/rinads/ThemeScript";
 import { AnalyticsProvider } from "@/components/system/AnalyticsProvider";
 import { siteBrand } from "@/lib/brand";
 
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
-
-const inter = Inter({
-  variable: "--font-inter-family",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
+// Typography is loaded through CSS with resilient system fallbacks. Building this
+// public website must not depend on Google Fonts responses from next/font/google.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rinads.com";
 
 export const metadata: Metadata = {
@@ -71,7 +54,7 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body
-        className={`${figtree.variable} ${inter.variable} ${caveat.variable} font-sans antialiased bg-background text-foreground overflow-x-hidden`}
+        className="font-sans antialiased bg-background text-foreground overflow-x-hidden"
       >
         <a href="#main" className="skip-link">
           Skip to content

@@ -1,3 +1,8 @@
+/* Fonts load in the browser; system stacks keep the site usable when offline.
+ * Production builds must not depend on Google Fonts network responses.
+ * Self-hosted approved font assets can replace this import in a later release.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Figtree:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -6,6 +11,9 @@
  * RINADS Brand Tokens — light (:root) and dark (.dark) theme variables
  */
 :root {
+  --font-figtree: "Figtree", "Segoe UI", Arial, sans-serif;
+  --font-inter-family: "Inter", "Segoe UI", Arial, sans-serif;
+  --font-caveat: "Caveat", cursive;
   --rinads-primary: #9f4bc7;
   --rinads-primary-dark: #7a35a0;
   --rinads-primary-darker: #4a1d6a;
