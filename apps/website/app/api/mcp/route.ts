@@ -15,7 +15,7 @@ import {
 import {
   resolveRinadsAgentPrincipal,
   type RinadsAgentPrincipalResolution,
-} from "@/lib/agent-gateway/principal";
+} from "@/lib/agent-gateway/mcp-principal";
 import type { RinadsExternalAgentReadScope } from "@/lib/agent-gateway/delegation";
 
 export const runtime = "nodejs";

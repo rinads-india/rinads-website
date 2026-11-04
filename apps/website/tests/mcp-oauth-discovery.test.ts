@@ -8,10 +8,15 @@ import {
   rinadsMcpResourceMetadataUrl,
   rinadsMcpResourceUrl,
   rinadsMcpSecuritySchemes,
+  validateRinadsMcpOAuthClaims,
 } from "../lib/agent-gateway/oauth";
 
 const mcpRoute = readFileSync(
   new URL("../app/api/mcp/route.ts", import.meta.url),
+  "utf8"
+);
+const mcpPrincipal = readFileSync(
+  new URL("../lib/agent-gateway/mcp-principal.ts", import.meta.url),
   "utf8"
 );
 const resourceMetadataRoute = readFileSync(
@@ -75,5 +80,101 @@ describe("RINADS MCP OAuth discovery", () => {
     );
     assert.doesNotMatch(resourceMetadataRoute, /organization_id/);
     assert.match(resourceMetadataRoute, /getSupabasePublicConfig/);
+  });
+
+  it("accepts only an unexpired OAuth token bound to the expected issuer and MCP audience", () => {
+    const result = validateRinadsMcpOAuthClaims({
+      claims: {
+        iss: "https://project.supabase.co/auth/v1",
+        aud: "https://www.rinads.com/api/mcp",
+        exp: 2_000_000_000,
+        sub: "user-123",
+        client_id: "oauth-client-123",
+      },
+      expectedIssuer: "https://project.supabase.co/auth/v1",
+      expectedResource: "https://www.rinads.com/api/mcp",
+      nowSeconds: 1_900_000_000,
+    });
+
+    assert.deepEqual(result, {
+      ok: true,
+      clientId: "oauth-client-123",
+      subject: "user-123",
+    });
+  });
+
+  it("rejects Supabase default audience and missing OAuth client identity", () => {
+    assert.deepEqual(
+      validateRinadsMcpOAuthClaims({
+        claims: {
+          iss: "https://project.supabase.co/auth/v1",
+          aud: "authenticated",
+          exp: 2_000_000_000,
+          sub: "user-123",
+          client_id: "oauth-client-123",
+        },
+        expectedIssuer: "https://project.supabase.co/auth/v1",
+        expectedResource: "https://www.rinads.com/api/mcp",
+        nowSeconds: 1_900_000_000,
+      }),
+      { ok: false, reason: "invalid_audience" }
+    );
+
+    assert.deepEqual(
+      validateRinadsMcpOAuthClaims({
+        claims: {
+          iss: "https://project.supabase.co/auth/v1",
+          aud: "https://www.rinads.com/api/mcp",
+          exp: 2_000_000_000,
+          sub: "user-123",
+        },
+        expectedIssuer: "https://project.supabase.co/auth/v1",
+        expectedResource: "https://www.rinads.com/api/mcp",
+        nowSeconds: 1_900_000_000,
+      }),
+      { ok: false, reason: "missing_client_id" }
+    );
+  });
+
+  it("rejects expired or wrong-issuer MCP OAuth tokens", () => {
+    assert.deepEqual(
+      validateRinadsMcpOAuthClaims({
+        claims: {
+          iss: "https://other.supabase.co/auth/v1",
+          aud: "https://www.rinads.com/api/mcp",
+          exp: 2_000_000_000,
+          sub: "user-123",
+          client_id: "oauth-client-123",
+        },
+        expectedIssuer: "https://project.supabase.co/auth/v1",
+        expectedResource: "https://www.rinads.com/api/mcp",
+        nowSeconds: 1_900_000_000,
+      }),
+      { ok: false, reason: "invalid_issuer" }
+    );
+
+    assert.deepEqual(
+      validateRinadsMcpOAuthClaims({
+        claims: {
+          iss: "https://project.supabase.co/auth/v1",
+          aud: "https://www.rinads.com/api/mcp",
+          exp: 1_900_000_000,
+          sub: "user-123",
+          client_id: "oauth-client-123",
+        },
+        expectedIssuer: "https://project.supabase.co/auth/v1",
+        expectedResource: "https://www.rinads.com/api/mcp",
+        nowSeconds: 1_900_000_000,
+      }),
+      { ok: false, reason: "expired" }
+    );
+  });
+
+  it("enforces the resource gate only on MCP bearer tokens before existing RLS resolution", () => {
+    assert.match(mcpRoute, /agent-gateway\/mcp-principal/);
+    assert.match(mcpPrincipal, /auth\.getClaims\(token\)/);
+    assert.match(mcpPrincipal, /validateRinadsMcpOAuthClaims/);
+    assert.match(mcpPrincipal, /resolveBaseAgentPrincipal\(request\)/);
+    assert.match(mcpPrincipal, /RINADS_AGENT_DELEGATION_TOKEN_PREFIX/);
   });
 });
