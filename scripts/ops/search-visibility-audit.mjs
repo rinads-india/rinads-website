@@ -13,7 +13,7 @@ if (base.protocol !== "https:" || !["www.rinads.com", "rinads.com"].includes(bas
 const paths = ["/", "/platform/growth", "/solutions/salon", "/solutions/landscape", "/grow/search-intelligence"];
 
 function attribute(tag, name) {
-  const re = new RegExp("\\b" + name + "\\s*=\\s*([\\\"'])((?:(?!\\1).)*)\\1", "i");
+  const re = new RegExp("\\b" + name + "\\s*=\\s*([\"'])(.*?)\\1", "i");
   return tag.match(re)?.[2] ?? null;
 }
 function byAttribute(html, element, key, value, desired) {
@@ -33,12 +33,12 @@ async function read(path) {
 async function inspect(path) {
   try {
     const r = await read(path);
-    const title = r.text.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.trim() ?? null;
+    const title = r.text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? null;
     const description = byAttribute(r.text, "meta", "name", "description", "content");
     const canonical = byAttribute(r.text, "link", "rel", "canonical", "href");
     const robots = byAttribute(r.text, "meta", "name", "robots", "content");
-    const h1 = (r.text.match(/<h1\\b/gi) ?? []).length;
-    const structuredData = /<script[^>]*type=["']application\\/ld\\+json["']/i.test(r.text);
+    const h1 = (r.text.match(/<h1\b/gi) ?? []).length;
+    const structuredData = /<script[^>]*type=["']application\/ld\+json["']/i.test(r.text);
     const issues = [];
     if (r.status !== 200) issues.push("HTTP " + r.status);
     if (!title) issues.push("title not found in initial HTML");
