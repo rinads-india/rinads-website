@@ -72,4 +72,21 @@ export {
   AuditService,
   BarcodeService,
 } from "./pricing/pricing-service";
-export * from "./shipping/driver-network";
+export {
+  rankEligibleDrivers,
+  transitionDispatch,
+  proposePayout,
+  DispatchPolicyError,
+  type DriverRelationship,
+  type DriverVehicle,
+  type DriverVerification,
+  type DeliveryStatus,
+  type DeliveryActorRole,
+  type DriverProfile,
+  type DispatchJob,
+  type DispatchScope,
+  type Candidate,
+  type CandidateSelection,
+  type ProposedPayout,
+  type DeliveryEvent as DriverDispatchEvent,
+} from "./shipping/driver-network";
