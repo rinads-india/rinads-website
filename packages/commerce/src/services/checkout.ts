@@ -1,7 +1,13 @@
 import type { CommerceRepository } from "../repository";
 import type { InventoryPort, OrderPaidCallback } from "../inventory-port";
 import { err, ok, roundMoney } from "../result";
-import type { CheckoutInput, CommerceContext, Order, Result } from "../types";
+import type {
+  CheckoutInput,
+  CommerceContext,
+  Order,
+  OrderShippingAddressSnapshot,
+  Result,
+} from "../types";
 import { CartService } from "./cart";
 import { CatalogService } from "./catalog";
 import { OrderService } from "./order";
@@ -99,6 +105,37 @@ export class CheckoutService {
     const cart = store.carts.find((c) => c.id === input.cartId);
     if (!cart) return err("CART_NOT_FOUND", "Cart not found.");
 
+    const customerId = input.customerId ?? ctx.customerId ?? cart.customerId;
+    let shippingAddress: OrderShippingAddressSnapshot | undefined;
+    if (input.addressId) {
+      const address = store.addresses.find(
+        (candidate) =>
+          candidate.id === input.addressId && candidate.organizationId === ctx.organizationId
+      );
+      if (!address) {
+        return err("ADDRESS_NOT_FOUND", "Shipping address not found.", undefined, ctx.requestId);
+      }
+      if (!customerId || address.customerId !== customerId) {
+        return err(
+          "FORBIDDEN",
+          "Shipping address does not belong to this customer.",
+          undefined,
+          ctx.requestId
+        );
+      }
+      shippingAddress = {
+        sourceAddressId: address.id,
+        name: address.name,
+        phone: address.phone,
+        line1: address.line1,
+        line2: address.line2,
+        city: address.city,
+        state: address.state,
+        pincode: address.pincode,
+        country: "IN",
+      };
+    }
+
     const reserveResult = this.inventory.reserveForCart(
       ctx,
       input.cartId,
@@ -143,8 +180,9 @@ export class CheckoutService {
     });
 
     const orderResult = this.orders.createFromCheckout(ctx, {
-      customerId: input.customerId ?? ctx.customerId,
+      customerId,
       guestEmail: input.guestEmail,
+      shippingAddress,
       quote: quoteResult.data,
       lines: lineSnapshots,
       paymentRef: paymentResult.data.providerRef,
