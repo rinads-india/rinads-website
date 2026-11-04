@@ -65,6 +65,9 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Build public website for smoke
+        run: pnpm --filter @rinads/website build
+
       - name: Run smoke E2E
         run: pnpm exec playwright test tests/e2e/smoke.spec.ts
 
