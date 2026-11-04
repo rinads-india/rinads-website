@@ -1,16 +1,17 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Credential-free production smoke. Runs in CI against a locally-started
- * website dev server (or a remote deploy when E2E_BASE_URL is set).
+ * Credential-free website smoke. Runs in CI against a locally-built
+ * production server (or a remote deploy when E2E_BASE_URL is set).
  */
 
 test("homepage renders the marketing hero", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/RINADS/i);
   await expect(
-    page.getByRole("heading", { name: /business intelligence infrastructure/i }),
+    page.getByRole("heading", { name: /business, simplified/i }),
   ).toBeVisible();
+  await expect(page.getByText("Synthetic demo")).toBeVisible();
 });
 
 test("health endpoint reports a valid production env contract", async ({ request }) => {
