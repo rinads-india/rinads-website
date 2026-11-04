@@ -82,7 +82,7 @@ export function RinpoHeroPreview() {
               aria-pressed={selected === item.id}
               onClick={() => {
                 setSelected(item.id);
-                trackMarketing("hero_demo_scenario_selected", { scenario: item.id });
+                trackMarketing("rinpo_demo_started", { scenario: item.id });
               }}
               className={
                 selected === item.id
@@ -106,7 +106,7 @@ export function RinpoHeroPreview() {
         <button
           type="button"
           onClick={() => {
-            trackMarketing("hero_preview_phone_opened", { scenario: selected });
+            trackMarketing("hero_try_rinpo", { scenario: selected });
             openPhoneScreen("chat");
           }}
           className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-rinads-primary px-4 text-sm font-semibold text-white transition hover:bg-rinads-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
