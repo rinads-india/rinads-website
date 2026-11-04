@@ -29,7 +29,7 @@ test("anonymous OS must redirect within the canonical website to signup", () => 
 });
 
 test("homepage checks authentic SSR brand and synthetic demo labels", () => {
-  const html = "<html><body><h1>Business, simplified.</h1><p>RINPO</p><small>Synthetic demo</small></body></html>";
+  const html = "<html><body><h1>Business, simplified.</h1><p>RINADS RINPO</p><small>Synthetic demo</small></body></html>";
   assert.equal(validPublicRoute("/", 200, html), true);
   assert.equal(validPublicRoute("/", 200, "<html>RINADS</html>"), false);
   assert.equal(validPublicRoute("/pricing", 200, "<html><title>Pricing | RINADS</title></html>"), true);
