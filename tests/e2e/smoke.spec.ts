@@ -33,3 +33,27 @@ test("a key marketing route responds", async ({ page }) => {
   const res = await page.goto("/pricing");
   expect(res?.status()).toBeLessThan(400);
 });
+
+test("mobile RINPO Phone is a keyboard-accessible, honest preview", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const launcher = page.getByRole("button", { name: /open rinpo phone/i });
+  await expect(launcher).toBeVisible();
+  await launcher.click();
+
+  const phone = page.getByRole("dialog", { name: "RINPO Phone" });
+  await expect(phone).toBeVisible();
+  const frame = await phone.boundingBox();
+  expect(frame).not.toBeNull();
+  expect(frame!.y).toBeGreaterThanOrEqual(0);
+  expect(frame!.y + frame!.height).toBeLessThanOrEqual(813);
+
+  await phone.getByRole("button", { name: "Today (Preview)", exact: true }).click();
+  await expect(phone.getByRole("status")).toContainText("not connected to live business data");
+
+  await page.keyboard.press("Escape");
+  await expect(phone).toBeHidden();
+  await expect(launcher).toBeFocused();
+});
