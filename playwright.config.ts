@@ -32,7 +32,11 @@ export default defineConfig({
   ],
   webServer: useLocalServer
     ? {
-        command: "pnpm --filter @rinads/website dev",
+        // Use Webpack only for CI's local Playwright server to avoid the
+        // Next.js 16 Turbopack font-module failures seen on clean runners.
+        command: process.env.CI
+          ? "pnpm --filter @rinads/website exec next dev --webpack"
+          : "pnpm --filter @rinads/website dev",
         url: "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
