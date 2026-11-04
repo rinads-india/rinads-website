@@ -19,14 +19,14 @@ describe("Homepage UX V2 contracts", () => {
     assert.ok(POSITIONING.support.includes("RINPO"));
   });
 
-  it("presents operating systems plus core product layers", () => {
+  it("presents connected platform capabilities plus canonical core layers", () => {
     const operatingSystems = PLATFORM_OS.filter((item) => item.section !== "Core");
     const core = PLATFORM_OS.filter((item) => item.section === "Core");
 
     assert.equal(operatingSystems.length, 5);
     assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
     assert.ok(core.some((item) => item.label === "RINPO Runtime"));
-    assert.ok(core.some((item) => item.label === "RINADS Cloud"));
+    assert.ok(core.some((item) => item.label === "RI ID + RI SPACE"));
   });
 
   it("uses conversion navigation with RINPO and customer evidence anchors", () => {
