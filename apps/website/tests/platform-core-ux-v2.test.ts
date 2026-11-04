@@ -4,14 +4,14 @@ import { describe, it } from "node:test";
 import { PLATFORM_OS } from "../lib/product-ia";
 
 describe("Platform core UX V2 contracts", () => {
-  it("keeps platform pillars plus core product layers", () => {
+  it("keeps platform capabilities plus canonical core product layers", () => {
     const operatingSystems = PLATFORM_OS.filter((item) => item.section !== "Core");
     const core = PLATFORM_OS.filter((item) => item.section === "Core");
 
     assert.equal(operatingSystems.length, 5);
     assert.ok(core.some((item) => item.label === "RINADS Intelligence"));
     assert.ok(core.some((item) => item.label === "RINPO Runtime"));
-    assert.ok(core.some((item) => item.label === "RINADS Cloud"));
+    assert.ok(core.some((item) => item.label === "RI ID + RI SPACE"));
   });
 
   it("uses dedicated Intelligence and Cloud experiences instead of the generic OS page template", () => {
