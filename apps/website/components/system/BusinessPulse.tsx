@@ -40,7 +40,7 @@ export function BusinessPulse({ className = "" }: { className?: string }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rinads-primary">
-            Live Business Pulse
+            Business pulse · sample workspace
           </p>
           <h2 id="business-pulse-heading" className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
             What needs attention across the business
