@@ -85,6 +85,14 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     pageType: "product",
   },
   {
+    path: "/grow/search-intelligence",
+    indexable: true,
+    title: "Search Visibility & AI Search Readiness | RI GROWTH — RINADS",
+    description: "Plan practical Google Search, local SEO and AI-search readiness improvements with RI GROWTH. Request a human-reviewed search visibility pilot; no automated ranking promises.",
+    pageType: "product",
+    schemaTypes: ["WebPage", "BreadcrumbList"],
+  },
+  {
     path: "/platform/automation",
     indexable: true,
     title: "Automation | RINADS Platform",
