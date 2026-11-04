@@ -36,7 +36,7 @@ if (facebook) socials.push({ name: "Facebook", href: facebook });
 export const COMPANY_CONFIG = {
   legalName: "RINADS Technologies",
   brandName: "RINADS",
-  category: "Business Intelligence Infrastructure",
+  category: "Business Intelligence Platform",
   tagline: "Business, simplified.",
   location: {
     city: "Thrissur",
