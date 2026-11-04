@@ -9,6 +9,9 @@ import { assertProductionEnvContract } from "@rinads/auth";
 assertProductionEnvContract();
 
 const nextConfig: NextConfig = {
+  // The devtools indicator can overlap bottom navigation in mobile Playwright runs.
+  // Disable only in CI; runtime and build errors continue to surface normally.
+  devIndicators: process.env.CI ? false : undefined,
   async redirects() {
     return [
       // Legacy → platform pillars
