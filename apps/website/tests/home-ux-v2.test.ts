@@ -15,7 +15,7 @@ describe("Homepage UX V2 contracts", () => {
   });
 
   it("uses outcome-led positioning copy", () => {
-    assert.match(POSITIONING.hero, /intelligence/i);
+    assert.match(POSITIONING.hero, /business, simplified/i);
     assert.ok(POSITIONING.support.includes("RINPO"));
   });
 
@@ -75,6 +75,7 @@ describe("Homepage UX V2 contracts", () => {
     assert.match(hero, /Logo/);
     assert.match(hero, /RINADS TECHNOLOGIES/);
     assert.match(hero, /openPhoneScreen/);
+    assert.match(hero, /CTAS\.businessReadiness/);
     assert.match(sections, /Customer evidence/);
     assert.match(sections, /Business Readiness/);
     assert.match(sections, /business_readiness_started/);
