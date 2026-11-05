@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { isRinaglowPublicPath } from "../lib/public-paths";
 import fs from "node:fs";
 
-describe("R GLOW middleware public path contract", () => {
+describe("R GLOW proxy public path contract", () => {
   it("allows the public product front door", () => {
     assert.equal(isRinaglowPublicPath("/"), true);
   });
@@ -22,7 +22,7 @@ describe("R GLOW middleware public path contract", () => {
   });
 
   it("keeps the production environment contract ahead of auth routing", () => {
-    const source = fs.readFileSync(new URL("../middleware.ts", import.meta.url), "utf8");
+    const source = fs.readFileSync(new URL("../proxy.ts", import.meta.url), "utf8");
     assert.ok(source.indexOf("checkProductionEnvContract()") < source.indexOf("isRinaglowPublicPath(pathname)"));
     assert.match(source, /status:\s*503/);
     assert.match(source, /sanitizeRelativeNext/);
