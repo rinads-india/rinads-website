@@ -53,6 +53,9 @@ export function RinpoPhone() {
   const activeMode = bottomModes.find((m) => m.id === screen);
   const reducedMotion = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
+  // Keep the nested login dialog from losing focus when phone focus handling yields.
+  const loginModalOpenRef = useRef(loginModalOpen);
+  loginModalOpenRef.current = loginModalOpen;
 
   useEffect(() => {
     if (!phoneOpen || loginModalOpen) return;
@@ -74,9 +77,14 @@ export function RinpoPhone() {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      if (previous?.isConnected) previous.focus();
-      else requestAnimationFrame(() => {
-        document.querySelector<HTMLElement>("[data-rinpo-corner-launcher] button")?.focus();
+      if (loginModalOpenRef.current) return;
+      // The corner launcher unmounts while the phone is open. Focus it only
+      // after React has rendered the replacement on close. Do not target body.
+      requestAnimationFrame(() => {
+        const stablePrevious = previous?.isConnected && previous !== document.body &&
+          previous !== document.documentElement ? previous : null;
+        const launcher = document.querySelector<HTMLElement>("[data-rinpo-corner-launcher] button");
+        (stablePrevious ?? launcher)?.focus();
       });
     };
   }, [phoneOpen, loginModalOpen, closeRinpo]);
