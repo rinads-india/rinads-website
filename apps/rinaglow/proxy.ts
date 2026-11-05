@@ -10,12 +10,12 @@ import { isRinaglowPublicPath } from "./lib/public-paths";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Fail closed on every request if a production deploy is misconfigured
   // with demo auth / demo data. See docs/deployment/POLICY.md. apps/rinaglow
   // has no demo-mode fallback at all — it is the first real-tenant surface.
   // This must never throw here — an unguarded throw crashes the whole
-  // middleware invocation (MIDDLEWARE_INVOCATION_FAILED) instead of
+  // proxy invocation (MIDDLEWARE_INVOCATION_FAILED) instead of
   // returning a controlled response.
   const envContract = checkProductionEnvContract();
   if (!envContract.ok) {
