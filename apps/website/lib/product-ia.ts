@@ -23,7 +23,7 @@ export const POSITIONING = {
   support: "Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
   closing: "Business, simplified.",
   equation: "Observe → Understand → Recommend → Authorize → Act → Audit",
-  category: "Business Intelligence Infrastructure",
+  category: "Business Intelligence Platform",
 } as const;
 
 /**
