@@ -72,3 +72,22 @@ export {
   AuditService,
   BarcodeService,
 } from "./pricing/pricing-service";
+export {
+  rankEligibleDrivers,
+  transitionDispatch,
+  proposePayout,
+  DispatchPolicyError,
+  type DriverRelationship,
+  type DriverVehicle,
+  type DriverVerification,
+  type DeliveryStatus,
+  type DeliveryActorRole,
+  type DriverProfile,
+  type DispatchJob,
+  type DispatchScope,
+  type Candidate,
+  type CandidateSelection,
+  type ProposedPayout,
+  type DeliveryEvent as DriverDispatchEvent,
+} from "./shipping/driver-network";
+export { evaluateMerchantDeliveryRead, evaluateDriverOfferRead, type MerchantReadGateInput, type DriverReadGateInput, type ReadGateDecision } from "./shipping/read-access";

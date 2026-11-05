@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100c1f">
+<title>RI DELIVERY — Offline Driver Preview</title>
+<style>
+:root{color-scheme:dark;--purple:#9a67f4;--bg:#0d0b16;--card:#211b32;--text:#f8f4ff;--muted:#b9aecd}
+*{box-sizing:border-box}
+body{background:radial-gradient(circle at top,#251344,#0d0b16 65%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;margin:0;min-height:100vh}
+main{max-width:470px;padding:20px 16px 110px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+mark{background:#3d275f;color:#d8b9ff;padding:5px 9px;border-radius:10px;font-size:11px;font-weight:700}
+h1{font-size:28px;margin:14px 0 4px}h2{font-size:17px;margin:0 0 12px}
+p{margin:5px 0}small,.muted{color:var(--muted)}
+.card{border:1px solid #4b3b65;border-radius:22px;background:var(--card);padding:20px;margin:16px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpi{padding:14px;border-radius:16px;background:#2c2444}
+.kpi b{display:block;font-size:23px}
+button{background:var(--purple);color:#10081c;border:none;border-radius:13px;padding:13px 15px;font:inherit;font-weight:700;cursor:pointer}
+button.secondary{background:#342746;color:#eee1ff;border:1px solid #66517e}
+button:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:10px}.actions button{flex:1}
+.status{display:inline-block;border-radius:999px;background:#36214e;color:#ead7ff;font-size:12px;padding:5px 10px}
+#notice{border:1px solid #76557c;border-radius:14px;padding:12px;color:#e0c6e9;background:#251b35;margin-top:10px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#161123;border-top:1px solid #3d2c50;padding:10px;display:flex;justify-content:space-around}
+nav button{background:none;color:#d2c3e5;font-size:13px}
+nav button[aria-current="page"]{color:#c39cff;text-decoration:underline}
+label{display:block;margin-bottom:5px;color:var(--muted)}
+input{width:100%;padding:12px;background:#140f21;border:1px solid #604a79;color:white;border-radius:12px}
+.screen{display:none}.screen.active{display:block}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><b style="color:#c69bff;letter-spacing:.1em">RINADS · RI LOGISTICS</b><small style="display:block">Powered by RINPO Runtime</small></div>
+<mark>DEMO · NOT LIVE</mark>
+</header>
+<section id="home" class="screen active">
+<h1>Driver workspace</h1><p class="muted">This is a local-only simulation. No real offers, GPS or payments.</p>
+<div class="card row"><div><b>Accept new jobs</b><small style="display:block">Demo availability, not a real shift</small></div><button id="available" class="secondary" aria-pressed="false" onclick="toggleAvailable()">OFF</button></div>
+<div class="kpis"><div class="kpi"><small>Completed in demo</small><b id="completed">0</b></div><div class="kpi"><small>Simulated earnings</small><b id="earned">₹0</b></div></div>
+<div class="card"><div class="row"><h2>Job offer · #RI-DEMO-01</h2><span class="status" id="jobState">Not offered</span></div>
+<p><b>Pickup</b> · Example bakery in Thrissur</p><p><b>Drop</b> · Example 4.2 km route</p><p><b>Example rider payout</b> · ₹78</p>
+<small>Availability must be enabled. No customer identity or real route is stored.</small>
+<div class="actions" style="margin-top:18px"><button class="secondary" id="decline" disabled onclick="change('decline')">Decline</button><button id="accept" disabled onclick="change('accept')">Accept</button></div>
+</div>
+<div class="card" id="nextActions" hidden><h2>Active demo job</h2><p id="activeState"></p><div class="actions"><button id="pickup" onclick="change('pickup')">Confirm pickup</button><button id="deliver" onclick="change('deliver')" disabled>Record delivery</button></div><label for="proof" style="margin-top:12px">Dummy proof code (required before demo delivery)</label><input id="proof" autocomplete="off" placeholder="Type SAMPLE-POD"></div>
+<div id="notice" role="status">All actions here are simulated inside your browser.</div>
+</section>
+<section id="jobs" class="screen"><h1>Jobs</h1><div class="card"><h2>Job history</h2><p id="jobsText">No demo activity.</p></div></section>
+<section id="earnings" class="screen"><h1>Earnings</h1><div class="card"><h2>Simulated payout</h2><p id="earningText">₹0 — no delivery verified.</p><small>Real settlement requires finance approval and reconciled banking.</small></div></section>
+<section id="profile" class="screen"><h1>Driver verification</h1><div class="card"><h2>Required for actual pilot</h2><p>RI ID · licence · vehicle/insurance · active consent · merchant eligibility · approved fare</p><small>Verification is not connected. These are required controls, not completed steps.</small></div></section>
+</main>
+<nav aria-label="Demo navigation">
+<button aria-current="page" onclick="nav('home',this)">Home</button>
+<button onclick="nav('jobs',this)">Jobs</button>
+<button onclick="nav('earnings',this)">Earnings</button>
+<button onclick="nav('profile',this)">Profile</button>
+</nav>
+<script>
+(function(){'use strict';
+var state='not_offered',available=false,completed=0,earned=0;
+var $=function(id){return document.getElementById(id)};
+function render(){
+ $('available').textContent=available?'ON':'OFF';$('available').setAttribute('aria-pressed',String(available));
+ $('jobState').textContent=state.replaceAll('_',' ');
+ $('accept').disabled=state!=='offered';$('decline').disabled=state!=='offered';
+ $('nextActions').hidden=!['accepted','picked_up'].includes(state);
+ $('pickup').disabled=state!=='accepted';$('deliver').disabled=state!=='picked_up';
+ $('completed').textContent=completed;$('earned').textContent='₹'+earned;
+ $('jobsText').textContent='Demo job status: '+state.replaceAll('_',' ');
+ $('earningText').textContent='₹'+earned+' simulated. No payment initiated.';
+ $('activeState').textContent='Status: '+state.replaceAll('_',' ');
+}
+window.toggleAvailable=function(){
+ available=!available;
+ if(available&&state==='not_offered')state='offered';
+ $('notice').textContent=available?'Demo rider availability enabled.':'Demo availability disabled; no new offers can appear.';
+ render();
+};
+window.change=function(action){
+ if(action==='decline'&&state==='offered'){state='not_offered';$('notice').textContent='Demo offer declined. No penalty.';}
+ else if(action==='accept'&&state==='offered'){state='accepted';$('notice').textContent='Sample offer accepted. No real dispatch.';}
+ else if(action==='pickup'&&state==='accepted'){state='picked_up';$('notice').textContent='Simulated pickup recorded.';}
+ else if(action==='deliver'&&state==='picked_up'){
+  if(!$('proof').value.trim()){$('notice').textContent='Proof code required before simulated completion.';return;}
+  state='delivered';completed=1;earned=78;$('notice').textContent='Simulated delivery complete. Payout proposal only.';
+ }
+ render();
+};
+window.nav=function(section,button){
+ document.querySelectorAll('.screen').forEach(function(x){x.classList.toggle('active',x.id===section)});
+ document.querySelectorAll('nav button').forEach(function(x){x.removeAttribute('aria-current')});
+ button.setAttribute('aria-current','page');
+};render();
+})();
+</script>
+</body>
+</html>
