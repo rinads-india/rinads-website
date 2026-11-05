@@ -86,8 +86,8 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_home",
     "/",
-    "RINADS | Business Intelligence Infrastructure",
-    "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
+    "RINADS | Business, simplified.",
+    "Run, sell, grow and automate your business from one intelligent platform with RINPO. Business Intelligence Platform for growing businesses.",
   ),
   seo(
     "seo_platform",
