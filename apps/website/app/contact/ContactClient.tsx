@@ -2,13 +2,13 @@
 
 import { useSearchParams } from "next/navigation";
 import { LeadForm } from "@/components/system/LeadForm";
+import { contactSourcePath } from "@/lib/lead-source";
 
 export function ContactClient() {
   const searchParams = useSearchParams();
   const intent = searchParams.get("intent") ?? undefined;
   const plan = searchParams.get("plan") ?? undefined;
-  const source = searchParams.get("source");
-  const sourcePath = source === "start" ? "/start" : "/contact";
+  const sourcePath = contactSourcePath(searchParams.get("source"));
 
   return (
     <LeadForm
