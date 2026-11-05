@@ -35,14 +35,16 @@ export const PLATFORM_AVAILABILITY: Record<CapabilityKey, AvailabilityStatus> = 
 
   // Commerce
   ri_marketplace: "PREVIEW", // Built Phase 3, not production-tested
-  payment_checkout: "AVAILABLE",
+  // Provider integration exists, but the signed webhook-to-provisioning golden path is not yet proven live.
+  payment_checkout: "PREVIEW",
 
   // Intelligence & automation
   ri_entity: "PREVIEW",      // /entity/[slug] built Phase 2
   morning_digest: "PREVIEW",
 
   // Operations
-  whatsapp_notify: "AVAILABLE",
+  // Sending requires approved production WhatsApp credentials and observed delivery evidence.
+  whatsapp_notify: "PREVIEW",
   order_tracker: "AVAILABLE",
   service_assignment: "AVAILABLE",
 };
@@ -57,7 +59,8 @@ export function isAvailable(key: CapabilityKey): boolean {
 
 export function isLive(key: CapabilityKey): boolean {
   const s = PLATFORM_AVAILABILITY[key];
-  return s === "AVAILABLE" || s === "PREVIEW" || s === "PRIVATE_PREVIEW";
+  // Preview and private preview are never public evidence of a live capability.
+  return s === "AVAILABLE";
 }
 
 export const STATUS_LABEL: Record<AvailabilityStatus, string> = {
