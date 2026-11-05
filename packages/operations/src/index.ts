@@ -90,3 +90,4 @@ export {
   type ProposedPayout,
   type DeliveryEvent as DriverDispatchEvent,
 } from "./shipping/driver-network";
+export { evaluateMerchantDeliveryRead, evaluateDriverOfferRead, type MerchantReadGateInput, type DriverReadGateInput, type ReadGateDecision } from "./shipping/read-access";
