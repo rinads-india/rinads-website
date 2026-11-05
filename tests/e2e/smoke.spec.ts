@@ -40,7 +40,10 @@ test("mobile RINPO Phone is a keyboard-accessible, honest preview", async ({ pag
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const launcher = page.getByRole("button", { name: /open rinpo phone/i });
+  // Scope to the fixed corner launcher: the homepage also has a separate CTA.
+  const launcher = page.locator("[data-rinpo-corner-launcher]").getByRole("button", {
+    name: /open rinpo phone/i,
+  });
   await expect(launcher).toBeVisible();
   await launcher.click();
 
