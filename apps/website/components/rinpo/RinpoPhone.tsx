@@ -74,9 +74,18 @@ export function RinpoPhone() {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      if (previous?.isConnected) previous.focus();
-      else requestAnimationFrame(() => {
-        document.querySelector<HTMLElement>("[data-rinpo-corner-launcher] button")?.focus();
+      // The global launcher unmounts while the phone is open. Its replacement
+      // exists only after the provider renders the closed-phone state.
+      requestAnimationFrame(() => {
+        const launcher = document.querySelector<HTMLElement>(
+          "[data-rinpo-corner-launcher] button"
+        );
+        // A nested sign-in dialog keeps the phone mounted; never steal focus.
+        if (!launcher) return;
+        const stablePrevious =
+          previous?.isConnected && previous !== document.body &&
+          previous !== document.documentElement ? previous : null;
+        (stablePrevious ?? launcher).focus();
       });
     };
   }, [phoneOpen, loginModalOpen, closeRinpo]);
