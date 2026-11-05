@@ -40,7 +40,11 @@ test("mobile RINPO Phone is a keyboard-accessible, honest preview", async ({ pag
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const launcher = page.getByRole("button", { name: /open rinpo phone/i });
+  // The hero and global floating control both open the Phone. Scope to the
+  // synthetic hero demo so Playwright does not match two valid buttons.
+  const launcher = page
+    .locator('[aria-label="Illustrative RINPO business demo"]')
+    .getByRole("button", { name: /open rinpo phone/i });
   await expect(launcher).toBeVisible();
   await launcher.click();
 
