@@ -7,7 +7,7 @@
 const DEFAULT_SITE_URL = "https://www.rinads.com";
 
 function siteUrl(override?: string) {
-  return (override ?? process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL).replace(/\/$/, "");
+  return (override ?? process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL).trim().replace(/\/+$/, "");
 }
 
 function absoluteUrl(path: string, base?: string) {
@@ -114,7 +114,7 @@ export function buildSoftwareApplicationJsonLd(input?: {
       "Business Intelligence Infrastructure for Software-Defined Business. Powered by RINADS INTELLIGENCE. Executed by RINPO RUNTIME.",
     offers: {
       "@type": "Offer",
-      url: input?.offerUrl ?? `${root}/contact?intent=demo`,
+      url: input?.offerUrl ?? `${root}/company/contact?intent=demo`,
     },
   };
 }
