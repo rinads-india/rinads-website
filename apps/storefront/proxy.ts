@@ -7,7 +7,7 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 const TENANT_HEADER = "x-rinads-organization-id";
 const TENANT_SLUG_HEADER = "x-rinads-storefront-slug";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Fail closed on every request if a production deploy is misconfigured
   // with demo auth / demo data. See docs/deployment/POLICY.md. This must
   // never throw here — an unguarded throw crashes the whole middleware
