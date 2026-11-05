@@ -106,7 +106,8 @@ async function storeLead(payload: LeadPayload): Promise<StoreResult> {
     return storeLeadViaSupabase(payload);
   }
 
-  return { stored: false };
+  // Never acknowledge a customer enquiry that no durable sink has accepted.
+  throw new Error("Lead persistence is not configured");
 }
 
 const recentFingerprints = new Map<string, number>();
@@ -143,10 +144,11 @@ export async function POST(request: Request) {
           : "We already received this enquiry. Our team will follow up.",
     });
   }
-  recentFingerprints.set(fp, now);
-
   try {
     const result = await storeLead(validated.value);
+    // A failed or unconfigured persistence attempt must remain retryable.
+    if (!result.stored) throw new Error("Lead persistence did not confirm storage");
+    recentFingerprints.set(fp, Date.now());
     const isStep1 = validated.value.stage === "step1";
     return NextResponse.json({
       ok: true,
@@ -154,13 +156,9 @@ export async function POST(request: Request) {
       duplicate: result.duplicate ?? false,
       id: result.id,
       stage: validated.value.stage,
-      message: result.stored
-        ? isStep1
-          ? "Thanks — your lead was saved. Add optional details to help us prepare."
-          : "Thanks — your enquiry was saved. Our team will follow up."
-        : isStep1
-          ? "Thanks — your lead was accepted. Persistence is pending configuration."
-          : "Thanks — your enquiry was accepted. Persistence is pending configuration; our team can still follow up from this receipt.",
+      message: isStep1
+        ? "Thanks — your lead was saved. Add optional details to help us prepare."
+        : "Thanks — your enquiry was saved. Our team will follow up.",
     });
   } catch {
     return NextResponse.json(
