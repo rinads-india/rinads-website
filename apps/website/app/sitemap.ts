@@ -35,6 +35,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  for (const guide of GROWTH_GUIDES) {
+    merged.set(`/resources/growth-library/${guide.slug}`, new Date());
+  }
+
   for (const program of ACADEMY_PROGRAMS) {
     merged.set(`/academy/${program.slug}`, new Date());
   }
