@@ -6,12 +6,21 @@ import {
   buildSoftwareApplicationJsonLd,
 } from "../lib/json-ld";
 import { COMPANY_CONFIG } from "../lib/content/companyConfig";
+import { getDefaultSeoForPath, buildPageMetadata } from "@rinads/cms";
 import { POSITIONING } from "../lib/product-ia";
 
 describe("launch commercial metadata and URL contracts", () => {
   it("uses the canonical public category", () => {
     assert.equal(COMPANY_CONFIG.category, "Business Intelligence Platform");
     assert.equal(POSITIONING.category, "Business Intelligence Platform");
+  });
+
+  it("provides accurate homepage CMS SEO defaults", () => {
+    const seo = getDefaultSeoForPath("/");
+    assert.equal(seo?.title, "RINADS | Business, simplified.");
+    assert.match(seo?.description ?? "", /run, sell, grow and automate/i);
+    const metadata = buildPageMetadata(seo ?? null, "/", { siteUrl: "https://www.rinads.com" });
+    assert.equal(metadata.title, "RINADS | Business, simplified.");
   });
 
   it("normalizes configured site URLs for structured data", () => {
