@@ -1,8 +1,13 @@
+/* Browser-side font loading with a system stack when offline.
+ * No build-time request to Google Fonts is required.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  --font-figtree: "Figtree", "Segoe UI", Arial, sans-serif;
   --rinads-primary: #9f4bc7;
   --rinads-primary-dark: #7a35a0;
   --rinads-white: #ffffff;
