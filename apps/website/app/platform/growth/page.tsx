@@ -34,6 +34,7 @@ export default function GrowthPillarPage() {
         { label: "Business", href: "/platform/business" },
         { label: "Commerce", href: "/platform/commerce" },
         { label: "Growth services", href: "/services#growth-systems" },
+        { label: "Search visibility pilot", href: "/grow/search-intelligence" },
       ]}
     />
   );
