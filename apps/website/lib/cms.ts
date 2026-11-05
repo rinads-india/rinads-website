@@ -47,6 +47,7 @@ function isLegacyRootSeo(seo: SiteSeo | null): boolean {
     seo &&
       seo.path === "/" &&
       (seo.title === "RINADS | Business Simplified" ||
+        seo.title === "RINADS | Business Intelligence Infrastructure" ||
         seo.description.includes("Software, digital marketing, and AI-powered automation"))
   );
 }
