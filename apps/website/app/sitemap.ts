@@ -6,6 +6,7 @@ import { SERVICE_LINES } from "@/lib/content/services";
 import { INTEGRATIONS, getPublishedCaseStudies } from "@/lib/content/case-studies";
 import { WIX_INTEGRATION } from "@/lib/integrations/wix";
 import { getIndexableRoutes } from "@/lib/route-registry";
+import { GROWTH_GUIDES } from "@/lib/content/growth-knowledge";
 
 const EXCLUDED_PREFIXES = [
   "/os",
