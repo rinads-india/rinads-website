@@ -194,7 +194,7 @@ describe("cross-app auth cookie wiring", () => {
       "proxy.ts",
       "../rinaglow/lib/supabase/browser.ts",
       "../rinaglow/lib/supabase/server.ts",
-      "../rinaglow/middleware.ts",
+      "../rinaglow/proxy.ts",
     ];
     for (const file of files) {
       const source = readFileSync(join(process.cwd(), file), "utf8");

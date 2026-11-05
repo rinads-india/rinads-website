@@ -48,18 +48,18 @@ describe("production env contract: build-time gate (next.config.ts)", () => {
 
 describe("production env contract: runtime request guard (middleware or Next.js 16 proxy)", () => {
   for (const app of APPS) {
-    const runtimeGuardPath = app === "website" ? "proxy.ts" : "middleware.ts";
+    const runtimeGuardPath = "proxy.ts";
     it(`apps/${app}/${runtimeGuardPath} uses the non-throwing checkProductionEnvContract, not the throwing assert`, () => {
       const middleware = readAppFile(app, runtimeGuardPath);
       assert.match(
         middleware,
         /import\s*\{[^}]*\bcheckProductionEnvContract\b[^}]*\}\s*from\s*["']@rinads\/auth["']/,
-        `apps/${app}/middleware.ts must import checkProductionEnvContract from @rinads/auth`
+        `apps/${app}/${runtimeGuardPath} must import checkProductionEnvContract from @rinads/auth`
       );
       assert.doesNotMatch(
         middleware,
         /[^.]\bassertProductionEnvContract\s*\(/,
-        `apps/${app}/middleware.ts must not call the throwing assertProductionEnvContract() — an unguarded throw here crashes the whole middleware invocation (MIDDLEWARE_INVOCATION_FAILED)`
+        `apps/${app}/${runtimeGuardPath} must not call the throwing assertProductionEnvContract() — an unguarded throw here crashes the whole middleware invocation (MIDDLEWARE_INVOCATION_FAILED)`
       );
     });
 
@@ -83,7 +83,7 @@ describe("production env contract: runtime request guard (middleware or Next.js 
       assert.match(
         middleware,
         /matcher:\s*\[[\s\S]*?api\/health[\s\S]*?\]/,
-        `apps/${app}/middleware.ts matcher must exclude api/health so the health check stays reachable when the env contract check fails`
+        `apps/${app}/${runtimeGuardPath} matcher must exclude api/health so the health check stays reachable when the env contract check fails`
       );
     });
   }
