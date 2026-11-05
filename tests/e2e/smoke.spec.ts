@@ -62,3 +62,21 @@ test("mobile RINPO Phone is a keyboard-accessible, honest preview", async ({ pag
   await expect(phone).toBeHidden();
   await expect(launcher).toBeFocused();
 });
+
+test("global RINPO corner launcher regains keyboard focus on Escape", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const launcher = page.locator("[data-rinpo-corner-launcher]").getByRole("button", {
+    name: /open rinpo phone/i,
+  });
+  await expect(launcher).toBeVisible();
+  await launcher.click();
+
+  const phone = page.getByRole("dialog", { name: "RINPO Phone" });
+  await expect(phone).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(phone).toBeHidden();
+  await expect(launcher).toBeFocused();
+});
