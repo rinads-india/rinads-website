@@ -13,7 +13,8 @@ describe("RINPO Phone accessibility contracts", () => {
     assert.match(source, /document\.addEventListener\("keydown", onKey\)/);
     assert.match(source, /event\.key === "Escape"/);
     assert.match(source, /last\.focus\(\)/);
-    assert.match(source, /previous\.focus\(\)/);
+    assert.match(source, /stablePrevious\s*\?\?\s*launcher/);
+    assert.match(source, /\[data-rinpo-corner-launcher\] button/);
   });
   it("preserves mobile size and reduced-motion preferences", () => {
     assert.match(source, /h-\[100dvh\]/);
