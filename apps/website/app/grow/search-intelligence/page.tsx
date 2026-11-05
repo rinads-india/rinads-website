@@ -56,8 +56,8 @@ export default function SearchIntelligencePilotPage() {
           summary="A practical, human-reviewed search visibility service for growing businesses. Start with technical SEO, helpful content and local discovery. RINPO-powered reporting and provider connections remain subject to pilot verification."
           primaryHref="/contact?intent=audit&source=ri-growth-search-intelligence"
           primaryLabel="Request a visibility audit"
-          secondaryHref="/platform/growth"
-          secondaryLabel="Explore Growth"
+          secondaryHref="/resources/growth-library"
+          secondaryLabel="Read growth guides"
         />
         <section className="px-6 pb-16 md:px-12 lg:px-20" aria-labelledby="pilot-status">
           <div className="mx-auto max-w-7xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 md:p-8">

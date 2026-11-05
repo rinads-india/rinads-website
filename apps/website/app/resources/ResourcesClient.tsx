@@ -13,6 +13,7 @@ const BASE_SECTIONS = [
   {
     title: "Guides",
     items: [
+      { label: "RI GROWTH Knowledge Library", href: "/resources/growth-library", description: "Searchable, original SEO, local discovery, analytics and AI search guides." },
       { label: "CRM + projects + invoicing", href: "/platform/business", description: "Run customers, work, and money on one foundation." },
       { label: "Lead follow-up automation", href: "/platform/automation", description: "Governed workflows for follow-up with approvals." },
       { label: "WhatsApp business workflows", href: "/integrations/whatsapp", description: "Messaging integrations with explicit availability." },
