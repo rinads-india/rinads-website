@@ -40,7 +40,7 @@ test("mobile RINPO Phone is a keyboard-accessible, honest preview", async ({ pag
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const launcher = page.getByRole("button", { name: /open rinpo phone/i });
+  const launcher = page.getByRole("button", { name: /open rinpo phone.*rinpo runtime/i });
   await expect(launcher).toBeVisible();
   await launcher.click();
 
