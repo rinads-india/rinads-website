@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { RINPOAvatar } from "@/components/system";
 import { resolveRinpoPhoneAccess } from "@/lib/rinpo-phone/access";
 import { resolveRinpoPhoneHome } from "@/lib/rinpo-phone/home";
+import { loadRinpoPhoneToday } from "@/lib/rinpo-phone/today-server";
 
 const INTERNAL_TABS = new Set(["today", "apps", "world", "settings"]);
 
@@ -42,6 +43,7 @@ export default async function RinpoPhonePage({ searchParams }: PhonePageProps) {
   const home = resolveRinpoPhoneHome(access.homeInput);
   const requestedTab = (await searchParams).tab ?? "today";
   const activeTab = INTERNAL_TABS.has(requestedTab) ? requestedTab : "today";
+  const todayData = activeTab === "today" ? await loadRinpoPhoneToday(access) : null;
   const workspaceLabel = access.organizationName ?? "Personal workspace";
   const roleLabel = access.roleKey ?? "personal";
 
@@ -83,6 +85,45 @@ export default async function RinpoPhonePage({ searchParams }: PhonePageProps) {
                   Ask RINPO
                 </Link>
               </div>
+
+
+              {todayData?.status === "ready" ? (
+                <section aria-label="Live business briefing" className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-sm font-semibold">Your real business activity</h2>
+                    <span className="rounded-full border border-emerald-300/25 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-200">
+                      Live tenant data · read-only
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link href="/os/customers" className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300">
+                      <p className="text-xs text-white/55">Customers</p>
+                      <p className="mt-2 text-3xl font-bold tabular-nums">{todayData.customerCount}</p>
+                      <p className="mt-1 text-xs text-violet-200">View CRM</p>
+                    </Link>
+                    <Link href="/os/work" className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300">
+                      <p className="text-xs text-white/55">Open tasks</p>
+                      <p className="mt-2 text-3xl font-bold tabular-nums">{todayData.openTaskCount}</p>
+                      <p className="mt-1 text-xs text-violet-200">Review work</p>
+                    </Link>
+                  </div>
+                  <p className="text-xs leading-5 text-white/45">
+                    Counts come from your authenticated organisation via Supabase RLS.
+                    No simulated financial figures or automatic actions are shown.
+                  </p>
+                </section>
+              ) : (
+                <div role="status" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-sm font-semibold text-white/85">Business briefing unavailable</p>
+                  <p className="mt-1 text-xs leading-5 text-white/55">
+                    {todayData?.status === "no_organization"
+                      ? "Choose an active RI ID business to see its verified customers and tasks."
+                      : todayData?.status === "restricted"
+                        ? "Your current workspace role is not authorised to view this business summary."
+                        : "Live counts could not be verified right now. No sample data has been substituted."}
+                  </p>
+                </div>
+              )}
 
               <div>
                 <div className="mb-3 flex items-center justify-between">
