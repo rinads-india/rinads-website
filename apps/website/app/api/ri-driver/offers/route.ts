@@ -1,5 +1,4 @@
 import { createWebsiteServerClient } from "@/lib/supabase/server";
-import { evaluateDriverOfferRead } from "@rinads/operations";
 
 export const dynamic = "force-dynamic";
 
@@ -21,14 +20,10 @@ export async function GET() {
     const client = await createWebsiteServerClient();
     const { data: identity, error: authError } = await client.auth.getUser();
     const user = identity.user;
-    const gate = evaluateDriverOfferRead({
-      enabled: true,
-      authenticated: !authError && !!user,
-      anonymousUser: user?.is_anonymous ?? false,
-    });
-
-    if (!gate.allowed || !user) {
-      return respond({ ok: false, code: gate.code }, gate.status);
+    // The public website does not depend directly on the operations package.
+    // Server-verified identity is mandatory; never read a driver ID from input.
+    if (authError || !user || user.is_anonymous) {
+      return respond({ ok: false, code: "AUTH_REQUIRED" }, 401);
     }
 
     // The auth-scoped query is necessary but not sufficient: the DB must
