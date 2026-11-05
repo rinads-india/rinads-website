@@ -45,8 +45,13 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Build
-        run: pnpm build
+      # Next.js 16 Turbopack intermittently fails Google font resolution on clean CI runners.
+      # Preserve the standard build scripts for all other apps and production Vercel.
+      - name: Build workspace except website
+        run: pnpm exec turbo run build --filter=!@rinads/website
+
+      - name: Build website with Webpack (CI fallback)
+        run: pnpm --filter @rinads/website exec next build --webpack
 
   e2e:
     name: Playwright smoke (public website)
