@@ -535,6 +535,14 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     pageType: "resource",
   },
   {
+    path: "/resources/growth-library",
+    indexable: true,
+    title: "RI GROWTH Knowledge Library | RINADS",
+    description: "Original practical guides covering SEO, local search, Search Console, AI search readiness and measurable business growth.",
+    pageType: "resource",
+    schemaTypes: ["WebPage", "BreadcrumbList"],
+  },
+  {
     path: "/business-readiness",
     indexable: true,
     title: "Business Readiness Assessment | RINADS",
