@@ -88,3 +88,12 @@ All tables should also follow the master-spec tenant-owned column requirements (
 
 ## Cost and rollout
 Start with Cake Farm's 7-day supervised manual workflow and 1–2 verified vehicles. Existing order count ≠ completed deliveries. Use actual successful drop costs to calibrate fare caps, payout reserves and rider thresholds. Do not enable autonomous dispatch or subscription billing before those numbers are measured.
+
+## Connected Supabase environment audit — 5 November 2026
+
+A read-only inspection of connected Supabase projects revealed:
+- \`rinads-one-dev\` is ACTIVE_HEALTHY but its public schema has 38 tables and uses \`tenants\` rather than the canonical monorepo's \`organizations\`; no \`ri_delivery_*\` or \`logistics_*\` tables were present.
+- \`RINGLOW\` is INACTIVE.
+- Neither connected project was verified as the canonical \`rinads-platform\` production backend.
+
+**Blocker:** Do not run a migration, enable the read-only API feature flag, assign drivers, or create test customer records in these projects based on the current connection alone. First establish the correct staging and production project references through the official environment inventory, compare migration history, and obtain founder approval before applying changes. The discrepancy may reflect older/parallel environments rather than a missing migration in the actual production database.
