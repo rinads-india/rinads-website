@@ -24,7 +24,7 @@ test("contact flow recognizes start attribution, audit, and partner intents", as
   const contactClient = await read("../app/contact/ContactClient.tsx");
   const contactPage = await read("../app/contact/page.tsx");
 
-  assert.match(contactClient, /source === "start"/);
+  assert.match(contactClient, /contactSourcePath\(searchParams\.get\("source"\)\)/);
   assert.match(contactClient, /intent === "audit"/);
   assert.match(contactClient, /Request your free Business Simplified Audit/);
   assert.match(contactClient, /intent === "partner"/);
