@@ -63,7 +63,7 @@ export function HomeHero() {
 
           <motion.h1
             {...enter(0.18)}
-            className="mt-8 max-w-xl text-3xl font-semibold leading-[1.08] tracking-[-0.03em] text-white sm:text-4xl md:text-5xl"
+            className="rinads-type-display mt-8 max-w-xl text-[clamp(2.75rem,6vw,5.75rem)] leading-[1.02] tracking-[-0.05em] text-white"
           >
             {POSITIONING.homeHeadline}
           </motion.h1>
