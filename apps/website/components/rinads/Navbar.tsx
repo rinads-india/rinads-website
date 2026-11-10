@@ -15,7 +15,7 @@ import { CTAS, NAV_GROUPS } from "@/lib/product-ia";
 import { trackMarketing } from "@/lib/analytics";
 
 const islandLinkClass =
-  "rounded-full px-2 py-2 text-[11px] font-semibold tracking-[0.08em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:px-2.5 xl:text-xs";
+  "rounded-full px-2 py-2 text-xs font-semibold tracking-[0.02em] text-[var(--island-foreground)] transition-colors hover:text-rinads-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rinads-primary xl:px-2.5 xl:text-[13px]";
 
 function MobileMenuOverlay({
   open,
