@@ -31,6 +31,9 @@ const SOCIAL_PATHS: Record<string, string> = {
 export function Footer() {
   const [videoFailed, setVideoFailed] = useState(false);
   const [playVideo, setPlayVideo] = useState(false);
+  const [videoVisible, setVideoVisible] = useState(false);
+  const videoPanelRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { openPhoneScreen } = useRinpo();
   const watermarkSvgRef = useRef<SVGSVGElement>(null);
   const watermarkTextRef = useRef<SVGTextElement>(null);
@@ -59,12 +62,33 @@ export function Footer() {
   }, [fitWatermark]);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-    const timer = window.setTimeout(() => setPlayVideo(true), 400);
-    return () => window.clearTimeout(timer);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const panel = videoPanelRef.current;
+    if (!panel || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((entry) => entry.isIntersecting);
+        setVideoVisible(visible);
+        if (visible) setPlayVideo(true);
+      },
+      { rootMargin: "100px 0px", threshold: 0.1 }
+    );
+    observer.observe(panel);
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (videoVisible) {
+      void video.play().catch(() => {
+        // Autoplay is optional; a paused video must not block the footer.
+      });
+    } else {
+      video.pause();
+    }
+  }, [playVideo, videoVisible]);
 
   const handleMeetRinpo = () => {
     openPhoneScreen("chat");
@@ -73,11 +97,11 @@ export function Footer() {
   return (
     <footer className="footer-section" aria-label="Site footer">
       <div className="footer-wrapper">
-        <div className="footer-left">
+        <div ref={videoPanelRef} className="footer-left">
           {!videoFailed && playVideo ? (
             <video
+              ref={videoRef}
               className="footer-left-video"
-              autoPlay
               muted
               loop
               playsInline

@@ -50,7 +50,7 @@ export function RinpoHeroPreview() {
           alt="RINPO, the RINADS business intelligence character"
           width={200}
           height={240}
-          className="h-36 w-auto max-w-[38%] shrink-0 object-contain sm:h-48 lg:h-52"
+          className="h-44 w-auto max-w-[38%] shrink-0 object-contain sm:h-56 lg:h-64"
           loading="eager"
           decoding="async"
         />

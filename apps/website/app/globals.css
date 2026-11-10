@@ -249,6 +249,16 @@ html {
   }
 }
 
+/* Canonical marketing typography — Figtree from @rinads/brand.
+ * Keep experimental condensed campaign faces off product UI until approved.
+ */
+.rinads-type-display {
+  font-family: var(--font-figtree);
+  font-weight: 800;
+  font-kerning: normal;
+  text-wrap: balance;
+}
+
 /* Subtle technical grid */
 .grid-pattern {
   background-image:
@@ -667,7 +677,8 @@ html {
 .footer-nav-cols {
   display: flex;
   flex-direction: row;
-  gap: 72px;
+  flex-wrap: wrap;
+  gap: 32px 48px;
 }
 
 .footer-col-title {
