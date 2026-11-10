@@ -305,6 +305,14 @@ export function getGrowthModuleDestinations(): OsModuleBridgeConfig {
         status: "external_public",
       },
       {
+        id: "social-connections",
+        label: "Social Connections",
+        description: "Connect and manage social accounts. Publish content through staff-approved workflows.",
+        href: "/os/growth/connections",
+        status: "available",
+        minTier: "staff",
+      },
+      {
         id: "campaigns",
         label: "Campaign workspace",
         description: "In-shell campaign manager is not available yet.",
