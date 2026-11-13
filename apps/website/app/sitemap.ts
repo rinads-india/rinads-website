@@ -6,6 +6,7 @@ import { SERVICE_LINES } from "@/lib/content/services";
 import { INTEGRATIONS, getPublishedCaseStudies } from "@/lib/content/case-studies";
 import { WIX_INTEGRATION } from "@/lib/integrations/wix";
 import { getIndexableRoutes } from "@/lib/route-registry";
+import { GROWTH_GUIDES } from "@/lib/content/growth-knowledge";
 
 const EXCLUDED_PREFIXES = [
   "/os",
@@ -32,6 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!isExcluded(route.path)) {
       merged.set(route.path, new Date());
     }
+  }
+
+  for (const guide of GROWTH_GUIDES) {
+    merged.set(`/resources/growth-library/${guide.slug}`, new Date());
   }
 
   for (const program of ACADEMY_PROGRAMS) {

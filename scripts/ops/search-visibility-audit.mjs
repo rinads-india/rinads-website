@@ -10,7 +10,7 @@ const base = new URL(input);
 if (base.protocol !== "https:" || !["www.rinads.com", "rinads.com"].includes(base.hostname)) {
   throw new Error("Only public HTTPS rinads.com hosts may be audited");
 }
-const paths = ["/", "/platform/growth", "/solutions/salon", "/solutions/landscape", "/grow/search-intelligence"];
+const paths = ["/", "/platform/growth", "/solutions/salon", "/solutions/landscape", "/grow/search-intelligence", "/resources/growth-library"];
 
 function attribute(tag, name) {
   const re = new RegExp("\\b" + name + "\\s*=\\s*([\"'])(.*?)\\1", "i");
