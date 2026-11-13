@@ -208,6 +208,7 @@ async function syncCommerceToSupabase(
         shipping_method_code: o.shippingMethodCode ?? null,
         promotion_code: o.promotionCode ?? null,
         guest_email: o.guestEmail ?? null,
+        shipping_address_snapshot: o.shippingAddress ?? null,
         created_at: o.createdAt,
       }))
     );

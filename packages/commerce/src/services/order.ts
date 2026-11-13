@@ -5,6 +5,7 @@ import type {
   Order,
   OrderEvent,
   OrderLineSnapshot,
+  OrderShippingAddressSnapshot,
   OrderStatus,
   PaymentStatus,
   Result,
@@ -44,6 +45,7 @@ export class OrderService {
     input: {
       customerId?: string;
       guestEmail?: string;
+      shippingAddress?: OrderShippingAddressSnapshot;
       quote: CheckoutQuote;
       lines: OrderLineSnapshot[];
       paymentRef: string;
@@ -73,6 +75,7 @@ export class OrderService {
       shippingMethodCode: input.shippingMethodCode,
       promotionCode: input.quote.promotionCode,
       guestEmail: input.guestEmail,
+      shippingAddress: input.shippingAddress,
       lines: input.lines,
       events,
       createdAt: now,
