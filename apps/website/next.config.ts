@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
       { source: "/grow", destination: "/platform/growth", permanent: true },
       // Company / about
       { source: "/about", destination: "/company", permanent: true },
+      { source: "/company/founder", destination: "/company", permanent: true },
+      { source: "/company/story", destination: "/company", permanent: true },
       { source: "/contact", destination: "/company/contact", permanent: true },
       { source: "/careers", destination: "/company/careers", permanent: true },
       // Trust

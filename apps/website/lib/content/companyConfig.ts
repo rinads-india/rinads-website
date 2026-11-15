@@ -13,20 +13,11 @@ export type CompanySocial = {
   href: string;
 };
 
-export type CompanyFounder = {
-  name: string;
-  title: string;
-  story: string;
-  /** Public asset path when an approved headshot exists */
-  headshotSrc?: string;
-};
-
 const businessEmail = env("NEXT_PUBLIC_BUSINESS_EMAIL");
 const whatsappUrl = env("NEXT_PUBLIC_WHATSAPP_URL");
 const linkedIn = env("NEXT_PUBLIC_SOCIAL_LINKEDIN");
 const xUrl = env("NEXT_PUBLIC_SOCIAL_X");
 const facebook = env("NEXT_PUBLIC_SOCIAL_FACEBOOK");
-const headshot = env("NEXT_PUBLIC_FOUNDER_HEADSHOT");
 
 const socials: CompanySocial[] = [];
 if (linkedIn) socials.push({ name: "LinkedIn", href: linkedIn });
@@ -46,13 +37,6 @@ export const COMPANY_CONFIG = {
     display: "Built in Thrissur, Kerala, India.",
     trustLine: "Built in Thrissur, Kerala · Designed for growing businesses",
   },
-  founder: {
-    name: "Andrino T D",
-    title: "Founder / Managing Director & CEO",
-    story:
-      "I grew up inside small businesses. Now I'm building the system I wish they had — connecting software, people, data, commerce, communication and operations into one intelligence-controlled environment.",
-    ...(headshot ? { headshotSrc: headshot } : {}),
-  } satisfies CompanyFounder,
   /** Only populated when env provides verified values */
   contact: {
     businessEmail,
