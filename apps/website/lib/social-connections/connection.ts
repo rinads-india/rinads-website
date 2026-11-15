@@ -89,7 +89,6 @@ export async function listConnections(
       lastCheckedAt: (row.last_checked_at as string | null) ?? null,
       connectedAt: row.created_at as string,
       connectedBy: row.connected_by as string,
-      disconnectedAt: null,
     };
   });
 }
