@@ -78,8 +78,8 @@ export function RinpoIntelligenceClient() {
                 </button>
               ))}
             </div>
-            <Link href="/rinpo-story" className="mt-8 inline-block text-sm font-semibold text-rinads-primary hover:underline">
-              Read the RINPO story →
+            <Link href="/rinpo" className="mt-8 inline-block text-sm font-semibold text-rinads-primary hover:underline">
+              Explore RINPO capabilities →
             </Link>
           </div>
         </div>
