@@ -62,7 +62,7 @@ function bullets(items: readonly string[]): string {
 }
 
 function companyOverview(): KnowledgeDocument {
-  const { legalName, brandName, category, tagline, location, founder, contact, siteUrl } =
+  const { legalName, brandName, category, tagline, location, contact, siteUrl } =
     COMPANY_CONFIG;
   const lines = [
     `# ${brandName} — company overview`,
@@ -70,7 +70,6 @@ function companyOverview(): KnowledgeDocument {
     `${brandName} is operated by ${legalName}. Category: ${category}.`,
     `Tagline: "${tagline}"`,
     `${location.display} Location: ${location.city}, ${location.region}, ${location.country}.`,
-    `Founder: ${founder.name}, ${founder.title}. ${founder.story}`,
     "",
     "## Contact",
     `- Phone: ${PUBLIC_CONTACT.phone}`,
