@@ -34,6 +34,7 @@ export default async function SocialConnectionsPage() {
   const { organizationId, roleKey } = access;
   if (!organizationId || !roleKey) redirect("/os");
   const tier = capabilityTierFromRoleKey(roleKey as RoleKey);
+  if (!tier) redirect("/os/growth");
 
   // Minimum: staff+
   if (!tierAtLeast(tier, "staff")) {
