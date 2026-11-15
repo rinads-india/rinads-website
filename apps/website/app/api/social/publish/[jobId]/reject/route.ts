@@ -69,7 +69,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       .eq("id", jobId),
     service
       .from("social_posts")
-      .update({ status: "rejected" })
+      // The publish job records "rejected"; post drafts use the schema-supported "cancelled" status.
+      .update({ status: "cancelled" })
       .eq("id", job.post_id),
   ]);
 
