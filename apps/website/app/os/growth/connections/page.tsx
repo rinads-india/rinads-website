@@ -5,14 +5,12 @@
  */
 import { redirect } from "next/navigation";
 import { requireOsShellAccess } from "@/lib/os-shell-access";
-import { createWebsiteServerClient } from "@/lib/supabase/server";
 import { isSupabaseMode } from "@/lib/supabase/env";
 import { getSocialServiceClient } from "@/lib/social-connections/supabase";
 import { capabilityTierFromRoleKey } from "@/lib/os-org-role";
 import { tierAtLeast } from "@/lib/os-org-role";
 import { listConnections } from "@/lib/social-connections/connection";
 import { getAllProviderMeta } from "@/lib/social-connections/providers/registry";
-import { loadTenancyContext } from "@rinads/tenancy";
 import { SocialConnectionsClientShell } from "./SocialConnectionsClientShell";
 import type { RoleKey } from "@rinads/permissions";
 
@@ -32,13 +30,10 @@ export default async function SocialConnectionsPage() {
     );
   }
 
-  // Resolve tenancy
-  const supabase = await createWebsiteServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/os");
-
-  const ctx = await loadTenancyContext(supabase as never, { userId: user.id, email: user.email });
-  const tier = capabilityTierFromRoleKey(ctx.roleKey as RoleKey);
+  // The shared OS gate has already verified the user's membership and active organisation.
+  const { organizationId, roleKey } = access;
+  if (!organizationId || !roleKey) redirect("/os");
+  const tier = capabilityTierFromRoleKey(roleKey as RoleKey);
 
   // Minimum: staff+
   if (!tierAtLeast(tier, "staff")) {
@@ -47,7 +42,7 @@ export default async function SocialConnectionsPage() {
 
   // Fetch initial connections server-side
   const service = getSocialServiceClient();
-  const connections = await listConnections(service, ctx.organizationId).catch(() => []);
+  const connections = await listConnections(service, organizationId).catch(() => []);
 
   const allProviders = getAllProviderMeta();
 
@@ -56,8 +51,8 @@ export default async function SocialConnectionsPage() {
       <SocialConnectionsClientShell
         initialConnections={connections}
         allProviders={allProviders}
-        organizationId={ctx.organizationId}
-        orgName={ctx.organizationId}
+        organizationId={organizationId}
+        orgName={organizationId}
         tier={tier}
         canDisconnect={tierAtLeast(tier, "admin")}
         canApprove={tierAtLeast(tier, "staff")}
