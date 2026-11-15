@@ -21,8 +21,15 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-function base64url(buf: ArrayBuffer): string {
+function base64url(buf: Uint8Array | ArrayBuffer): string {
   return Buffer.from(buf).toString("base64url");
+}
+
+/** Copy to a guaranteed ArrayBuffer for strict WebCrypto BufferSource typing. */
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
 }
 
 function fromBase64url(str: string): Uint8Array {
@@ -43,7 +50,7 @@ function getSecretKey(version: 1 | 2 = 1): Uint8Array {
 }
 
 async function importKey(raw: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey("raw", raw, { name: ALGORITHM }, false, [
+  return crypto.subtle.importKey("raw", toArrayBuffer(raw), { name: ALGORITHM }, false, [
     "encrypt",
     "decrypt",
   ]);
@@ -58,9 +65,9 @@ export async function encryptTokenSet(
   const plaintext = new TextEncoder().encode(JSON.stringify(tokenSet));
 
   const encrypted = await crypto.subtle.encrypt(
-    { name: ALGORITHM, iv, tagLength: TAG_LENGTH },
+    { name: ALGORITHM, iv: toArrayBuffer(iv), tagLength: TAG_LENGTH },
     cryptoKey,
-    plaintext
+    toArrayBuffer(plaintext)
   );
 
   // AES-GCM: ciphertext is the first N-16 bytes; last 16 bytes are the GCM tag
@@ -95,9 +102,9 @@ export async function decryptTokenSet(
   combined.set(tagBytes, cipherBytes.length);
 
   const decrypted = await crypto.subtle.decrypt(
-    { name: ALGORITHM, iv: ivBytes, tagLength: TAG_LENGTH },
+    { name: ALGORITHM, iv: toArrayBuffer(ivBytes), tagLength: TAG_LENGTH },
     cryptoKey,
-    combined
+    toArrayBuffer(combined)
   );
 
   const json = new TextDecoder().decode(decrypted);
