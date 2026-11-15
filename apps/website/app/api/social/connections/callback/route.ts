@@ -9,7 +9,6 @@ import { upsertCredential } from "@/lib/social-connections/credential";
 import { upsertConnections } from "@/lib/social-connections/connection";
 import { writeSocialAuditLog } from "@/lib/social-connections/audit";
 import { getProviderAdapter } from "@/lib/social-connections/providers/index";
-import { createWebsiteServerClient } from "@/lib/supabase/server";
 import type { SocialProviderId } from "@/lib/social-connections/types";
 
 export const dynamic = "force-dynamic";
@@ -103,17 +102,6 @@ export async function GET(request: NextRequest) {
         provider: providerId,
         accountCount: accounts.length,
       },
-    });
-
-    // Also write to the platform audit_logs table
-    const userSupabase = await createWebsiteServerClient();
-    await userSupabase.from("audit_logs").insert({
-      organization_id: session.organization_id,
-      actor_type: "user",
-      actor_id: session.initiated_by,
-      action: "social.connection.created",
-      entity: "social_connections",
-      after: { provider: providerId, account_count: accounts.length },
     });
 
     return NextResponse.redirect(
