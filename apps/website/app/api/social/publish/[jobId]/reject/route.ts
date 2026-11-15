@@ -65,7 +65,6 @@ export async function POST(request: NextRequest, { params }: Params) {
         status: "rejected",
         reviewed_by: tenancy.user.id,
         reviewed_at: now,
-        rejection_reason: reason ?? null,
       })
       .eq("id", jobId),
     service
