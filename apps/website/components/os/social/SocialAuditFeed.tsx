@@ -41,7 +41,7 @@ export function SocialAuditFeed({ entries }: Props) {
               <span className="text-xs text-white/70">
                 {ACTION_LABELS[entry.action] ?? entry.action}
               </span>
-              {entry.metadata?.provider && (
+              {typeof entry.metadata?.provider === "string" && (
                 <span className="ml-1 text-xs text-white/40">
                   · {String(entry.metadata.provider)}
                 </span>
