@@ -326,8 +326,6 @@ export const NAV_COMPANY: NavGroup = {
   href: "/company",
   items: [
     { label: "Company", href: "/company" },
-    { label: "Founder", href: "/company/founder" },
-    { label: "Story", href: "/company/story" },
     { label: "Careers", href: "/company/careers" },
     { label: "Contact", href: "/company/contact" },
   ],
@@ -367,8 +365,6 @@ export const FOOTER_SOLUTIONS: NavLink[] = [
 
 export const FOOTER_COMPANY: NavLink[] = [
   { label: "Company", href: "/company" },
-  { label: "Founder", href: "/company/founder" },
-  { label: "Story", href: "/company/story" },
   { label: "Contact", href: "/company/contact" },
   { label: "Careers", href: "/company/careers" },
 ];
