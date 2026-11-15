@@ -4,8 +4,6 @@
  * DELETE /api/social/connections — disconnect a connection
  */
 import { NextRequest, NextResponse } from "next/server";
-import { createWebsiteServerClient } from "@/lib/supabase/server";
-import { isSupabaseMode } from "@/lib/supabase/env";
 import { getSocialServiceClient } from "@/lib/social-connections/supabase";
 import { listConnections, disconnectConnection } from "@/lib/social-connections/connection";
 import { revokeCredential } from "@/lib/social-connections/credential";
@@ -19,23 +17,14 @@ import { writeSocialAuditLog } from "@/lib/social-connections/audit";
 import { getProviderAdapter, PROVIDER_META } from "@/lib/social-connections/providers/index";
 import { capabilityTierFromRoleKey } from "@/lib/os-org-role";
 import type { SocialProviderId } from "@/lib/social-connections/types";
-import { loadTenancyContext } from "@rinads/tenancy";
+import { getSocialTenancy } from "@/lib/social-connections/tenancy";
 
 export const dynamic = "force-dynamic";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
-async function getTenancy() {
-  if (!isSupabaseMode()) return null;
-  const supabase = await createWebsiteServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const ctx = await loadTenancyContext(supabase as never, { userId: user.id, email: user.email });
-  return { user, ctx };
-}
-
 export async function GET() {
-  const tenancy = await getTenancy();
+  const tenancy = await getSocialTenancy();
   if (!tenancy) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: NO_STORE });
   }
@@ -50,7 +39,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const tenancy = await getTenancy();
+  const tenancy = await getSocialTenancy();
   if (!tenancy) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: NO_STORE });
   }
@@ -128,7 +117,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const tenancy = await getTenancy();
+  const tenancy = await getSocialTenancy();
   if (!tenancy) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: NO_STORE });
   }

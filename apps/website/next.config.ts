@@ -49,9 +49,10 @@ const nextConfig: NextConfig = {
       // Editions
       { source: "/solutions/nursery", destination: "/solutions/landscape", permanent: true },
       { source: "/solutions/automotive", destination: "/solutions", permanent: true },
-      // Narrative
-      { source: "/rinpo-story", destination: "/company/rinpo-story", permanent: true },
-      { source: "/rinpo/story", destination: "/company/rinpo-story", permanent: true },
+      // Retire public origin/story marketing pages in favour of product guidance.
+      { source: "/company/rinpo-story", destination: "/rinpo", permanent: true },
+      { source: "/rinpo-story", destination: "/rinpo", permanent: true },
+      { source: "/rinpo/story", destination: "/rinpo", permanent: true },
       // Business OS alias — temporary until /bos IA is fully adopted.
       { source: "/bos", destination: "/os", permanent: false },
       { source: "/bos/home", destination: "/os", permanent: false },

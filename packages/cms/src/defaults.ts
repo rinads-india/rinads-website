@@ -510,8 +510,8 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_company_rinpo_story",
     "/company/rinpo-story",
-    "RINPO Story | Company Narrative",
-    "Narrative and origin material for RINPO. Product details live at /rinpo.",
+    "RINPO | RINADS",
+    "Legacy narrative route redirects to the RINPO product overview.",
   ),
   // Legacy path SEO retained for historical CMS lookups
   seo(
@@ -523,8 +523,8 @@ export const DEFAULT_SEO: SiteSeo[] = [
   seo(
     "seo_rinpo_story",
     "/rinpo-story",
-    "RINPO Story | RINADS",
-    "The origin story of RINPO.",
+    "RINPO | RINADS",
+    "Legacy narrative route redirects to the RINPO product overview.",
   ),
   seo(
     "seo_business_os",
@@ -583,9 +583,9 @@ export function createDefaultCmsStore(): CmsStore {
       {
         id: "page_rinpo_story",
         slug: "rinpo-story",
-        title: "RINPO Story",
+        title: "RINPO (legacy narrative)",
         layoutKey: "story",
-        status: "published",
+        status: "draft",
         updatedAt: now,
         sections: {},
       },

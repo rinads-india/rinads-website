@@ -1,6 +1,8 @@
 /**
  * Unit tests: RBAC guards
  */
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import {
   requireConnectionManagementTier,
   requireDisconnectTier,
@@ -9,36 +11,36 @@ import {
 
 describe("requireConnectionManagementTier", () => {
   it("allows staff", () => {
-    expect(requireConnectionManagementTier("staff").ok).toBe(true);
+    assert.equal(requireConnectionManagementTier("staff").ok, true);
   });
   it("allows admin", () => {
-    expect(requireConnectionManagementTier("admin").ok).toBe(true);
+    assert.equal(requireConnectionManagementTier("admin").ok, true);
   });
   it("denies client", () => {
-    expect(requireConnectionManagementTier("client").ok).toBe(false);
+    assert.equal(requireConnectionManagementTier("client").ok, false);
   });
 });
 
 describe("requireDisconnectTier", () => {
   it("allows admin", () => {
-    expect(requireDisconnectTier("admin").ok).toBe(true);
+    assert.equal(requireDisconnectTier("admin").ok, true);
   });
   it("denies staff", () => {
-    expect(requireDisconnectTier("staff").ok).toBe(false);
+    assert.equal(requireDisconnectTier("staff").ok, false);
   });
   it("denies client", () => {
-    expect(requireDisconnectTier("client").ok).toBe(false);
+    assert.equal(requireDisconnectTier("client").ok, false);
   });
 });
 
 describe("requireApprovalTier", () => {
   it("allows staff", () => {
-    expect(requireApprovalTier("staff").ok).toBe(true);
+    assert.equal(requireApprovalTier("staff").ok, true);
   });
   it("allows admin", () => {
-    expect(requireApprovalTier("admin").ok).toBe(true);
+    assert.equal(requireApprovalTier("admin").ok, true);
   });
   it("denies client", () => {
-    expect(requireApprovalTier("client").ok).toBe(false);
+    assert.equal(requireApprovalTier("client").ok, false);
   });
 });

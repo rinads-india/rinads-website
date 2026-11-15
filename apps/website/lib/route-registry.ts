@@ -221,9 +221,9 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
   {
     path: "/rinpo/story",
     indexable: false,
-    canonical: "/company/rinpo-story",
-    title: "RINPO Story | Origin and Identity",
-    description: "Redirects to the company narrative at /company/rinpo-story. Product details live at /rinpo.",
+    canonical: "/rinpo",
+    title: "RINPO | RINADS (retired story route)",
+    description: "Redirects to the RINPO product overview.",
     pageType: "company",
   },
   {
@@ -669,9 +669,10 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
   },
   {
     path: "/company/rinpo-story",
-    indexable: true,
-    title: "RINPO Story | Company Narrative",
-    description: "Narrative and origin material for RINPO. Product details live at /rinpo.",
+    indexable: false,
+    canonical: "/rinpo",
+    title: "RINPO | RINADS (retired story route)",
+    description: "Redirects to the RINPO product overview.",
     pageType: "company",
   },
   {

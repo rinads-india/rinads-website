@@ -1,3 +1,5 @@
+import type { SocialTables } from "./social-types";
+
 export type DatabaseConfig = {
   url: string;
   anonKey: string;
@@ -332,7 +334,7 @@ export type Database = {
         Update: Partial<ProviderEventInboxRow>;
         Relationships: [];
       };
-    };
+    } & SocialTables;
     Views: Record<string, never>;
     Functions: {
       create_organization: {

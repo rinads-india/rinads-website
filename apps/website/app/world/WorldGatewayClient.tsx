@@ -11,7 +11,7 @@ type Destination = {
 };
 
 const DESTINATIONS: Destination[] = [
-  { id: "thrissur-origin", label: "Thrissur Origin", description: "The founding RINADS hub — explore the origin story.", anchor: "thrissur-origin", status: "preview" },
+  { id: "thrissur-origin", label: "Thrissur Origin", description: "Explore the Thrissur experience — a preview environment.", anchor: "thrissur-origin", status: "preview" },
   { id: "marketplace-hub", label: "Marketplace Hub", description: "Browse services, products, and brands in 3D space.", anchor: "marketplace-hub", status: "preview" },
   { id: "studios", label: "Studios", description: "Creative studios for content, branding, and more.", anchor: "studios", status: "soon" },
   { id: "academy", label: "RI Academy", description: "Learning environments and skill-building hubs.", anchor: "academy", status: "soon" },

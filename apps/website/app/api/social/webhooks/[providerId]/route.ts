@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSocialServiceClient } from "@/lib/social-connections/supabase";
 import { getProviderAdapter } from "@/lib/social-connections/providers/index";
 import type { SocialProviderId } from "@/lib/social-connections/types";
+import type { Json } from "@rinads/database";
 
 export const dynamic = "force-dynamic";
 
@@ -65,22 +66,28 @@ export async function POST(request: NextRequest, { params }: Params) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  let payload: unknown;
+  let payload: Json;
   try {
-    payload = JSON.parse(bodyText);
+    payload = JSON.parse(bodyText) as Json;
   } catch {
     return new NextResponse("Invalid JSON", { status: 400 });
   }
 
-  // Store for auditing / async processing — never expose to client
+  // Persist only verified JSON; a provider may retry if persistence fails.
+  const eventType = payload && typeof payload === "object" && !Array.isArray(payload)
+    && typeof payload.object === "string" ? payload.object : "unknown";
   const service = getSocialServiceClient();
-  await service.from("social_webhook_events").insert({
-    provider_id: providerId,
-    event_type: (payload as Record<string, unknown>)?.object ?? "unknown",
+  const { error: persistenceError } = await service.from("social_webhook_events").insert({
+    provider_id: adapter.id,
+    event_type: eventType,
     payload,
-    received_at: new Date().toISOString(),
+    signature_valid: true,
   });
+  if (persistenceError) {
+    console.error("[social/webhook] Verified event could not be persisted");
+    return new NextResponse("Unavailable", { status: 503 });
+  }
 
-  // Always respond 200 quickly; actual processing is async
+  // Respond only after successful persistence; actual processing is async
   return new NextResponse("OK", { status: 200 });
 }

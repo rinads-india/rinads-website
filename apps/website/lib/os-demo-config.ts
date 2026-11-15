@@ -21,7 +21,7 @@ export type OperatingSystemDemoConfig = {
 export const OPERATING_SYSTEM_DEMOS: Record<OperatingSystemDemoKey, OperatingSystemDemoConfig> = {
   "business-os": {
     slug: "business-os",
-    signature: "Founder Command Center",
+    signature: "Business Command Center",
     demoLabel: "Business OS demo",
     demoSummary: "A single attention surface for customers, work, receivables, operations, and next actions.",
     workflow: ["Lead", "Customer", "Proposal", "Project", "Invoice", "Payment", "Follow-up"],

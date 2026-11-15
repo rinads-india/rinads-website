@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import { getPageMetadata } from "@/lib/cms";
-import { RinpoStoryClient } from "@/app/rinpo-story/RinpoStoryClient";
+import { redirect } from "next/navigation";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("/rinpo/story");
-}
-
+/** Retired narrative route: explain RINPO through its product page. */
 export default function RinpoStoryPage() {
-  return <RinpoStoryClient />;
+  redirect("/rinpo");
 }

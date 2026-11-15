@@ -110,7 +110,6 @@ export function RinpoClient() {
 
           <div className="mt-10 flex flex-wrap gap-4 text-sm font-semibold text-rinads-primary">
             <Link href="/rinpo/intelligence">Intelligence →</Link>
-            <Link href="/rinpo/story">Story →</Link>
             <Link href="/rinpo/voice">Voice →</Link>
             <Link href="/rinpo/phone">Phone →</Link>
             {process.env.NEXT_PUBLIC_RINPO_UNITY_ENABLED === "true" && (

@@ -54,7 +54,7 @@ function BusinessDemo() {
     <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
       <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">Founder Command Center</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-rinads-primary">Business Command Center</p>
           <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Demo company</p>
         </div>
         <span className="rounded-full bg-[var(--status-success-bg)] px-3 py-1 text-xs font-semibold text-[var(--status-success-fg)]">
