@@ -22,7 +22,8 @@ function hexToBytes(hex: string): Uint8Array {
 }
 
 function base64url(buf: Uint8Array | ArrayBuffer): string {
-  return Buffer.from(buf).toString("base64url");
+  const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+  return Buffer.from(bytes).toString("base64url");
 }
 
 /** Copy to a guaranteed ArrayBuffer for strict WebCrypto BufferSource typing. */
